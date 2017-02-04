@@ -1,0 +1,24 @@
+model {
+    for (j1 in 1:N1) {
+        mu1[j1] <- inprod(u[id1[j1], RE_ind1], Z1[j1, ]) + inprod(betas1[c(4, 5, 6, 7)], X1[j1, c(4, 5, 6, 7)])
+        y1[j1] ~ dnorm(mu1[j1], tau1)
+    }
+    for (i in 1:n) {
+        mu.u[i, 1] <- inprod(betas1[c(1, 2, 3)], Xhc1[i, c(1, 2, 3)])
+        b[i, 1] <- u[i, 1] - mu.u[i, 1]
+        mu.u[i, 2] <- 0.0
+        b[i, 2] <- u[i, 2] - mu.u[i, 2]
+        mu.u[i, 3] <- 0.0
+        b[i, 3] <- u[i, 3] - mu.u[i, 3]
+        u[i, 1:n_RE] ~ dmnorm(mu.u[i, ], inv_D[, ])
+    }
+    for (k1 in 1:ncx1) {
+        betas1[k1] ~ dnorm(0.0, tau_betas1)
+    }
+    tau1 ~ dgamma(A_tau, B_tau)
+    sigma1 <- 1 / sqrt(tau1)
+    inv_D ~ dwish(4 * priorR_D[, ], priorK_D)
+     for (l in 1:n_RE) {
+         priorR_D[l, l] ~ dgamma(A_RD, B_RD)
+     }
+}
