@@ -27,7 +27,7 @@ prias = prias[!is.na(prias$Age) & prias$Age > 5,]
 ##############################################
 #Original biopsy score is invalid
 prias$Gleason_sum_repeat = prias$Gleason1_2 + prias$Gleason2_2
-prias[!is.na(Gleason_sum_repeat) & Gleason_sum_repeat>0, ]$Gleason_sum = NA
+prias[!is.na(prias$Gleason_sum_repeat) & prias$Gleason_sum_repeat>0, ]$Gleason_sum = NA
 
 #there are still some patients who had second biopsy but the date of their second biopsy was missing
 #we cannot use their  biopsy scores either ar baseline or at second measurement. Don't remove them
@@ -64,7 +64,7 @@ levels(prias$Reason_treatment) = trimws(levels(prias$Reason_treatment))
 prias$Reason_treatment[prias$Reason_treatment %in% c("N/A", "")] = NA
 prias$Reason_treatment = droplevels(prias$Reason_treatment)
 
-prias$day_discontinued = (prias$Date_discontinued - prias$Date_diagnosis)/(24*60*60*10)
+prias$day_discontinued = (prias$Date_discontinued - prias$Date_diagnosis)/(24*60*60)
 prias$year_discontinued = prias$day_discontinued/365
 
 #################################################
@@ -155,11 +155,12 @@ prias$event_type = factor(sapply(1:nrow(prias), function(index){
     }else if(discontinued_type_i %in% "Watchful waiting"){
       return("Watchful waiting")
     }else if(discontinued_type_i %in% "Died"){
-      if(reason_treatment_i %in% c("Other")){
-        return("Died-Other")
-      }else{
-        return("Died-Progression")
-      }
+      return("Died")
+      # if(reason_treatment_i %in% c("Other")){
+      #   return("Died-Other")
+      # }else{
+      #   return("Died-Progression")
+      # }
     }else if(discontinued_type_i %in% real_treatment_types){
       if(reason_treatment_i %in% c("Based on protocol advice", 
                                    "external beam radiotherapy", 
@@ -192,8 +193,8 @@ prias_long=reshape(prias, direction='long', idvar='P_ID', timevar = "visit_numbe
 prias_long = prias_long[order(prias_long$P_ID, prias_long$dom, na.last = T), ]
 prias_long$dummy = factor(prias_long$dummy, labels = c("No", "Yes"))
 
-#Why divide by 10 as well. Because there was an extra 10 in the time value. 
-prias_long$visitTimeDays = unlist(tapply(prias_long$dom, prias_long$P_ID, function(x){(x-x[1])/(24*60*60*10)}))
+prias_long$firstVisitDom = unlist(by(prias_long$dom, INDICES=list(prias_long$P_ID), FUN=function(x){rep(x[1], length(x))}))
+prias_long$visitTimeDays = unlist(tapply(prias_long$dom, prias_long$P_ID, function(x){(x-x[1])/(24*60*60)}))
 prias_long$visitTimeYears = prias_long$visitTimeDays/365
 
 #################################################
@@ -236,11 +237,12 @@ prias_long[prias_long$P_ID==452,]$psa[1] = prias_long[prias_long$P_ID==452,]$psa
 prias_long = prias_long[!(prias_long$P_ID == 452 & prias_long$visit_number==3),]
 
 # Check if there are observations after the last visit Time. Only applicable to people who discontinued.
-# In some cases it is the same day but different time, in some case different day
+# In some cases it is just a few days after
 # Nevertheless, I remove all observations after the treatment
 # So keep those who never discontinued and those who discontinued but obs time < date of discontinuation
 prias_long = prias_long[is.na(prias_long$Date_discontinued) | (prias_long$dom <= prias_long$Date_discontinued),]
 
+prias_long$P_ID = droplevels(prias_long$P_ID)
 #Check now if visittimes are sorted for every person. yes they are sorted
 any(unlist(tapply(prias_long$visitTimeDays, prias_long$P_ID, function(x){is.unsorted(x, na.rm = T)})))
 
@@ -249,7 +251,6 @@ prias_long$visit_number = unlist(by(prias_long, INDICES=list(prias_long$P_ID), F
 prias_long$nr_visits = unlist(by(prias_long, INDICES=list(prias_long$P_ID), FUN=function(x){rep(nrow(x), nrow(x))}))
 
 #Last follow up date is the date of type 1 censoring
-prias_long$firstVisitDom = unlist(by(prias_long$dom, INDICES=list(prias_long$P_ID), FUN=function(x){rep(x[1], length(x))}))
 prias_long$lastVisitDom = unlist(by(prias_long$dom, INDICES=list(prias_long$P_ID), FUN=function(x){rep(x[length(x)], length(x))}))
 
 #The people who are type 1 censored have date of discontinuation as NA. The last follow up date should be the censoring date
@@ -257,7 +258,8 @@ condition_long_5 = is.na(prias_long$Date_discontinued) & prias_long$Discontinued
 View(prias_long[condition_long_5,])
 
 prias_long[condition_long_5,]$Date_discontinued = prias_long[condition_long_5,]$lastVisitDom
-prias_long[condition_long_5,]$day_discontinued = (prias_long[condition_long_5,]$Date_discontinued - prias_long[condition_long_5,]$firstVisitDom)/(24*60*60*10)
+prias_long[condition_long_5,]$day_discontinued = (prias_long[condition_long_5,]$Date_discontinued - 
+                                                    prias_long[condition_long_5,]$firstVisitDom)/(24*60*60)
 prias_long[condition_long_5,]$year_discontinued = prias_long[condition_long_5,]$day_discontinued/365
 
 
@@ -297,7 +299,7 @@ prias_long = cbind(prias_long, polyvisityears=poly(prias_long$visitTimeYears,3))
 #   if(is.na(numvisits)){ #699 such people exist
 #     rep(NA, 35)
 #   }else{
-#     c(0,diff(tempds$dom[1:numvisits]), rep(NA, 35-numvisits))/(24*60*60*10)
+#     c(0,diff(tempds$dom[1:numvisits]), rep(NA, 35-numvisits))/(24*60*60)
 #     #the extra 10 because there was an extra zero
 #   }
 # }))
