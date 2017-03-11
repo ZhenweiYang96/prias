@@ -116,7 +116,7 @@ pltoDynamicPredictions = function(pid, fittedJointModel, survival=T, longitudina
                     xlab = "Time (years)", ylab = "Predicted log(PSA + 1)", main=paste("P_ID =",id))
 }
 
-fitUnivaritePSAModel = function(fixedSplineKnots=c(1,2,4), randomSplineKnots=c(1), 
+fitUnivaritePSAModel = function(fixedSplineKnots=c(0.1,0.5, 4), randomSplineKnots=c(0.1), 
                                 boundaryKnots=range(psa_data_set$visitTimeYears), method="ML"){
 
   fixedFormula = as.formula(paste("logpsa1 ~ I(Age - 70) + I((Age - 70)^2) + ",
