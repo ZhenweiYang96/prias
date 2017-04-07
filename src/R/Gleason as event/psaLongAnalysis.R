@@ -77,17 +77,17 @@ fixedSplines = lapply(1:50, function(i){
   c(first, second, 4)
 })
 
-psaModel_splines = foreach(i=7:7, .packages = c("splines", "nlme", "ggplot2"), 
+psaModel_splines = foreach(i=1:8, .packages = c("splines", "nlme", "ggplot2"), 
                            .export = c("psa_data_set")) %dopar%{
   psaModel_spline_trimmed = fitUnivaritePSAModel(fixedSplineKnots = fixedSplines[[i]],
                                                  randomSplineKnots = fixedSplines[[i]][1],
                                                  boundaryKnots = c(0, 7))
 }
 
-lapply(psaModel_splines, BIC)
-lapply(psaModel_splines, AIC)
+which.min(sapply(psaModel_splines, BIC))
+which.min(sapply(psaModel_splines, AIC))
 
-plotPSAFittedCurve(psaModel_splines[order(unlist(lapply(psaModel_splines, BIC)))[1:5]], transformPSA = T, individually=F)
+plotPSAFittedCurve(psaModel_splines[order(unlist(lapply(psaModel_splines, BIC)))[c(1:2,7)]], transformPSA = T, individually=F)
 
 #######################################################
 

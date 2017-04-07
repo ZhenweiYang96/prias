@@ -8,12 +8,15 @@ library(splines)
 library(nlme)
 library(JMbayes)
 
+source("src/R/replaceMCMCContents.R")
+source("../JMBayes/Anirudh/dev/multiplot.R")
+
 ticksX = function(from=0, max, by, labels=waiver()){
   scale_x_continuous(breaks = seq(from, max, by = by), labels = labels)
 }
 
 ticksY = function(from=0, max, by, labels = waiver()){
-  scale_y_continuous(breaks = seq(from, max, by = by), labels=waiver())
+  scale_y_continuous(breaks = round(seq(from, max, by = by),3), labels=waiver())
 }
 
 sourceDir <- function(path, trace = TRUE, ...) {

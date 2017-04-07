@@ -72,12 +72,12 @@ rm(diff1)
 ##############################################
 # Repeat biopsy score update
 ##############################################
-#First replace all original biopsy scores as NA if num of cores are 0 or 99
-prias[prias$Num_cores %in% c(0,99, NA),]$Gleason_sum = NA
+#First replace all original biopsy scores as NA if num of cores are 0 or 99, 999
+prias[prias$Num_cores %in% c(0, 99, 999, NA) | prias$Num_Cores_PC %in% c(99, 999, NA),]$Gleason_sum = NA
 
-#Replaces all repeat biopsy scores as NA if num of cores are 0 or 99
-prias[prias$Num_cores2 %in% c(0,99, NA),]$Gleason1_2 = NA
-prias[prias$Num_cores2 %in% c(0,99, NA),]$Gleason2_2 = NA
+#Replaces all repeat biopsy scores as NA if num of cores are 0 or 99, 999
+prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_cores2 %in% c(99, 999, NA),]$Gleason1_2 = NA
+prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_cores2 %in% c(99, 999, NA),]$Gleason2_2 = NA
 
 #If the repeat gleason is not NA then replace original gleason score with NA
 # Don't replace original gleason as we want to keep its date intact
@@ -119,9 +119,9 @@ prias$year_discontinued = prias$day_discontinued/365
 condition1 = is.na(prias$Nr_FUvisits)
 View(prias[condition1,])
 
-#Temporary treatment: Remove them, because although we could keep their scores at baseline, it doesnt matter
-prias=prias[!condition1,]
-prias$P_ID = droplevels(prias$P_ID)
+#Temporary treatment: Don't remove them
+#prias=prias[!condition1,]
+#prias$P_ID = droplevels(prias$P_ID)
 
 ###########
 #Patients who are reported NOT discontinued yet have reasons for discontinuation. No date of discontinuation available
@@ -171,10 +171,19 @@ condition_long_1 = prias_long$dummy %in% 1
 prias_long = prias_long[!condition_long_1,]
 
 #When number of cores are 0/99 the gleason should be NA
-condition_long_2 = prias_long$ncores %in% c(0, 99, NA)
+#It is possible that ncores>0 and ncorespc>0 and gleason = 0: because someone entered wrong ncorespc: no action required
+condition_long_2 = prias_long$ncores %in% c(0, 99, 999, NA) | prias_long$ncorespc %in% c(99, 999, NA)
 prias_long$gleason[condition_long_2] = NA
 prias_long$gleason1[condition_long_2] = NA
 prias_long$gleason2[condition_long_2] = NA
+
+#ncores>0, ncorespc =0 and gleason > 0: possible because someone entered wrong ncorespc: no action required
+
+#ncores>0, ncorespc>0, and Gleason = 0. Should be removed, I checked for the patients and it seems the scores should've been > 0
+View(prias_long[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0,])
+prias_long$gleason[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0] = NA
+prias_long$gleason1[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0] = NA
+prias_long$gleason2[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0] = NA
 
 #Set all those dom to be NA where psa is NA, and set all those domgleason to NA where both dre & gleason are NA
 prias_long[is.na(prias_long$psa),]$dom = NA
@@ -187,12 +196,11 @@ View(prias_long[condition_long_3,])
 prias_long = prias_long[!condition_long_3,]
 
 #Further I have tested that gleason1 + gleason2 leads to overall gleason correctly.
-View(prias_long[(prias_long$gleason != prias_long$gleason1 + prias_long$gleason2) %in% TRUE,])
+View(prias_long[(prias_long$gleason != (prias_long$gleason1 + prias_long$gleason2)) %in% TRUE,])
 
 ####################################################
 # Now we gotta merge and have a common date variable
 ####################################################
-
 idList = unique(prias_long$P_ID)
 prias_long_onetime=foreach(i=1:length(idList),.combine='rbind') %dopar%{
   prias_long_i = prias_long[prias_long$P_ID==idList[[i]],]
@@ -265,6 +273,10 @@ prias_long_onetime=foreach(i=1:length(idList),.combine='rbind') %dopar%{
   
   newds
 }
+
+#check the above result and then execute the statement below
+prias_long = prias_long_onetime
+rm(prias_long_onetime)
 
 prias_long$firstVisitDom = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FUN=function(x){rep(x[1], length(x))}))
 prias_long$visitTimeDays = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FUN=function(x){(x-x[1])/(24*60*60)}))
@@ -366,6 +378,8 @@ prias_long$didre = ordered(prias_long$didre, levels=c("T1", ">T1"))
 prias_long$digleason = rep(NA, nrow(prias_long))
 prias_long[!is.na(prias_long$gleason), ]$digleason = ifelse(prias_long[!is.na(prias_long$gleason), ]$gleason<=6, yes="Low", no="High")
 prias_long$digleason = ordered(prias_long$digleason, levels=c("Low", "High"))
+
+save.image("Rdata/Gleason as event/cleandata.Rdata")
 
 # #How balanced is the data set. as in how often measurements are taken
 # prias_long$diff_dom = unlist(lapply(prias$P_ID, FUN=function(id){
