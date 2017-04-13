@@ -187,6 +187,13 @@ mvJoint_psa_spline_pt51pt22pt5_pt5_tdboth = mvJointModelBayes(mvglm_psa_spline_p
                                                                            "logpsa1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.5, 1.2, 2.5), Boundary.knots=c(0, 7)),
                                                                                             random=~0 + dns(visitTimeYears, knots=c(0.5), Boundary.knots=c(0, 7)),
                                                                                             indFixed = 4:7, indRandom=2:3, name = "slope")))
+
+joint_psa_spline_pt51pt22pt5_pt5_tdboth = jointModelBayes(psaModel_splines[[2]], coxModel, timeVar = "visitTimeYears",
+                                   param = "td-both",
+                                   extraForm = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.5, 1.2, 2.5), Boundary.knots=c(0, 7)),
+                                                    random=~0 + dns(visitTimeYears, knots=c(0.5), Boundary.knots=c(0, 7)),
+                                                    indFixed = 4:7, indRandom=2:3), control=list(n.iter = 1000))
+
 save.image(file = "Rdata/Gleason as event/psa_spline_pt51pt22pt5_pt5.Rdata")
 ###############################################################
 # the data frame that contains the combination of values to

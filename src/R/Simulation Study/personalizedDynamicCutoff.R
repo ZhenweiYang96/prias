@@ -1,39 +1,88 @@
+dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[minVisits], 10, 0.1)
+
+#Calculate the prevalence of the disease
+kmfit = survfit(Surv(progression_time, progressed)~1, conf.type="log-log", data=prias.id)
+kmprob <- stepfun(kmfit$time, c(1, kmfit$surv))
+prevalence = kmprob(dynamicCutOffTimes) - kmprob(dynamicCutOffTimes + 1)
+
+rocList = foreach(tstart = dynamicCutOffTimes, .packages = c("splines", "JMbayes")) %dopar%{
+  res <- tryCatch({
+    rocJM(simJointModel_replaced, trainingDs, Tstart=tstart, Dt=1, idVar = "P_ID")
+  }, error=function(e) NULL)
+}
+
+youdenDynamicCutoffValues = sapply(1:length(rocList), function(i){
+  
+  k=0
+  repeat{
+    rocRes = rocList[[i-k]]
+    
+    if(is.null(rocRes) | any(is.nan(rocRes$TP)) | any(is.nan(rocRes$FP))){
+      k = k + 1
+    }else{
+      break
+    }
+  }
+  rocRes$thrs[which.max(rocRes$TP - rocRes$FP)]
+})
+markedNess = sapply(1:length(rocList), function(i){
+  
+  k=0
+  repeat{
+    rocRes = rocList[[i-k]]
+    
+    if(is.null(rocRes) | any(is.nan(rocRes$TP)) | any(is.nan(rocRes$FP))){
+      k = k + 1
+    }else{
+      break
+    }
+  }
+  ppv = (rocRes$TP * prevalence[i])/(rocRes$TP * prevalence[i] + (1-prevalence[i]) * rocRes$FP)
+  npv = ((1-prevalence[i]) * (1-rocRes$FP))/((1-prevalence[i]) * (1-rocRes$FP) + prevalence[i] * (1-rocRes$TP))
+  rocRes$thrs[which.max(ppv + npv - 1)]
+})
+
 #The weibull scale and shape matters
 minVisits = 5
 patientDsList = split(testDs, testDs$P_ID)
 
+res = vector("list", length(patientDsList))
 tStart = Sys.time()
+#for(i in 2:2){
 
-res = foreach(i=1:length(patientDsList),
-        .packages = c("splines", "JMbayes")) %dopar%{
+res = foreach(i=201:250,
+         .packages = c("splines", "JMbayes")) %dopar%{
 
   patientDs_i = patientDsList[[i]]
   
   patientDs_i$expectedFailureTime = NA
-  patientDs_i$survTime90 = NA
-  patientDs_i$survTime80 = NA
+  patientDs_i$survTimeYouden = NA
+  patientDs_i$survTimeMarkedNess = NA
   
-  biopsy_times = list(expectedFailureTime = c(), survTime90 = c(), survTime80 = c())
+  biopsy_times = list(expectedFailureTime = c(), survTimeYouden = c(), survTimeMarkedNess = c())
   
   for(j in minVisits:(timesPerSubject-1)){
     persTestDs = patientDs_i[patientDs_i$visitNumber <= j,]
+    temp_lasttime = max(persTestDs$visitTimeYears)
+    nearest_time_index = which(abs(dynamicCutOffTimes-temp_lasttime)==min(abs(dynamicCutOffTimes-temp_lasttime)))
+    nearest_time_index = nearest_time_index[1]
 
     patientDs_i$expectedFailureTime[j] = expectedCondFailureTime(persTestDs)
-    patientDs_i$survTime90[j] = pDynSurvTime(survProb = 0.9, persTestDs)
-    patientDs_i$survTime80[j] = pDynSurvTime(survProb = 0.8, persTestDs)
+    patientDs_i$survTimeYouden[j] = pDynSurvTime(survProb = youdenDynamicCutoffValues[nearest_time_index], persTestDs)
+    patientDs_i$survTimeMarkedNess[j] = pDynSurvTime(survProb = markedNess[nearest_time_index], persTestDs)
     
     if(patientDs_i$expectedFailureTime[j] < patientDs_i$visitTimeYears[j + 1]){
       biopsy_times$expectedFailureTime = c(biopsy_times$expectedFailureTime, patientDs_i$expectedFailureTime[j])
     }
     
-    if(patientDs_i$survTime90[j] < patientDs_i$visitTimeYears[j + 1]){
-      biopsy_times$survTime90 = c(biopsy_times$survTime90, patientDs_i$survTime90[j])
+    if(patientDs_i$survTimeYouden[j] < patientDs_i$visitTimeYears[j + 1]){
+      biopsy_times$survTimeYouden = c(biopsy_times$survTimeYouden, patientDs_i$survTimeYouden[j])
     }
     
-    if(patientDs_i$survTime80[j] < patientDs_i$visitTimeYears[j + 1]){
-      biopsy_times$survTime80 = c(biopsy_times$survTime80, patientDs_i$survTime80[j])
+    if(patientDs_i$survTimeMarkedNess[j] < patientDs_i$visitTimeYears[j + 1]){
+      biopsy_times$survTimeMarkedNess = c(biopsy_times$survTimeMarkedNess, patientDs_i$survTimeMarkedNess[j])
     }
-   
+    print(j)
   }
   
   if(i > read.csv("Rdata/Gleason as event/simStudy.csv")[,2]){
@@ -46,9 +95,7 @@ res = foreach(i=1:length(patientDsList),
 
 tEnd = Sys.time()
 
-tEnd - tStart
-
-save.image("Rdata/Gleason as event/simStudy1000_scale.Rdata")
+save.image("Rdata/Gleason as event/simStudy1000.Rdata.RData")
 
 #Store original results as they are
 orig_res = res

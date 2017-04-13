@@ -348,6 +348,11 @@ prias_long$progression_time = unlist(lapply(prias.id$P_ID, function(pid){
   rep(prias.id[prias.id$P_ID==pid,"progression_time"][1], rowCount)
 }))
 
+prias_long$progressed = unlist(lapply(prias.id$P_ID, function(pid){
+  rowCount = nrow(prias_long[prias_long$P_ID == pid,])
+  rep(prias.id[prias.id$P_ID==pid,"progressed"][1], rowCount)
+}))
+
 prias_long = prias_long[prias_long$visitTimeYears<=prias_long$progression_time,]
 prias_long$nr_visits = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){rep(nrow(x), nrow(x))}))
 
@@ -356,7 +361,7 @@ prias_long = prias_long[, c("P_ID", "Age",
                             "DiscontinuedYesNo", "Date_discontinued", "DiscontinuedType", 
                             "Reason_treatment", "nr_visits", "visit_number", 
                             "dom", "visitTimeDays", "visitTimeYears",
-                            "progression_time", "psa", "dre", "gleason")]
+                            "progression_time", "progressed" , "psa", "dre", "gleason")]
 
 prias.id = prias.id[, c("P_ID", "Age",  "DiscontinuedYesNo", "Date_discontinued", 
                         "DiscontinuedType", "Reason_treatment", "nr_visits",
