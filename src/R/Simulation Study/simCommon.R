@@ -1,5 +1,3 @@
-source("src/R/Simulation Study/ExpectedCondFailureTime.R")
-
 plotTrueSurvival = function(dsId, patientId){
   
   time = 1:15
@@ -22,14 +20,27 @@ plotTrueLongitudinal = function(dsId, patientId){
 }
 
 invDynSurvival <- function (t, u, dsId, patientDs) {
-  u - survfitJM(simulatedDsList[[dsId]]$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = t)$summaries[[1]][1, "Median"]
+  survProb = 1
+  if(t>12){
+    survFitObj = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = t)
+    survProbHPDI = HPDinterval(as.mcmc(sapply(survFitObj$full.results, function(x){x[[1]][1]})))
+    survProb = round(survProbHPDI[1],3)
+  }else{
+    survProb = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = t)$summaries[[1]][1, "Median"]
+  }
+  
+  u - survProb
 }
 
 pDynSurvTime = function(survProb, dsId, patientDs){
   #Return the time at which the dynamic survival probability is say 90%
   
+  if(survProb == 1.0){
+    return(max(patientDs$visitTimeYears)) 
+  }
+  
   Low = max(patientDs$visitTimeYears) + 1e-05
-  Up <- 15
+  Up <- 10
   tries  = 0
   
   repeat{
@@ -38,10 +49,10 @@ pDynSurvTime = function(survProb, dsId, patientDs){
                         u = survProb, dsId = dsId, patientDs = patientDs)$root, TRUE)
     
     if(inherits(Root, "try-error")){
-      if(tries >= 5){
+      if(tries >= 6){
         return(NA)
       }else{
-        Up = Up + 0.5    
+        Up = Up + 1
       }
     }else{
       return(Root)
@@ -57,11 +68,46 @@ invSurvival <- function (t, u, dsId, patientId) {
   log(u) + integrate(hazardFunc, lower = 0, upper = t, dsId, patientId)$value
 }
 
+hazardFunc = function (s, dsId, patientId) {
+  weibullShape = simulatedDsList[[dsId]]$weibullShape
+  weibullScale = simulatedDsList[[dsId]]$weibullScale
+  Age = simulatedDsList[[dsId]]$Age[patientId]
+  b = simulatedDsList[[dsId]]$b[patientId, ]
+  wGamma = simulatedDsList[[dsId]]$wGamma[patientId]
+  
+  # pdf_s = dweibull(s, shape = weibullShape, scale = weibullScale)
+  # survival_s = (1-pweibull(q = s, shape= weibullShape, scale = weibullScale))
+  # baselinehazard_s = pdf_s/survival_s
+  
+  baselinehazard_s = (weibullShape/weibullScale)*(s/weibullScale)^(weibullShape-1)
+  
+  df_s = data.frame(visitTimeYears = s, Age = Age)
+  
+  xi_s_val = model.matrix(fixedValueFormula, df_s)
+  xi_s_slope = model.matrix(fixedSlopeFormula, df_s)
+  
+  zi_s_val = model.matrix(randomValueFormula, df_s)
+  zi_s_slope = model.matrix(randomSlopeFormula, df_s)
+  
+  zib_val = zi_s_val %*% b
+  zib_slope = zi_s_slope %*% b[-1] #-1 to ignore intercept
+  
+  xBetaZb_s_value = xi_s_val %*% betas + zib_val
+  xBetaZb_s_slope = xi_s_slope %*% betas[-c(1:3)] + zib_slope #-c(1:3) to ignore intercept, age and age^2
+  
+  y_Alpha = cbind(xBetaZb_s_value, xBetaZb_s_slope) %*% alphas
+  #y_Alpha = cbind(xBetaZb_s_value) %*% alphas[1]
+  
+  baselinehazard_s * exp(wGamma + y_Alpha)
+}
+
 pSurvTime = function(survProb, dsId, patientId){
   Low = 1e-05
   Up <- 15
   tries  = 0
   
+  uniroot(invSurvival, interval = c(Low, Up), 
+          u = survProb, dsId, patientId)$root
   repeat{
     tries = tries + 1
     Root <- try(uniroot(invSurvival, interval = c(Low, Up), 
@@ -95,24 +141,22 @@ rLogPSA1 =  function(dsId, patientId, time){
 }
 
 dynamicPredProb = function(futureTimes, dsId, patientDs){
-  temp = survfitJM(simulatedDsList[[dsId]]$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = futureTimes)$summaries[[1]][, "Median"]
+  temp = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = futureTimes)$summaries[[1]][, "Median"]
   return(temp)
 }
 
 expectedCondFailureTime = function(dsId, patientDs, upperLimitIntegral = 15){
-  
   lastVisitTime = max(patientDs$visitTimeYears)
   lastVisitTime + integrate(dynamicPredProb, lastVisitTime, upperLimitIntegral, dsId, patientDs, 
                             abs.tol = 0.1)$value
 }
-
 
 generateLongtiudinalTimeBySchedule = function(){
   # months = c(0:24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 
   #            90, 96, 102, 108, 114, 120)
   
   months = c(0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 
-             90, 96, 102, 108, 114, 120)
+             90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180)
   
   return(months/12)
 }
@@ -165,41 +209,8 @@ getBsGammas = function(jointModel, weightedOnes = T){
   }
 }
 
-hazardFunc = function (s, dsId, patientId) {
-  weibullShape = simulatedDsList[[dsId]]$weibullShape
-  weibullScale = simulatedDsList[[dsId]]$weibullScale
-  simDs.id = simulatedDsList[[dsId]]$simDs.id
-  b = simulatedDsList[[dsId]]$b[patientId, ]
-  wGamma = simulatedDsList[[dsId]]$wGamma[patientId]
-  
-  pdf_s = dweibull(s, shape = weibullShape, scale = weibullScale)
-  survival_s = (1-pweibull(q = s,shape= weibullShape, scale = weibullScale))
-  baselinehazard_s = pdf_s/survival_s
-  
-  df_s = data.frame(visitTimeYears = s, Age = simDs.id$Age[i])
-  
-  xi_s_val = model.matrix(fixedValueFormula, df_s)
-  xi_s_slope = model.matrix(fixedSlopeFormula, df_s)
-  
-  zi_s_val = model.matrix(randomValueFormula, df_s)
-  zi_s_slope = model.matrix(randomSlopeFormula, df_s)
-  
-  zib_val = zi_s_val %*% b
-  zib_slope = zi_s_slope %*% b[-1] #-1 to ignore intercept
-  
-  xBetaZb_s_value = xi_s_val %*% betas + zib_val
-  xBetaZb_s_slope = xi_s_slope %*% betas[-c(1:3)] + zib_slope #-c(1:3) to ignore intercept, age and age^2
-  
-  y_Alpha = cbind(xBetaZb_s_value, xBetaZb_s_slope) %*% alphas
-  #y_Alpha = cbind(xBetaZb_s_value) %*% alphas[1]
-  
-  baselinehazard_s * exp(wGamma + y_Alpha)
-}
-
-generatePriasSimDataSet = function(weibullShape, weibullScale, seed){
-  set.seed(seed)
+generateSimLongitudinalData = function(nSub){
   Age <- rnorm(n = nSub, mean=mean(prias.id$Age), sd=sqrt(var(prias.id$Age)))
-  
   subId <- rep(1:nSub)
   simDs.id = data.frame(P_ID = subId, Age = Age)
   simDs = data.frame(P_ID = rep(subId, each=timesPerSubject), 
@@ -219,59 +230,53 @@ generatePriasSimDataSet = function(weibullShape, weibullScale, seed){
   xBetaZb = X %*% betas + Zb
   simDs$logpsa1 = rnorm(nSub * timesPerSubject, xBetaZb, sigma.y)
   
-  ggplot(data=simDs, aes(x=visitTimeYears, y=logpsa1)) + 
-    geom_line(aes(group=P_ID)) + stat_smooth() + 
-    ticksY(from=-2.5, max = 7.5, by = 1)
-  
-  # design matrix for the survival model      
-  
   W <- model.matrix(survivalFormula, data = simDs.id)
   wGamma <- as.vector(W %*% gammas)
   
-  weibullShape = weibullShapes[1]
-  weibullScale = weibullScales[1]
-  
+  list(simDs = simDs, simDs.id = simDs.id, Age = Age, b=b, wGamma=wGamma)
+}
+
+generateSimJointData = function(dsId, nSub){
   u <- runif(nSub)
-  simDs.id$progression_time <- NA
   
-  simDs.id$progression_time = foreach(i=1:nSub,.combine='c', 
-                                      .packages = c("splines", "JMbayes")) %do%{
-                                        pSurvTime(u[i], i)
-                                      }
-  sum(is.na(simDs.id$progression_time[1:nSub]))/nSub
+  simulatedDsList[[dsId]]$simDs.id$progression_time <- NA
   
-  failureTimeCompDs = data.frame(failuretime = c(simDs.id$progression_time, prias.id$progression_time[prias.id$progressed==1]),
-                                 type = c(rep("Sim",nrow(simDs.id)), rep("Obs", length(prias.id$progression_time[prias.id$progressed==1]))))
+  simulatedDsList[[dsId]]$simDs.id$progression_time = sapply(1:nSub, function(i){
+                                        tryCatch({pSurvTime(u[i], dsId, i)}, error=function(e) e)
+                                      })
+  percentageRejected = sum(is.na(simulatedDsList[[dsId]]$simDs.id$progression_time[1:nSub]))/nSub
+  
+  failureTimeCompDs = data.frame(failuretime = c(simulatedDsList[[dsId]]$simDs.id$progression_time, 
+                                                 prias.id$progression_time[prias.id$progressed==1]),
+                                 type = c(rep("Sim",nrow(simulatedDsList[[dsId]]$simDs.id)), 
+                                          rep("Obs", length(prias.id$progression_time[prias.id$progressed==1]))))
   
   #ggplot(data = failureTimeCompDs) + geom_density(aes(x=failuretime, color=type, fill=type), alpha=0.3)
   
-  origSimDs = simDs
-  origSimDs.id = simDs.id
-  orig_b = b
-  orig_Age = Age
-  orig_wGamma = wGamma
+  pid_to_keep = simulatedDsList[[dsId]]$simDs.id[!is.na(simulatedDsList[[dsId]]$simDs.id$progression_time),]$P_ID
   
-  pid_to_keep = simDs.id[!is.na(simDs.id$progression_time),]$P_ID
+  simulatedDsList[[dsId]]$simDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% pid_to_keep,]
+  simulatedDsList[[dsId]]$simDs.id = simulatedDsList[[dsId]]$simDs.id[simulatedDsList[[dsId]]$simDs.id$P_ID %in% pid_to_keep,]
+  simulatedDsList[[dsId]]$b = simulatedDsList[[dsId]]$b[pid_to_keep,]
+  simulatedDsList[[dsId]]$wGamma = simulatedDsList[[dsId]]$wGamma[pid_to_keep]
+  simulatedDsList[[dsId]]$Age = simulatedDsList[[dsId]]$Age[pid_to_keep]
   
-  simDs = simDs[simDs$P_ID %in% pid_to_keep,]
-  simDs.id = simDs.id[simDs.id$P_ID %in% pid_to_keep,]
-  b = b[pid_to_keep,]
-  wGamma = wGamma[pid_to_keep]
-  Age = Age[pid_to_keep]
-  
-  simDs.id$P_ID = 1:nrow(simDs.id)
-  simDs$P_ID = rep(simDs.id$P_ID, each=timesPerSubject)
+  simulatedDsList[[dsId]]$simDs.id$P_ID = 1:nrow(simulatedDsList[[dsId]]$simDs.id)
+  simulatedDsList[[dsId]]$simDs$P_ID = rep(simulatedDsList[[dsId]]$simDs.id$P_ID, each=timesPerSubject)
   
   #Divide into training and test
-  trainingSize = round(nrow(simDs.id)*0.75)
-  trainingDs.id = simDs.id[1:trainingSize, ]
-  testDs.id = simDs.id[(trainingSize+1):nSub,]
-  trainingDs = simDs[simDs$P_ID %in% trainingDs.id$P_ID, ]
-  testDs = simDs[simDs$P_ID %in% testDs.id$P_ID, ]
+  trainingSize = round(nrow(simulatedDsList[[dsId]]$simDs.id)*0.75)
+  trainingDs.id = simulatedDsList[[dsId]]$simDs.id[1:trainingSize, ]
+  testDs.id = simulatedDsList[[dsId]]$simDs.id[(trainingSize+1):nSub,]
+  trainingDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% trainingDs.id$P_ID, ]
+  testDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% testDs.id$P_ID, ]
   
   # simulate censoring times from an exponential distribution for TRAINING DATA SET ONLY
   # and calculate the observed event times, i.e., min(true event times, censoring times)
-  Ctimes <- rexp(trainingSize, 1/mean(prias.id[prias.id$progressed==0,]$progression_time))
+  
+  #Ctimes <- rexp(trainingSize, 1/mean(prias.id[prias.id$progressed==0,]$progression_time))
+  Ctimes<-runif(trainingSize, 5, 15)
+  
   trainingDs.id$progressed = trainingDs.id$progression_time <= Ctimes
   trainingDs.id$progression_time = pmin(trainingDs.id$progression_time, Ctimes)
   trainingDs$progression_time = rep(trainingDs.id$progression_time, each=timesPerSubject)
@@ -281,16 +286,15 @@ generatePriasSimDataSet = function(weibullShape, weibullScale, seed){
   # drop the longitudinal measurementsthat were taken after the observed event time for each subject.
   trainingDs = trainingDs[trainingDs$visitTimeYears <= trainingDs$progression_time, ]
   
-  list(simDs = simDs, simDs.id = simDs.id, trainingDs = trainingDs, trainingDs.id = trainingDs.id, 
-       testDs = testDs, testDs.id = testDs.id, b=b, wGamma=wGamma, Age = Age)
-  
+  list(simDs = simulatedDsList[[dsId]]$simDs, simDs.id = simulatedDsList[[dsId]]$simDs.id, 
+       trainingDs = trainingDs, trainingDs.id = trainingDs.id, 
+       testDs = testDs, testDs.id = testDs.id, 
+       b=simulatedDsList[[dsId]]$b, wGamma=simulatedDsList[[dsId]]$wGamma, 
+       weibullShape = simulatedDsList[[dsId]]$weibullShape, weibullScale = simulatedDsList[[dsId]]$weibullScale,
+       Age = simulatedDsList[[dsId]]$Age, percentageRejected = percentageRejected)
 }
 
 fitJointModelSimDs = function(trainingDs.id, trainingDs){
-  
-  #########################################
-  # Fit joint model for the simulated data set
-  ########################################
   cox_Model_training = coxph(Surv(progression_time, progressed) ~ I(Age - 70) +  I((Age - 70)^2),
                              data = trainingDs.id, x=T, model=T)
   
