@@ -17,23 +17,24 @@ computeCutOffValues = function(dsId){
   cutoffValues = lapply(1:length(rocList), function(i){
     
     #For youden and sens
+    youden = maxSens = NA
     k=0
-    repeat{
+    while((i-k)>0){
       rocRes = rocList[[i-k]]
       
       if(is.null(rocRes) | any(is.nan(rocRes$TP)) | any(is.nan(rocRes$FP))){
         k = k + 1
       }else{
+        youden = rocRes$thrs[which.max(rocRes$TP - rocRes$FP)]
+        maxSens = rocRes$thrs[which.max(rocRes$TP)]
         break
       }
     }
     
-    youden = rocRes$thrs[which.max(rocRes$TP - rocRes$FP)]
-    maxSens = rocRes$thrs[which.max(rocRes$TP)]
-
     #For markedness and npv
+    markedness = maxNPV = NA
     k=0
-    repeat{
+    while((i-k)>0){
       rocRes = rocList[[i-k]]
       
       if(!is.null(rocRes)){
@@ -43,6 +44,8 @@ computeCutOffValues = function(dsId){
         if(all(is.nan(ppv + npv)) | all(is.nan(npv))){
            k = k + 1
         }else{
+          markedness = rocRes$thrs[which.max(ppv + npv - 1)]
+          maxNPV = rocRes$thrs[which.max(npv)]
           break
         }
       }else{
@@ -50,10 +53,7 @@ computeCutOffValues = function(dsId){
       }
     }
     
-    ppv = (rocRes$TP * prevalence[i])/(rocRes$TP * prevalence[i] + (1-prevalence[i]) * rocRes$FP)
-    npv = ((1-prevalence[i]) * (1-rocRes$FP))/((1-prevalence[i]) * (1-rocRes$FP) + prevalence[i] * (1-rocRes$TP))
-    
-    c(youden = youden, maxSens = maxSens, markedness = rocRes$thrs[which.max(ppv + npv - 1)], maxNPV = rocRes$thrs[which.max(npv)])
+    c(youden = youden, maxSens = maxSens, markedness = markedness, maxNPV = maxNPV)
   })
 }
 
@@ -73,8 +73,9 @@ computeBiopsyTimes = function(minVisits = 5, dsId, patientRowNum){
   patientDs_i$survTime80 = NA
   
   #instead of times per subject I choose 28 because 28th time is 11 years.
+  #expected time of failure is not available for last time point if faiure time for all subejccts is less than tht last time point
   #training max progression time is 11.216 and test is 10. something
-  visitsOfInterest = minVisits:28
+  visitsOfInterest = minVisits:30
   res = foreach(j=visitsOfInterest, .packages = c("splines", "JMbayes", "coda"),
           .export=c("timesPerSubject", "dynamicCutOffTimes",
                     "expectedCondFailureTime", "dynamicPredProb",

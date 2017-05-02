@@ -35,7 +35,9 @@ invDynSurvival <- function (t, u, dsId, patientDs) {
 pDynSurvTime = function(survProb, dsId, patientDs){
   #Return the time at which the dynamic survival probability is say 90%
   
-  if(survProb == 1.0){
+  if(is.na(survProb)){
+    return(NA)
+  }else if(survProb == 1.0){
     return(max(patientDs$visitTimeYears)) 
   }
   
@@ -275,7 +277,7 @@ generateSimJointData = function(dsId, nSub){
   # and calculate the observed event times, i.e., min(true event times, censoring times)
   
   #Ctimes <- rexp(trainingSize, 1/mean(prias.id[prias.id$progressed==0,]$progression_time))
-  Ctimes<-runif(trainingSize, 5, 15)
+  Ctimes<-runif(trainingSize, 5, 25)
   
   trainingDs.id$progressed = trainingDs.id$progression_time <= Ctimes
   trainingDs.id$progression_time = pmin(trainingDs.id$progression_time, Ctimes)
