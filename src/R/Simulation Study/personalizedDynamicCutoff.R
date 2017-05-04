@@ -1,23 +1,27 @@
-dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[minVisits], 15, 0.1)
 #Calculate the prevalence of the disease
-kmfit = survfit(Surv(progression_time, progressed)~1, conf.type="log-log", data=prias.id)
-kmprob <- stepfun(kmfit$time, c(1, kmfit$surv))
-prevalence = kmprob(dynamicCutOffTimes) - kmprob(dynamicCutOffTimes + 1)
+computeRoc=function(dsId){
+  ct = makeCluster(4)
+  registerDoParallel(ct)
+  
+  rocList = foreach(tstart = simulatedDsList[[dsId]]$dynamicCutOffTimes, .packages = c("splines", "JMbayes"),
+                    .export=c("simulatedDsList", "rocJM_mod")) %dopar%{
+                      res <- tryCatch({
+                        rocJM_mod(simulatedDsList[[dsId]]$models$simJointModel_replaced, simulatedDsList[[dsId]]$trainingDs, 
+                              Tstart=tstart, Dt=1, idVar = "P_ID")
+                      }, error=function(e) NULL)
+                    }
+  stopCluster(ct)
+  return(rocList)
+}
 
 computeCutOffValues = function(dsId){
   
-  rocList = foreach(tstart = dynamicCutOffTimes, .packages = c("splines", "JMbayes"),
-                    .export=c("simulatedDsList")) %dopar%{
-    res <- tryCatch({
-      rocJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, simulatedDsList[[dsId]]$trainingDs, 
-            Tstart=tstart, Dt=1, idVar = "P_ID")
-    }, error=function(e) NULL)
-  }
+  rocList = simulatedDsList[[dsId]]$rocList
   
   cutoffValues = lapply(1:length(rocList), function(i){
     
     #For youden and sens
-    youden = maxSens = NA
+    youden = maxTPR = maxFPR = maxFNR = maxTNR = NA
     k=0
     while((i-k)>0){
       rocRes = rocList[[i-k]]
@@ -26,11 +30,34 @@ computeCutOffValues = function(dsId){
         k = k + 1
       }else{
         youden = rocRes$thrs[which.max(rocRes$TP - rocRes$FP)]
-        maxSens = rocRes$thrs[which.max(rocRes$TP)]
+        maxTPR = rocRes$thrs[which.max(rocRes$TP)]
+        minFPR = rocRes$thrs[which.min(rocRes$FP)]
+        minFNR = rocRes$thrs[which.min(1-rocRes$TP)]
+        maxTNR = rocRes$thrs[which.max(1-rocRes$FP)]
         break
       }
     }
     
+    #For youden and sens
+    accuracy = f1score = mcc = NA
+    k=0
+    while((i-k)>0){
+      rocRes = rocList[[i-k]]
+      
+      if(is.null(rocRes) | any(is.nan(rocRes$nTP)) | any(is.nan(rocRes$nFP)) | any(is.nan(rocRes$nFN)) | any(is.nan(rocRes$nTN))){
+        k = k + 1
+      }else{
+        accuracy = rocRes$thrs[which.max((rocRes$nTP + rocRes$nTN)/(rocRes$nTP + rocRes$nTN + rocRes$nFN + rocRes$nFP))]
+        f1score = rocRes$thrs[which.max(2*rocRes$nTP/(2*rocRes$nTP + rocRes$nFN + rocRes$nFP))]
+        mcc = rocRes$thrs[which.max((rocRes$nTP * rocRes$nTN - rocRes$nFP * rocRes$nFN)/((rocRes$nTP + rocRes$nFP)*(rocRes$nTP + rocRes$nFN)*(rocRes$nTN + rocRes$nFP)*(rocRes$nTN + rocRes$nFN)))]
+        break
+      }
+    }
+    
+    kmfit = survfit(Surv(progression_time, progressed)~1, conf.type="log-log", data=prias.id)
+    kmprob <- stepfun(kmfit$time, c(1, kmfit$surv))
+    prevalence = kmprob(simulatedDsList[[dsId]]$dynamicCutOffTimes) - kmprob(simulatedDsList[[dsId]]$dynamicCutOffTimes + 1)
+
     #For markedness and npv
     markedness = maxNPV = NA
     k=0
@@ -53,7 +80,7 @@ computeCutOffValues = function(dsId){
       }
     }
     
-    c(youden = youden, maxSens = maxSens, markedness = markedness, maxNPV = maxNPV)
+    c(youden = youden, maxTPR = maxTPR, minFPR = minFPR, minFNR = minFNR, maxTNR = maxTNR, accuracy=accuracy, f1score = f1score, mcc=mcc, markedness = markedness, maxNPV = maxNPV)
   })
 }
 
@@ -66,11 +93,11 @@ computeBiopsyTimes = function(minVisits = 5, dsId, patientRowNum){
   
   patientDs_i$expectedFailureTime = NA
   patientDs_i$survTimeYouden = NA
-  patientDs_i$survTimeMarkedness = NA
-  patientDs_i$survTimeMaxSens = NA
-  patientDs_i$survTimeMaxNPV = NA
-  patientDs_i$survTime90 = NA
-  patientDs_i$survTime80 = NA
+  patientDs_i$survTimeAccuracy = NA
+  patientDs_i$survTimeMaxTPR = NA
+  patientDs_i$survTimeMinFPR = NA
+  patientDs_i$survTimeF1Score = NA
+  patientDs_i$survTime85 = NA
   
   #instead of times per subject I choose 28 because 28th time is 11 years.
   #expected time of failure is not available for last time point if faiure time for all subejccts is less than tht last time point
@@ -87,101 +114,96 @@ computeBiopsyTimes = function(minVisits = 5, dsId, patientRowNum){
                       
                       expectedFailureTime = expectedCondFailureTime(dsId, persTestDs)
                       survTimeYouden = pDynSurvTime(survProb = cutoffValues[[nearest_time_index]]["youden"], dsId, persTestDs)
-                      survTimeMarkedness = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["markedness"], dsId, persTestDs)
-                      survTimeMaxSens = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["maxSens"], dsId, persTestDs)
-                      survTimeMaxNPV = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["maxNPV"], dsId, persTestDs)
-                      survTime90 = pDynSurvTime(survProb = 0.9, dsId, persTestDs)
-                      survTime80 = pDynSurvTime(survProb = 0.8, dsId, persTestDs)
+                      survTimeAccuracy = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["accuracy"], dsId, persTestDs)
+                      survTimeMaxTPR = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["maxTPR"], dsId, persTestDs)
+                      survTimeMinFPR = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["minFPR"], dsId, persTestDs)
+                      survTimeF1Score = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["f1score"], dsId, persTestDs)
+                      survTime85 = pDynSurvTime(survProb = 0.85, dsId, persTestDs)
                       
-                      list(expectedFailureTime, survTimeYouden, survTimeMarkedness, survTimeMaxSens, survTimeMaxNPV, survTime90, survTime80)
+                      list(expectedFailureTime, survTimeYouden, survTimeAccuracy, 
+                           survTimeMaxTPR, survTimeMinFPR, survTimeF1Score, survTime85)
                     }
   
   patientDs_i$expectedFailureTime[visitsOfInterest] = sapply(res, function(x){x[[1]]}, simplify = T)
   patientDs_i$survTimeYouden[visitsOfInterest] = sapply(res, function(x){x[[2]]}, simplify = T)
-  patientDs_i$survTimeMarkedness[visitsOfInterest] = sapply(res, function(x){x[[3]]}, simplify = T)
-  patientDs_i$survTimeMaxSens[visitsOfInterest] = sapply(res, function(x){x[[4]]}, simplify = T)
-  patientDs_i$survTimeMaxNPV[visitsOfInterest] = sapply(res, function(x){x[[5]]}, simplify = T)
-  patientDs_i$survTime90[visitsOfInterest] = sapply(res, function(x){x[[6]]}, simplify = T)
-  patientDs_i$survTime80[visitsOfInterest] = sapply(res, function(x){x[[7]]}, simplify = T)
+  patientDs_i$survTimeAccuracy[visitsOfInterest] = sapply(res, function(x){x[[3]]}, simplify = T)
+  patientDs_i$survTimeMaxTPR[visitsOfInterest] = sapply(res, function(x){x[[4]]}, simplify = T)
+  patientDs_i$survTimeMinFPR[visitsOfInterest] = sapply(res, function(x){x[[5]]}, simplify = T)
+  patientDs_i$survTimeF1Score[visitsOfInterest] = sapply(res, function(x){x[[6]]}, simplify = T)
+  patientDs_i$survTime85[visitsOfInterest] = sapply(res, function(x){x[[7]]}, simplify = T)
   
   return(patientDs_i)
 }
 
-# biopsy_times = list(expectedFailureTime = c(), survTimeYouden = c(), survTimeMarkedness = c(),
-#                     survTimeMaxSens = c(), survTimeMaxNPV=c(), survTime90 = c(), survTime80=c())
-# #Expected failure time
-# if(patientDs_i$expectedFailureTime[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$expectedFailureTime = c(biopsy_times$expectedFailureTime, patientDs_i$expectedFailureTime[j])
-# }
-# 
-# #Youden
-# if(patientDs_i$survTimeYouden[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTimeYouden = c(biopsy_times$survTimeYouden, patientDs_i$survTimeYouden[j])
-# }
-# 
-# #Markedness
-# if(patientDs_i$survTimeMarkedness[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTimeMarkedness = c(biopsy_times$survTimeMarkedness, patientDs_i$survTimeMarkedness[j])
-# }
-# 
-# #Max sensitivity
-# if(patientDs_i$survTimeMaxSens[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTimeMaxSens = c(biopsy_times$survTimeMaxSens, patientDs_i$survTimeMaxSens[j])
-# }
-# 
-# #Max NPV
-# if(patientDs_i$survTimeMaxNPV[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTimeMaxNPV = c(biopsy_times$survTimeMaxNPV, patientDs_i$survTimeMaxNPV[j])
-# }
-# 
-# #90% survival
-# if(patientDs_i$survTime90[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTime90 = c(biopsy_times$survTime90, patientDs_i$survTime90[j])
-# }
-# 
-# #80% survival
-# if(patientDs_i$survTime80[j] < patientDs_i$visitTimeYears[j + 1]){
-#   biopsy_times$survTime80 = c(biopsy_times$survTime80, patientDs_i$survTime80[j])
-# }
+computeBiopsyProbs = function(minVisits = 5, dsId, patientRowNum){
+  
+  cutoffValues = simulatedDsList[[dsId]]$cutoffValues
+  
+  testDs = simulatedDsList[[dsId]]$testDs
+  patientDs_i = split(testDs, testDs$P_ID)[[patientRowNum]]
+  
+  patientDs_i$survProbYouden = NA
+  patientDs_i$survProbMarkedness = NA
+  patientDs_i$survProbAccuracy = NA
+  patientDs_i$survProbF1Score = NA
+  patientDs_i$survProbmaxTPR = NA
+  patientDs_i$survProbmaxFPR = NA
+  patientDs_i$survProbmaxTNR = NA
+  patientDs_i$survProbmaxFNR = NA
+  patientDs_i$survProbMaxNPV = NA
+  patientDs_i$survProbMCC = NA
+  patientDs_i$survProb90 = NA
+  patientDs_i$survProb80 = NA
+  
+  #instead of times per subject I choose 28 because 28th time is 11 years.
+  #expected time of failure is not available for last time point if faiure time for all subejccts is less than tht last time point
+  #training max progression time is 11.216 and test is 10. something
+  visitsOfInterest = minVisits:30
+  res = foreach(j=visitsOfInterest, .packages = c("splines", "JMbayes", "coda"),
+                .export=c("timesPerSubject", "dynamicCutOffTimes", "simulatedDsList")) %do%{
+                  persTestDs = patientDs_i[patientDs_i$visitNumber <= j,]
+                  temp_lasttime = max(persTestDs$visitTimeYears)
+                  nearest_time_index = which(abs(dynamicCutOffTimes-temp_lasttime)==min(abs(dynamicCutOffTimes-temp_lasttime)))
+                  nearest_time_index = nearest_time_index[1]
+                  
+                  survProbYouden = cutoffValues[[nearest_time_index]]["youden"]
+                  survProbMarkedness = cutoffValues[[nearest_time_index]]["markedness"]
+                  survProbAccuracy = cutoffValues[[nearest_time_index]]["accuracy"]
+                  survProbF1Score = cutoffValues[[nearest_time_index]]["f1score"]
+                  survProbmaxTPR = cutoffValues[[nearest_time_index]]["maxTPR"]
+                  survProbmaxTNR = cutoffValues[[nearest_time_index]]["maxTNR"]
+                  survProbmaxFPR = cutoffValues[[nearest_time_index]]["maxFPR"]
+                  survProbmaxFNR = cutoffValues[[nearest_time_index]]["maxFNR"]
+                  survProbMaxNPV = cutoffValues[[nearest_time_index]]["maxNPV"]
+                  survProbMCC = cutoffValues[[nearest_time_index]]["mcc"]
+                  survProb90 = 0.9
+                  survProb80 = 0.8
+                  
+                  list(survProbYouden, survProbMarkedness, survProbAccuracy, 
+                       survProbF1Score, survProbmaxTPR, survProbmaxTNR, survProbmaxFPR, 
+                       survProbmaxFNR, survProbMaxNPV, survProbMCC, survProb90, survProb80)
+                }
+  
+  patientDs_i$survProbYouden[visitsOfInterest] = sapply(res, function(x){x[[1]]}, simplify = T)
+  patientDs_i$survProbMarkedness[visitsOfInterest] = sapply(res, function(x){x[[2]]}, simplify = T)
+  patientDs_i$survProbAccuracy[visitsOfInterest] = sapply(res, function(x){x[[3]]}, simplify = T)
+  patientDs_i$survProbF1Score[visitsOfInterest] = sapply(res, function(x){x[[4]]}, simplify = T)
+  
+  patientDs_i$survProbmaxTPR[visitsOfInterest] = sapply(res, function(x){x[[5]]}, simplify = T)
+  patientDs_i$survProbmaxTNR[visitsOfInterest] = sapply(res, function(x){x[[6]]}, simplify = T)
+  patientDs_i$survProbmaxFPR[visitsOfInterest] = sapply(res, function(x){x[[7]]}, simplify = T)
+  patientDs_i$survProbmaxFNR[visitsOfInterest] = sapply(res, function(x){x[[8]]}, simplify = T)
+  
+  patientDs_i$survProbMaxNPV[visitsOfInterest] = sapply(res, function(x){x[[9]]}, simplify = T)
+  patientDs_i$survProbMCC[visitsOfInterest] = sapply(res, function(x){x[[10]]}, simplify = T)
+  patientDs_i$survProb90[visitsOfInterest] = sapply(res, function(x){x[[11]]}, simplify = T)
+  patientDs_i$survProb80[visitsOfInterest] = sapply(res, function(x){x[[12]]}, simplify = T)
+  
+  return(patientDs_i)
+}
 
-# 
-# #Store original results as they are
-# orig_res = res
-# 
-# ###########################################################
-# #Approach #1 do biopsy as given by the estimates from the above model
-# ############################################################
-# approach1res = foreach(i=1:length(res), .combine = "rbind")%do%{
-#   trueProgressionTime = testDs.id[i,]$progression_time
-#   
-#   biopsy_times = res[[i]][[2]]
-#   #Expected value
-#   nb1 = which(biopsy_times$expectedFailureTime >= trueProgressionTime)[1]
-#   nb2 = which(biopsy_times$survTimeYouden >= trueProgressionTime)[1]
-#   nb3 = which(biopsy_times$survTimeMarkedness >= trueProgressionTime)[1]
-#   
-#   biopsytimeOffset1 = biopsytimeOffset2 = biopsytimeOffset3 = NA
-#   
-#   if(!is.na(nb1)){
-#     biopsytimeOffset1 = biopsy_times$expectedFailureTime[nb1] - trueProgressionTime
-#   }
-#   
-#   if(!is.na(nb2)){
-#     biopsytimeOffset2 = biopsy_times$survTimeYouden[nb2] - trueProgressionTime
-#   }
-#   
-#   if(!is.na(nb3)){
-#     biopsytimeOffset3 = biopsy_times$survTimeMarkedness[nb2] - trueProgressionTime
-#   }
-#   
-#   c(nb1, nb2, nb3, biopsytimeOffset1, biopsytimeOffset2, biopsytimeOffset3)
-# }
-# 
-# #############################################################
-# #Approach #2 do biopsy if the failure time is less than an year then do biopsy at that proposed time
-# ############################################################
-
-summarizeBiopsyResults =  function(dsId, patientRowNum, methodName = "expectedFailureTime", biopsyEvery3Years = F){
+summarizeBiopsyResults =  function(dsId, patientRowNum, biopsyIfLessThanTime=1, 
+                                   methodName = "expectedFailureTime", biopsyEvery3Years = F){
   trueProgressionTime = simulatedDsList[[dsId]]$testDs.id[patientRowNum,]$progression_time
      
   visitTimeYears = simulatedDsList[[dsId]]$biopsyTimes[[patientRowNum]]$visitTimeYears
@@ -198,7 +220,7 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, methodName = "expectedFa
     
     biopsy_gap_needed = (curVisitTime - lastBiopsyTime) < 1
     
-    condition1 = !is.na(predBiopsyTime) & ((predBiopsyTime - curVisitTime) <= 1)
+    condition1 = !is.na(predBiopsyTime) & ((predBiopsyTime - curVisitTime) <= biopsyIfLessThanTime)
     condition2 = biopsyEvery3Years & !is.na(predBiopsyTime) & ((predBiopsyTime - lastBiopsyTime) >= 3)
     if(biopsy_gap_needed==FALSE & (condition1 | condition2)){
       biopsyTimesOfInterest = biopsyTimes[visitTimeYears >= curVisitTime & visitTimeYears<=predBiopsyTime]
@@ -217,19 +239,20 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, methodName = "expectedFa
   return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
 }
 
-getBiopsyResults = function(dsId, methodNames = c("expectedFailureTime", "survTime90", "survTime80", 
-                                                  "survTimeYouden", "survTimeMarkedness", "survTimeMaxSens", "survTimeMaxNPV")){
+getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, methodNames = c("expectedFailureTime", "survTime90", "survTime80", 
+                                                  "survTimeYouden", "survTimeMarkedness", "survTimemaxTPR", "survTimeMaxNPV", 
+                                                  "survTimeAccuracy", "survTimeF1Score")){
   subjectCount = length(simulatedDsList[[dsId]]$biopsyTimes)
   
   biopsyResults = data.frame(patientRowNum = numeric(), nb = numeric(), biopsyTimeOffset = numeric(), methodName=factor(levels = methodNames))
   for(methodName in methodNames){
-    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName)  
+    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, biopsyIfLessThanTime=biopsyIfLessThanTime)  
     biopsyResults = rbind(biopsyResults, data.frame(t(summary), methodName = rep(methodName,ncol(summary))))
   }
   
   for(methodName in methodNames){
     extMethodName = paste(methodName, 3, sep="")
-    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, biopsyEvery3Years = T)
+    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, biopsyIfLessThanTime=biopsyIfLessThanTime, biopsyEvery3Years = T)
     biopsyResults = rbind(biopsyResults, data.frame(t(summary), methodName = rep(extMethodName,ncol(summary))))
   }
   
@@ -247,6 +270,14 @@ getBiopsyResults = function(dsId, methodNames = c("expectedFailureTime", "survTi
     }
   })
   biopsyResults = rbind(biopsyResults, data.frame(t(fixedSummary), methodName = rep("fixed",ncol(summary))))
+  
+  #Johns hopkins schedule
+  johnsHopkinsSummary =  sapply(1:subjectCount, function(patientRowNum){
+    progressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
+    detectionTime = ceiling(progressionTime)
+    return(c(patientRowNum = patientRowNum, nb = detectionTime-1, biopsyTimeOffset = detectionTime-progressionTime))
+  })
+  biopsyResults = rbind(biopsyResults, data.frame(t(johnsHopkinsSummary), methodName = rep("johnsSummary",ncol(summary))))
   
   biopsyResults
 }

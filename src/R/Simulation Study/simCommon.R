@@ -108,8 +108,6 @@ pSurvTime = function(survProb, dsId, patientId){
   Up <- 15
   tries  = 0
   
-  uniroot(invSurvival, interval = c(Low, Up), 
-          u = survProb, dsId, patientId)$root
   repeat{
     tries = tries + 1
     Root <- try(uniroot(invSurvival, interval = c(Low, Up), 
@@ -119,7 +117,7 @@ pSurvTime = function(survProb, dsId, patientId){
       if(tries >= 5){
         return(NA)
       }else{
-        Up = Up + 0.5    
+        Up = Up + 1    
       }
     }else{
       return(Root)
@@ -154,11 +152,11 @@ expectedCondFailureTime = function(dsId, patientDs, upperLimitIntegral = 15){
 }
 
 generateLongtiudinalTimeBySchedule = function(){
-  # months = c(0:24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 
-  #            90, 96, 102, 108, 114, 120)
+  #months = c(seq(0,24, 1), 30, 36 , 42, 48, 54, 60, 66, 72, 78, 84,
+  #           90, 96, 102, 108, 114, 120)
   
-  months = c(0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 
-             90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180)
+  months = c(0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84,
+              90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180)
   
   return(months/12)
 }
@@ -244,16 +242,13 @@ generateSimJointData = function(dsId, nSub){
   simulatedDsList[[dsId]]$simDs.id$progression_time <- NA
   
   simulatedDsList[[dsId]]$simDs.id$progression_time = sapply(1:nSub, function(i){
-                                        tryCatch({pSurvTime(u[i], dsId, i)}, error=function(e) e)
+                                        pSurvTime(u[i], dsId, i)
                                       })
   percentageRejected = sum(is.na(simulatedDsList[[dsId]]$simDs.id$progression_time[1:nSub]))/nSub
   
-  failureTimeCompDs = data.frame(failuretime = c(simulatedDsList[[dsId]]$simDs.id$progression_time, 
-                                                 prias.id$progression_time[prias.id$progressed==1]),
-                                 type = c(rep("Sim",nrow(simulatedDsList[[dsId]]$simDs.id)), 
-                                          rep("Obs", length(prias.id$progression_time[prias.id$progressed==1]))))
-  
-  #ggplot(data = failureTimeCompDs) + geom_density(aes(x=failuretime, color=type, fill=type), alpha=0.3)
+  if(percentageRejected > 0.2){
+    stop("Too many NA's sampled")
+  }
   
   pid_to_keep = simulatedDsList[[dsId]]$simDs.id[!is.na(simulatedDsList[[dsId]]$simDs.id$progression_time),]$P_ID
   
@@ -269,7 +264,7 @@ generateSimJointData = function(dsId, nSub){
   #Divide into training and test
   trainingSize = round(nrow(simulatedDsList[[dsId]]$simDs.id)*0.75)
   trainingDs.id = simulatedDsList[[dsId]]$simDs.id[1:trainingSize, ]
-  testDs.id = simulatedDsList[[dsId]]$simDs.id[(trainingSize+1):nSub,]
+  testDs.id = simulatedDsList[[dsId]]$simDs.id[(trainingSize+1):nrow(simulatedDsList[[dsId]]$simDs.id),]
   trainingDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% trainingDs.id$P_ID, ]
   testDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% testDs.id$P_ID, ]
   
@@ -277,7 +272,7 @@ generateSimJointData = function(dsId, nSub){
   # and calculate the observed event times, i.e., min(true event times, censoring times)
   
   #Ctimes <- rexp(trainingSize, 1/mean(prias.id[prias.id$progressed==0,]$progression_time))
-  Ctimes<-runif(trainingSize, 5, 25)
+  Ctimes<-runif(trainingSize, 3, 15)
   
   trainingDs.id$progressed = trainingDs.id$progression_time <= Ctimes
   trainingDs.id$progression_time = pmin(trainingDs.id$progression_time, Ctimes)
