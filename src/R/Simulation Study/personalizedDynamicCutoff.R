@@ -116,21 +116,19 @@ computeBiopsyTimes = function(minVisits = 5, dsId, patientRowNum){
                       survTimeYouden = pDynSurvTime(survProb = cutoffValues[[nearest_time_index]]["youden"], dsId, persTestDs)
                       survTimeAccuracy = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["accuracy"], dsId, persTestDs)
                       survTimeMaxTPR = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["maxTPR"], dsId, persTestDs)
-                      survTimeMinFPR = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["minFPR"], dsId, persTestDs)
                       survTimeF1Score = pDynSurvTime(survProb =  cutoffValues[[nearest_time_index]]["f1score"], dsId, persTestDs)
                       survTime85 = pDynSurvTime(survProb = 0.85, dsId, persTestDs)
                       
                       list(expectedFailureTime, survTimeYouden, survTimeAccuracy, 
-                           survTimeMaxTPR, survTimeMinFPR, survTimeF1Score, survTime85)
+                           survTimeMaxTPR, survTimeF1Score, survTime85)
                     }
   
   patientDs_i$expectedFailureTime[visitsOfInterest] = sapply(res, function(x){x[[1]]}, simplify = T)
   patientDs_i$survTimeYouden[visitsOfInterest] = sapply(res, function(x){x[[2]]}, simplify = T)
   patientDs_i$survTimeAccuracy[visitsOfInterest] = sapply(res, function(x){x[[3]]}, simplify = T)
   patientDs_i$survTimeMaxTPR[visitsOfInterest] = sapply(res, function(x){x[[4]]}, simplify = T)
-  patientDs_i$survTimeMinFPR[visitsOfInterest] = sapply(res, function(x){x[[5]]}, simplify = T)
-  patientDs_i$survTimeF1Score[visitsOfInterest] = sapply(res, function(x){x[[6]]}, simplify = T)
-  patientDs_i$survTime85[visitsOfInterest] = sapply(res, function(x){x[[7]]}, simplify = T)
+  patientDs_i$survTimeF1Score[visitsOfInterest] = sapply(res, function(x){x[[5]]}, simplify = T)
+  patientDs_i$survTime85[visitsOfInterest] = sapply(res, function(x){x[[6]]}, simplify = T)
   
   return(patientDs_i)
 }
@@ -202,7 +200,7 @@ computeBiopsyProbs = function(minVisits = 5, dsId, patientRowNum){
   return(patientDs_i)
 }
 
-summarizeBiopsyResults =  function(dsId, patientRowNum, biopsyIfLessThanTime=1, 
+summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1, 
                                    methodName = "expectedFailureTime", biopsyEvery3Years = F){
   trueProgressionTime = simulatedDsList[[dsId]]$testDs.id[patientRowNum,]$progression_time
      
@@ -239,20 +237,19 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, biopsyIfLessThanTime=1,
   return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
 }
 
-getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, methodNames = c("expectedFailureTime", "survTime90", "survTime80", 
-                                                  "survTimeYouden", "survTimeMarkedness", "survTimemaxTPR", "survTimeMaxNPV", 
-                                                  "survTimeAccuracy", "survTimeF1Score")){
+getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, minVisits, methodNames = c("expectedFailureTime", "survTime85",
+                                                  "survTimeYouden", "survTimeAccuracy", "survTimeMaxTPR", "survTimeF1Score")){
   subjectCount = length(simulatedDsList[[dsId]]$biopsyTimes)
   
   biopsyResults = data.frame(patientRowNum = numeric(), nb = numeric(), biopsyTimeOffset = numeric(), methodName=factor(levels = methodNames))
   for(methodName in methodNames){
-    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, biopsyIfLessThanTime=biopsyIfLessThanTime)  
+    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, minVisits = minVisits, biopsyIfLessThanTime=biopsyIfLessThanTime)  
     biopsyResults = rbind(biopsyResults, data.frame(t(summary), methodName = rep(methodName,ncol(summary))))
   }
   
   for(methodName in methodNames){
     extMethodName = paste(methodName, 3, sep="")
-    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, biopsyIfLessThanTime=biopsyIfLessThanTime, biopsyEvery3Years = T)
+    summary = sapply(1:subjectCount, summarizeBiopsyResults, dsId = dsId, methodName = methodName, minVisits = minVisits, biopsyIfLessThanTime=biopsyIfLessThanTime, biopsyEvery3Years = T)
     biopsyResults = rbind(biopsyResults, data.frame(t(summary), methodName = rep(extMethodName,ncol(summary))))
   }
   
@@ -267,9 +264,11 @@ getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, methodNames = c("exp
       return(c(patientRowNum = patientRowNum, nb = 3, biopsyTimeOffset = 10-progressionTime))
     }else if(progressionTime<=15){
       return(c(patientRowNum = patientRowNum, nb = 4, biopsyTimeOffset = 15-progressionTime))
+    }else if(progressionTime<=20){
+      return(c(patientRowNum = patientRowNum, nb = 5, biopsyTimeOffset = 20-progressionTime))
     }
-  })
-  biopsyResults = rbind(biopsyResults, data.frame(t(fixedSummary), methodName = rep("fixed",ncol(summary))))
+  }, simplify = T)
+  biopsyResults = rbind(biopsyResults, data.frame(t(fixedSummary), methodName = rep("fixed",ncol(fixedSummary))))
   
   #Johns hopkins schedule
   johnsHopkinsSummary =  sapply(1:subjectCount, function(patientRowNum){
@@ -277,7 +276,7 @@ getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, methodNames = c("exp
     detectionTime = ceiling(progressionTime)
     return(c(patientRowNum = patientRowNum, nb = detectionTime-1, biopsyTimeOffset = detectionTime-progressionTime))
   })
-  biopsyResults = rbind(biopsyResults, data.frame(t(johnsHopkinsSummary), methodName = rep("johnsSummary",ncol(summary))))
+  biopsyResults = rbind(biopsyResults, data.frame(t(johnsHopkinsSummary), methodName = rep("johnsSummary",ncol(johnsHopkinsSummary))))
   
   biopsyResults
 }

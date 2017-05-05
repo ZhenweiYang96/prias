@@ -8,17 +8,17 @@ source("src/R/Simulation Study/simCommon.R")
 source("src/R/Simulation Study/personalizedDynamicCutoff.R")
 source("src/R/Simulation Study/rocJM_mod.R")
 
-nDataSets = 1
+nDataSets = 10
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
 
 #2.2 and 6
-weibullScales = rep(10, nDataSets)
-weibullShapes = rep(7, nDataSets)
+weibullScales = rep(6, nDataSets)
+weibullShapes = rep(1.5, nDataSets)
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 2000
+lastSeed = 3000
 for(i in 1:nDataSets){
   lastSeed = getNextSeed(lastSeed)
   repeat{
@@ -56,13 +56,12 @@ for(i in 1:nDataSets){
   simulatedDsList[[i]]$rocList = computeRoc(i)
   simulatedDsList[[i]]$cutoffValues = computeCutOffValues(i)
 
-  
   tStart = Sys.time()
-  
+
   ct= makeCluster(4)
   registerDoParallel(ct)
   simulatedDsList[[i]]$biopsyTimes = vector("list", nrow(simulatedDsList[[i]]$testDs.id))
-  for(patientRowNum in 1:nrow(simulatedDsList[[i]]$testDs.id)){
+  for(patientRowNum in 1:length(simulatedDsList[[i]]$biopsyTimes)){
     simulatedDsList[[i]]$biopsyTimes[[patientRowNum]] = computeBiopsyTimes(minVisits = 1, dsId = i, patientRowNum)
     print(paste("Subject", patientRowNum))
   }
@@ -70,14 +69,14 @@ for(i in 1:nDataSets){
   print(tEnd-tStart)
 
   stopCluster(ct)
-
+   
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh1pt5/simDs",i,".Rdata", sep=""))
 }
 
 #See the results
-biopsyResults = getBiopsyResults(1, biopsyIfLessThanTime = 1)
-biopsyResults = biopsyResults[!biopsyResults$methodName %in% "survTimeMaxNPV",]
+biopsyResults = getBiopsyResults(1, biopsyIfLessThanTime = 1, minVisits = 1)
+biopsyResults = biopsyResults[!biopsyResults$methodName %in% c("survTimeMinFPR", "expectedFailureTime"),]
 incompleteRowNum = unique(biopsyResults[is.na(biopsyResults$biopsyTimeOffset) | biopsyResults$biopsyTimeOffset < 0, ]$patientRowNum)
 biopsyResultsCC = biopsyResults[!(biopsyResults$patientRowNum %in% incompleteRowNum),]
 

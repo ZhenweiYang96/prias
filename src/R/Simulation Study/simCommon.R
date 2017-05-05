@@ -152,7 +152,7 @@ expectedCondFailureTime = function(dsId, patientDs, upperLimitIntegral = 15){
 }
 
 generateLongtiudinalTimeBySchedule = function(){
-  #months = c(seq(0,24, 1), 30, 36 , 42, 48, 54, 60, 66, 72, 78, 84,
+  #months = c(seq(0,24, 1), 27, 30, 33, 36, 39, 42, 48, 54, 60, 66, 72, 78, 84,
   #           90, 96, 102, 108, 114, 120)
   
   months = c(0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84,
