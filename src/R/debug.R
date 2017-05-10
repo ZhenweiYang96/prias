@@ -1,4 +1,3 @@
-
 computeBiopsyTimes_temp = function(minVisits = 5, dsId, patientRowNum){
   
   cutoffValues = simulatedDsList[[dsId]]$cutoffValues
@@ -75,3 +74,228 @@ fitJointModelSimDs = function(trainingDs.id, trainingDs){
        mvglmer_psa_training = mvglmer_psa_training,
        simJointModel_replaced = simJointModel_replaced)
 }
+
+############################
+ct= makeCluster(4)
+registerDoParallel(ct)
+
+testDs = simulatedDsList[[1]]$testDs
+patientDsList = split(testDs, testDs$P_ID)
+
+tStart = Sys.time()
+tradRes = foreach(i=1:50, .packages = c("splines", "JMbayes", "coda"),
+        .export=c("timesPerSubject", "dynamicCutOffTimes",
+                  "expectedCondFailureTime", "dynamicPredProb",
+                  "simulatedDsList", "pDynSurvTime", "invDynSurvival")) %dopar%{
+                    patientDs_i = patientDsList[[i]][1:10,]
+                    
+                    list(expectedCondFailureTime(1, patientDs_i),
+                    pDynSurvTime(survProb = 0.85, 1, patientDs_i),
+                    pDynSurvTime(survProb = 0.93, 1, patientDs_i),
+                    pDynSurvTime(survProb = 0.65, 1, patientDs_i),
+                    pDynSurvTime(survProb = 0.34, 1, patientDs_i),
+                    pDynSurvTime(survProb = 0.45, 1, patientDs_i),
+                    pDynSurvTime(survProb = 0.27, 1, patientDs_i))
+                  }
+
+stopCluster(ct)
+tEnd = Sys.time()
+tEnd-tStart
+
+#######################
+
+ct= makeCluster(4)
+registerDoParallel(ct)
+
+testDs = simulatedDsList[[1]]$testDs
+patientDsList = split(testDs, testDs$P_ID)
+
+tStart = Sys.time()
+forRes = foreach(i=1:50, .packages = c("splines", "JMbayes", "coda"),
+        .export=c("timesPerSubject", "dynamicCutOffTimes",
+                  "expectedCondFailureTime", "dynamicPredProb",
+                  "simulatedDsList", "pDynSurvTime", "invDynSurvival")) %dopar%{
+                    patientDs_i = patientDsList[[i]][1:10,]
+                    
+                    #upperTime = pDynSurvTime(survProb = 0.27, 1, patientDs_i)
+                    
+                    
+                    tt = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                              newdata = patientDs_i, idVar = "P_ID", 
+                              survTimes = seq(max(patientDs_i$visitTimeYears), 15, 0.05))
+                    
+                    times = tt$summaries[[1]][, 1]
+                    probs = tt$summaries[[1]][, 3]
+                    
+                    list(expectedCondFailureTime(1, patientDs_i),
+                    times[which(abs(probs-0.85)==min(abs(probs-0.85)))[1]],
+                    times[which(abs(probs-0.93)==min(abs(probs-0.93)))[1]],
+                    times[which(abs(probs-0.65)==min(abs(probs-0.65)))[1]],
+                    times[which(abs(probs-0.34)==min(abs(probs-0.34)))[1]],
+                    times[which(abs(probs-0.45)==min(abs(probs-0.45)))[1]],
+                    times[which(abs(probs-0.27)==min(abs(probs-0.27)))[1]])
+                  }
+
+stopCluster(ct)
+tEnd = Sys.time()
+
+
+#######################
+
+ct= makeCluster(4)
+registerDoParallel(ct)
+
+testDs = simulatedDsList[[1]]$testDs
+patientDsList = split(testDs, testDs$P_ID)
+
+tStart = Sys.time()
+forAdaptiveRes = foreach(i=1:50, .packages = c("splines", "JMbayes", "coda"),
+                 .export=c("timesPerSubject", "dynamicCutOffTimes",
+                           "expectedCondFailureTime", "dynamicPredProb",
+                           "simulatedDsList", "pDynSurvTime", "invDynSurvival")) %dopar%{
+                             patientDs_i = patientDsList[[i]][1:10,]
+                             lastVisitTime = max(patientDs_i$visitTimeYears)
+                             #upperTime = pDynSurvTime(survProb = 0.27, 1, patientDs_i)
+                             
+                             tt = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                            newdata = patientDs_i, idVar = "P_ID", 
+                                            survTimes = seq(lastVisitTime, 15, 0.05))
+                             
+                             times = tt$summaries[[1]][, 1]
+                             probs = tt$summaries[[1]][, 3]
+                             
+                             expectedFailureTime = lastVisitTime + integrate(function(evalTimes){
+                               unlist(lapply(evalTimes, function(t){
+                                probs[which(abs(times-t)==min(abs(times-t)))[1]]
+                               }))
+                             }, lastVisitTime, 15, abs.tol = 0.1)$value
+                             
+                             list(expectedFailureTime,
+                                  times[which(abs(probs-0.85)==min(abs(probs-0.85)))[1]],
+                                  times[which(abs(probs-0.93)==min(abs(probs-0.93)))[1]],
+                                  times[which(abs(probs-0.65)==min(abs(probs-0.65)))[1]],
+                                  times[which(abs(probs-0.34)==min(abs(probs-0.34)))[1]],
+                                  times[which(abs(probs-0.45)==min(abs(probs-0.45)))[1]],
+                                  times[which(abs(probs-0.27)==min(abs(probs-0.27)))[1]])
+                           }
+
+stopCluster(ct)
+tEnd = Sys.time()
+
+#######################
+ct= makeCluster(4)
+registerDoParallel(ct)
+
+testDs = simulatedDsList[[1]]$testDs
+patientDsList = split(testDs, testDs$P_ID)
+
+tStart = Sys.time()
+forAdaptiveRes2 = foreach(i=1:50, .packages = c("splines", "JMbayes", "coda"),
+                         .export=c("timesPerSubject", "dynamicCutOffTimes",
+                                   "expectedCondFailureTime", "dynamicPredProb",
+                                   "simulatedDsList", "pDynSurvTime", "invDynSurvival")) %dopar%{
+                                     patientDs_i = patientDsList[[i]][1:10,]
+                                     lastVisitTime = max(patientDs_i$visitTimeYears)
+                                     
+                                     round1 = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                                    newdata = patientDs_i, idVar = "P_ID", 
+                                                    survTimes = seq(lastVisitTime, 15, 1))
+                                     
+                                     times = round1$summaries[[1]][, 1]
+                                     probs = round1$summaries[[1]][, 3]
+                                     
+                                     probsOfInterest = c(0.85, 0.93, 0.65, 0.34, 0.45, 0.27)
+                                     newTimes = do.call(c, lapply(probsOfInterest, function(p){
+                                       nearest_time = times[which(abs(probs-p)==min(abs(probs-p)))[1]]  
+                                       seq(nearest_time-1, nearest_time+1, 0.05)
+                                     }))
+                                     
+                                     round2 = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                                        newdata = patientDs_i, idVar = "P_ID", 
+                                                        survTimes = unique(newTimes))
+                                     
+                                     times = round2$summaries[[1]][, 1]
+                                     probs = round2$summaries[[1]][, 3]
+                                     
+                                     list(expectedCondFailureTime(1, patientDs_i),
+                                          times[which(abs(probs-0.85)==min(abs(probs-0.85)))[1]],
+                                          times[which(abs(probs-0.93)==min(abs(probs-0.93)))[1]],
+                                          times[which(abs(probs-0.65)==min(abs(probs-0.65)))[1]],
+                                          times[which(abs(probs-0.34)==min(abs(probs-0.34)))[1]],
+                                          times[which(abs(probs-0.45)==min(abs(probs-0.45)))[1]],
+                                          times[which(abs(probs-0.27)==min(abs(probs-0.27)))[1]])
+                                   }
+
+stopCluster(ct)
+tEnd = Sys.time()
+
+
+
+#######################
+ct= makeCluster(4)
+registerDoParallel(ct)
+
+testDs = simulatedDsList[[1]]$testDs
+patientDsList = split(testDs, testDs$P_ID)
+
+tStart = Sys.time()
+forAdaptiveRes3 = foreach(i=1:50, .packages = c("splines", "JMbayes", "coda"),
+                          .export=c("timesPerSubject", "dynamicCutOffTimes",
+                                    "expectedCondFailureTime", "dynamicPredProb",
+                                    "simulatedDsList", "pDynSurvTime", "invDynSurvival")) %dopar%{
+                                      patientDs_i = patientDsList[[i]][1:10,]
+                                      lastVisitTime = max(patientDs_i$visitTimeYears)
+                                      
+                                      round1 = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                                         newdata = patientDs_i, idVar = "P_ID", 
+                                                         survTimes = seq(lastVisitTime, 15, 1))
+                                      
+                                      times = round1$summaries[[1]][, 1]
+                                      probs = round1$summaries[[1]][, 3]
+                                      
+                                      probsOfInterest = c(0.85, 0.93, 0.65, 0.34, 0.45, 0.27)
+                                      newTimes = do.call(c, lapply(probsOfInterest, function(p){
+                                        nearest_time = times[which(abs(probs-p)==min(abs(probs-p)))[1]]  
+                                        seq(nearest_time-1, nearest_time+1, 0.05)
+                                      }))
+                                      
+                                      round2 = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                                         newdata = patientDs_i, idVar = "P_ID", 
+                                                         survTimes = unique(newTimes))
+                                      
+                                      times = round2$summaries[[1]][, 1]
+                                      probs = round2$summaries[[1]][, 3]
+                                      
+                                      expectedFailureTime = lastVisitTime + integrate(function(evalTimes){
+                                        print(evalTimes)
+                                        survprobs = unlist(lapply(evalTimes, function(t){
+                                          neartime = times[which(abs(times-t)==min(abs(times-t)))[1]]
+                                          print(neartime)
+                                          if(abs(neartime-t) <= 0.05){
+                                            return(probs[neartime])
+                                          }else{
+                                            NA
+                                          }
+                                        }))
+                                        
+                                        naTimes = evalTimes[is.na(survprobs)]
+                                        if(length(naTimes)>0){
+                                          survprobs[is.na(survprobs)] = survfitJM(simulatedDsList[[1]]$models$simJointModel_replaced, 
+                                                    patientDs_i, idVar="P_ID", 
+                                                    survTimes = naTimes)$summaries[[1]][, "Median"]
+                                        }
+                                        
+                                        return(survprobs)
+                                      }, lastVisitTime, 15, abs.tol = 0.1)$value
+                                      
+                                      list(expectedFailureTime,
+                                           times[which(abs(probs-0.85)==min(abs(probs-0.85)))[1]],
+                                           times[which(abs(probs-0.93)==min(abs(probs-0.93)))[1]],
+                                           times[which(abs(probs-0.65)==min(abs(probs-0.65)))[1]],
+                                           times[which(abs(probs-0.34)==min(abs(probs-0.34)))[1]],
+                                           times[which(abs(probs-0.45)==min(abs(probs-0.45)))[1]],
+                                           times[which(abs(probs-0.27)==min(abs(probs-0.27)))[1]])
+                                    }
+
+stopCluster(ct)
+tEnd = Sys.time()

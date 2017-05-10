@@ -1,3 +1,16 @@
+plotBiopsy2DPlot = function(nbSummary, offsetSummary, nbMeasure = "Median", offsetMeasure = "Median"){
+  methodNames = colnames(nbSummary)
+  methodCategory = sapply(methodNames, substr, 1, 10)
+  
+  df = data.frame(nb = nbSummary[nbMeasure,], offset=offsetSummary[offsetMeasure,], 
+                  method=colnames(nbSummary), methodCategory = methodCategory)
+  p = ggplot(data=df, aes(x=nb, y=offset*12, label=method)) + 
+    geom_label(aes(fill = methodCategory), colour = "white", fontface = "bold") + 
+    xlab(paste(nbMeasure,"Number of biopsies")) + ylab(paste(offsetMeasure, "Offset (months)")) + 
+    scale_y_continuous(breaks=seq(0, 100, 1)) + scale_x_continuous(breaks=seq(0, 100, 0.5))
+  print(p)
+}
+
 plotTrueSurvival = function(dsId, patientId){
   
   time = 1:15
@@ -305,15 +318,16 @@ fitJointModelSimDs = function(trainingDs.id, trainingDs){
                                               random=~0 + dns(visitTimeYears, knots=c(0.5), Boundary.knots=c(0, 7)),
                                               indFixed = 4:7, indRandom=2:3, name = "slope"))
   
-  mvJoint_psa_tdval_training=mvJointModelBayes(mvglmer_psa_training, cox_Model_training, timeVar = "visitTimeYears",
-                                               priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
-  
-  mvJoint_psa_tdboth_training <- update(mvJoint_psa_tdval_training, Formulas = forms_psa_training,
-                                        priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
-  # #other way
-  # mvJoint_psa_tdboth_training <- mvJointModelBayes(mvglmer_psa_training, cox_Model_training, timeVar = "visitTimeYears",
-  #                                                  Formulas = forms_psa_training,
-  #                                                  priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
+  # mvJoint_psa_tdval_training=mvJointModelBayes(mvglmer_psa_training, cox_Model_training, timeVar = "visitTimeYears",
+  #                                              priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
+  # 
+  # mvJoint_psa_tdboth_training <- update(mvJoint_psa_tdval_training, Formulas = forms_psa_training,
+  #                                       priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
+  #other way
+  mvJoint_psa_tdval_training = NULL
+  mvJoint_psa_tdboth_training <- mvJointModelBayes(mvglmer_psa_training, cox_Model_training, timeVar = "visitTimeYears",
+                                                   Formulas = forms_psa_training,
+                                                   priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
   
   ###########################################
   #Also fit joint model using the jointModelAPI

@@ -8,18 +8,20 @@ source("src/R/Simulation Study/simCommon.R")
 source("src/R/Simulation Study/personalizedDynamicCutoff.R")
 source("src/R/Simulation Study/rocJM_mod.R")
 
+cores = detectCores()
+
 nDataSets = 10
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
 
 #2.2 and 6
-weibullScales = rep(6, nDataSets)
-weibullShapes = rep(1.5, nDataSets)
+weibullScales = rep(8, nDataSets)
+weibullShapes = rep(4.5, nDataSets)
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 3000
-for(i in 1:nDataSets){
+lastSeed = 3004
+for(i in 4:nDataSets){
   lastSeed = getNextSeed(lastSeed)
   repeat{
     set.seed(lastSeed)
@@ -45,38 +47,62 @@ for(i in 1:nDataSets){
   ggplot(data = failureTimeCompDs) + geom_density(aes(x=failuretime, color=type, fill=type), alpha=0.3)
   
   summary(prias.id$progression_time)
-  summary(simulatedDsList[[1]]$testDs.id$progression_time)
-  summary(simulatedDsList[[1]]$trainingDs.id$progression_time)
+  summary(simulatedDsList[[i]]$testDs.id$progression_time)
+  summary(simulatedDsList[[i]]$trainingDs.id$progression_time)
   simulatedDsList[[i]]$models = fitJointModelSimDs(simulatedDsList[[i]]$trainingDs.id, simulatedDsList[[i]]$trainingDs)
   
   print(summary(simulatedDsList[[i]]$models$mvJoint_psa_tdboth_training))
   
-  simulatedDsList[[i]]$dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[2], max(simulatedDsList[[1]]$trainingDs$progression_time)-0.0001, 0.1)
+  simulatedDsList[[i]]$dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[2], max(simulatedDsList[[i]]$trainingDs$progression_time)-0.0001, 0.1)
   
   simulatedDsList[[i]]$rocList = computeRoc(i)
   simulatedDsList[[i]]$cutoffValues = computeCutOffValues(i)
 
-  tStart = Sys.time()
+  #make new columns
+  #This order should match the order of result from compute biopsy times
+  simulatedDsList[[i]]$testDs$expectedFailureTime = NA
+  simulatedDsList[[i]]$testDs$survTime85 = NA
+  simulatedDsList[[i]]$testDs$survTimeYouden = NA
+  simulatedDsList[[i]]$testDs$survTimeMaxTPR = NA
+  simulatedDsList[[i]]$testDs$survTimeAccuracy = NA
+  simulatedDsList[[i]]$testDs$survTimeF1Score = NA
 
-  ct= makeCluster(4)
+  resultColNumbers = (ncol(simulatedDsList[[i]]$testDs) - 6 + 1):ncol(simulatedDsList[[i]]$testDs)
+
+  ct= makeCluster(cores)
   registerDoParallel(ct)
-  simulatedDsList[[i]]$biopsyTimes = vector("list", nrow(simulatedDsList[[i]]$testDs.id))
-  for(patientRowNum in 1:length(simulatedDsList[[i]]$biopsyTimes)){
-    simulatedDsList[[i]]$biopsyTimes[[patientRowNum]] = computeBiopsyTimes(minVisits = 1, dsId = i, patientRowNum)
-    print(paste("Subject", patientRowNum))
+  
+  tStart = Sys.time()
+  lastPossibleVisit = timesPerSubject - 1
+  
+  for(visitNumber in 1:lastPossibleVisit){
+    biopsyTimesList = computeBiopsyTimes(i, visitNumber)
+    for(j in 1:nrow(simulatedDsList[[i]]$testDs.id)){
+      simulatedDsList[[i]]$testDs[(j-1)*timesPerSubject + visitNumber, resultColNumbers] = biopsyTimesList[[j]]  
+    }
+    print(paste("visitNumber", visitNumber))
   }
+  
+  # simulatedDsList[[i]]$biopsyTimes = vector("list", nrow(simulatedDsList[[i]]$testDs.id))
+  # for(patientRowNum in 1:length(simulatedDsList[[i]]$biopsyTimes)){
+  #   simulatedDsList[[i]]$biopsyTimes[[patientRowNum]] = computeBiopsyTimes(minVisits = 1, dsId = i, patientRowNum)
+  #   print(paste("Subject", patientRowNum))
+  # }
   tEnd = Sys.time()
   print(tEnd-tStart)
 
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh1pt5/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh4pt5/simDs",i,".Rdata", sep=""))
+  
+  #Save RAM
+  simulatedDsList[[i]] = NA
 }
 
 #See the results
-biopsyResults = getBiopsyResults(1, biopsyIfLessThanTime = 1, minVisits = 1)
-biopsyResults = biopsyResults[!biopsyResults$methodName %in% c("survTimeMinFPR", "expectedFailureTime"),]
+biopsyResults = getBiopsyResults(2, biopsyIfLessThanTime = 1, biopsyEveryKYears = 3,  minVisits = 1)
+biopsyResults = biopsyResults[biopsyResults$methodName %in% c("survTime85", "survTimeAccuracy", "survTimeMaxTPR","survTimeYouden","survTimeF1Score" ,"fixed", "johnsSummary"),]
 incompleteRowNum = unique(biopsyResults[is.na(biopsyResults$biopsyTimeOffset) | biopsyResults$biopsyTimeOffset < 0, ]$patientRowNum)
 biopsyResultsCC = biopsyResults[!(biopsyResults$patientRowNum %in% incompleteRowNum),]
 
@@ -97,3 +123,5 @@ write.csv2(offsetSummaryMedianSorted*12, file = "Rdata/Gleason as event/Sim Stud
 
 ggplot(data = biopsyResultsCC) + geom_boxplot(aes(methodName, biopsyTimeOffset*12)) + scale_y_continuous(breaks = 12*seq(0,8, by = 0.25)) +  
   ylab("Biopsy offset (months)")
+
+plotBiopsy2DPlot(nbSummary, offsetSummary)
