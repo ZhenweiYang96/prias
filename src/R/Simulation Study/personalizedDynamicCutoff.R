@@ -14,6 +14,33 @@ computeRoc=function(dsId, Dt = 1){
   return(rocList)
 }
 
+computeRocDataDrivenDt=function(dsId){
+  ct = makeCluster(cores)
+  registerDoParallel(ct)
+  
+  rocList = foreach(tstart = simulatedDsList[[dsId]]$dynamicCutOffTimes, .packages = c("splines", "JMbayes"),
+                    .export=c("simulatedDsList", "rocJM_mod")) %dopar%{
+                      res <- tryCatch({
+                        aucDt1 = aucJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, simulatedDsList[[dsId]]$trainingDs, 
+                                  Tstart=tstart, Dt=1, idVar = "P_ID")$auc
+                        
+                        aucDtpt5 = aucJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, simulatedDsList[[dsId]]$trainingDs, 
+                                       Tstart=tstart, Dt=0.5, idVar = "P_ID")$auc
+                        
+                        Dt = 1
+                        if(aucDt1 < aucDtpt5){
+                          Dt = 0.5
+                        }
+                        
+                        rocJM_mod(simulatedDsList[[dsId]]$models$simJointModel_replaced, simulatedDsList[[dsId]]$trainingDs, 
+                                  Tstart=tstart, Dt=Dt, idVar = "P_ID")
+                      }, error=function(e) NULL)
+                    }
+  stopCluster(ct)
+  return(rocList)
+}
+
+
 computeCutOffValues = function(dsId){
   
   rocList = simulatedDsList[[dsId]]$rocList
@@ -289,7 +316,7 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessT
   nb = 0
   biopsyTimeOffset = NA
   
-  lastBiopsyTime = -Inf
+  lastBiopsyTime = 0
   
   for(j in minVisits:timesPerSubject){
     curVisitTime = visitTimeYears[j]
@@ -340,23 +367,18 @@ getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, biopsyEveryKYears = 
   priasSummary = sapply(1:subjectCount, function(patientRowNum){
     progressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
     
-    nb = 0
-    if(longTimes[minVisits]>=1){
-      nb = -1
-    }
-    
     if(progressionTime<=1){
-      return(c(patientRowNum = patientRowNum, nb = nb+1, biopsyTimeOffset = 1-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 1, biopsyTimeOffset = 1-progressionTime))
     }else if(progressionTime<=4){
-      return(c(patientRowNum = patientRowNum, nb = nb+2, biopsyTimeOffset = 4-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 2, biopsyTimeOffset = 4-progressionTime))
     }else if(progressionTime<=7){
-      return(c(patientRowNum = patientRowNum, nb = nb+3, biopsyTimeOffset = 7-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 3, biopsyTimeOffset = 7-progressionTime))
     }else if(progressionTime<=10){
-      return(c(patientRowNum = patientRowNum, nb = nb+4, biopsyTimeOffset = 10-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 4, biopsyTimeOffset = 10-progressionTime))
     }else if(progressionTime<=15){
-      return(c(patientRowNum = patientRowNum, nb = nb+5, biopsyTimeOffset = 15-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 5, biopsyTimeOffset = 15-progressionTime))
     }else if(progressionTime<=20){
-      return(c(patientRowNum = patientRowNum, nb = nb+6, biopsyTimeOffset = 20-progressionTime))
+      return(c(patientRowNum = patientRowNum, nb = 6, biopsyTimeOffset = 20-progressionTime))
     }
   }, simplify = T)
   biopsyResults = rbind(biopsyResults, data.frame(t(priasSummary), methodName = rep("PRIAS",ncol(priasSummary))))
