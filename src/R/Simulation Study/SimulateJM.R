@@ -20,7 +20,7 @@ weibullScales = rep(6, nDataSets)
 weibullShapes = rep(1.5, nDataSets)
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 3000
+lastSeed = 3005
 for(i in 1:nDataSets){
   lastSeed = getNextSeed(lastSeed)
   repeat{
