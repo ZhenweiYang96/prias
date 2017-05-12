@@ -1,7 +1,0 @@
-"";"expectedFailureTime";"survTime90";"survTime80";"survTimeYouden";"survTimeMarkedness";"expectedFailureTime3";"survTime803";"fixed";"survTime903";"survTimeYouden3";"survTimeMarkedness3";"survTimeMaxNPV";"survTimeMaxNPV3";"survTimeMaxSens";"survTimeMaxSens3"
-"Min.";1;1;1;1;1;1;1;1;1;2;2;1;2;3;3
-"1st Qu.";1;2;1;2;2;1;2;2;2;3;2;3;3,75;5;5
-"Median";1;2;2;2;2;2;2;2;3;3;3;4;4;5;5
-"Mean";1,066;2,288;1,807;2,476;2,09;1,538;2,123;2,311;2,693;3,208;2,745;3,797;4,061;5,255;5,255
-"3rd Qu.";1;3;2;3;2;2;3;3;3;4;3;4;5;6;6
-"Max.";2;4;3;4;4;3;4;3;5;5;4;5;6;7;7

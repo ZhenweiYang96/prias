@@ -40,7 +40,6 @@ computeRocDataDrivenDt=function(dsId){
   return(rocList)
 }
 
-
 computeCutOffValues = function(dsId){
   
   rocList = simulatedDsList[[dsId]]$rocList
@@ -116,6 +115,8 @@ computeBiopsyTimes = function(dsId, visitCount){
   testDs = simulatedDsList[[dsId]]$testDs
   testDs = testDs[testDs$visitNumber<=visitCount,]
   patientDsList = split(testDs, testDs$P_ID)
+  
+  dynamicCutOffTimes = simulatedDsList[[dsId]]$dynamicCutOffTimes
   
   #All patients share the last visit time and cutoff values here. So I randomly choose one of the patients
   lastVisitTime = max(patientDsList[[1]]$visitTimeYears)

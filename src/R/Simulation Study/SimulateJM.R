@@ -16,12 +16,12 @@ getNextSeed = function(lastSeed){
 }
 
 #2.2 and 6
-weibullScales = rep(8, nDataSets)
-weibullShapes = rep(4.5, nDataSets)
+weibullScales = rep(6, nDataSets)
+weibullShapes = rep(1.5, nDataSets)
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 3005
-for(i in 5:nDataSets){
+lastSeed = 3000
+for(i in 1:nDataSets){
   lastSeed = getNextSeed(lastSeed)
   repeat{
     set.seed(lastSeed)
@@ -94,72 +94,8 @@ for(i in 5:nDataSets){
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   simulatedDsList[[i]] = NA
 }
-
-#See the results
-load("Rdata/Gleason as event/Sim Study/sc_6_sh_2pt5/simDs1.Rdata")
-simulatedDsList = temp
-
-biopsyResults = getBiopsyResults(1, biopsyIfLessThanTime = 1, biopsyEveryKYears=c(2,3), 
-                                 minVisits = 5)
-incompleteRowNum = unique(biopsyResults[is.na(biopsyResults$biopsyTimeOffset) | biopsyResults$biopsyTimeOffset < 0, ]$patientRowNum)
-biopsyResultsCC = biopsyResults[!(biopsyResults$patientRowNum %in% incompleteRowNum),]
-biopsyResultsCC$methodCategory = sapply(biopsyResultsCC$methodName, substr, 1, 10)
-biopsyResultsCC$methodTrimmed = sapply(biopsyResultsCC$methodName, function(x){
-  if(as.character(x) == "PRIAS"){
-    return(x)
-  }
-  
-  if(as.character(x) == "johnsSummary"){
-    return(factor("Johns"))
-  }
-  
-  if(substr(as.character(x),1,3)=="exp"){
-    x = as.character(x)
-    return(factor(paste("E(T)-", substr(x,nchar(x)-1,nchar(x)), sep="")))
-  }
-  
-  x = as.character(x)
-  lastPart = substr(x, nchar(x)-6, nchar(x))
-  factor(lastPart)
-})
-  
-methodNames = unique(biopsyResultsCC$methodName)
-
-nbSummary = do.call(cbind, by(data = biopsyResultsCC[, "nb"], INDICES = biopsyResultsCC$methodName, summary))
-offsetSummary = do.call(cbind, by(data = biopsyResultsCC[, "biopsyTimeOffset"], INDICES = biopsyResultsCC$methodName, summary))
-
-#All the summaries to check 
-summary(simulatedDsList[[1]]$models$mvJoint_psa_tdboth_training)$Survival
-
-png(width=640, height=480, filename = paste("images/sim study/sc_6_sh_2pt5/", simulatedDsList[[1]]$seed, "/progression_hist.png", sep=""))
-ggplot(data=simulatedDsList[[1]]$testDs.id) + geom_histogram(aes(progression_time)) + 
-  xlab("Progression Time (years)")
-dev.off()
-
-png(width=1280, height=960, filename = paste("images/sim study/sc_6_sh_2pt5/", simulatedDsList[[1]]$seed, "/boxplot_offset.png", sep=""))
-ggplot(data = biopsyResultsCC) + 
-  geom_boxplot(aes( reorder(methodTrimmed, biopsyTimeOffset, FUN=median), biopsyTimeOffset*12, fill=methodCategory)) + 
-  scale_y_continuous(breaks = 12*seq(0,20, by = 0.25)) +  
-  ylab("Biopsy offset (months)") + xlab("Method")
-dev.off()
-
-png(width=1280, height=960, filename = paste("images/sim study/sc_6_sh_2pt5/", simulatedDsList[[1]]$seed, "/boxplot_nb.png", sep=""))
-ggplot(data = biopsyResultsCC) + 
-  geom_boxplot(aes( reorder(methodTrimmed, nb, FUN=median), nb, fill=methodCategory)) + 
-  scale_y_continuous(breaks = seq(0,20, by = 1)) +  
-  ylab("Number of biopsies") + xlab("Method")
-dev.off()
-
-png(width=1280, height=960, filename = paste("images/sim study/sc_6_sh_2pt5/", simulatedDsList[[1]]$seed, "/nbVsOffset_median_minVisit_1_Dt_1.png", sep=""))
-plotBiopsy2DPlot(nbSummary, offsetSummary)
-dev.off()
-
-png(width=1280, height=960, filename = paste("images/sim study/sc_6_sh_2pt5/", simulatedDsList[[1]]$seed, "/nbVsOffset_mean_minVisit_1_Dt_1.png", sep=""))
-plotBiopsy2DPlot(nbSummary, offsetSummary, "Mean", "Mean")
-dev.off()
-
