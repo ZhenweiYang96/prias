@@ -11,6 +11,21 @@ plotBiopsy2DPlot = function(nbSummary, offsetSummary, nbMeasure = "Median", offs
   print(p)
 }
 
+plot2DBoxPlot = function(nbSummary, offsetSummary){
+  methodNames = colnames(nbSummary)
+  methodCategory = sapply(methodNames, substr, 1, 10)
+  
+  df = data.frame(nb_x1 = nbSummary["1st Qu.",], nb_x2 = nbSummary["3rd Qu.",],
+                  offset_y1 = offsetSummary["1st Qu.",], offset_y2 = offsetSummary["3rd Qu.",],
+                  method=colnames(nbSummary), methodCategory = methodCategory)
+  
+  p = ggplot(data=df) + 
+    geom_rect(mapping=aes(xmin=nb_x1, xmax=nb_x2, ymin=offset_y1*12, ymax=offset_y2*12, fill=methodCategory), color="black", alpha=0.5) +
+    xlab("Number of biopsies") + ylab("Offset (months)")
+    
+  print(p)
+}
+
 plotTrueSurvival = function(dsId, patientId){
   
   time = 1:15
@@ -153,14 +168,16 @@ rLogPSA1 =  function(dsId, patientId, time){
   sapply(xBetaZb_s_value, rnorm, n=1, sigma.y)
 }
 
-dynamicPredProb = function(futureTimes, dsId, patientDs){
-  temp = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, idVar="P_ID", survTimes = futureTimes)$summaries[[1]][, "Median"]
+dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
+  temp = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+                   idVar="P_ID", last.time=last.time, 
+                   survTimes = futureTimes)$summaries[[1]][, "Median"]
   return(temp)
 }
 
-expectedCondFailureTime = function(dsId, patientDs, upperLimitIntegral = 15){
-  lastVisitTime = max(patientDs$visitTimeYears)
-  lastVisitTime + integrate(dynamicPredProb, lastVisitTime, upperLimitIntegral, dsId, patientDs, 
+expectedCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
+  last.time + integrate(dynamicPredProb, last.time, upperLimitIntegral, dsId, patientDs, 
+                            last.time = last.time,
                             abs.tol = 0.1)$value
 }
 

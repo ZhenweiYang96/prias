@@ -10,17 +10,17 @@ source("src/R/Simulation Study/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 10
+nDataSets = 3
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
 
 #2.2 and 6
-weibullScales = rep(6, nDataSets)
-weibullShapes = rep(1.5, nDataSets)
+weibullScales = rep(8, nDataSets)
+weibullShapes = rep(4.5, nDataSets)
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 3005
+lastSeed = 3000
 for(i in 1:nDataSets){
   lastSeed = getNextSeed(lastSeed)
   repeat{
@@ -94,7 +94,7 @@ for(i in 1:nDataSets){
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   simulatedDsList[[i]] = NA

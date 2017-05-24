@@ -1,4 +1,47 @@
-summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1, 
+summarizeMethod1 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1,
+                                   methodName = "expectedFailureTime", biopsyEveryKYears = NA){
+  trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
+
+  patientId = simulatedDsList[[dsId]]$testDs.id$P_ID[patientRowNum]
+
+  patientDs_i = simulatedDsList[[dsId]]$testDs[simulatedDsList[[dsId]]$testDs$P_ID == patientId,]
+
+  visitTimeYears = patientDs_i$visitTimeYears
+  biopsyTimes = patientDs_i[, methodName]
+
+  nb = 0
+  biopsyTimeOffset = NA
+
+  lastBiopsyTime = 0
+
+  for(j in minVisits:timesPerSubject){
+    curVisitTime = visitTimeYears[j]
+    predBiopsyTime = biopsyTimes[j]
+
+    biopsy_gap_needed = (curVisitTime - lastBiopsyTime) < 1
+
+    condition1 = !is.na(predBiopsyTime) & ((predBiopsyTime - curVisitTime) <= biopsyIfLessThanTime)
+    condition2 = !is.na(biopsyEveryKYears) & !is.na(predBiopsyTime) & ((predBiopsyTime - lastBiopsyTime) >= biopsyEveryKYears)
+    if(biopsy_gap_needed==FALSE & (condition1 | condition2)){
+      biopsyTimesOfInterest = biopsyTimes[visitTimeYears >= curVisitTime & visitTimeYears<=predBiopsyTime]
+      biopsyIndexOfInterest = which.min(biopsyTimesOfInterest) - 1 + j
+
+      nb = nb + 1
+      biopsyTimeOffset = biopsyTimes[biopsyIndexOfInterest] - trueProgressionTime
+      lastBiopsyTime = biopsyTimes[biopsyIndexOfInterest]
+
+      if(biopsyTimeOffset >= 0){
+        break
+      }
+    }
+  }
+
+  return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
+}
+
+#Method 2:
+#Do biopsy at the scheduled time if the last biopsy was more than an year ago
+summarizeMethod2_1 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1, 
                                    methodName = "expectedFailureTime", biopsyEveryKYears = NA){
   trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
   
@@ -13,34 +56,65 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessT
   biopsyTimeOffset = NA
   
   lastBiopsyTime = 0
+  proposedBiopsyTime = Inf
+  enforcedBiopsyTime = Inf
   
   for(j in minVisits:timesPerSubject){
     curVisitTime = visitTimeYears[j]
-    predBiopsyTime = biopsyTimes[j]
+    proposedBiopsyTime = biopsyTimes[j]
     
-    biopsy_gap_needed = (curVisitTime - lastBiopsyTime) < 1
-    
-    condition1 = !is.na(predBiopsyTime) & ((predBiopsyTime - curVisitTime) <= biopsyIfLessThanTime)
-    condition2 = !is.na(biopsyEveryKYears) & !is.na(predBiopsyTime) & ((predBiopsyTime - lastBiopsyTime) >= biopsyEveryKYears)
-    if(biopsy_gap_needed==FALSE & (condition1 | condition2)){
-      biopsyTimesOfInterest = biopsyTimes[visitTimeYears >= curVisitTime & visitTimeYears<=predBiopsyTime]
-      biopsyIndexOfInterest = which.min(biopsyTimesOfInterest) - 1 + j
-      
+    #Account for the biopsy that needed to be done
+    if(curVisitTime > enforcedBiopsyTime){
+      lastBiopsyTime = enforcedBiopsyTime
       nb = nb + 1
-      biopsyTimeOffset = biopsyTimes[biopsyIndexOfInterest] - trueProgressionTime
-      lastBiopsyTime = biopsyTimes[biopsyIndexOfInterest]
-      
-      if(biopsyTimeOffset >= 0){
-        break
+      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+      enforcedBiopsyTime = Inf
+    }
+    
+    if(!is.na(biopsyTimeOffset) & biopsyTimeOffset > 0){
+      break
+    }
+    
+    #If the K years have passed since last biopsy
+    if(!is.na(biopsyEveryKYears)){
+      if((curVisitTime - lastBiopsyTime) >= biopsyEveryKYears){
+        enforcedBiopsyTime = curVisitTime
       }
     }
+    
+    #Now deal with the proposed biopsy time
+    if(!is.na(proposedBiopsyTime)){
+      if(proposedBiopsyTime < enforcedBiopsyTime){
+        # if((proposedBiopsyTime - lastBiopsyTime) <= 1){
+        #   enforcedBiopsyTime = lastBiopsyTime + 1
+        # }else if(proposedBiopsyTime - curVisitTime <= 1){
+        #   enforcedBiopsyTime = proposedBiopsyTime
+        # }
+        
+        if((proposedBiopsyTime - lastBiopsyTime) > 1){
+          enforcedBiopsyTime = proposedBiopsyTime
+        }else{
+          enforcedBiopsyTime = lastBiopsyTime + 1
+        }
+        
+        #you can try removing the else condition
+      }
+    }
+  }
+  
+  if(enforcedBiopsyTime < Inf){
+    nb = nb + 1
+    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
   }
   
   return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
 }
 
-summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1, 
-                                   methodName = "expectedFailureTime", biopsyEveryKYears = NA){
+
+#Method 2:
+#Do biopsy at the scheduled time if the last biopsy was more than an year ago
+summarizeMethod2_2 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1, 
+                             methodName = "expectedFailureTime", biopsyEveryKYears = NA){
   trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
   
   patientId = simulatedDsList[[dsId]]$testDs.id$P_ID[patientRowNum]
@@ -104,6 +178,199 @@ summarizeBiopsyResults =  function(dsId, patientRowNum, minVisits, biopsyIfLessT
   return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
 }
 
+#Method 3:
+#If the scheduled biopsy is within an year since last biopsy then do a biopsy next year
+#If the scheduled biopsy is within an year from the current visit time then enforce a biopsy at that time
+summarizeMethod3_1 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1,
+                                   methodName = "expectedFailureTime", biopsyEveryKYears = NA){
+  trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
+
+  patientId = simulatedDsList[[dsId]]$testDs.id$P_ID[patientRowNum]
+
+  patientDs_i = simulatedDsList[[dsId]]$testDs[simulatedDsList[[dsId]]$testDs$P_ID == patientId,]
+
+  visitTimeYears = patientDs_i$visitTimeYears
+  biopsyTimes = patientDs_i[, methodName]
+
+  nb = 0
+  biopsyTimeOffset = NA
+
+  lastBiopsyTime = 0
+  proposedBiopsyTime = Inf
+  enforcedBiopsyTime = Inf
+
+  for(j in minVisits:timesPerSubject){
+    curVisitTime = visitTimeYears[j]
+    proposedBiopsyTime = biopsyTimes[j]
+
+    #Account for the biopsy that needed to be done
+    if(curVisitTime > enforcedBiopsyTime){
+      lastBiopsyTime = enforcedBiopsyTime
+      nb = nb + 1
+      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+      enforcedBiopsyTime = Inf
+    }
+
+    if(!is.na(biopsyTimeOffset) & biopsyTimeOffset > 0){
+      break
+    }
+
+    #If the K years have passed since last biopsy
+    if(!is.na(biopsyEveryKYears)){
+      if((curVisitTime - lastBiopsyTime) >= biopsyEveryKYears){
+        enforcedBiopsyTime = curVisitTime
+      }
+    }
+
+    #Now deal with the proposed biopsy time
+    if(!is.na(proposedBiopsyTime)){
+      if(proposedBiopsyTime < enforcedBiopsyTime){
+        if((proposedBiopsyTime - lastBiopsyTime) <= 1){
+          enforcedBiopsyTime = lastBiopsyTime + 1
+        }else if(proposedBiopsyTime - curVisitTime <= 1){
+          enforcedBiopsyTime = proposedBiopsyTime
+        }
+      }
+    }
+  }
+
+  if(enforcedBiopsyTime < Inf){
+    nb = nb + 1
+    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+  }
+
+  return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
+}
+
+#Method 4:
+#If the scheduled biopsy is within an year since last biopsy then do nothing
+#If the scheduled biopsy is within an year from the current visit time then enforce a biopsy at that time
+summarizeMethod3_2 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1,
+                                   methodName = "expectedFailureTime", biopsyEveryKYears = NA){
+  trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
+
+  patientId = simulatedDsList[[dsId]]$testDs.id$P_ID[patientRowNum]
+
+  patientDs_i = simulatedDsList[[dsId]]$testDs[simulatedDsList[[dsId]]$testDs$P_ID == patientId,]
+
+  visitTimeYears = patientDs_i$visitTimeYears
+  biopsyTimes = patientDs_i[, methodName]
+
+  nb = 0
+  biopsyTimeOffset = NA
+
+  lastBiopsyTime = 0
+  proposedBiopsyTime = Inf
+  enforcedBiopsyTime = Inf
+
+  for(j in minVisits:timesPerSubject){
+    curVisitTime = visitTimeYears[j]
+    proposedBiopsyTime = biopsyTimes[j]
+
+    #Account for the biopsy that needed to be done
+    if(curVisitTime > enforcedBiopsyTime){
+      lastBiopsyTime = enforcedBiopsyTime
+      nb = nb + 1
+      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+      enforcedBiopsyTime = Inf
+    }
+
+    if(!is.na(biopsyTimeOffset) & biopsyTimeOffset > 0){
+      break
+    }
+
+    #If the K years have passed since last biopsy
+    if(!is.na(biopsyEveryKYears)){
+      if((curVisitTime - lastBiopsyTime) >= biopsyEveryKYears){
+        enforcedBiopsyTime = curVisitTime
+      }
+    }
+
+    #Now deal with the proposed biopsy time
+    if(!is.na(proposedBiopsyTime)){
+      if(proposedBiopsyTime < enforcedBiopsyTime){
+        if((proposedBiopsyTime - lastBiopsyTime) <= 1){
+          #DO NOTHING
+        }else if(proposedBiopsyTime - curVisitTime <= 1){
+          enforcedBiopsyTime = proposedBiopsyTime
+        }
+      }
+    }
+  }
+
+  if(enforcedBiopsyTime < Inf){
+    nb = nb + 1
+    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+  }
+
+  return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
+}
+
+
+#Method 5:
+#If the curVisit time is within an year since last biopsy then do nothing
+#If the scheduled biopsy is within an year from the current visit time then enforce a biopsy at that time
+summarizeMethod4 =  function(dsId, patientRowNum, minVisits, biopsyIfLessThanTime=1,
+                                   methodName = "expectedFailureTime", biopsyEveryKYears = NA){
+  trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
+
+  patientId = simulatedDsList[[dsId]]$testDs.id$P_ID[patientRowNum]
+
+  patientDs_i = simulatedDsList[[dsId]]$testDs[simulatedDsList[[dsId]]$testDs$P_ID == patientId,]
+
+  visitTimeYears = patientDs_i$visitTimeYears
+  biopsyTimes = patientDs_i[, methodName]
+
+  nb = 0
+  biopsyTimeOffset = NA
+
+  lastBiopsyTime = 0
+  proposedBiopsyTime = Inf
+  enforcedBiopsyTime = Inf
+
+  for(j in minVisits:timesPerSubject){
+    curVisitTime = visitTimeYears[j]
+    proposedBiopsyTime = biopsyTimes[j]
+
+    #Account for the biopsy that needed to be done
+    if(curVisitTime > enforcedBiopsyTime){
+      lastBiopsyTime = enforcedBiopsyTime
+      nb = nb + 1
+      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+      enforcedBiopsyTime = Inf
+    }
+
+    if(!is.na(biopsyTimeOffset) & biopsyTimeOffset > 0){
+      break
+    }
+
+    #If the K years have passed since last biopsy
+    if(!is.na(biopsyEveryKYears)){
+      if((curVisitTime - lastBiopsyTime) >= biopsyEveryKYears){
+        enforcedBiopsyTime = curVisitTime
+      }
+    }
+
+    #Now deal with the proposed biopsy time
+    if(!is.na(proposedBiopsyTime)){
+      if(proposedBiopsyTime < enforcedBiopsyTime){
+        if((curVisitTime - lastBiopsyTime) <= 1){
+          #DO NOTHING
+        }else if(proposedBiopsyTime - curVisitTime <= 1){
+          enforcedBiopsyTime = proposedBiopsyTime
+        }
+      }
+    }
+  }
+
+  if(enforcedBiopsyTime < Inf){
+    nb = nb + 1
+    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+  }
+
+  return(c(patientRowNum = patientRowNum, nb = nb, biopsyTimeOffset = biopsyTimeOffset))
+}
+
 getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, biopsyEveryKYears = NA , minVisits, methodNames = c("expectedFailureTime", "survTime85",
                                                                                                                 "survTimeYouden", "survTimeAccuracy", "survTimeMaxTPR", "survTimeF1Score")){
   subjectCount = nrow(simulatedDsList[[dsId]]$testDs.id)
@@ -155,13 +422,16 @@ getBiopsyResults = function(dsId, biopsyIfLessThanTime = 1, biopsyEveryKYears = 
   biopsyResults
 }
 
-
-produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", minVisits = 5, imgWidth=1280, imgHeight=960){
+produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", 
+                               minVisits = 7, summarizingFunction = "summarizeMethod1",
+                               imgWidth=1280, imgHeight=960){
+  
+  summarizeBiopsyResults = get(summarizingFunction)
   
   ct = makeCluster(detectCores())
   registerDoParallel(ct)
   
-  foreach(simNum = simNumbers, .packages = c("ggplot2"),
+  patientCounts = foreach(simNum = simNumbers, .packages = c("ggplot2"),
           .export=c("getBiopsyResults", "summarizeBiopsyResults", 
                     "timesPerSubject", "plotBiopsy2DPlot"))%dopar%{
     simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
@@ -219,7 +489,7 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", mi
     dev.off()
     
     #boxplot offset
-    png(width=imgWidth, height=imgHeight, filename = paste(boxplotOffsetPath, DtSubFolder, minVisitsMethod,".png", sep=""))
+    png(width=imgWidth, height=imgHeight, filename = paste(boxplotOffsetPath, DtSubFolder, minVisitsMethod, "_", summarizingFunction ,".png", sep=""))
     p = ggplot(data = biopsyResultsCC) +
       geom_boxplot(aes( reorder(methodTrimmed, biopsyTimeOffset, FUN=median), biopsyTimeOffset*12, fill=methodCategory)) +
       scale_y_continuous(breaks = 12*seq(0,20, by = 0.25)) +
@@ -228,7 +498,7 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", mi
     dev.off()
     
     #boxplot nb
-    png(width=imgWidth, height=imgHeight, filename = paste(boxplotNbPath, DtSubFolder, minVisitsMethod,".png", sep=""))
+    png(width=imgWidth, height=imgHeight, filename = paste(boxplotNbPath, DtSubFolder, minVisitsMethod, "_", summarizingFunction, ".png", sep=""))
     p = ggplot(data = biopsyResultsCC) +
       geom_boxplot(aes( reorder(methodTrimmed, nb, FUN=median), nb, fill=methodCategory)) +
       scale_y_continuous(breaks = seq(0,20, by = 1)) +
@@ -237,15 +507,115 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", mi
     dev.off()
    
     #nbVsOffset Median
-    png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMedianPath, DtSubFolder, minVisitsMethod,".png", sep=""))
+    png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMedianPath, DtSubFolder, minVisitsMethod,"_", summarizingFunction, ".png", sep=""))
     plotBiopsy2DPlot(nbSummary, offsetSummary)
     dev.off()
     
     #nbVsOffset Median
-    png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMeanPath, DtSubFolder, minVisitsMethod,".png", sep=""))
+    png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMeanPath, DtSubFolder, minVisitsMethod, "_", summarizingFunction, ".png", sep=""))
     plotBiopsy2DPlot(nbSummary, offsetSummary, "Mean", "Mean")
     dev.off()
-  }
+    
+    return(c(nrow(biopsyResults), nrow(biopsyResultsCC)))
+                    }
+  
+  print(patientCounts)
+  
+  stopCluster(ct)
+}
+
+produceResultImagesNewMethod = function(rDataFolder, simNumbers, DtSubFolder = "new", imgWidth=1280, imgHeight=960){
+  
+  ct = makeCluster(detectCores())
+  registerDoParallel(ct)
+  
+  patientCounts = foreach(simNum = simNumbers, .packages = c("ggplot2"),
+                          .export=c("timesPerSubject", "plotBiopsy2DPlot"))%dopar%{
+                                      simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
+                                      load(simFileLocation)
+                                      print(paste("SimNum:", simNum, "loaded"))
+                                      
+                                      simulatedDsList = temp
+                                      
+                                      minVisitsMethod = paste("_minVisit_", 5, sep="")
+                                      
+                                      biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
+                                      biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
+                                      biopsyResults$offset = as.numeric(as.character(biopsyResults$offset))
+                                      
+                                      biopsyResults$methodCategory = sapply(biopsyResults$methodName, substr, 1, 10)
+                                      biopsyResults$methodTrimmed = sapply(biopsyResults$methodName, function(x){
+                                        if(as.character(x) == "PRIAS"){
+                                          return(x)
+                                        }
+                                        
+                                        if(as.character(x) == "johnsSummary"){
+                                          return(factor("Johns"))
+                                        }
+                                        
+                                        if(substr(as.character(x),1,3)=="exp"){
+                                          x = as.character(x)
+                                          return(factor(paste("E(T)-", substr(x,nchar(x)-1,nchar(x)), sep="")))
+                                        }
+                                        
+                                        x = as.character(x)
+                                        lastPart = substr(x, nchar(x)-6, nchar(x))
+                                        factor(lastPart)
+                                      })
+                                      
+                                      imageFolderPath = paste("images/sim study/", rDataFolder, "/", simulatedDsList[[1]]$seed,"/", sep = "")
+                                      boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/")
+                                      boxplotNbPath = paste(imageFolderPath, "boxplot_nb/")
+                                      nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/")
+                                      nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/")
+                                      
+                                      dir.create(boxplotOffsetPath, recursive = T)
+                                      dir.create(boxplotNbPath, recursive = T)
+                                      dir.create(nbVsOffsetMedianPath, recursive = T)
+                                      dir.create(nbVsOffsetMeanPath, recursive = T)
+                                      
+                                      nbSummary = do.call(cbind, by(data = biopsyResults[, "nb"], INDICES = biopsyResults$methodName, summary))
+                                      offsetSummary = do.call(cbind, by(data = biopsyResults[, "offset"], INDICES = biopsyResults$methodName, summary))
+                                      
+                                      #Progression time
+                                      png(width=640, height=480, filename = paste(imageFolderPath, "progression_hist.png", sep=""))
+                                      p = ggplot(data=simulatedDsList[[1]]$testDs.id) + geom_histogram(aes(progression_time)) +
+                                        xlab("Progression Time (years)")
+                                      print(p)
+                                      dev.off()
+                                      
+                                      #boxplot offset
+                                      png(width=imgWidth, height=imgHeight, filename = paste(boxplotOffsetPath, DtSubFolder, minVisitsMethod,".png", sep=""))
+                                      p = ggplot(data = biopsyResults) +
+                                        geom_boxplot(aes( reorder(methodTrimmed, offset, FUN=median), offset*12, fill=methodCategory)) +
+                                        scale_y_continuous(breaks = 12*seq(0,20, by = 0.25)) +
+                                        ylab("Biopsy offset (months)") + xlab("Method")
+                                      print(p)
+                                      dev.off()
+                                      
+                                      #boxplot nb
+                                      png(width=imgWidth, height=imgHeight, filename = paste(boxplotNbPath, DtSubFolder, minVisitsMethod, ".png", sep=""))
+                                      p = ggplot(data = biopsyResults) +
+                                        geom_boxplot(aes( reorder(methodTrimmed, nb, FUN=median), nb, fill=methodCategory)) +
+                                        scale_y_continuous(breaks = seq(0,20, by = 1)) +
+                                        ylab("Number of biopsies") + xlab("Method")
+                                      print(p)
+                                      dev.off()
+                                      
+                                      #nbVsOffset Median
+                                      png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMedianPath, DtSubFolder, minVisitsMethod, ".png", sep=""))
+                                      plotBiopsy2DPlot(nbSummary, offsetSummary)
+                                      dev.off()
+                                      
+                                      #nbVsOffset Median
+                                      png(width=imgWidth, height=imgHeight, filename = paste(nbVsOffsetMeanPath, DtSubFolder, minVisitsMethod, ".png", sep=""))
+                                      plotBiopsy2DPlot(nbSummary, offsetSummary, "Mean", "Mean")
+                                      dev.off()
+                                      
+                                      return(c(nrow(biopsyResults)))
+                                    }
+  
+  print(patientCounts)
   
   stopCluster(ct)
 }
