@@ -175,11 +175,33 @@ dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
   return(temp)
 }
 
+dynamicPredProbTimesTdiff = function(futureTimes, dsId, patientDs, last.time=NULL){
+  temp = (futureTimes-last.time) * survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+                   idVar="P_ID", last.time=last.time, 
+                   survTimes = futureTimes)$summaries[[1]][, "Median"]
+  return(temp)
+}
+
 expectedCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
   last.time + integrate(dynamicPredProb, last.time, upperLimitIntegral, dsId, patientDs, 
                             last.time = last.time,
                             abs.tol = 0.1)$value
 }
+
+varianceCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
+  
+  
+  lhs = 2 * integrate(dynamicPredProbTimesTdiff, last.time, upperLimitIntegral, dsId, patientDs, 
+                      last.time = last.time,
+                      abs.tol = 0.1)$value
+  
+  rhs = (integrate(dynamicPredProb, last.time, upperLimitIntegral, dsId, patientDs, 
+                   last.time = last.time,
+                   abs.tol = 0.1)$value)^2
+  
+  return(lhs-rhs)
+}
+
 
 generateLongtiudinalTimeBySchedule = function(){
   #months = c(seq(0,24, 1), 27, 30, 33, 36, 39, 42, 48, 54, 60, 66, 72, 78, 84,

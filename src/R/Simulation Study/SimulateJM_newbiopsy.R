@@ -18,7 +18,7 @@ methods = c("expectedFailureTime", "survTime85","survTimeYouden",
            "survTimeAccuracy", "survTimeF1Score", "survTimeMaxTPR")
 
 for(i in 1:nDataSets){
-  load(paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/Dt_1/simDs",i,".Rdata", sep=""))
+  load(paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/Dt_1/simDs",i,".Rdata", sep=""))
   simulatedDsList[[i]] = temp[[1]]
   rm(temp)
   
@@ -44,7 +44,7 @@ for(i in 1:nDataSets){
     }
     
     res = c(P_ID=patientRowNum, methodName=methodName, computeNbAndOffset(dsId = i, patientRowNum=patientRowNum, 
-                                                    minVisits = 5, 
+                                                    minVisits = 1, 
                                                     methodName = methodName,
                                                     lastPossibleVisit = lastPossibleVisit))
     
@@ -62,7 +62,7 @@ for(i in 1:nDataSets){
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/new/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/new/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   simulatedDsList[[i]] = NA

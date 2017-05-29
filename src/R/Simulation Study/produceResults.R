@@ -468,10 +468,10 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1",
     })
     
     imageFolderPath = paste("images/sim study/", rDataFolder, "/", simulatedDsList[[1]]$seed,"/", sep = "")
-    boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/")
-    boxplotNbPath = paste(imageFolderPath, "boxplot_nb/")
-    nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/")
-    nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/")
+    boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/", sep="")
+    boxplotNbPath = paste(imageFolderPath, "boxplot_nb/", sep="")
+    nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/", sep="")
+    nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/", sep="")
     
     dir.create(boxplotOffsetPath, recursive = T)
     dir.create(boxplotNbPath, recursive = T)
@@ -564,10 +564,10 @@ produceResultImagesNewMethod = function(rDataFolder, simNumbers, DtSubFolder = "
                                       })
                                       
                                       imageFolderPath = paste("images/sim study/", rDataFolder, "/", simulatedDsList[[1]]$seed,"/", sep = "")
-                                      boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/")
-                                      boxplotNbPath = paste(imageFolderPath, "boxplot_nb/")
-                                      nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/")
-                                      nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/")
+                                      boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/", sep="")
+                                      boxplotNbPath = paste(imageFolderPath, "boxplot_nb/", sep="")
+                                      nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/", sep="")
+                                      nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/", sep="")
                                       
                                       dir.create(boxplotOffsetPath, recursive = T)
                                       dir.create(boxplotNbPath, recursive = T)
@@ -638,10 +638,10 @@ deleteResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", min
                       minVisitsMethod = paste("_minVisit_", minVisits, sep="")
                       
                       imageFolderPath = paste("images/sim study/", rDataFolder, "/", simulatedDsList[[1]]$seed,"/", sep = "")
-                      boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/")
-                      boxplotNbPath = paste(imageFolderPath, "boxplot_nb/")
-                      nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/")
-                      nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/")
+                      boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/", sep="")
+                      boxplotNbPath = paste(imageFolderPath, "boxplot_nb/", sep="")
+                      nbVsOffsetMedianPath = paste(imageFolderPath, "nbVsOffset_Median/", sep="")
+                      nbVsOffsetMeanPath = paste(imageFolderPath, "nbVsOffset_Mean/", sep="")
                       
                       file.remove(paste(imageFolderPath, "progression_hist.png", sep=""))
                       file.remove(paste(boxplotOffsetPath, DtSubFolder, minVisitsMethod,".png", sep=""))
