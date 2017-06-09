@@ -1,0 +1,62 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{floatrow}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{caption}
+\usetikzlibrary{shapes.geometric, arrows}
+
+% package to manage citations
+\usepackage[backend=bibtex,style=authoryear-comp,sorting=nyt,isbn=false,url=false, natbib=true]{biblatex}
+\addbibresource{references.bib}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black,text width = 5cm, fill=red!30]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width = 4cm, draw=black, fill=orange!30]
+\tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm,text centered,text width = 2.5cm, draw=black, fill=green!30]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\definecolor{ErasmusBlue}{RGB}{12, 32, 116}
+
+\begin{document}
+\title{PRIAS Personalized Biopsy Schedules}
+
+\author{Firstname1 Lastname1}
+
+\date{}
+
+\maketitle
+
+\input{mainmatter/abstract}
+\input{mainmatter/introduction}
+\input{mainmatter/model_gleason_psa}
+\input{mainmatter/personalized_scheduling}
+\input{mainmatter/prias_demo_pers_schedule}
+\input{mainmatter/sim_study}
+
+\textbf{}
+
+\clearpage
+\printbibliography
+
+\appendix
+
+\input{mainmatter/appendix}
+
+\end{document}

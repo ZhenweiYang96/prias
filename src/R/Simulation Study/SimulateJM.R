@@ -6,7 +6,7 @@ nSub <- 1000# number of subjects
 source("src/R/common.R")
 source("src/R/Simulation Study/simCommon.R")
 source("src/R/Simulation Study/personalizedDynamicCutoff.R")
-source("src/R/Simulation Study/rocJM_mod.R")
+source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 

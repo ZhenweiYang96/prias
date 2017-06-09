@@ -335,13 +335,13 @@ prias.id = prias_long[!duplicated(prias_long$P_ID),]
 pid_progressed = droplevels(unique(prias_long[prias_long$gleason %in% c(7,8,9,10),]$P_ID))
 
 prias.id$progressed = ifelse(prias.id$P_ID %in% pid_progressed, 1, 0)
-prias.id$progression_time = by(prias_long, prias_long$P_ID, function(prias_long_i){
+prias.id$progression_time = c(by(prias_long, prias_long$P_ID, function(prias_long_i){
   if(any(prias_long_i$gleason %in% c(7,8,9,10))){
     prias_long_i$visitTimeYears[which(prias_long_i$gleason %in% c(7,8,9,10))[1]]  
   }else{
     max(prias_long_i$visitTimeYears, na.rm = T)
   }
-})
+}))
 
 prias_long$progression_time = unlist(lapply(prias.id$P_ID, function(pid){
   rowCount = nrow(prias_long[prias_long$P_ID == pid,])

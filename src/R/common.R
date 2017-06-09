@@ -11,8 +11,8 @@ library(JMbayes)
 source("src/R/replaceMCMCContents.R")
 source("../JMBayes/Anirudh/dev/multiplot.R")
 
-ticksX = function(from=0, max, by, labels=waiver()){
-  scale_x_continuous(breaks = seq(from, max, by = by), labels = labels)
+ticksX = function(from=0, max, by, labels=waiver(), extraLabels=NA){
+  scale_x_continuous(breaks = c(seq(from, max, by = by), extraLabels), labels = labels)
 }
 
 ticksY = function(from=0, max, by, labels = waiver()){
@@ -29,6 +29,7 @@ sourceDir <- function(path, trace = TRUE, ...) {
 
 plotRandomProfile = function(count=1, fitted=F){
   pid_sample = sample(x = unique(psa_data_set$P_ID), size = count)
+  print(pid_sample)
   plot<-ggplot(data=psa_data_set[psa_data_set$P_ID %in% pid_sample,], aes(x=visitTimeYears, y=log(psa + 1, base = 2))) + 
     geom_line(aes(group=P_ID))
   if(fitted==T){
@@ -130,10 +131,15 @@ fitUnivaritePSAModel = function(fixedSplineKnots=c(0.1,0.5, 4), randomSplineKnot
   return(model)
 }
 
+getLastBiopsyTime = function(pid, upperLimitTime = Inf){
+  temp = prias_long[prias_long$P_ID %in% pid & prias_long$visitTimeYears<=upperLimitTime,][, c("visitTimeYears", "gleason")]
+  lastBiopsyTime = max(temp[complete.cases(temp),]$visitTimeYears)
+  return(lastBiopsyTime)
+}
+
 plotDynamicSurvProb = function(pid, fittedJointModel, futureTimeDt = 3){
   #Do not use psa_data_set here. That was only created to have a data set of non NA PSA's
-  temp = prias_long[prias_long$P_ID %in% pid,][, c("visitTimeYears", "gleason")]
-  lastBiopsyTime = max(temp[complete.cases(temp),]$visitTimeYears)
+  lastBiopsyTime = getLastBiopsyTime(pid)
   
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid,]
   lastPSATime = max(patientDs$visitTimeYears)
