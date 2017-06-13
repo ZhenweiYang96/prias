@@ -1,6 +1,7 @@
 % !TEX root =  ../main.tex 
 
-\section{Model for Gleason scores and PSA levels}
+\section{A framework for personalized biopsy schedule}
+\label{sec : jm_introduction}
 The first step in creating a personalized schedule for prostate cancer patients is to come up with a model for Gleason scores, PSA levels and other subject specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time Gleason reclassification takes place. Since our interest also lies in time to Gleason reclassification, we model it as a time to event outcome. i.e. time to Gleason reclassification. \\
 
 While univariate modeling of the two outcomes can be done as mentioned above, our goal is to also utilize the information from PSA levels in deciding the time for scheduling a biopsy. To achieve this, we jointly model time to Gleason reclassification and PSA levels using a joint model for time to event and longitudinal outcomes \cite{rizopoulos2012joint}. 

@@ -186,6 +186,7 @@ prias_long$gleason1[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleas
 prias_long$gleason2[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0] = NA
 
 #Set all those dom to be NA where psa is NA, and set all those domgleason to NA where both dre & gleason are NA
+prias_long[prias_long$psa %in% c(0, 9999, 1931, 3048),] = NA
 prias_long[is.na(prias_long$psa),]$dom = NA
 prias_long[is.na(prias_long$dre) & is.na(prias_long$gleason),]$domgleason = NA
 
@@ -343,15 +344,8 @@ prias.id$progression_time = c(by(prias_long, prias_long$P_ID, function(prias_lon
   }
 }))
 
-prias_long$progression_time = unlist(lapply(prias.id$P_ID, function(pid){
-  rowCount = nrow(prias_long[prias_long$P_ID == pid,])
-  rep(prias.id[prias.id$P_ID==pid,"progression_time"][1], rowCount)
-}))
-
-prias_long$progressed = unlist(lapply(prias.id$P_ID, function(pid){
-  rowCount = nrow(prias_long[prias_long$P_ID == pid,])
-  rep(prias.id[prias.id$P_ID==pid,"progressed"][1], rowCount)
-}))
+prias_long$progression_time = rep(prias.id$progression_time, prias.id$nr_visits)
+prias_long$progressed = rep(prias.id$progressed, prias.id$nr_visits)
 
 prias_long = prias_long[prias_long$visitTimeYears<=prias_long$progression_time,]
 prias_long$nr_visits = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){rep(nrow(x), nrow(x))}))
