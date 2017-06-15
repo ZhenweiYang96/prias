@@ -1,51 +1,35 @@
 % !TEX root =  ../main.tex 
 
-\section{A framework for personalized biopsy schedule}
+\section{Joint model for Gleason reclassification and PSA levels}
 \label{sec : jm_introduction}
-The first step in creating a personalized schedule for prostate cancer patients is to come up with a model for Gleason scores, PSA levels and other subject specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time Gleason reclassification takes place. Since our interest also lies in time to Gleason reclassification, we model it as a time to event outcome. i.e. time to Gleason reclassification. \\
+The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other subject specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time Gleason reclassification takes place. Since our interest also lies in time to Gleason reclassification, we model it as a time to event outcome. i.e. time to Gleason reclassification. While univariate modeling of the two aforementioned outcomes can be done separately using longitudinal model and survival models, it is important to note that they are not independent. To model the association between the two types of outcomes we use a joint model for time to event and longitudinal outcomes.
 
-While univariate modeling of the two outcomes can be done as mentioned above, our goal is to also utilize the information from PSA levels in deciding the time for scheduling a biopsy. To achieve this, we jointly model time to Gleason reclassification and PSA levels using a joint model for time to event and longitudinal outcomes \cite{rizopoulos2012joint}. 
+\subsection{Definition}
+Let $T_i^*$ denote the true Gleason reclassification time for the $i^{th}$ subject. Let the times at which biopsies are conducted for the $i^{th}$ patient be denoted by $C_i = \{C_{i0}, C_{i1}, ... C_{ig_i}; C_{ij} < C_{ik}, \forall j<k \}$. $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = C_{i(g_i-1)}, r_i = C_{ig_i}$ if Gleason reclassification is observed and $l_i = C_{ig_i}, r_i=\infty$ if patient drops out. The latter is also known as right censoring. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector for the PSA levels of the $i^{th}$ subject. The population of interest is all the patients enrolled in AS. For a sample of $n$ patients from this population the complete data is denoted by $\mathcal{D}_n = \{T_i, l_i, r_i, \boldsymbol{y}_i; i = 1,...n\}$, where $T_i \epsilon (l_i, r_i]$ denotes the observed time of Gleason reclassification.\\
 
-\subsection{Joint model for time to Gleason reclassification and PSA levels}
-Let $T_i^*$ denote the true Gleason reclassification time and $C_i$ denote the censoring time for the $i^{th}$ patient. Let $T_i = \min(T_i^*, C_i)$ denote the observed Gleason reclassification time for the $i^{th}$ patient and $\delta_i = I(T_i^* < C_i)$ is the event indicator. $I(\cdot)$ is the indicator function that takes the value 1 when $T_i^* < C_i$ and 0 otherwise. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector for the PSA levels of the $i^{th}$ subject. The population of interest is all the patients enrolled in AS. For a sample of $n$ patients from this population the complete data is denoted by $\mathcal{D}_n = \{T_i, \delta_i, \boldsymbol{y}_i; i = 1,...n\}$.\\
+To model the evolution of the longitudinal outcome, which is PSA levels in the case at hand, the joint model utilizes a linear mixed effects model. The longitudinal outcome $y_i(t)$ at time $t$ is modeled as:
 
-Since both PSA levels and Gleason scores are affected by the state of prostate cancer, they are inherently correlated with each other. In the joint model between time to Gleason reclassification and PSA levels, this correlation between the two outcomes is modeled via a vector of time independent random effects $\boldsymbol{b}_i$. The same random effects are also used to model the correlation between the repeated measurements of the PSA levels. Given the observed PSA history, the censoring process is assumed to be non informative and independent of the time to Gleason reclassification process, as well as of future PSA measurements. With these assumptions, the joint distribution between the two outcomes is given by:
+\begin{equation*}
+\begin{split}
+y_i(t) &= m_i(t) + \varepsilon_i(t), \\
+&= x_i^T(t) \beta + z_i^T(t) \boldsymbol{b}_i + \varepsilon_i(t)
+\end{split}
+\end{equation*}
+%Do not introduce a space here, otherwise it starts a new paragraph
+where, $m_i(t)$ denotes the true and unobserved value of the longitudinal outcome at time $t$. $\varepsilon_i(t) \sim N(0, \sigma^2)$ denotes the measurement error term, assumed normally distributed with variance $\sigma^2$. $\beta$ denotes the vector of the unknown fixed-effects parameters. $\boldsymbol{b}_i \sim N(0, \boldsymbol{D})$ denotes the vector of random effects, assumed normally distributed with mean zero and covariance matrix D, and independent of $\varepsilon_i(t)$. $x_i(t)$ and $z_i(t)$ denote row vectors of the design matrices for the fixed and random effects, respectively. For non continuous longitudinal outcomes joint models utilize Generalized linear mixed models \citep{rizopoulos2012joint}.\\
 
-\begin{equation}
-p(T_i, \delta_i, \boldsymbol{y}_i | \boldsymbol{b}_i; \theta) = p(T_i, \delta_i | \boldsymbol{b}_i; \theta) p(\boldsymbol{y}_i | \boldsymbol{b}_i; \theta), \text{where}
-\end{equation}
+Since both PSA levels and Gleason scores are affected by the state of prostate cancer, they are inherently correlated with each other. To this end, the joint model utilizes a relative risk sub-model where the hazard of Gleason reclassification $h_i(t)$ at any time point $t$ depends on the history of true and unobserved values of PSA levels $\mathcal{M}_i(t) = \{m_i(s), 0\leq s \leq t\}$ measured up to that time point. Joint models offer flexibility in modeling this dependence. In its simplest form, the hazard may depend on instantaneous value of PSA $m_i(t)$ at time $t$. More sophisticated ones are dependence of hazard at time $t$ on PSA-DT, PSA velocity $m'_i(t) = \dfrac{d m_i(t)}{dt}$, or even on the cumulative effect of PSA $\int_0^t m_i(s) \,ds$ up to $t$. The fact that any functional form of dependence is possible, is evident from the following equation:
 
-\begin{equation}
-p(T_i, \delta_i | \boldsymbol{b}_i; \theta) = h_i(T_i|\mathcal{M}_i(T_i); \theta)^{\delta_i} e^{\int_0^{T_i} h_i(s|\mathcal{M}_i(s); \theta) \,ds}, \text{and}
-\end{equation}
+\begin{equation*}
+h_i(t \mid M_i(t); \theta) = h_0(t) e^{\gamma^Tw_i + f\{M_i(t), \boldsymbol{b}_i, \alpha\}}
+\end{equation*}
+where $h_0(t)$ is the baseline hazard at time $t$. $w_i$ is a vector of time independent covariates and $\gamma$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\alpha$ specifies the features of longitudinal outcome that are are included in the linear predictor of the relative risk model.\\
 
-\begin{equation}
-p(\boldsymbol{y}_i | \boldsymbol{b}_i; \theta) = \prod_{j=1}^{n_i} p(y_{ij} | \boldsymbol{b}_i; \theta)
-\end{equation}
+While $\alpha$ controls the strength of association between the hazard of reclassification and features of the PSA levels, the fact that both Gleason scores and PSA levels are internally related to a patient's health, is manifested by the random effects $\boldsymbol{b}_i$ in the model. The joint model postulates that given the random effects, time to Gleason reclassification and PSA levels measured at different time points are mutually independent. As mentioned earlier, in PRIAS study PSA-DT is used to decide the schedule of biopsies. Although PSA-DT is computed using observed PSA values, dependence on observed longitudinal history $\mathcal{Y}(t) = \{y_i(s), 0\leq s \leq t\}$ at any time $t$, is not the same as dependence on patient's health. This because dependence on patient's health, manifested by $\boldsymbol{b}_i$ is same as dependence on future unobserved values of PSA. Thus the inference for the parameters of interest $\theta$ doesn't change even if uncertainty in biopsy schedule $C_i$ is not modeled. The kernel of the corresponding joint likelihood conditional on the random effects is given by:
 
-$\theta = (\theta_t^T, \theta_y^T, \theta_b^T)^T$ denotes the full parameter vector, with $\theta_t$ denoting the parameters for the time to Gleason reclassification outcome, $\theta_y$ the parameters for the PSA levels, and $\theta_b$ the parameters of the random-effects covariance matrix $\boldsymbol{D}$. $\mathcal{M}_i(t) = \{m_i(s), 0\leq s \geq t\}$ denotes the PSA longitudinal history up to time $t$. It is important to note that $m_i(t) = \boldsymbol{x}_i^T(t)\boldsymbol{\beta} + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i$ represent the true value of PSA at time $t$ and not the observed $y_i(t)$. $\boldsymbol{x}_i^T(t)$ and $\boldsymbol{z}_i^T(t)$ are the time dependent design vectors for the fixed effects $\boldsymbol{\beta}$ and random effects $\boldsymbol{b}_i$, respectively.\\ 
-
-The hazard of Gleason reclassification
-at any time $t$, given by $h_i(t|\mathcal{M}_i(t);\theta)$ depends on the PSA history $\mathcal{M}_i(t)$ up to the time $t$. Joint models offer flexibility in modeling this dependence. In its simplest form, the hazard may depend on instantaneous value of PSA $m_i(t)$ at time $t$. It is also possible to consider that hazard of Gleason reclassification at time $t$ may depend on PSA velocity $m'_i(t) = \dfrac{d m_i(t)}{dt}$ or $AUC(t) = \int_0^t m_i(s) \,ds$ at the same time. The fact that any functional form of dependence is possible, is evident from the following equation:
-
-\begin{equation}
-h_i(t|M_i(t); \theta) = h_0(t) e^{\gamma^Tw_i + f\{M_i(t), \boldsymbol{b}_i, \alpha\}}
-\end{equation}
-
-where the function $f(\cdot)$, parametrized by vector $\alpha$ specifies which features of longitudinal outcome process are are included in the linear predictor of the time to event model. For the case at hand, we consider that hazard of Gleason reclassification at any time depends on the PSA value as well as the PSA velocity at the same time. The corresponding hazard function is given by:
-
-\begin{equation}
-h_i(t|M_i(t); \theta) = h_0(t) e^{\gamma^Tw_i + \alpha_1 m_i(t) + \alpha_2 m'_i(t)}
-\end{equation}
-
-where, $\alpha_1$ and $\alpha_2$ are measures of how strongly hazard of Gleason reclassification depends on PSA value and PSA velocity, respectively. $w_i$ is a vector of time independent covariates and $\gamma$ are the corresponding parameters. $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using a B-splines approach. More specifically:
-
-\begin{equation}
-\label{eq : baseline_hazard}
-\log h_0(t) = \gamma_{h_0, 0} + \sum_{q=1}^Q  \gamma_{h_0, q} B_q(t, v)
-\end{equation}
-
-where $B_q(t, v)$ denotes the $q^{th}$ basis function of a B-spline with knots $v = v_1,...v_Q$ and $\gamma_{h_0}$ the vector of spline coefficients. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \cite{eilers1996flexible}.
+\begin{equation*}
+p(T_i, l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i; \theta) \propto p(T_i \mid l_i, r_i, \boldsymbol{b}_i; \theta) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i; \theta)
+\end{equation*}
 
 \subsection{Fitting the joint model to PRIAS dataset}
 One of the goals of this work is to compare various scheduling methods for patients of the PRIAS study. We also compare the scheduling methods using a simulation study. For both of these goals, we require parameter estimates of  the joint model between time to Gleason reclassification and PSA levels of PRIAS' patients. For the first goal the parameter estimates are used directly to schedule visits using personalized schedules. For the second goal, we require the parameter estimates of the  joint model to generate data for a simulation study. For these reasons and to also introduce constructs such as dynamic survival probability, we next fit a joint model to the PRIAS data set.\\
