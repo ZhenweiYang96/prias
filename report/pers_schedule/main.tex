@@ -19,6 +19,7 @@
 \usepackage{booktabs}
 \usepackage{color}
 \usepackage{tikz}
+\usepackage{titlesec}
 \usepackage{caption}
 \usetikzlibrary{shapes.geometric, arrows}
 
@@ -34,6 +35,12 @@
 
 \definecolor{ErasmusBlue}{RGB}{12, 32, 116}
 
+%Use 4 levels of sections using package titlesec
+\setcounter{secnumdepth}{4}
+\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\\\}
+
+\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
+
 \begin{document}
 \title{PRIAS Personalized Biopsy Schedules}
 
@@ -45,8 +52,7 @@
 
 \input{mainmatter/abstract}
 \input{mainmatter/introduction}
-\input{mainmatter/jm_gleason_psa}
-\input{mainmatter/personalized_scheduling}
+\input{mainmatter/framework_pers_biop_sched}
 \input{mainmatter/prias_demo_pers_schedule}
 \input{mainmatter/sim_study}
 
