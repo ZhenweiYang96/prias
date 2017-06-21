@@ -1,0 +1,1 @@
+survfitJM(joint_psa_replaced_prias, subset, idVar = "P_ID", last.time = last.time)

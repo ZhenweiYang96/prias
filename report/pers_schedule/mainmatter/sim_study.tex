@@ -6,50 +6,11 @@ For contrasting the personalized scheduling approaches against the schedule of P
 
 \subsection{Simulation setup}
 \label{subsec : simulation_setup}
-We divided each of the 60 data sets into training (750 patients) and test (250 patients) parts. We fitted a joint model to the training data set and using it we generated biopsy schedules for patients in the test data set. Since we generate the true Gleason reclassification time for each of the patients in the test data set, we are able to calculate the offset for each patient and each scheduling method. While creating the personalized schedules we adhere to the PSA measurement schedule of PRIAS. On every visit for the PSA we calculate the time of conducting a biopsy using the scheduling methods given in section \ref{sec : personalized_scheduling}. We call it the proposed time of biopsy. We observed in section \ref{sec : pers_schedule_PRIAS} that in many cases the proposed time of biopsy was postponed on each visit for PSA. In some cases two biopsies within a 1 year period were also proposed, which is not practical. Lastly, since the existence of PSA does not depend on Gleason reclassification, in some cases the proposed time was also earlier than the visit time. To avoid these problems altogether we use the following algorithm to select the time of biopsies from the proposed times.\\
+We divided each of the 60 data sets into training (750 patients) and test (250 patients) parts. We fitted a joint model to the training data set and using it we generated biopsy schedules for patients in the test data set.
 
-\begin{tikzpicture}
-\node (start) [startstop] {Enter Active Surveillance.\\ Perform a biopsy\\Set EnforcedBiopsyTime = $\infty$.\\Set LastBiopsyTime=0.};
+\subsubsubsection{Evaluating performance of personalized biopsy schedules}
 
-\node (propTime) [process, below=1cm of start] {PSA measurement visit.\\Compute ProposedBiopsyTime using a personalized scheduling method.};
-
-\node (decision1) [decision, below = 1cm of propTime] {Is ProposedBiopsyTime earlier than EnforcedBiopsyTime?};
-
-\node (decision5) [decision, left=1cm of decision1] {Is ProposedBiopsyTime is earlier than the current PSA measurement visit time?};
-
-\node (pro5) [process, below=1cm of decision5] {Set ProposedBiopsyTime = CurrentVisitTime};
-
-\node (decision2) [decision, below=1cm of pro5] {Is ProposedBiopsyTime is at least 1 year later than LastBiopsyTime?};
-
-\node (pro2) [process, below=1cm of decision1] {Set EnforcedBiopsyTime = ProposedBiopsyTime};
-
-\node (decision4) [decision, right=1cm of decision1] {Is EnforcedBiopsyTime earlier than next PSA visit time?};
-
-\node (pro3) [process, right=1cm of decision2] {Perform Biopsy at LastBiopsyTime + 1 year};
-
-\node (pro4) [process, below=1cm of decision4] {Perform Biopsy at EnforcedBiopsyTime};
-
-\node (decision3) [decision, below=1cm of pro3] {Is Gleason score greater than 6?};
-
-\node (stop) [startstop, below = 1cm of decision3] {Remove patient from AS};
-
-
-\draw [arrow] (start) -- (propTime);
-\draw [arrow] (propTime) -- (decision1);
-\draw [arrow] (decision1) -- node[anchor=south] {Yes} (decision5);
-\draw [arrow] (decision5) -- node[anchor=east] {Yes} (pro5);
-\draw [arrow] (pro5) -- (decision2);
-\draw [arrow] (decision1) -- node[anchor=south] {No} (decision4);
-\draw [arrow] (decision4) |- node[anchor=south] {No} (propTime);
-\draw [arrow] (decision2) -- node[anchor=east] {Yes} (pro2);
-\draw [arrow] (pro2) -- (decision4);
-\draw [arrow] (decision2) -- node[anchor=south] {No} (pro3);
-\draw [arrow] (pro3) -- (decision3);
-\draw [arrow] (pro4) |- (decision3);
-\draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
-\draw [arrow] (decision4) -- node[anchor=east] {Yes} (pro4);
-\draw [arrow] (decision3.west)|- ([xshift=-1.5cm, yshift=-4.6cm]decision2.north west) |- node[anchor=south]{No} (propTime);
-\end{tikzpicture}
+Since we generate the true Gleason reclassification time for each of the patients in the test data set, we are able to calculate the offset for each patient and each scheduling method. While creating the personalized schedules we adhere to the PSA measurement schedule of PRIAS. 
 
 \subsection{Results}
 Since the Gleason reclassification times varied widely across the simulation data sets, we discuss the results separately for the different scenarios. In total we have 6 scenarios corresponding to the 6 groups of 10 data sets. For brevity, we only chose 3 most dissimilar scenarios and further we present one set of results for each of the 3 scenarios. The complete set of results can be found at \url{https://goo.gl/u6dg8G}. At this moment, we will not compare our results against the PRIAS schedule, since the PRIAS schedule we used is fixed for all patients, whereas in reality it can be dynamic if the PSA doubling time is less than 10 years.

@@ -134,3 +134,31 @@ for(patientId in demoPatientPID){
   dev.off()
 }
 
+plotVarianceOverTime = function(modelObject, prias_P_ID){
+  ct= makeCluster(detectCores())
+  registerDoParallel(ct)
+  
+  prias_long_i = prias_long[prias_long$P_ID==prias_P_ID,]
+  
+  prias_long_i$variances=foreach(k=1:nrow(prias_long_i),.combine='c', .export=c("varCondFailureTime"),
+                                 .packages=c("JMbayes", "splines")) %dopar%{
+  #variances=foreach(k=1:5,.combine='rbind', .packages=c("JMbayes", "splines")) %dopar%{
+    subset = prias_long_i[1:k,]
+    last.time = tail(subset$visitTimeYears[!is.na(subset$gleason)],1)
+    return(varCondFailureTime(modelObject, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 20))
+  }
+  
+  stopCluster(ct)
+  
+  biopsyTimes = prias_long_i$visitTimeYears[!is.na(prias_long_i$gleason)]
+  prias_long_i$biopsyTimes = c(biopsyTimes, rep(NA, nrow(prias_long_i)-length(biopsyTimes)))
+  
+  pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=variances)) + 
+    geom_line(aes(x=visitTimeYears, y=variances)) + 
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T), color="blue") + xlab("Time (years)") + 
+    ylab("Variance") + ggtitle(paste("Patient ID:", prias_P_ID)) + ticksX(0, max = 20, 1) +
+    ticksY(0, 100, 5)
+  
+  print(pp)  
+}
+

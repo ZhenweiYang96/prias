@@ -1,4 +1,5 @@
 library(foreign)
+library(doParallel)
 
 ############################################
 #The list of patients to be ignored
@@ -76,13 +77,16 @@ rm(diff1)
 prias[prias$Num_cores %in% c(0, 99, 999, NA) | prias$Num_Cores_PC %in% c(99, 999, NA),]$Gleason_sum = NA
 
 #Replaces all repeat biopsy scores as NA if num of cores are 0 or 99, 999
-prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_cores2 %in% c(99, 999, NA),]$Gleason1_2 = NA
-prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_cores2 %in% c(99, 999, NA),]$Gleason2_2 = NA
+prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_Cores_PC2 %in% c(99, 999, NA),]$Gleason1_2 = NA
+prias[prias$Num_cores2 %in% c(0, 99, 999, NA) | prias$Num_Cores_PC2 %in% c(99, 999, NA),]$Gleason2_2 = NA
 
 #If the repeat gleason is not NA then replace original gleason score with NA
 # Don't replace original gleason as we want to keep its date intact
 prias$Gleason_sum_repeat = prias$Gleason1_2 + prias$Gleason2_2
 prias[!is.na(prias$Gleason_sum_repeat),]$Gleason_sum = NA
+
+#Remove those subjects whose repeat Gleason score or whose first Gleason score is more than 6
+prias = prias[!(prias$Gleason_sum_repeat %in% c(7,8,9,10)) & !(prias$Gleason_sum %in% c(7,8,9,10)),]
 
 #These two are added just to balance the data set before converting to long
 prias$psa_repeat = rep(NA, nrow(prias))
@@ -119,9 +123,10 @@ prias$year_discontinued = prias$day_discontinued/365
 condition1 = is.na(prias$Nr_FUvisits)
 View(prias[condition1,])
 
-#Temporary treatment: Don't remove them
-#prias=prias[!condition1,]
-#prias$P_ID = droplevels(prias$P_ID)
+#Temporary treatment: Remove them, their baseline information is useful for PSA but no idea why they got censored
+#few of them are also censored because of high gleason on repeat biopsy
+prias=prias[!condition1,]
+prias$P_ID = droplevels(prias$P_ID)
 
 ###########
 #Patients who are reported NOT discontinued yet have reasons for discontinuation. No date of discontinuation available
@@ -146,6 +151,9 @@ View(prias[condition3, ])
 prias = prias[!condition3,]
 prias$P_ID = droplevels(prias$P_ID)
 
+rm(condition1)
+rm(condition2)
+rm(condition3)
 save.image("Rdata/Gleason as event/cleandata.Rdata")
 #################################################
 #################################################
@@ -171,7 +179,6 @@ condition_long_1 = prias_long$dummy %in% 1
 prias_long = prias_long[!condition_long_1,]
 
 #When number of cores are 0/99 the gleason should be NA
-#It is possible that ncores>0 and ncorespc>0 and gleason = 0: because someone entered wrong ncorespc: no action required
 condition_long_2 = prias_long$ncores %in% c(0, 99, 999, NA) | prias_long$ncorespc %in% c(99, 999, NA)
 prias_long$gleason[condition_long_2] = NA
 prias_long$gleason1[condition_long_2] = NA
@@ -186,9 +193,10 @@ prias_long$gleason1[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleas
 prias_long$gleason2[!condition_long_2 & prias_long$ncorespc>0 & prias_long$gleason %in% 0] = NA
 
 #Set all those dom to be NA where psa is NA, and set all those domgleason to NA where both dre & gleason are NA
-prias_long[prias_long$psa %in% c(0, 9999, 1931, 3048),] = NA
-prias_long[is.na(prias_long$psa),]$dom = NA
-prias_long[is.na(prias_long$dre) & is.na(prias_long$gleason),]$domgleason = NA
+#The dom for gleason and DRE is shared in the original data set
+prias_long$psa[prias_long$psa %in% c(0, 9999, 1931, 3048)] = NA
+prias_long$dom[is.na(prias_long$psa)] = NA
+prias_long$domgleason[is.na(prias_long$dre) & is.na(prias_long$gleason)]= NA
 
 #Remove all observations where both dom and domgleason are NA
 condition_long_3 = is.na(prias_long$dom) & is.na(prias_long$domgleason)
@@ -197,12 +205,15 @@ View(prias_long[condition_long_3,])
 prias_long = prias_long[!condition_long_3,]
 
 #Further I have tested that gleason1 + gleason2 leads to overall gleason correctly.
-View(prias_long[(prias_long$gleason != (prias_long$gleason1 + prias_long$gleason2)) %in% TRUE,])
+View(prias_long[(!is.na(prias_long$gleason) & (prias_long$gleason != (prias_long$gleason1 + prias_long$gleason2))) %in% TRUE,])
 
 ####################################################
 # Now we gotta merge and have a common date variable
 ####################################################
 idList = unique(prias_long$P_ID)
+
+ct= makeCluster(detectCores())
+registerDoParallel(ct)
 prias_long_onetime=foreach(i=1:length(idList),.combine='rbind') %dopar%{
   prias_long_i = prias_long[prias_long$P_ID==idList[[i]],]
   
@@ -274,10 +285,10 @@ prias_long_onetime=foreach(i=1:length(idList),.combine='rbind') %dopar%{
   
   newds
 }
+stopCluster(ct)
 
 #check the above result and then execute the statement below
 prias_long = prias_long_onetime
-rm(prias_long_onetime)
 
 prias_long$firstVisitDom = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FUN=function(x){rep(x[1], length(x))}))
 prias_long$visitTimeDays = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FUN=function(x){(x-x[1])/(24*60*60)}))
@@ -310,44 +321,48 @@ any(unlist(tapply(prias_long$visitTimeDays, prias_long$P_ID, function(x){is.unso
 prias_long$visit_number = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){1:nrow(x)}))
 prias_long$nr_visits = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){rep(nrow(x), nrow(x))}))
 
-#First: Choose only those patients who have Gleason <=6 at baseline
-#If you look at the next 3 commented lines, this is one way to find the P_ID
-#But it also includes patient 2026 whose 3rd visit has first gleason score
-#His baseline gleason score was invalid so, we had to remove that.
-#But anyway what I have done below works for this data set
-
-# temp = prias_long[!is.na(prias_long$gleason),]
-# temp$P_ID = droplevels(temp$P_ID)
-# unique(temp$P_ID)[(by(temp$gleason, temp$P_ID, function(x)(x[1])) > 6)==T]
-
-condition_survival_gleason1 = prias_long$visit_number==1 & prias_long$gleason %in% c(7,8,9,10)
-View(prias_long[condition_survival_gleason1,])
-
-prias_long = prias_long[!(prias_long$P_ID %in% droplevels(prias_long[condition_survival_gleason1, "P_ID"])) ,]
-prias_long$P_ID = droplevels(prias_long$P_ID)
-
-#Second: Choose only those patients who have atleast one gleason score
+#Choose only those patients who have atleast one gleason score
 condition_survival_gleason2pid = droplevels(unique(prias_long[!is.na(prias_long$gleason),]$P_ID))
 prias_long = prias_long[prias_long$P_ID %in% condition_survival_gleason2pid,]
 prias_long$P_ID = droplevels(prias_long$P_ID)
 
-#Third:  drop all observations after the first time Gleason score is > 7
+#Create prias.id 
 prias.id = prias_long[!duplicated(prias_long$P_ID),]
 pid_progressed = droplevels(unique(prias_long[prias_long$gleason %in% c(7,8,9,10),]$P_ID))
 
-prias.id$progressed = ifelse(prias.id$P_ID %in% pid_progressed, 1, 0)
-prias.id$progression_time = c(by(prias_long, prias_long$P_ID, function(prias_long_i){
+#0 corresponds to right censored, 3 corresponds to interval censored. Check survival::Surv()
+prias.id$progressed = ifelse(prias.id$P_ID %in% pid_progressed, 3, 0)
+prias.id$progression_time_start = c(by(prias_long, prias_long$P_ID, function(prias_long_i){
   if(any(prias_long_i$gleason %in% c(7,8,9,10))){
-    prias_long_i$visitTimeYears[which(prias_long_i$gleason %in% c(7,8,9,10))[1]]  
+    lastTime = prias_long_i$visitTimeYears[which(prias_long_i$gleason %in% c(7,8,9,10))[1]]
+    tail(prias_long_i$visitTimeYears[!is.na(prias_long_i$gleason) & prias_long_i$visitTimeYears<=lastTime], 2)[1]
   }else{
     max(prias_long_i$visitTimeYears, na.rm = T)
   }
 }))
 
-prias_long$progression_time = rep(prias.id$progression_time, prias.id$nr_visits)
+prias.id$progression_time_end = c(by(prias_long, prias_long$P_ID, function(prias_long_i){
+  if(any(prias_long_i$gleason %in% c(7,8,9,10))){
+    prias_long_i$visitTimeYears[which(prias_long_i$gleason %in% c(7,8,9,10))[1]]  
+  }else{
+    Inf
+  }
+}))
+
+#For the following special case of subjects, it may happen that there was only biopsy done and that gave a score > 6
+#such patients may not have a biopsy at induction. they were inducted probably thinking that they are in a good condition
+#Their DRE and PSA look normal afterall. So we assume that Gleason to be 0. If we don't do so then the
+#start and end progression time may become equal due to the code written above. Following is the list
+#of such patients and the corresponding hacky solution
+#View(prias[prias$Gleason_sum %in% NA & prias$Gleason_sum_repeat %in% NA,])
+prias.id$progression_time_start[prias.id$progression_time_start == prias.id$progression_time_end] = 0
+
+#nr_visits is not corrupted coz we dropped entire subjects but not individual observations
+prias_long$progression_time_start = rep(prias.id$progression_time_start, prias.id$nr_visits)
+prias_long$progression_time_end = rep(prias.id$progression_time_end, prias.id$nr_visits)
 prias_long$progressed = rep(prias.id$progressed, prias.id$nr_visits)
 
-prias_long = prias_long[prias_long$visitTimeYears<=prias_long$progression_time,]
+prias_long = prias_long[prias_long$visitTimeYears<=prias_long$progression_time_end,]
 prias_long$nr_visits = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){rep(nrow(x), nrow(x))}))
 
 #Keep only the columns of interest
@@ -355,28 +370,21 @@ prias_long = prias_long[, c("P_ID", "Age",
                             "DiscontinuedYesNo", "Date_discontinued", "DiscontinuedType", 
                             "Reason_treatment", "nr_visits", "visit_number", 
                             "dom", "visitTimeDays", "visitTimeYears",
-                            "progression_time", "progressed" , "psa", "dre", "gleason")]
+                            "progression_time_start", "progression_time_end", 
+                            "progressed" , "psa", "dre", "gleason")]
 
 prias.id = prias.id[, c("P_ID", "Age",  "DiscontinuedYesNo", "Date_discontinued", 
                         "DiscontinuedType", "Reason_treatment", "nr_visits",
-                        "progressed", "progression_time")]
+                        "progressed", "progression_time_start", "progression_time_end")]
 
+prias_long$log2psa = log(prias_long$psa, 2)
 #########################################################
 # Data type cleaning for the long version of the data set
 #########################################################
 levels(prias_long$dre) = trimws(levels(prias_long$dre))
 prias_long$dre = as.ordered(droplevels(prias_long$dre))
 
-#####################################################
-# Create simplified versions of various columns
-#####################################################
-prias_long$didre = rep(NA, nrow(prias_long))
-prias_long[!is.na(prias_long$dre), ]$didre = ifelse(prias_long[!is.na(prias_long$dre), ]$dre %in% c("T1c"), yes = "T1", no = ">T1")
-prias_long$didre = ordered(prias_long$didre, levels=c("T1", ">T1"))
-
-prias_long$digleason = rep(NA, nrow(prias_long))
-prias_long[!is.na(prias_long$gleason), ]$digleason = ifelse(prias_long[!is.na(prias_long$gleason), ]$gleason<=6, yes="Low", no="High")
-prias_long$digleason = ordered(prias_long$digleason, levels=c("Low", "High"))
+rm(list = setdiff(ls(), c("prias.id", "prias_long")))
 
 save.image("Rdata/Gleason as event/cleandata.Rdata")
 

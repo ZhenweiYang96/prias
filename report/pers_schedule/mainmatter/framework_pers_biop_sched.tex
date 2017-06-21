@@ -2,58 +2,58 @@
 
 \section{A framework for personalized biopsy schedules}
 \label{sec : framework_pers_biop_sched}
-The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other subject specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time Gleason reclassification takes place. Since our interest also lies in time to Gleason reclassification, we model it as a time to event outcome. i.e. time to Gleason reclassification. While univariate modeling of the two aforementioned outcomes can be done separately using longitudinal model and survival models, it is important to note that they are not independent. To model the association between the two types of outcomes we use a joint model for time to event and longitudinal outcomes.
+The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other patient specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time GR takes place. Since our interest lies in finding the time of GR, we model it as a time to event outcome. While univariate modeling of the two aforementioned outcomes can be done separately using longitudinal model and survival models, it is important to note that they are not independent. To model the association between the two types of outcomes we use a joint model for time to event and longitudinal outcomes.
 
-\subsection{Joint model for Gleason reclassification and PSA levels}
+\subsection{Joint model for risk of GR and PSA levels}
 \label{subsec : jm_definition}
-Let $T_i^*$ denote the true Gleason reclassification time for the $i^{th}$ subject. Let the times at which biopsies are conducted for the $i^{th}$ patient be denoted by $C_i = \{C_{i0}, C_{i1}, ... C_{ig_i}; C_{ij} < C_{ik}, \forall j<k \}$. $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = C_{i(g_i-1)}, r_i = C_{ig_i}$ if Gleason reclassification is observed and $l_i = C_{ig_i}, r_i=\infty$ if patient drops out. The latter is also known as right censoring. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector for the PSA levels of the $i^{th}$ subject. The population of interest is all the patients enrolled in AS. For a sample of $n$ patients from this population the complete data is denoted by $\mathcal{D}_n = \{T_i, l_i, r_i, \boldsymbol{y}_i; i = 1,...n\}$, where $T_i \epsilon (l_i, r_i]$ denotes the observed time of Gleason reclassification.\\
+Let $T_i^*$ denote the true GR time for the $i^{th}$ patient. Let the times at which biopsies are conducted for the $i^{th}$ patient be denoted by $C_i = \{C_{i0}, C_{i1}, ... C_{ig_i}; C_{ij} < C_{ik}, \forall j<k \}$, where $g_i$ is the total number of biopsies conducted. $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = C_{i(g_i-1)}, r_i = C_{ig_i}$ if GR is observed, and $l_i = C_{ig_i}, r_i=\infty$ if patient drops out. The latter is also known as right censoring. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector for the PSA levels of the $i^{th}$ patient. The population of interest is all the patients enrolled in AS. For a sample of $n$ patients from this population the complete data is denoted by $\mathcal{D}_n = \{T_i, l_i, r_i, \boldsymbol{y}_i; i = 1,...n\}$, where $T_i \epsilon (l_i, r_i]$ denotes the observed time of GR.\\
 
 To model the evolution of the longitudinal outcome, which is PSA levels in the case at hand, the joint model utilizes a linear mixed effects model. The longitudinal outcome $y_i(t)$ at time $t$ is modeled as:
 
 \begin{equation*}
 \begin{split}
 y_i(t) &= m_i(t) + \varepsilon_i(t), \\
-&= \boldsymbol{x}_i^T(t) \beta + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i + \varepsilon_i(t)
+&= \boldsymbol{x}_i^T(t) \boldsymbol{\beta} + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i + \varepsilon_i(t)
 \end{split}
 \end{equation*}
 %Do not introduce a space here, otherwise it starts a new paragraph
-where, $m_i(t)$ denotes the true and unobserved value of the longitudinal outcome at time $t$. $\varepsilon_i(t) \sim N(0, \sigma^2)$ denotes the measurement error term, assumed normally distributed with variance $\sigma^2$. $\beta$ denotes the vector of the unknown fixed-effects parameters. $\boldsymbol{b}_i \sim N(0, \boldsymbol{D})$ denotes the vector of random effects, assumed normally distributed with mean zero and covariance matrix D, and independent of $\varepsilon_i(t)$. $\boldsymbol{x}_i(t)$ and $\boldsymbol{z}_i(t)$ denote row vectors of the design matrices for the fixed and random effects, respectively. For non continuous longitudinal outcomes joint models utilize Generalized linear mixed models \citep{rizopoulos2012joint}.\\
+where, $m_i(t)$ denotes the true and unobserved value of the longitudinal outcome at time $t$. The measurement error $\varepsilon_i(t) \sim N(0, \sigma^2)$ is assumed normally distributed with variance $\sigma^2$. $\boldsymbol{\beta}$ denotes the vector of the unknown fixed-effects parameters. $\boldsymbol{b}_i \sim N(0, \boldsymbol{D})$ denotes the $q \times 1$ vector of random effects, assumed normally distributed with mean zero, and $q times q$covariance matrix D. $\boldsymbol{b}_i$ and $\varepsilon_i(t)$ are assumed independent. $\boldsymbol{x}_i(t)$ and $\boldsymbol{z}_i(t)$ denote row vectors of the design matrices for the fixed and random effects, respectively. For non continuous longitudinal outcomes joint models utilize Generalized linear mixed models \citep{rizopoulos2012joint}.\\
 
-Since both PSA levels and Gleason scores are affected by the state of prostate cancer, they are inherently correlated with each other. To this end, the joint model utilizes a relative risk sub-model where the hazard of Gleason reclassification $h_i(t)$ at any time point $t$ depends on the history of true and unobserved values of PSA levels $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ measured up to that time point. Joint models offer flexibility in modeling this dependence. In its simplest form, the hazard may depend on instantaneous value of PSA $m_i(t)$ at time $t$. More sophisticated ones are dependence of hazard at time $t$ on PSA-DT, PSA velocity $m'_i(t) = \dfrac{d m_i(t)}{dt}$, or even on the cumulative effect of PSA $\int_0^t m_i(s) \,ds$ up to $t$. The fact that any functional form of dependence is possible, is evident from the following equation:
+Since both PSA levels and Gleason scores are affected by the state of prostate cancer, they are inherently correlated with each other. To this end, joint models utilize a relative risk sub-model where the hazard of GR at any time point $t$, denoted by $h_i(t)$, depends on the history of true and unobserved values of PSA levels $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ measured up to that time point. Joint models offer flexibility in modeling this dependence. In its simplest form, the hazard may depend on instantaneous value of PSA $m_i(t)$ at time $t$. More sophisticated ones are dependence of hazard at time $t$ on PSA-DT, PSA velocity $m'_i(t) = \dfrac{d m_i(t)}{dt}$, or even on the cumulative effect of PSA $\int_0^t m_i(s) \,ds$ up to $t$. The fact that any functional form of dependence is possible, is evident from the following equation:
 
 \begin{equation*}
-h_i(t \mid M_i(t), \boldsymbol{w}_i) = h_0(t) e^{\gamma^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \alpha\}}
+h_i(t \mid M_i(t), \boldsymbol{w}_i) = h_0(t) e^{\boldsymbol{\gamma}^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\}}
 \end{equation*}
-where $h_0(t)$ is the baseline hazard at time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\gamma$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\alpha$ specifies the features of longitudinal outcome that are are included in the linear predictor of the relative risk model.\\
+where $h_0(t)$ is the baseline hazard at time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\boldsymbol{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\boldsymbol{\alpha}$ specifies the function form of longitudinal outcome that is used in the linear predictor of the relative risk model.\\
 
-While $\alpha$ controls the strength of association between the hazard of reclassification and features of the PSA levels, the fact that both Gleason scores and PSA levels are internally related to a patient's health, is manifested by the random effects $\boldsymbol{b}_i$ in the model. The joint model postulates that given the random effects, time to Gleason reclassification and PSA levels measured at different time points are mutually independent. As mentioned earlier, in PRIAS study PSA-DT is used to decide the schedule of biopsies. Although PSA-DT is computed using observed PSA values, dependence on observed longitudinal history $\mathcal{Y}(t) = \{y_i(v), 0\leq v \leq t\}$ at any time $t$, is not the same as dependence on patient's health. This because dependence on patient's health, manifested by $\boldsymbol{b}_i$ is same as dependence on future unobserved values of PSA. Thus the inference for the parameters of interest $\theta$ doesn't change even if uncertainty in biopsy schedule $C_i$ is not modeled. The kernel of the corresponding joint likelihood conditional on the random effects and the model parameters is given by:
+While $\boldsymbol{\alpha}$ controls the strength of association between the hazard of GR and features of the PSA levels, the fact that both Gleason scores and PSA levels are internally related to a patient's health, is manifested by the random effects $\boldsymbol{b}_i$ in the model. The joint model postulates that given the random effects, time to GR and PSA levels measured at different time points are mutually independent. As mentioned earlier, in PRIAS study PSA-DT is used to decide the schedule of biopsies. Although PSA-DT is computed using observed PSA values, dependence on observed longitudinal history $\mathcal{Y}(t) = \{y_i(v), 0\leq v \leq t\}$ at any time $t$, is not the same as dependence on patient's health. This because dependence on patient's health, manifested by $\boldsymbol{b}_i$ is same as dependence on future unobserved values of PSA. Thus the inference for the model parameters $\boldsymbol{\theta} = {\{\boldsymbol{\beta}^T, \boldsymbol{\gamma}^T, \boldsymbol{\alpha}^T, \sigma^2, \{d_{jk} \mid j=k=1,...q\}\}}^T$ doesn't change even if uncertainty in biopsy schedule $C_i$ is not modeled. The kernel of the corresponding joint likelihood conditional on the random effects and the model parameters is given by:
 
 \begin{equation*}
-p(T_i, l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \theta) \propto p(T_i \mid l_i, r_i, \boldsymbol{b}_i, \theta) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \theta)
+p(T_i, l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) \propto p(T_i \mid l_i, r_i, \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})
 \end{equation*}
 
 \subsection{Personalized scheduling approaches}
 \label{subsec : pers_sched_approaches}
-Once a joint model for Gleason reclassification and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. In this section we present the various personalized biopsy scheduling approaches and their motivation. The personalized schedules that we propose are dynamic in nature and thus at any given time, only 1 future biopsy is scheduled. The age of the patient and entire PSA, repeat biopsy history up to that time point is considered while computing the time of next biopsy. To elucidate the scheduling methods, let us assume that the a personalized schedule is to be created a new patient numbered $j$ who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that the patient did not have a Gleason reclassification at their last biopsy, performed at time $t$ and that the PSA measurements are available for the patient up to a time point $s > t$. Combining these two pieces of information, the predictive distribution $g(T^*_j)$ for time to Gleason reclassification for this patient is given by (conditioning on baseline covariates $\boldsymbol{w}_i$ is dropped for notational simplicity here onwards):
+Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. In this section we present the various personalized biopsy scheduling approaches and their motivation. The personalized schedules that we propose are dynamic in nature and thus at any given time, only 1 future biopsy is scheduled. The age of the patient and entire PSA, repeat biopsy history up to that time point is considered while computing the time of next biopsy. To elucidate the scheduling methods, let us assume that the a personalized schedule is to be created a new patient enumerated $j$, who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that this patient did not have a GR at their last biopsy, performed at time $t$ and that the PSA measurements are available for the patient up to a time point $s$. Combining these two pieces of information, the predictive distribution $g(T^*_j)$ for time to GR for this patient is given by (conditioning on baseline covariates $\boldsymbol{w}_i$ is dropped for notational simplicity here onwards):
 
 \begin{equation}
 \label{eq : dyn_dist_fail_time}
 \begin{split}
 g(T^*_j) &= p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n)\\
-%&= \int p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \theta) p(\theta \mid \mathcal{D}_n) \,d\theta\\
-%&= \int \int p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \boldsymbol{b_j}, \theta) p(\boldsymbol{b}_j \mid T^*_j>t, \mathcal{Y}_j(s), \theta)p(\theta \mid \mathcal{D}_n) \,d\boldsymbol{b}_j \,d\theta
+%&= \int p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \boldsymbol{\theta}) p(\boldsymbol{\theta} \mid \mathcal{D}_n) \,d\boldsymbol{\theta}\\
+%&= \int \int p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \boldsymbol{b_j}, \boldsymbol{\theta}) p(\boldsymbol{b}_j \mid T^*_j>t, \mathcal{Y}_j(s), \boldsymbol{\theta})p(\boldsymbol{\theta} \mid \mathcal{D}_n) \,d\boldsymbol{b}_j \,d\boldsymbol{\theta}
 \end{split}
 \end{equation}
-where $\mathcal{Y}_j(s)$ denotes the history of PSA measurements done up to time $s$. Given the predictive distribution, our goal is find the optimal time $u \geq s$ of the next biopsy. To achieve this we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose future biopsy time $u$ by minimizing the posterior expected loss $E_g[L(T^*_j, u)]$, where the expectation is taken w.r.t. the predictive distribution $g(T^*_j)$. 
+where $\mathcal{Y}_j(s)$ denotes the history of PSA measurements done up to time $s$. Given the predictive distribution, our goal is find the optimal time $u \geq \text{max}(t,s)$ of the next biopsy. To this end, we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose future biopsy time $u$ by minimizing the posterior expected loss $E_g[L(T^*_j, u)]$, where the expectation is taken w.r.t. the predictive distribution $g(T^*_j)$. 
 
 \begin{equation*}
 E_g[L(T^*_j, u)] = \int_t^\infty L(T^*_j, u) p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n) \,dT^*_j
 \end{equation*}
-Various loss functions $L(T^*_j, u)$ have been proposed in literature \citep{robertBayesianChoice}. We next present the loss functions we use in this work and the motivation for their choice.
+Various loss functions $L(T^*_j, u)$ have been proposed in literature \citep{robertBayesianChoice}. The ones we utilize, and the corresponding motivations are presented next.
 
-\subsubsection{Expected time of Gleason reclassification}
+\subsubsection{Expected time of GR}
 \label{subsubsec : exp_fail_time}
-One of the reasons, patients did not comply with the existing PRIAS schedule was \textquoteleft complications on a previous biopsy \textquoteright. Therefore, it makes sense to have as less biopsies as possible. In the ideal case only 1 biopsy, performed at the exact time of Gleason reclassification is sufficient. In this regard, the squared loss function $L(T^*_j, u) = (T^*_j - u)^2$ has the property that the loss increases quadratically as the error $T^*_j - u$ increases. So the squared loss function satisfies our requirement of choosing a $u$ as close to the true Gleason reclassification time as possible. The posterior expected loss is given by:
+One of the reasons, patients did not comply with the existing PRIAS schedule was \textquoteleft complications on a previous biopsy \textquoteright. Therefore, it makes sense to have as less biopsies as possible. In the ideal case only 1 biopsy, performed at the exact time of GR is sufficient. In this regard, the squared loss function $L(T^*_j, u) = (T^*_j - u)^2$ has the property that the loss increases quadratically as the error $T^*_j - u$ increases. So the squared loss function satisfies our requirement of choosing a $u$ as close to the true GR time as possible. The posterior expected loss is given by:
 
 \begin{equation}
 \label{eq : posterior_squared_loss}
@@ -62,20 +62,20 @@ E_g[L(T^*_j, u)] &= E_g[(T^*_j - u)^2]\\
 &=E_g[(T^*_j)^2] + u^2 -2uE_g[T^*_j]
 \end{split}
 \end{equation}
-The posterior expected loss in equation \ref{eq : posterior_squared_loss} attains its minimum at $u = E_g[T^*_j]$, also known as expected time of Gleason reclassification.
+The posterior expected loss in equation \ref{eq : posterior_squared_loss} attains its minimum at $u = E_g[T^*_j]$, also known as expected time of GR.
 
 \subsubsubsection{Estimation}
-Since there is no closed form solution available for $E_g[T^*_j]$, for its estimation we introduce a construct called dynamic survival probability \citep{rizopoulos2011dynamic}. The dynamic survival probability $\pi_j(v \mid t, s)$ of patient $j$ is the survival probability at time $v$, conditional on the observed PSA history $\mathcal{Y}_j(s)$ and the fact that the patient did not have Gleason reclassification up to $t$. It is given by:
+Since there is no closed form solution available for $E_g[T^*_j]$, for its estimation we introduce a construct called dynamic survival probability \citep{rizopoulos2011dynamic}. The dynamic survival probability $\pi_j(v \mid t, s)$ of patient $j$ is the survival probability at time $v$, conditional on the observed PSA history $\mathcal{Y}_j(s)$ and the fact that the patient did not have GR up to $t$. It is given by:
 
 \begin{equation}
 \pi_j(v \mid t, s) = Pr(T^*_j \geq v \mid  T^*_j >t, \mathcal{Y}_j(s), D_n), v \geq t
 \end{equation}
-The relationship between expected time of Gleason reclassification and dynamic survival probability is given by:
+The relationship between expected time of GR and dynamic survival probability is given by:
 
 \begin{equation*}
 E_g[T^*_j] = t + \int_t^\infty \pi_j(v \mid t, s) \,dv
 \end{equation*}
-Since the R package JMbayes already provides an implementation of $\pi_j(v \mid t, s)$, this approach was preferred over Monte Carlo methods to estimate $E_g[T^*_j]$ from the predictive distribution $g(T^*_j)$. A limitation of expected time of Gleason reclassification though, is that it is only useful when the variance of predictive distribution $g(T^*_j)$ is small. The variance is given by:
+Since the R package JMbayes already provides an implementation of $\pi_j(v \mid t, s)$, this approach was preferred over Monte Carlo methods to estimate $E_g[T^*_j]$ from the predictive distribution $g(T^*_j)$. A limitation of expected time of GR though, is that it is only useful when the variance of predictive distribution $g(T^*_j)$ is small. The variance is given by:
 
 \begin{equation}
 \begin{split}
@@ -84,11 +84,18 @@ Var_g[T^*_j] &= E_g[{T^*_j}^2] - {E_g[T^*_j]}^2\\
 \end{split}
 \end{equation}
 It is to be noted that the posterior expected loss with the squared loss function is equal to the variance. Since the variance is same as expected loss....loss increases....intuitive??
-\textcolor{red}{\textbf{THEORETICALLY PROVE HOW VARIANCE DECREASES WITH LESS Y(s)}}
 
-\subsubsection{Dynamic risk of reclassification}
+\begin{figure}[!htb]
+	\centering
+    \captionsetup{justification=centering}
+	\includegraphics[width=0.8\textwidth]{images/variance_pred_dist.png}
+	\caption{Variance of the predictive distribution $g(T^*_j)$ over a period of 10 years for patient 405. Blue vertical lines indicate biopsies.}
+	\label{fig : variance_pred_dist}
+\end{figure}
+
+\subsubsection{Dynamic risk of GR}
 \label{subsubsec : dynamic_risk_definitions}
-In a practical scenario it is possible that a doctor or a patient may not want to exceed a certain risk of reclassification $1 - \pi_j(u \mid t, s)$ since the last biopsy. The personalized scheduling approach based on dynamic risk of reclassification, schedules the next biopsy at a time point $u$ such that the dynamic risk of reclassification is higher than a certain threshold $1-\kappa,\ \kappa \epsilon [0,1]$ beyond $u$. Or in other words the dynamic survival probability $\pi_j(u \mid t, s)$ is below a threshold $\kappa$ beyond $u$. In this regard, the posterior expected loss for the following multilinear loss function can be minimized to find the most optimal $u$:
+In a practical scenario it is possible that a doctor or a patient may not want to exceed a certain risk of GR $1 - \pi_j(u \mid t, s)$ since the last biopsy. The personalized scheduling approach based on dynamic risk of GR, schedules the next biopsy at a time point $u$ such that the dynamic risk of GR is higher than a certain threshold $1-\kappa,\ \kappa \epsilon [0,1]$ beyond $u$. Or in other words the dynamic survival probability $\pi_j(u \mid t, s)$ is below a threshold $\kappa$ beyond $u$. In this regard, the posterior expected loss for the following multilinear loss function can be minimized to find the most optimal $u$:
 
 \begin{equation}
 \label{eq : loss_dynamic_risk}
@@ -101,9 +108,9 @@ L_{k_1, k_2}(T^*_j, u) =
 where $k_1 > 0$, $k_2 > 0$ are constants parameterizing the loss function. The posterior expected loss function $E_g[L_{k_1, k_2}(T^*_j, u)]$ obtains its minimum at $u = \pi_j^{-1}\Big\{\dfrac{k_1}{k_1 + k_2}\Big\}$ \citep{robertBayesianChoice}. The choice of $k_1, k_2$ is equivalent to the choice of $\kappa$. More specifically, $\kappa = \dfrac{k_1}{k_1 + k_2}$. 
 
 \subsubsubsection{Choice of $\kappa$}
-If $\kappa$ is required to be chosen on the basis of doctor's advice; E.g. $1 - \kappa = 0.5$, then any of $k_1, k_2 \mid k_1=k_2$ are acceptable.\\
+Since the value $\kappa$ dictates the biopsy schedule, its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For e.g. if maximum acceptable risk is 50\% then $1 - \kappa = 0.5$ and correspondingly, all $k_1, k_2 \mid k_1=k_2$ can be used in equation \ref{eq : loss_dynamic_risk} to calculate $u$. \\
 
-While expert advice can be invaluable, it is also possible to automate the choice of $\kappa$. We propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints,sokolova2009systematic}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience Gleason reclassification and the rest are controls. However, a patient can be in control group at some time $t_a$ and in the cases at some future time point $t_b > t_a$, and thus time dependent binary classification is more relevant. In joint models, a subject $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep{rizopoulosJMbayes}. The time window $\Delta t$ can be either chosen on a clinical basis (such as 1 year in PRIAS \textcolor{red}{\textbf{WHY 1 YEAR}}) or it can be chosen at a point where $AUC(t, \Delta t, s)$ \citep{rizopoulosJMbayes} is largest. i.e. $\Delta t$ for which the model has the most discriminative capability at time $t$. The binary classification accuracy measures we maximize to select the threshold $\kappa$ are the following (the binary classification measures depend on $t, \Delta t, s$, although the notation is droppped for readability):
+While expert advice can be invaluable, it is also possible to automate the choice of $\kappa$. We propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints,sokolova2009systematic}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience GR and the rest are controls. However, a patient can be in control group at some time $t_a$ and in the cases at some future time point $t_b > t_a$, and thus time dependent binary classification is more relevant. In joint models, a patient $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep{rizopoulosJMbayes}. The time window $\Delta t$ can be either chosen on a clinical basis (such as 1 year in PRIAS \textcolor{red}{\textbf{WHY 1 YEAR}}) or it can be chosen at a point where $AUC(t, \Delta t, s)$ \citep{rizopoulosJMbayes} is largest. i.e. $\Delta t$ for which the model has the most discriminative capability at time $t$. The binary classification accuracy measures we maximize to select the threshold $\kappa$ are the following (the binary classification measures are functions of $t, \Delta t, s$, although the notation is dropped for readability): 
 
 \begin{itemize}
 \item Accuracy: $ACC = \dfrac{TP + TN}{TP + FP + TN + FN}$, where TP, FP, TN and FN are the number of true positives, false positives, true negatives and false negatives at time point $t$. In this case if $k_1 = TP + TN$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} ACC$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
@@ -114,4 +121,68 @@ where sensitivity is defined as $Pr(\pi_j(t + \Delta t \mid t,s) \leq \kappa \mi
 \item F1 Score: $F1 = \dfrac{2TP}{2TP + FP + FN}$. In this case if $k_1 = 2TP$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} F1$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
 \end{itemize}
 
-\subsection{the flow chart and the definition of offset based on the flow chart}
+\subsubsection{Mixed approach}
+
+\subsubsection{Scheduling multiple biopsies}
+Scheduling biopsies using personalized schedules is an iterative process. Only one biopsy is scheduled at once, using all the information available up to that point in time. The information is manifested via the predictive distribution $g(T^*_j)$. It is important to note that new biopsy times are only proposed when the patient visits the hospital for a PSA measurement or for biopsy, since $g(T^*_j)$ is updated only at these time points. If a biopsy is conducted at time $t$, then scheduling the next biopsy at time $u \geq \text{max}(t,s)$ for patient $j$ is the goal. Although the predictive distribution $g(T^*_j)$ is updated with the new information $T^*_j > t$, there are a couple of restrictions on time $u$, namely:
+
+\begin{enumerate}
+\item Two consecutive biopsies should have a gap of at least 1 year between them. i.e. $u \geq t + 1$. Given the medical side effects of biopsies, the 1 year gap is strongly advised for patients enrolled in PRIAS. However, the personalized scheduling methods do not take this rule into account.
+\item Although it is required that $u \geq \text{max}(t,s)$, the personalized scheduling methods may propose to perform a biopsy at a time $u \epsilon (t, s]$. The reason is that, GR is not a terminating event, and so the patients continue to visit for PSA measurements. The support of the predictive distribution $g(T^*_j)$, however does not depend on last time of PSA measurement $s$, and remains $(t, \infty)$.
+\end{enumerate}
+ 
+Lastly, it is extremely likely that on consecutive visits to the hospital for PSA measurements, the personalized biopsy time is postponed or preponed. The choice of time of biopsy from consecutive visits is not clear. To resolve these issues, we propose to supplement the personalized scheduling methods with the following algorithm.
+
+\subsubsubsection{Definitions}
+Let us assume that patient $j$ had their latest biopsy at time $T^l_j$, and the latest available PSA measurement is from the current visit to the hospital, at time $T^{cv}_j$. The predictive distribution for time of GR is given by $p(T^*_j|T^*_j > T^l_j, \mathcal{Y}_j(T^{cv}_j), \mathcal{D}_n)$. Further let,
+
+\begin{enumerate}
+\item $T^p_j$ denote the time at which a biopsy is proposed by personalized scheduling methods.
+\item Let $T^s_j$ denote the time at which a biopsy is scheduled. This is not necessarily equal to the proposed time $T^p_j$, but rather a time devoid of the problems mentioned earlier. This time is generated from the algorithm.
+\item $T^{nv}_j$ denote the time of the next visit for PSA.
+\item $N^b_j$ denote the counter for number of biopsies conducted up to time $T^l_j$, excluding the biopsy done at the time of induction in AS.
+\end{enumerate}
+
+\subsubsubsection{Algorithm}
+\begin{tikzpicture}
+\node (start) [startstop] {Enter Active Surveillance.\\ Perform a biopsy.\\Set $T^l_j=0$.\\ Set $N^b_j = 0$.\\Set $T^s_j = \infty$.};
+
+\node (propTime) [process, below=1cm of start] {PSA measurement visit.\\Propose $T^p_j$.};
+
+\node (decision1) [decision, below = 1cm of propTime] {$T^p_j < T^s_j$?};
+
+\node (decision5) [decision, left=1cm of decision1] {$T^p_j \leq T^{cv}_j$?};
+
+\node (pro5) [process, below=1cm of decision5] {Set $T^p_j = T^{cv}_j$};
+
+\node (decision2) [decision, below=1cm of pro5] {$T^p_j - T^l_j > 1$?};
+
+\node (pro2) [process, below=1cm of decision1] {Set $T^s_j = T^p_j$};
+
+\node (decision4) [decision, right=1cm of decision1] {$T^s_j < T^{nv}_j$?};
+
+\node (pro3) [process, right=1cm of decision2] {Perform Biopsy at $T^l_j + 1$.\\ Set $N^b_j = N^b_j + 1$};
+
+\node (pro4) [process, below=1cm of decision4] {Perform Biopsy at $T^s_j$.\\ Set $N^b_j = N^b_j + 1$};
+
+\node (decision3) [decision, below=1cm of pro3] {Is Gleason score greater than 6?};
+
+\node (stop) [startstop, below = 1cm of decision3] {Remove patient from AS};
+
+
+\draw [arrow] (start) -- (propTime);
+\draw [arrow] (propTime) -- (decision1);
+\draw [arrow] (decision1) -- node[anchor=south] {Yes} (decision5);
+\draw [arrow] (decision5) -- node[anchor=east] {Yes} (pro5);
+\draw [arrow] (pro5) -- (decision2);
+\draw [arrow] (decision1) -- node[anchor=south] {No} (decision4);
+\draw [arrow] (decision4) |- node[anchor=south] {No} (propTime);
+\draw [arrow] (decision2) -- node[anchor=east] {Yes} (pro2);
+\draw [arrow] (pro2) -- (decision4);
+\draw [arrow] (decision2) -- node[anchor=south] {No} (pro3);
+\draw [arrow] (pro3) -- (decision3);
+\draw [arrow] (pro4) |- (decision3);
+\draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
+\draw [arrow] (decision4) -- node[anchor=east] {Yes} (pro4);
+\draw [arrow] (decision3.west)|- ([xshift=-1.5cm, yshift=-4.6cm]decision2.north west) |- node[anchor=south]{No} (propTime);
+\end{tikzpicture}
