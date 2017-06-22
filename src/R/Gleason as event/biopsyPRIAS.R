@@ -135,6 +135,9 @@ for(patientId in demoPatientPID){
 }
 
 plotVarianceOverTime = function(modelObject, prias_P_ID){
+  source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
+  environment(varCondFailureTime) <- asNamespace('JMbayes')
+  
   ct= makeCluster(detectCores())
   registerDoParallel(ct)
   
@@ -145,6 +148,7 @@ plotVarianceOverTime = function(modelObject, prias_P_ID){
   #variances=foreach(k=1:5,.combine='rbind', .packages=c("JMbayes", "splines")) %dopar%{
     subset = prias_long_i[1:k,]
     last.time = tail(subset$visitTimeYears[!is.na(subset$gleason)],1)
+    last.time = 0
     return(varCondFailureTime(modelObject, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 20))
   }
   

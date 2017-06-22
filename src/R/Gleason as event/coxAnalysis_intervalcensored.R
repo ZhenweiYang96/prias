@@ -1,8 +1,11 @@
 prias.id$progression_time_start[prias.id$progression_time_start == 0] = 10e-8
 
+training.prias.id = prias.id[!(prias.id$P_ID %in% c(3174, 2340, 911)),]
+
 survModel = survreg(Surv(progression_time_start, progression_time_end, type = "interval2") ~ 
                        I(Age - 70) +  I((Age - 70)^2), data = prias.id, model = TRUE)
-
+survModel.training= survreg(Surv(progression_time_start, progression_time_end, type = "interval2") ~ 
+                              I(Age - 70) +  I((Age - 70)^2), data = training.prias.id, model = TRUE)
 
 prias.id.rightCens = prias.id
 prias.id.rightCens$progressed = ifelse(prias.id$progressed>0, 1, 0)

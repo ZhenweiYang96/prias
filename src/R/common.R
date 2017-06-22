@@ -69,7 +69,7 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
     temp = effectPlotData(model, newDF, psa_data_set)
     
     if(transformPSA==T){
-      temp[,c(3,4,5)] = exp(temp[,c(3,4,5)]) - 1
+      temp[,c(3,4,5)] = exp(temp[,c(3,4,5)])
     }
     temp
   })
@@ -81,10 +81,10 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
         plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp), fill = "grey", alpha=0.4)
       } 
       plot = plot + geom_line(aes(y=pred, x=visitTimeYears), color="black") +
-        ticksX(from=0, max = 10, by = 1, labels = c(0:10)) + 
+        ticksX(from=0, max = 10, by = 1) + 
         ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
         xlab("Follow-up time (Years)") + 
-        ylab("log(PSA+1)")
+        ylab(expression('log'[2]*'(PSA)'))
       print(plot)
     })
   }else{
@@ -97,10 +97,10 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
                                 fill = "grey", alpha=0.4)
     } 
     plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=model, color=model)) +
-      ticksX(from=0, max = 10, by = 1, labels = c(0:10)) + 
+      ticksX(from=0, max = 10, by = 1) + 
       ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
       xlab("Follow-up time (Years)") + 
-      ylab("PSA")
+      ylab(expression('log'[2]*'(PSA)'))
     print(plot)
   }
 }
@@ -108,7 +108,7 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
 fitUnivaritePSAModel = function(fixedSplineKnots=c(0.1,0.5, 4), randomSplineKnots=c(0.1), 
                                 boundaryKnots=range(psa_data_set$visitTimeYears), method="ML"){
 
-  fixedFormula = as.formula(paste("logpsa1 ~ I(Age - 70) + I((Age - 70)^2) + ",
+  fixedFormula = as.formula(paste("log2psa ~ I(Age - 70) + I((Age - 70)^2) + ",
                   "ns(visitTimeYears, knots=c(", paste(fixedSplineKnots, collapse=", "), 
                   "), Boundary.knots=c(", paste(boundaryKnots, collapse=", "),"))", sep=""))
   
@@ -168,7 +168,7 @@ plotDynamicSurvProb = function(pid, fittedJointModel, futureTimeDt = 3){
     geom_vline(xintercept = lastPSATime, linetype="dotted") +
     geom_line(data = longprof, aes(x=visitTimeYears, y=survMean)) +
     geom_ribbon(data = longprof, aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="grey", alpha=0.5) +
-    xlab("Time (years)") + ylab("log(PSA + 1)") +
+    xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)')) +
     scale_y_continuous(limits = c(ymin, ymax),breaks = round(seq(ymin, ymax, 0.25),2), 
                        sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
 
