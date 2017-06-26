@@ -364,6 +364,7 @@ prias_long$progressed = rep(prias.id$progressed, prias.id$nr_visits)
 
 prias_long = prias_long[prias_long$visitTimeYears<=prias_long$progression_time_end,]
 prias_long$nr_visits = unlist(by(prias_long, INDICES=prias_long$P_ID, FUN=function(x){rep(nrow(x), nrow(x))}))
+prias.id = prias_long[!duplicated(prias_long$P_ID),]
 
 #Keep only the columns of interest
 prias_long = prias_long[, c("P_ID", "Age", 

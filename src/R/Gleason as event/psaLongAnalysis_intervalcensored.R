@@ -1,12 +1,15 @@
 source("src/R/common.R")
 
-psa_data_set =  prias_long[!is.na(prias_long$log2psa),]
-training_psa_data_set = psa_data_set[!(psa_data_set$P_ID %in% c(3174, 2340, 911)),]
+training_long = prias_long[!prias_long$P_ID %in% c(3174, 2340, 911),]
+training_long$progression_time = rep(training.prias.id.rightCens$progression_time, training.prias.id.rightCens$nr_visits)
 
-ggplot(data=psa_data_set[psa_data_set$P_ID==405,], aes(x=visitTimeYears, y=psa)) + 
+psa_data_set =  prias_long[!is.na(prias_long$log2psa),]
+training_psa_data_set = training_long[!is.na(training_long$log2psa),]
+
+ggplot(data=psa_data_set[psa_data_set$P_ID==3174,], aes(x=visitTimeYears, y=psa)) + 
   geom_line() + geom_point() + 
   ticksX(from=0,max(psa_data_set$visitTimeYears), 1) + xlab("Time (years)") + 
-  ylab(expression(PSA)) + ggtitle(paste("Patient ID:", 405))
+  ylab("PSA (ng/mL)") + ggtitle(paste("Patient ID:", 3174))
 
 ########################################################################
 ct= makeCluster(detectCores())
@@ -69,12 +72,16 @@ lme_psa_spline_pt1pt54_pt1 = lme(fixed=log2psa ~  I(Age - 70) +  I((Age - 70)^2)
                                      control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"), 
                                      method = "REML")
 
-joint_psa_spline_pt1pt54_pt1_tdboth = jointModelBayes(lme_psa_spline_pt1pt54_pt1, survModel_rightCens, 
+joint_psa_spline_pt1pt54_pt1_tdboth = jointModelBayes(lme_psa_spline_pt1pt54_pt1, survModel.training_rightCens, 
                                                           timeVar = "visitTimeYears", param = "td-both",
                                                           extraForm = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)),
                                                                            random=~0 + dns(visitTimeYears, knots=c(0.1), Boundary.knots=c(0, 7)),
                                                                            indFixed = 4:7, indRandom=2:3), control=list(n.iter = 1000))
 
+save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1.Rdata")
+
+joint_psa_replaced_prias = replaceMCMCContents(mvJoint_psa_spline_pt1pt54_pt1_tdboth, 
+                                               joint_psa_spline_pt1pt54_pt1_tdboth)
 save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1.Rdata")
 
 ########################################################################

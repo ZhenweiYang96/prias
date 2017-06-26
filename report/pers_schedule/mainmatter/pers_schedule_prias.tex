@@ -6,7 +6,7 @@ To demonstrate how the personalized scheduling algorithm described in section \r
 
 \subsection{Fitting the joint model to PRIAS dataset}
 \label{subsec : jm_fit_prias}
-The training data set contains information about 5938 prostate cancer patients who satisfied the conditions for enrollment in AS. For every patient the age at the time of induction in AS was recorded. PSA was measured every 3 months for first 2 years and every 6 months thereafter. To detect Gleason reclassification, biopsies were conducted at different time points on the basis of a predetermined schedule as well as PSA-DT as described in section \ref{sec : introduction}. For the longitudinal analysis of PSA measurements we used $\log_2 PSA$ measurements instead of the raw data. The log transformation was done because the PSA scores took very large values around the time of disease progression. This indicated that the underlying distribution for PSA scores was right skewed. The longitudinal sub-model of the joint model we fit is given by:
+The training data set contains information about 5938 prostate cancer patients who satisfied the conditions for enrollment in AS. For every patient the age at the time of induction in AS was recorded. PSA was measured every 3 months for first 2 years and every 6 months thereafter. To detect GR, biopsies were conducted at different time points on the basis of a predetermined schedule as well as PSA-DT as described in section \ref{sec : introduction}. For the longitudinal analysis of PSA measurements we used $\log_2 PSA$ measurements instead of the raw data. The log transformation was done because the PSA scores took very large values around the time of disease progression. This indicated that the underlying distribution for PSA scores was right skewed. The longitudinal sub-model of the joint model we fit is given by:
 
 \begin{align*}
 \log_2 PSA(t) &= m_i(t) + \varepsilon_i(t), \\
@@ -21,7 +21,7 @@ The evolution of PSA levels over time is modeled flexibly using B-splines. For t
 \begin{equation*}
 h_i(t) = h_0(t) e^{\gamma_1 (Age-70)  + \gamma_2 (Age-70)^2  \alpha_1 m_i(t) + \alpha_2 m'_i(t)}
 \end{equation*}
-where, $\alpha_1$ and $\alpha_2$ are measures of strength of association between hazard of Gleason reclassification and PSA value and PSA velocity, respectively. $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines\citep{eilers1996flexible}. Lastly, to fit the joint model we use the R package JMbayes \cite{rizopoulosJMbayes}, which uses a Bayesian approach for parameter estimation.
+where, $\alpha_1$ and $\alpha_2$ are measures of strength of association between hazard of GR and PSA value $m_i(t)$ and PSA velocity $m'_i(t)$, respectively. $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines\citep{eilers1996flexible}. Lastly, to fit the joint model we use the R package JMbayes \cite{rizopoulosJMbayes}, which uses a Bayesian approach for parameter estimation.
 
 \subsubsection{Parameter Estimates}
 \label{subsec : param_estimates_jm_fit_prias}
@@ -30,7 +30,7 @@ The parameter estimates for the joint model we fitted to the PRIAS data set are 
 \begin{figure}[!htb]
 	\centering
     \captionsetup{justification=centering}
-	\includegraphics[width=0.8\textwidth]{fitted_trend_psa.png}
+	\includegraphics[width=0.8\textwidth]{images/fitted_trend_psa.png}
 	\caption{Fitted evolution of $\log_2 PSA$ over a period of 10 years, for a patient who was inducted in AS at the Age of 70 years.}
 	\label{fig : fitted_trend_psa}
 \end{figure}
@@ -43,18 +43,18 @@ The parameter estimates for the joint model we fitted to the PRIAS data set are 
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
                                      & Mean   & Std. Dev           & 2.5\%               & 97.5\%              & P              \\ \midrule
-Intercept                            & 2.717  & 0.008              & 2.701               & 2.733               & \textless0.000 \\
-(Age - 70)                           & 0.003  & 0.001              & 0.001               & 0.005               & 0.002          \\
-(Age - 70) $\times$ (Age - 70)       & -0.001 & 1 $\times 10^{-4}$ & -7 $\times 10^{-4}$ & -4 $\times 10^{-4}$ & \textless0.000 \\
-Spline: visitTimeYears{[}0, 0.5{]}   & 0.026  & 0.008              & 0.012               & 0.042               & \textless0.000 \\
-Spline: visitTimeYears{[}0.5, 1.2{]} & 0.208  & 0.013              & 0.184               & 0.233               & \textless0.000 \\
-Spline: visitTimeYears{[}1.2, 2.5{]} & 0.175  & 0.019              & 0.137               & 0.210               & \textless0.000 \\
-Spline: visitTimeYears{[}2.5, 7{]}   & 0.309  & 0.028              & 0.256               & 0.366               & \textless0.000 \\
-$\sigma$                               & 0.273  & 0.001              & 0.271               & 0.275               & \textless0.000 \\ \bottomrule
+Intercept                            &  2.455 & 0.012 & 2.433 & 2.480               & \textless0.000 \\
+(Age - 70)                           & 0.003 & 0.001 & 4.9 $\times 10^{-4}$ & 0.006 & 0.032          \\
+(Age - 70) $\times$ (Age - 70)       & -0.001 & 1.4 $\times 10^{-4}$ & -0.001 & -3.5 $\times 10^{-4}$ & \textless0.000 \\
+Spline: visitTimeYears{[}0, 0.5{]}   & -0.006 & 0.012 & -0.031 & 0.017 & 0.674 \\
+Spline: visitTimeYears{[}0.5, 1.2{]} & 0.228 & 0.019 & 0.192 & 0.265               & \textless0.000 \\
+Spline: visitTimeYears{[}1.2, 2.5{]} & 0.140 & 0.029 & 0.088 & 0.197               & \textless0.000 \\
+Spline: visitTimeYears{[}2.5, 7{]}   & 0.303 & 0.039 & 0.227 & 0.379               & \textless0.000 \\
+$\sigma$                               & 0.324 & 0.001 & 0.321 & 0.326              &  \\ \bottomrule
 \end{tabular}
 \end{table}
 
-For the survival sub-model, the parameter estimates in Table \ref{tab : PSA_survival} show that both the $\log_2 PSA$ value and $\log_2 PSA$ velocity are associated with time to Gleason reclassification. The effect is quite strong and if at any given time point the PSA becomes approximately 4 times of its value then the hazard of Gleason reclassification  becomes 1.5 times of the original. This is valid under the condition that the $\log_2 PSA$ velocity remains the same. The effect of $\log_2 PSA$ velocity is far stronger, but it is not interpretable easily. The estimated values of the association parameters reinforces the idea that PSA measurements are indicative of Gleason reclassification. Lastly, for the effect of Age on hazard we can say that it can be safely ignored for all practical purposes.
+For the survival sub-model, the parameter estimates in Table \ref{tab : PSA_survival} show that only $\log_2 PSA$ velocity is strongly associated with hazard of GR. For any patient, a unit increase in $\log_2 PSA$ velocity corresponds to a 11 time increase in hazard of GR. The effect of $\log_2 PSA$ value and effect of Age on hazard of GR are so small that they can be safely ignored for all practical purposes.
 
 \begin{table}[!htb]
 \centering
@@ -64,49 +64,39 @@ For the survival sub-model, the parameter estimates in Table \ref{tab : PSA_surv
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
 Variable                      & Mean   & Std. Dev & 2.5\%  & 97.5\%                 & P              \\ \midrule
-Age - 70                      & 0.036  & 0.007    & 0.023  & 0.050                  & \textless0.000 \\
-(Age - 70) $\times$ (Age - 70) & -0.002 & 0.001    & -0.004 & 2 $\times 10^{-4}$ & 0.016          \\
-$\log_2 PSA$                  & 0.184  & 0.093    & 0.016 & 0.369                  & 0.032          \\
-Slope: $\log_2 PSA$           & 1.937  & 0.278    & 1.420  & 2.525                  & \textless0.000 \\ \bottomrule
+Age - 70                      & 0.037 & 0.006 & 0.025 & 0.0490                  & \textless0.000 \\
+(Age - 70) $\times$ (Age - 70) & -0.001 & 0.001 & -0.003 & 1.8 $\times 10^{-4}$ & 0.104          \\
+$\log_2 PSA$                  & -0.049 & 0.064 & -0.172 & 0.078 & 0.414         \\
+Slope: $\log_2 PSA$           & 2.407 & 0.319 & 1.791 & 3.069 & \textless0.000 \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Demonstration of personalized schedules}
-The personalized schedules we propose in this work depend on the predictive distribution $g(T^*_j)$ (Eq. \ref{eq : dyn_dist_fail_time}). As more PSA measurements are taken and repeat biopsies are performed, the distribution changes updated accordingly. In this section, we demonstrate the personalized schedules based on this distribution for a set of demo patients.\\
+In this section, we demonstrate how the personalized scheduling algorithm adapts the time of performing a biopsy according to the PSA history and results from repeat biopsies. The 3 patients we have chosen for the demonstration data set are part of PRIAS program and they have had their repeat biopsies already. Hence a full scale comparison between PRIAS biopsy schedule and personalized scheduling algorithm's biopsy schedule is not possible.\\
 
-%\begin{figure}[!htb]
-%	\centering
-%    \captionsetup{justification=centering}
-%	\includegraphics[width=0.8\textwidth]{dyn_surv_prob_2362.png}
-%	\caption{Dynamic survival probability for patient with ID 2362 in the PRIAS data set.}
-%	\label{fig : dyn_surv_prob_2362}
-%\end{figure}
-
-%As a first example we present the dynamic survival probability of patient 2362 from the PRIAS %data set. Patient 2362 had his last repeat biopsy at 3.78 years at which the Gleason %reclassification did not happen. The patient was later censored at 5.12 years. Using all this %information up to 5.12 years, the dynamic survival probability at any time point $u > 3.78$ %for this patient is given by the formula $Pr(T^*_{2362} \geq u| T^*_{2362} > 3.78, %\mathcal{Y}_{2362}(5.12), D_n; \theta)$. Figure \ref{fig : dyn_surv_prob_2362} shows the %dynamic survival probability for patient 2362 at time points between 5.12 and 8.12 years.
+The first patient of interest is patient nr. 3174 who was inducted in the PRIAS program at the age of 74 years. Between the last follow up and time of induction there was no repeat biopsy performed for this patient. Hence the predictive distribution $g(T^*_j)$  for this patient depends only on the PSA measurements. For this patient, the evolution of PSA, time of last biopsy and proposed times of biopsies are shown in Figure \ref{fig : prias_demo_pid_3174}. It can be seen that the PSA remains stable for the first 2 years of follow ups, but increases rapidly after that for the next 2 years of follow up. Since the hazard of GR depends on PSA velocity (Table\ref{tab : PSA_survival}), the schedule of biopsy based on personalized scheduling algorithm (Section \ref{fig : sched_algorithm}), adjust the times of biopsy according to the steep rise in PSA profile. At 2 years the expected and median time of GR are 12.5 years and 15.2 years respectively, whereas at 4 years, they are 5.3 and 4 years respectively. It is important to note that the estimates are year 2 are not as useful as the estimates at year 4, because the $Var_g[T^*_j]$ is considerably lower at year 4, as shown in Figure \ref{fig : variance_pred_dist_3174}.\\
 
 \begin{figure}[!htb]
 \centering
 \captionsetup{justification=centering}
-\includegraphics[width=\textwidth]{prias_demo_pid_3174.png}
+\includegraphics[width=\textwidth]{images/prias_demo/case_3174.png}
 \caption{\label{fig : prias_demo_pid_3174} Proposed biopsy times for patient 3174 from PRIAS.}
 \end{figure}
 
-\begin{figure}[!htb]
-\centering
-\captionsetup{justification=centering}
-\includegraphics[width=\textwidth]{prias_demo_pid_911.png}
-\caption{\label{fig : prias_demo_pid_911} Proposed biopsy times for patient 3174 from PRIAS.}
-\end{figure}
+The second patient of interest is patient nr. 911. Figure \ref{fig : prias_demo_pid_911} shows the evolution of PSA, time of last biopsy and proposed biopsy times for this patient. Firstly, it can be seen that at between year 1.5 and year 2, the PSA rises sharply, and accordingly the personalized schedules based on expected time of GR preponed the proposed biopsy time from 14.2 years to 13.8 years. The change in median time of GR is trivial. The second observation is that between year 2 and year 3 the PSA decreases sharply and accordingly, the proposed biopsy times are postponed. More specifically the median time of GR increased from 15.2 years at year 2 to 17 years at year 3. Whereas the expected time of GR increased from 13.8 years to 16.6 years. It can also be seen that PSA remains stable up to to year 4. Lastly, because no GR is found at the repeat biopsy performed at 4.1 years, this further leads to postponing of the biopsy times, which become 18.7 and 19.9 for expected time of GR and median time of GR respectively.\\
 
 \begin{figure}[!htb]
 \centering
 \captionsetup{justification=centering}
-\includegraphics[width=\textwidth]{prias_demo_pid_2340.png}
-\caption{\label{fig : prias_demo_pid_2340} Proposed biopsy times for patient 3174 from PRIAS.}
+\includegraphics[width=\textwidth]{images/prias_demo/case_911.png}
+\caption{\label{fig : prias_demo_pid_911} Proposed biopsy times for patient 911 from PRIAS.}
 \end{figure}
 
-It can be seen in Figure \ref{fig : prias_demo_pid_3174} that the patient 3174 had a biopsy at the time of induction and none after that. The PSA for the patient increases rapidly after the 2nd year. In response to this rapid increase, the proposed biopsy times based on conditional expected failure time also decrease accordingly from 11 years to around 3.4 years. The change for risk based methods is not so drastic though. Further it can be seen that at the last visit for PSA, the proposed biopsy time is earlier than the last 5 PSA visits and similar is the case for the proposed biopsy time based on dynamic risk of failure. This is due to the fact that the last time of biopsy was time 0 (induction time) and thus the time to Gleason reclassification can take any value larger than 0. We discuss this issue in detail in section \ref{subsec : simulation_setup}.\\
+The fact that PSA velocity affects the biopsy times is also evident in the case of patient 2340, whose PSA evolution is shown in Figure \ref{fig : prias_demo_pid_2340}. We have purposefully ignored all the biopsies conducted for this patient in PRIAS, to isolate the effect of PSA history. It can be seen that PSA slowly rises to a value of 14 ng/mL over a period of 2.5 years. Correspondingly, there is little change in proposed biopsy times. On the other hand between 2.3 years and 3.3 years the PSA rises very sharply and correspondingly the expected time of GR decreases by an year from 12.5 years to 11.5 years in that period. The median time of GR remains the same though.
 
-Figure \ref{fig : prias_demo_pid_911} shows the PSA evolution and biopsy times for patient 911. It can be seen that this patient had 3 biopsies where Gleason reclassification did not happen. At year 2 when the patient's PSA increases rapidly the proposed failure times also decrease, whereas they increase over the next 1 year because the PSA also drops down in that time period. The fact that PSA velocity affects the biopsy times the most is also evident in the case of patient 2340, whose evolution is shown in Figure \ref{fig : prias_demo_pid_2340}. Here the rate of change at each time point is not high, and even though the PSA value reaches as high as 25 it has no effect on proposed biopsy times. This is in accordance with the estimated strength of association between PSA velocity/value and hazard of time to Gleason reclassification.\\
-
-An interesting observation we made while creating these schedules was that the variance of time to Gleason reclassification (Eq. \ref{eq : varFailureTime}) was quite high, which essentially rules out the usefulness of conditional expected time to Gleason reclassification. Given the large difference in proposed biopsy times based on the former and methods based on dynamic risk of Gleason reclassification, one might conclude that the latter are more useful. However as we will see in the simulation study (Section \ref{sec: simulation_study}) ahead, the usefulness of the two categories of methods depends on the distribution of time to Gleason reclassification.
+\begin{figure}[!htb]
+\centering
+\captionsetup{justification=centering}
+\includegraphics[width=\textwidth]{images/prias_demo/case_2340.png}
+\caption{\label{fig : prias_demo_pid_2340} Proposed biopsy times for patient 2340 from PRIAS.}
+\end{figure}

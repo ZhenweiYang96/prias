@@ -1,7 +1,8 @@
 \begin{tikzpicture}
-\node (start) [startstop] {Enter Active Surveillance.\\ Perform a biopsy.\\Set $T^l_j=0$.\\ Set $N^b_j = 0$.\\Set $T^s_j = \infty$.};
+\node (start) [startstop] {Enter Active Surveillance.\\ Perform a biopsy.\\Set $T^l_j=0$\\ Set $N^b_j = 0$\\Set $T^s_j = \infty$};
 
-\node (propTime) [process, below=1cm of start] {PSA measurement visit.\\Propose $T^p_j$.};
+\node (propTime) [process, below=1cm of start] {Update $g(T^*_j)$.\\Propose $T^p_j$.};
+\node (takePSA) [process, right=1.15cm of propTime] {Measure PSA at $T^{nv}_j$.};
 
 \node (decision1) [decision, below = 1cm of propTime] {$T^p_j < T^s_j$?};
 
@@ -29,7 +30,8 @@
 \draw [arrow] (decision5) -- node[anchor=east] {Yes} (pro5);
 \draw [arrow] (pro5) -- (decision2);
 \draw [arrow] (decision1) -- node[anchor=south] {No} (decision4);
-\draw [arrow] (decision4) |- node[anchor=south] {No} (propTime);
+\draw [arrow] (decision4) -- node[anchor=east] {No} (takePSA);
+\draw [arrow] (takePSA) -- (propTime);
 \draw [arrow] (decision2) -- node[anchor=east] {Yes} (pro2);
 \draw [arrow] (pro2) -- (decision4);
 \draw [arrow] (decision2) -- node[anchor=south] {No} (pro3);
@@ -37,5 +39,5 @@
 \draw [arrow] (pro4) |- (decision3);
 \draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
 \draw [arrow] (decision4) -- node[anchor=east] {Yes} (pro4);
-\draw [arrow] (decision3.west)|- ([xshift=-1.5cm, yshift=-4.6cm]decision2.north west) |- node[anchor=south]{No} (propTime);
+\draw [arrow] (decision3.west)|- ([xshift=-1.5cm, yshift=-4.5cm]decision2.north west) |- node[anchor=south]{No} (propTime);
 \end{tikzpicture}
