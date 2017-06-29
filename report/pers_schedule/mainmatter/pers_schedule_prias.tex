@@ -2,30 +2,33 @@
 
 \section{Personalized schedules for patients in PRIAS}
 \label{sec : pers_schedule_PRIAS}
-To demonstrate how the personalized scheduling algorithm described in section \ref{subsubsec : pers_sched_algorithm} works, we apply it to the patients in the PRIAS dataset. To this end, we divide the PRIAS data set into training(5264 patients) and demonstration data sets (3 patients). We fit a joint model to the training data set and then use it to create a personalized schedule for patients in demonstration data set. We fit the joint model using the R package JMbayes \citep{rizopoulosJMbayes}, which uses the Bayesian methodology to estimate the model parameters.
+To demonstrate how the personalized scheduling algorithm described in Section \ref{subsubsec : pers_sched_algorithm} works, we apply it to the patients in the PRIAS dataset. To this end, we divide the PRIAS data set into training(5264 patients) and demonstration data sets (3 patients). We fit a joint model to the training data set and then use it to create a personalized schedule for patients in demonstration data set. We fit the joint model using the R package JMbayes \citep{rizopoulosJMbayes}, which uses the Bayesian methodology to estimate the model parameters.
 
 \subsection{Fitting the joint model to PRIAS dataset}
 \label{subsec : jm_fit_prias}
-The training data set contains information about 5938 prostate cancer patients who satisfied the conditions for enrollment in AS. For every patient the age at the time of induction in AS was recorded. PSA was measured every 3 months for first 2 years and every 6 months thereafter. To detect GR, biopsies were conducted at different time points on the basis of a predetermined schedule as well as PSA-DT as described in section \ref{sec : introduction}. For the longitudinal analysis of PSA measurements we used $\log_2 PSA$ measurements instead of the raw data. The log transformation was done because the PSA scores took very large values around the time of disease progression. This indicated that the underlying distribution for PSA scores was right skewed. The longitudinal sub-model of the joint model we fit is given by:
+The training data set contains information about 5938 prostate cancer patients who satisfied the conditions for enrollment in AS. For every patient the age at the time of induction in AS was recorded. PSA was measured every 3 months for first 2 years and every 6 months thereafter. To detect GR, biopsies were conducted at different time points on the basis of a predetermined schedule as well as PSA-DT as described in Section \ref{sec : introduction}. For the longitudinal analysis of PSA measurements we used $\log_2 PSA$ measurements instead of the raw data. The log transformation was done because the PSA scores took very large values around the time of disease progression. This indicated that the underlying distribution for PSA scores was right skewed. The longitudinal sub-model of the joint model we fit is given by:
 
-\begin{align*}
+\begin{equation*}
+\begin{aligned}
 \log_2 PSA(t) &= m_i(t) + \varepsilon_i(t), \\
 m_i(t) &= (\beta_0 + b_{i0}) + \beta_1 (Age-70) + \beta_2 (Age-70)^2\\ 
 &+ \sum_{k=1}^4 \beta_{k+2} B_k(t,\mathcal{K}) + b_{i1} B_7(t, 0.5) + b_{i2} B_8(t, 0.5) \\
 \varepsilon_i(t) & \sim N(0, \sigma^2),\\
 \boldsymbol{b}_i & \sim N(0, \boldsymbol{D})
-\end{align*}
+\end{aligned}
+\end{equation*}
 
 The evolution of PSA levels over time is modeled flexibly using B-splines. For the fixed effects part the spline consists of 3 internal knots. The internal knots are at $\mathcal{K} =\{0.5, 1.2, 2.5\}$ years, and boundary knots are at 0 and 7 years. For the random effects part there is only 1 internal knot at 0.5 years and the boundary knots are at 0 and 7 years. The choice of knots was based on exploratory analysis as well as on the basis of model selection criteria AIC and BIC. The variable Age was median centered to avoid numerical instabilities while estimating the parameters in the model. For the survival sub-model the hazard function we fitted is given by:
 
-\begin{equation*}
+\begin{equation}
+\label{eq : hazard_prias}
 h_i(t) = h_0(t) e^{\gamma_1 (Age-70)  + \gamma_2 (Age-70)^2  \alpha_1 m_i(t) + \alpha_2 m'_i(t)}
-\end{equation*}
+\end{equation}
 where, $\alpha_1$ and $\alpha_2$ are measures of strength of association between hazard of GR and PSA value $m_i(t)$ and PSA velocity $m'_i(t)$, respectively. $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines\citep{eilers1996flexible}. Lastly, to fit the joint model we use the R package JMbayes \cite{rizopoulosJMbayes}, which uses a Bayesian approach for parameter estimation.
 
 \subsubsection{Parameter Estimates}
 \label{subsec : param_estimates_jm_fit_prias}
-The parameter estimates for the joint model we fitted to the PRIAS data set are shown in Table \ref{tab : PSA_long} and Table \ref{tab : PSA_survival}. Since the longitudinal evolution of $\log_2 PSA$ is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation we present the fitted evolution of PSA over a period of 10 years for a patient who is 70 years old in Figure \ref{fig : fitted_trend_psa}. It can be seen that the after the first 6 months the PSA levels steadily increase over the follow up period. Since the model for PSA has only additive terms, this evolution remains same for all patients. The effect of Age only affects the baseline PSA score. However it is so small that it can be ignored for all practical purposes.\\
+The posterior parameter estimates $p(\boldsymbol{\theta} \mid \mathcal{D}^{PRIAS})$ for the joint model we fitted to the PRIAS data set are shown in Table \ref{tab : PSA_long} and Table \ref{tab : PSA_survival}. Since the longitudinal evolution of $\log_2 PSA$ is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation we present the fitted evolution of PSA over a period of 10 years for a patient who is 70 years old in Figure \ref{fig : fitted_trend_psa}. It can be seen that the after the first 6 months the PSA levels steadily increase over the follow up period. Since the model for PSA has only additive terms, this evolution remains same for all patients. The effect of Age only affects the baseline PSA score. However it is so small that it can be ignored for all practical purposes.\\
 
 \begin{figure}[!htb]
 	\centering

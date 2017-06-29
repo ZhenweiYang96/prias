@@ -5,19 +5,23 @@ nSub <- 1000# number of subjects
 
 source("src/R/common.R")
 source("src/R/Simulation Study/simCommon.R")
-source("src/R/Simulation Study/personalizedDynamicCutoff.R")
+source("src/R/Simulation Study/rocAndCutoff.R")
+source("src/R/Simulation Study/nbAndOffset.R")
 source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 3
+nDataSets = 1
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
 
 #2.2 and 6
-weibullScales = rep(8, nDataSets)
-weibullShapes = rep(4.5, nDataSets)
+weibullScales = rep(6, nDataSets)
+weibullShapes = rep(1.5, nDataSets)
+
+methods = c("expectedFailureTime", "medianFailureTime","youden", 
+            "accuracy", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
 lastSeed = 3000
@@ -58,44 +62,77 @@ for(i in 1:nDataSets){
   simulatedDsList[[i]]$rocList = computeRoc(i)
   simulatedDsList[[i]]$cutoffValues = computeCutOffValues(i)
 
-  #make new columns
-  #This order should match the order of result from compute biopsy times
-  simulatedDsList[[i]]$testDs$expectedFailureTime = NA
-  simulatedDsList[[i]]$testDs$survTime85 = NA
-  simulatedDsList[[i]]$testDs$survTimeYouden = NA
-  simulatedDsList[[i]]$testDs$survTimeMaxTPR = NA
-  simulatedDsList[[i]]$testDs$survTimeAccuracy = NA
-  simulatedDsList[[i]]$testDs$survTimeF1Score = NA
-
-  resultColNumbers = (ncol(simulatedDsList[[i]]$testDs) - 6 + 1):ncol(simulatedDsList[[i]]$testDs)
-
   ct= makeCluster(cores)
   registerDoParallel(ct)
   
   tStart = Sys.time()
   lastPossibleVisit = timesPerSubject - 1
   
-  for(visitNumber in 1:lastPossibleVisit){
-    biopsyTimesList = computeBiopsyTimes(i, visitNumber)
-    for(j in 1:nrow(simulatedDsList[[i]]$testDs.id)){
-      simulatedDsList[[i]]$testDs[(j-1)*timesPerSubject + visitNumber, resultColNumbers] = biopsyTimesList[[j]]  
-    }
-    print(paste("visitNumber", visitNumber))
-  }
+  #Combo of patientRowNum and Method
+  nTasks = length(methods) * nrow(simulatedDsList[[i]]$testDs.id)
+  simulatedDsList[[i]]$biopsyTimes = foreach(taskNumber=1:nTasks, .combine = rbind,  
+                                             .packages =  c("splines", "JMbayes", "coda"),
+                                             .export = c("timesPerSubject"))%dopar%{
+                                                patientRowNum = ceiling(taskNumber/length(methods))
+                                                methodName = taskNumber%%length(methods)
+                                                if(methodName == 0){
+                                                  methodName = methods[length(methods)]
+                                                }else{
+                                                  methodName = methods[methodName]
+                                                }
+                                                
+                                                res = c(P_ID=patientRowNum, methodName=methodName, computeNbAndOffset(dsId = i, patientRowNum=patientRowNum, 
+                                                                                                                      minVisits = 1, 
+                                                                                                                      methodName = methodName,
+                                                                                                                      lastPossibleVisit = lastPossibleVisit))
+                                                
+                                                return(res)
+                                             }
   
-  # simulatedDsList[[i]]$biopsyTimes = vector("list", nrow(simulatedDsList[[i]]$testDs.id))
-  # for(patientRowNum in 1:length(simulatedDsList[[i]]$biopsyTimes)){
-  #   simulatedDsList[[i]]$biopsyTimes[[patientRowNum]] = computeBiopsyTimes(minVisits = 1, dsId = i, patientRowNum)
-  #   print(paste("Subject", patientRowNum))
-  # }
+  prias_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
+                                 .combine = rbind,
+                                 .packages =  c("splines", "JMbayes", "coda"))%dopar%{
+                                   res = c(P_ID=patientRowNum,
+                                           methodName="PRIAS",
+                                           computeNbAndOffset_PRIAS(dsId = i, patientRowNum=patientRowNum))
+                                   return(res)
+                                 })
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  
+  jh_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
+                              .combine = rbind,
+                              .packages =  c("splines", "JMbayes", "coda"))%dopar%{
+                                res = c(P_ID=patientRowNum,
+                                        methodName="JH",
+                                        computeNbAndOffset_JH(dsId = i, patientRowNum=patientRowNum))
+                                return(res)
+                              })
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  
+  # mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id), 
+  #                                .combine = rbind, 
+  #                                .packages =  c("splines", "JMbayes", "coda"),
+  #                                .export = c("timesPerSubject", "dynamicCutOffTimes"))%dopar%{
+  #                                  res = c(P_ID=patientRowNum, 
+  #                                          methodName="MixedAccu", 
+  #                                          computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
+  #                                                                   1, timesPerSubject-1, 
+  #                                                                   alternative = "accuracy"))
+  #                                  return(res)
+  #                                })
+  # 
+  # 
+  # simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  
   tEnd = Sys.time()
   print(tEnd-tStart)
 
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/simDs",i,".Rdata", sep=""))
   
   #Save RAM
+  rm(temp)
   simulatedDsList[[i]] = NA
 }

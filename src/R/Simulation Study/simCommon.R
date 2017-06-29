@@ -202,13 +202,27 @@ varianceCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegra
   return(lhs-rhs)
 }
 
+##########################
+trueDynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
+  if(is.null(last.time)){
+    last.time = tail(patientDs$visitTimeYears, 1)
+  }
+  
+  temp = sapply(futureTimes, survivalFunc, dsId, patientDs$P_ID[1]) / survivalFunc(last.time, dsId, patientDs$P_ID[1])
+
+  return(temp)
+}
+
+trueExpectedCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
+  last.time + integrate(dynamicPredProb, last.time, upperLimitIntegral, dsId, patientDs, 
+                        last.time = last.time,
+                        abs.tol = 0.1)$value
+}
+
+##########################
 
 generateLongtiudinalTimeBySchedule = function(){
-  #months = c(seq(0,24, 1), 27, 30, 33, 36, 39, 42, 48, 54, 60, 66, 72, 78, 84,
-  #           90, 96, 102, 108, 114, 120)
-  
-  months = c(0, 3, 6, 9, 12, 15, 18, 21, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84,
-              90, 96, 102, 108, 114, 120, 126, 132, 138, 144, 150, 156, 162, 168, 174, 180)
+  months = c(seq(0, 24, 3), seq(30, 20*12, 6))
   
   return(months/12)
 }
@@ -405,7 +419,7 @@ randomSlopeFormula = ~ 0 + dns(visitTimeYears, knots = c(0.5), Boundary.knots = 
 longTimes <- c(replicate(nSub, generateLongtiudinalTimeBySchedule(), simplify = T)) # at which time points longitudinal measurements are supposed to be taken
 timesPerSubject = length(longTimes) / nSub
 
-fittedJointModel = mvJoint_psa_spline_pt51pt22pt5_pt5_tdboth
+fittedJointModel = mvJoint_psa_spline_pt1pt54_pt1_tdboth
 
 betas <- getBetas(fittedJointModel, weightedOnes = F)
 sigma.y <- getSigma(fittedJointModel, weightedOnes = F)
