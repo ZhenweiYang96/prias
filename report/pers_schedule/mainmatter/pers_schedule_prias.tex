@@ -22,7 +22,7 @@ The evolution of PSA levels over time is modeled flexibly using B-splines. For t
 
 \begin{equation}
 \label{eq : hazard_prias}
-h_i(t) = h_0(t) e^{\gamma_1 (Age-70)  + \gamma_2 (Age-70)^2  \alpha_1 m_i(t) + \alpha_2 m'_i(t)}
+h_i(t) = h_0(t) \exp[\gamma_1 (Age-70)  + \gamma_2 (Age-70)^2  \alpha_1 m_i(t) + \alpha_2 m'_i(t)]
 \end{equation}
 where, $\alpha_1$ and $\alpha_2$ are measures of strength of association between hazard of GR and PSA value $m_i(t)$ and PSA velocity $m'_i(t)$, respectively. $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines\citep{eilers1996flexible}. Lastly, to fit the joint model we use the R package JMbayes \cite{rizopoulosJMbayes}, which uses a Bayesian approach for parameter estimation.
 
@@ -75,6 +75,7 @@ Slope: $\log_2 PSA$           & 2.407 & 0.319 & 1.791 & 3.069 & \textless0.000 \
 \end{table}
 
 \subsection{Demonstration of personalized schedules}
+\label{subsec : demo_prias_pers_sc}
 In this section, we demonstrate how the personalized scheduling algorithm adapts the time of performing a biopsy according to the PSA history and results from repeat biopsies. The 3 patients we have chosen for the demonstration data set are part of PRIAS program and they have had their repeat biopsies already. Hence a full scale comparison between PRIAS biopsy schedule and personalized scheduling algorithm's biopsy schedule is not possible.\\
 
 The first patient of interest is patient nr. 3174 who was inducted in the PRIAS program at the age of 74 years. Between the last follow up and time of induction there was no repeat biopsy performed for this patient. Hence the predictive distribution $g(T^*_j)$  for this patient depends only on the PSA measurements. For this patient, the evolution of PSA, time of last biopsy and proposed times of biopsies are shown in Figure \ref{fig : prias_demo_pid_3174}. It can be seen that the PSA remains stable for the first 2 years of follow ups, but increases rapidly after that for the next 2 years of follow up. Since the hazard of GR depends on PSA velocity (Table\ref{tab : PSA_survival}), the schedule of biopsy based on personalized scheduling algorithm (Section \ref{fig : sched_algorithm}), adjust the times of biopsy according to the steep rise in PSA profile. At 2 years the expected and median time of GR are 12.5 years and 15.2 years respectively, whereas at 4 years, they are 5.3 and 4 years respectively. It is important to note that the estimates are year 2 are not as useful as the estimates at year 4, because the $Var_g[T^*_j]$ is considerably lower at year 4, as shown in Figure \ref{fig : variance_pred_dist_3174}.\\

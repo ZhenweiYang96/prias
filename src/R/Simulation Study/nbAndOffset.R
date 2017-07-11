@@ -62,39 +62,36 @@ computeNbAndOffset_JH = function(dsId, patientRowNum){
   progressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
   detectionTime = ceiling(progressionTime)
   
-  return(c(nb = detectionTime-1, offset = detectionTime-progressionTime))
+  return(c(nb = detectionTime, offset = detectionTime-progressionTime))
 }
 
 pDynSurvTimeOptimal = function(dsId, patientDs_j, cutoff, lastBiopsyTime){
   lastVisitTime = max(patientDs_j$visitTimeYears)
   
-  round1Granularity = 1
-  if(15-lastVisitTime < round1Granularity){
-    round1Granularity = 15-lastVisitTime
-  }
+  round1SurvTimes = seq(lastBiopsyTime + 0.0001, lastBiopsyTime + 15, 1)
   
   round1 = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, 
                      newdata = patientDs_j, idVar = "P_ID", last.time=lastBiopsyTime,
-                     survTimes = seq(lastVisitTime, 15, round1Granularity))
+                     survTimes = round1SurvTimes)
   
   times = round1$summaries[[1]][, "times"]
   probs = round1$summaries[[1]][, "Median"]
   
+  probs[probs < 0.009] = 0
+  
   nearest_time = times[which(abs(probs-cutoff)==min(abs(probs-cutoff)))[1]]
   upper = nearest_time + 1
   lower = nearest_time - 1
-  if(upper > 15){
-    upper = 15
+ 
+  if(lower <= lastBiopsyTime){
+    lower = lastBiopsyTime + 0.0001  
   }
   
-  if(lower < 0){
-    lower = 0
-  }
-  newTimes = seq(lower, upper, 0.05)
+  round2SurvTimes = seq(lower, upper, 0.05)
   
   round2 = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, 
                      newdata = patientDs_j, idVar = "P_ID", last.time=lastBiopsyTime,
-                     survTimes = newTimes)
+                     survTimes = round2SurvTimes)
   
   times = round2$summaries[[1]][, "times"]
   probs = round2$summaries[[1]][, "Median"]
@@ -103,7 +100,7 @@ pDynSurvTimeOptimal = function(dsId, patientDs_j, cutoff, lastBiopsyTime){
 }
 
 computeNbAndOffset = function(dsId, patientRowNum, methodName="expectedFailureTime", 
-                              minVisits, lastPossibleVisit, biopsyEveryKYears=NA){
+                              minVisits=1, lastPossibleVisit = timesPerSubject-1, biopsyEveryKYears=NA){
   
   trueProgressionTime = simulatedDsList[[dsId]]$testDs.id$progression_time[patientRowNum]
   
@@ -118,68 +115,73 @@ computeNbAndOffset = function(dsId, patientRowNum, methodName="expectedFailureTi
   
   lastBiopsyTime = 0
   proposedBiopsyTime = Inf
-  enforcedBiopsyTime = Inf
+  scheduledBiopsyTime = Inf
   
   nextVisitTime = visitTimeYears[1]
   while(!is.na(nextVisitTime) & biopsyTimeOffset < 0){
     curVisitTime = nextVisitTime
     
-    if(curVisitTime == enforcedBiopsyTime){
-      lastBiopsyTime = enforcedBiopsyTime
-      nb = nb + 1
-      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
-      enforcedBiopsyTime = Inf
-
-      nextVisitTime = curVisitTime
-    }else{
-      nearest_time_index = which(abs(dynamicCutOffTimes-curVisitTime)==min(abs(dynamicCutOffTimes-curVisitTime)))[1]
+    #print(paste(curVisitTime, "----", scheduledBiopsyTime))
+    
+    if(curVisitTime >= scheduledBiopsyTime){
+      lastBiopsyTime = scheduledBiopsyTime
+      nextVisitTime = scheduledBiopsyTime
       
+      nb = nb + 1
+      biopsyTimeOffset = scheduledBiopsyTime - trueProgressionTime
+      scheduledBiopsyTime = Inf
+    }else{
       patientDsSubset = patientDs_i[patientDs_i$visitTimeYears <= curVisitTime, ]
       
       if(methodName=="expectedFailureTime"){
         proposedBiopsyTime = expectedCondFailureTime(dsId, patientDsSubset, lastBiopsyTime)
       }else if(methodName=="medianFailureTime"){
         proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, 0.5, lastBiopsyTime)
-      }else if(methodName=="survTimeYouden"){
-        proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, simulatedDsList[[dsId]]$cutoffValues[[nearest_time_index]]["youden"], lastBiopsyTime)
-      }else if(methodName=="survTimeAccuracy"){
-        proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, simulatedDsList[[dsId]]$cutoffValues[[nearest_time_index]]["accuracy"], lastBiopsyTime)
-      }else if(methodName=="survTimeF1Score"){
-        proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, simulatedDsList[[dsId]]$cutoffValues[[nearest_time_index]]["f1score"], lastBiopsyTime)
+      }else if(methodName %in% c("youden", "accuracy", "f1score")){
+        nearest_time_index = which(abs(dynamicCutOffTimes-curVisitTime)==min(abs(dynamicCutOffTimes-curVisitTime)))[1]
+        #nearest_time_index = which(abs(dynamicCutOffTimes-lastBiopsyTime)==min(abs(dynamicCutOffTimes-lastBiopsyTime)))[1]
+        
+        cutoff =  simulatedDsList[[dsId]]$cutoffValues[[nearest_time_index]][methodName]
+        if(!is.na(cutoff)){
+          proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, cutoff, lastBiopsyTime)
+        }else{
+          proposedBiopsyTime = NA
+        }
       }
       
       #print("Iteration Next")
       #print(paste("Cur:",curVisitTime))
       #print(paste("Last:",lastBiopsyTime))
       #print(paste("Prop:",proposedBiopsyTime))
-      #print(paste("Enfor:",enforcedBiopsyTime))
+      #print(paste("Enfor:",scheduledBiopsyTime))
       
       if(!is.na(proposedBiopsyTime)){
-        if(proposedBiopsyTime < enforcedBiopsyTime){
+        if(proposedBiopsyTime < scheduledBiopsyTime){
           
           if(proposedBiopsyTime < curVisitTime){
             proposedBiopsyTime = curVisitTime
           }
           
           if((proposedBiopsyTime - lastBiopsyTime) > 1){
-            enforcedBiopsyTime = proposedBiopsyTime
+            scheduledBiopsyTime = proposedBiopsyTime
             nextVisitTime = patientDs_i$visitTimeYears[patientDs_i$visitTimeYears > curVisitTime][1]
           }else{
-            enforcedBiopsyTime = lastBiopsyTime + 1
-            nextVisitTime = enforcedBiopsyTime
+            scheduledBiopsyTime = lastBiopsyTime + 1
+            nextVisitTime = scheduledBiopsyTime
           }
-        }#else{
-        #  enforcedBiopsyTime = proposedBiopsyTime
-        #}
+        }else{
+          #scheduledBiopsyTime = proposedBiopsyTime
+          nextVisitTime = patientDs_i$visitTimeYears[patientDs_i$visitTimeYears > curVisitTime][1]
+        }
       }else{
         nextVisitTime = patientDs_i$visitTimeYears[patientDs_i$visitTimeYears > curVisitTime][1]
       }
     }
   }
   
-  if(enforcedBiopsyTime < Inf){
+  if(scheduledBiopsyTime < Inf){
     nb = nb + 1
-    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+    biopsyTimeOffset = scheduledBiopsyTime - trueProgressionTime
   }
   
   return(c(nb=nb, offset=biopsyTimeOffset))
@@ -241,7 +243,7 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
   
   lastBiopsyTime = 0
   proposedBiopsyTime = Inf
-  enforcedBiopsyTime = Inf
+  scheduledBiopsyTime = Inf
   
   skipProposals = FALSE
   
@@ -251,11 +253,11 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
     print(j)
     
     curVisitTime = visitTimeYears[j]
-    if(curVisitTime > enforcedBiopsyTime){
-      lastBiopsyTime = enforcedBiopsyTime
+    if(curVisitTime > scheduledBiopsyTime){
+      lastBiopsyTime = scheduledBiopsyTime
       nb = nb + 1
-      biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
-      enforcedBiopsyTime = Inf
+      biopsyTimeOffset = scheduledBiopsyTime - trueProgressionTime
+      scheduledBiopsyTime = Inf
       skipProposals = FALSE
     }
     
@@ -287,16 +289,16 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
       }
 
       if(!is.na(proposedBiopsyTime)){
-        if(proposedBiopsyTime < enforcedBiopsyTime){
+        if(proposedBiopsyTime < scheduledBiopsyTime){
           
           if(proposedBiopsyTime < curVisitTime){
             proposedBiopsyTime = curVisitTime
           }
           
           if((proposedBiopsyTime - lastBiopsyTime) > 1){
-            enforcedBiopsyTime = proposedBiopsyTime
+            scheduledBiopsyTime = proposedBiopsyTime
           }else{
-            enforcedBiopsyTime = lastBiopsyTime + 1
+            scheduledBiopsyTime = lastBiopsyTime + 1
             skipProposals = TRUE
           }
         }
@@ -305,9 +307,9 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
     
   }
   
-  if(enforcedBiopsyTime < Inf){
+  if(scheduledBiopsyTime < Inf){
     nb = nb + 1
-    biopsyTimeOffset = enforcedBiopsyTime - trueProgressionTime
+    biopsyTimeOffset = scheduledBiopsyTime - trueProgressionTime
   }
   
   return(c(nb=nb, offset=biopsyTimeOffset))

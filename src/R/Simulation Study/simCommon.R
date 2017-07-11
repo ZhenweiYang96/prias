@@ -1,31 +1,3 @@
-plotBiopsy2DPlot = function(nbSummary, offsetSummary, nbMeasure = "Median", offsetMeasure = "Median"){
-  methodNames = colnames(nbSummary)
-  methodCategory = sapply(methodNames, substr, 1, 10)
-  
-  df = data.frame(nb = nbSummary[nbMeasure,], offset=offsetSummary[offsetMeasure,], 
-                  method=colnames(nbSummary), methodCategory = methodCategory)
-  p = ggplot(data=df, aes(x=nb, y=offset*12, label=method)) + 
-    geom_label(aes(fill = methodCategory), colour = "white", fontface = "bold") + 
-    xlab(paste(nbMeasure,"Number of biopsies")) + ylab(paste(offsetMeasure, "Offset (months)")) + 
-    scale_y_continuous(breaks=seq(0, 100, 1)) + scale_x_continuous(breaks=seq(0, 100, 0.5))
-  print(p)
-}
-
-plot2DBoxPlot = function(nbSummary, offsetSummary){
-  methodNames = colnames(nbSummary)
-  methodCategory = sapply(methodNames, substr, 1, 10)
-  
-  df = data.frame(nb_x1 = nbSummary["1st Qu.",], nb_x2 = nbSummary["3rd Qu.",],
-                  offset_y1 = offsetSummary["1st Qu.",], offset_y2 = offsetSummary["3rd Qu.",],
-                  method=colnames(nbSummary), methodCategory = methodCategory)
-  
-  p = ggplot(data=df) + 
-    geom_rect(mapping=aes(xmin=nb_x1, xmax=nb_x2, ymin=offset_y1*12, ymax=offset_y2*12, fill=methodCategory), color="black", alpha=0.5) +
-    xlab("Number of biopsies") + ylab("Offset (months)")
-    
-  print(p)
-}
-
 plotTrueSurvival = function(dsId, patientId){
   
   time = 1:15
@@ -168,13 +140,6 @@ rLogPSA1 =  function(dsId, patientId, time){
   sapply(xBetaZb_s_value, rnorm, n=1, sigma.y)
 }
 
-dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
-  temp = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
-                   idVar="P_ID", last.time=last.time, 
-                   survTimes = futureTimes)$summaries[[1]][, "Median"]
-  return(temp)
-}
-
 dynamicPredProbTimesTdiff = function(futureTimes, dsId, patientDs, last.time=NULL){
   temp = (futureTimes-last.time) * survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
                    idVar="P_ID", last.time=last.time, 
@@ -182,14 +147,95 @@ dynamicPredProbTimesTdiff = function(futureTimes, dsId, patientDs, last.time=NUL
   return(temp)
 }
 
-expectedCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
-  last.time + integrate(dynamicPredProb, last.time, upperLimitIntegral, dsId, patientDs, 
-                            last.time = last.time,
-                            abs.tol = 0.1)$value
+expectedCondFailureTime = function(dsId, patientDs, last.time){
+  upperLimitTestTimes = seq(15, 40, 2.5)
+  upperLimitTestTimes = upperLimitTestTimes[upperLimitTestTimes > last.time][1:7]
+  upperLimitTestProbs = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+            idVar="P_ID", last.time=last.time, 
+            survTimes = upperLimitTestTimes)$summaries[[1]][, "Median"]
+  
+  upperLimitIntegral = upperLimitTestTimes[which(upperLimitTestProbs < 0.009)[1]]
+  if(is.na(upperLimitIntegral)){
+    upperLimitIntegral = tail(upperLimitTestTimes,1)
+  }
+  
+  dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
+    survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+              idVar="P_ID", last.time=last.time, 
+              survTimes = futureTimes)$summaries[[1]][, "Median"]
+  }
+ 
+  last.time + integrate(dynamicPredProb, lower = last.time, upper = upperLimitIntegral, dsId, patientDs, 
+            last.time = last.time,
+            abs.tol = 0.1)$value
 }
+
+expectedCondFailureTime = function(dsId, patientDs, last.time){
+  upperLimitIntegral = NA
+
+  startingTestTime = 15
+  while(is.na(upperLimitIntegral)){
+    upperLimitTestTimes = seq(startingTestTime, startingTestTime + 20, 2.5)
+    upperLimitTestTimes = upperLimitTestTimes[upperLimitTestTimes > last.time][1:7]
+    upperLimitTestProbs = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs,
+                                    idVar="P_ID", last.time=last.time,
+                                    survTimes = upperLimitTestTimes)$summaries[[1]][, "Median"]
+    
+    upperLimitIntegral = upperLimitTestTimes[which(upperLimitTestProbs < 0.009)[1]]
+    startingTestTime = startingTestTime + 20
+  }
+  
+  cacheGranularity = if(upperLimitIntegral >= 30){
+    0.25
+  }else{
+    0.15
+  }
+  
+  cacheTimes = seq(last.time+0.0001, upperLimitIntegral, cacheGranularity)
+  cacheProbs = rep(NA, length(cacheTimes))
+  
+  dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
+    cacheEnvironment = parent.env(environment())
+    
+    cacheLookupIndices = sapply(futureTimes, function(futureTime){
+      which(abs(cacheTimes-futureTime)==min(abs(cacheTimes-futureTime)))[1]
+    })
+    
+    cacheLookupProbs = cacheProbs[cacheLookupIndices]
+    
+    noCacheTimes = cacheTimes[cacheLookupIndices][is.na(cacheLookupProbs)]
+    if(length(noCacheTimes) > 0){
+      cacheLookupProbs[is.na(cacheLookupProbs)] = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+              idVar="P_ID", last.time=last.time, 
+              survTimes = noCacheTimes)$summaries[[1]][, "Median"]
+      
+      #Update the cache probs
+      cacheProbs[cacheLookupIndices] = cacheLookupProbs
+      assign("cacheProbs", cacheProbs, envir = cacheEnvironment)
+    }
+    
+    return(cacheLookupProbs)
+  }
+
+  res = last.time + tryCatch({
+    integrate(dynamicPredProb, lower = last.time, upper = upperLimitIntegral, dsId, patientDs, 
+                        last.time = last.time,
+                        abs.tol = 0.1)$value
+  }, error = function(e){
+    NA
+  })
+  return(res)
+}
+
 
 varianceCondFailureTime = function(dsId, patientDs, last.time, upperLimitIntegral = 15){
   
+  dynamicPredProb = function(futureTimes, dsId, patientDs, last.time=NULL){
+    temp = survfitJM(simulatedDsList[[dsId]]$models$simJointModel_replaced, patientDs, 
+                     idVar="P_ID", last.time=last.time, 
+                     survTimes = futureTimes)$summaries[[1]][, "Median"]
+    return(temp)
+  }
   
   lhs = 2 * integrate(dynamicPredProbTimesTdiff, last.time, upperLimitIntegral, dsId, patientDs, 
                       last.time = last.time,
@@ -331,6 +377,7 @@ generateSimJointData = function(dsId, nSub){
   trainingSize = round(nrow(simulatedDsList[[dsId]]$simDs.id)*0.75)
   trainingDs.id = simulatedDsList[[dsId]]$simDs.id[1:trainingSize, ]
   testDs.id = simulatedDsList[[dsId]]$simDs.id[(trainingSize+1):nrow(simulatedDsList[[dsId]]$simDs.id),]
+  #testDs.id = simulatedDsList[[dsId]]$simDs.id[(trainingSize+1):(trainingSize + 101),]
   trainingDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% trainingDs.id$P_ID, ]
   testDs = simulatedDsList[[dsId]]$simDs[simulatedDsList[[dsId]]$simDs$P_ID %in% testDs.id$P_ID, ]
   

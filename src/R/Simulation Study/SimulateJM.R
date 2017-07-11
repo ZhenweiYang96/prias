@@ -7,25 +7,28 @@ source("src/R/common.R")
 source("src/R/Simulation Study/simCommon.R")
 source("src/R/Simulation Study/rocAndCutoff.R")
 source("src/R/Simulation Study/nbAndOffset.R")
+source("src/R/Simulation Study/produceResults.R")
 source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 1
+nDataSets = 10
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
 
 #2.2 and 6
-weibullScales = rep(6, nDataSets)
-weibullShapes = rep(1.5, nDataSets)
+weibullScales = rep(8, nDataSets)
+weibullShapes = rep(4.5, nDataSets)
 
 methods = c("expectedFailureTime", "medianFailureTime","youden", 
             "accuracy", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 3000
-for(i in 1:nDataSets){
+lastSeed = 3000 + 8
+for(i in 9:nDataSets){
+  print(paste("******** Started working on Data Set: ", i, "*******"))
+  
   lastSeed = getNextSeed(lastSeed)
   repeat{
     set.seed(lastSeed)
@@ -43,23 +46,21 @@ for(i in 1:nDataSets){
     }
   }
   
-  failureTimeCompDs = data.frame(failuretime = c(simulatedDsList[[i]]$trainingDs.id$progression_time,
-                                                 prias.id$progression_time),
-                                 type = c(rep("Sim",length(simulatedDsList[[i]]$trainingDs.id$progression_time)),
-                                          rep("Obs", length(prias.id$progression_time))))
-
-  ggplot(data = failureTimeCompDs) + geom_density(aes(x=failuretime, color=type, fill=type), alpha=0.3)
+  print(paste("Nr. of training:", nrow(simulatedDsList[[i]]$trainingDs.id), 
+              "; Nr. of test:", nrow(simulatedDsList[[i]]$testDs.id)))
   
-  summary(prias.id$progression_time)
-  summary(simulatedDsList[[i]]$testDs.id$progression_time)
-  summary(simulatedDsList[[i]]$trainingDs.id$progression_time)
+  print("Beginning to fit joint model")
   simulatedDsList[[i]]$models = fitJointModelSimDs(simulatedDsList[[i]]$trainingDs.id, simulatedDsList[[i]]$trainingDs)
+  print("Joint model fitted")
   
   print(summary(simulatedDsList[[i]]$models$mvJoint_psa_tdboth_training))
   
   simulatedDsList[[i]]$dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[2], max(simulatedDsList[[i]]$trainingDs$progression_time)-0.0001, 0.1)
   
-  simulatedDsList[[i]]$rocList = computeRoc(i)
+  print("Computing ROC")
+  simulatedDsList[[i]]$rocList = computeRoc(i, Dt = 1)
+  #simulatedDsList[[i]]$rocList = computeRocDataDrivenDt(i)
+  print("Done computing ROC, now computing cutoff values")
   simulatedDsList[[i]]$cutoffValues = computeCutOffValues(i)
 
   ct= makeCluster(cores)
@@ -70,7 +71,7 @@ for(i in 1:nDataSets){
   
   #Combo of patientRowNum and Method
   nTasks = length(methods) * nrow(simulatedDsList[[i]]$testDs.id)
-  simulatedDsList[[i]]$biopsyTimes = foreach(taskNumber=1:nTasks, .combine = rbind,  
+  simulatedDsList[[i]]$biopsyTimes = foreach(taskNumber=1:nTasks, .combine = rbind,
                                              .packages =  c("splines", "JMbayes", "coda"),
                                              .export = c("timesPerSubject"))%dopar%{
                                                 patientRowNum = ceiling(taskNumber/length(methods))
@@ -80,14 +81,15 @@ for(i in 1:nDataSets){
                                                 }else{
                                                   methodName = methods[methodName]
                                                 }
-                                                
-                                                res = c(P_ID=patientRowNum, methodName=methodName, computeNbAndOffset(dsId = i, patientRowNum=patientRowNum, 
-                                                                                                                      minVisits = 1, 
+
+                                                res = c(P_ID=patientRowNum, methodName=methodName, computeNbAndOffset(dsId = i, patientRowNum=patientRowNum,
+                                                                                                                      minVisits = 1,
                                                                                                                       methodName = methodName,
                                                                                                                       lastPossibleVisit = lastPossibleVisit))
-                                                
+
                                                 return(res)
                                              }
+
   
   prias_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
                                  .combine = rbind,
@@ -97,7 +99,7 @@ for(i in 1:nDataSets){
                                            computeNbAndOffset_PRIAS(dsId = i, patientRowNum=patientRowNum))
                                    return(res)
                                  })
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, prias_res)
   
   jh_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
                               .combine = rbind,
@@ -107,7 +109,7 @@ for(i in 1:nDataSets){
                                         computeNbAndOffset_JH(dsId = i, patientRowNum=patientRowNum))
                                 return(res)
                               })
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, jh_res)
   
   # mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id), 
   #                                .combine = rbind, 
@@ -130,7 +132,7 @@ for(i in 1:nDataSets){
   stopCluster(ct)
    
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_6_sh_1pt5/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8_sh_4pt5/Dt_1/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   rm(temp)
