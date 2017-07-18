@@ -33,6 +33,7 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
   
   patientCounts = foreach(simNum = simNumbers, .packages = c("ggplot2"),
                           .export=c("timesPerSubject", "plotBiopsy2DPlot"))%dopar%{
+                            setwd("C:\\Users\\838035\\Google Drive\\PhD\\src\\prias")
                             simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
                             load(simFileLocation)
                             print(paste("SimNum:", simNum, "loaded"))
@@ -41,8 +42,8 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             
                             minVisitsMethod = paste("_minVisit_", 5, sep="")
                             
-                            #DtSubFolder = paste(DtSubFolder, "sc_8")
-                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==8,])
+                            #DtSubFolder = paste(DtSubFolder, "sc_4")
+                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==4,])
                             biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
                             biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
                             biopsyResults$offset = as.numeric(as.character(biopsyResults$offset))

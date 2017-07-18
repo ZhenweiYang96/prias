@@ -111,20 +111,20 @@ for(i in 9:nDataSets){
                               })
   simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, jh_res)
   
-  # mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id), 
-  #                                .combine = rbind, 
-  #                                .packages =  c("splines", "JMbayes", "coda"),
-  #                                .export = c("timesPerSubject", "dynamicCutOffTimes"))%dopar%{
-  #                                  res = c(P_ID=patientRowNum, 
-  #                                          methodName="MixedAccu", 
-  #                                          computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
-  #                                                                   1, timesPerSubject-1, 
-  #                                                                   alternative = "accuracy"))
-  #                                  return(res)
-  #                                })
-  # 
-  # 
-  # simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
+                                 .combine = rbind,
+                                 .packages =  c("splines", "JMbayes", "coda"),
+                                 .export = c("timesPerSubject", "dynamicCutOffTimes"))%dopar%{
+                                   res = c(P_ID=patientRowNum,
+                                           methodName="MixedYouden",
+                                           computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
+                                                                    1, timesPerSubject-1,
+                                                                    alternative = "youden"))
+                                   return(res)
+                                 })
+
+
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
   
   tEnd = Sys.time()
   print(tEnd-tStart)

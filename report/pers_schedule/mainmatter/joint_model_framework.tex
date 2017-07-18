@@ -2,32 +2,48 @@
 
 \section{Joint models for time to event and longitudinal outcomes}
 \label{sec : jm_framework}
-The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other patient specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time GR takes place. Since our interest lies in finding the time of GR, we model it as a time to event outcome. To model the association between the two types of outcomes we use a joint model for time to event and longitudinal outcomes.
+The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other patient specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time GR takes place. Since our interest lies in finding the time of GR, we model it as a time to event outcome. A joint model for time to event and longitudinal outcomes is used to model the association between the two types of outcomes. We next present a short introduction of the joint modeling framework we will use in this work.
 
 \subsection{Joint model specification}
 \label{subsec : jm_specification}
-Let $T_i^*$ denote the true GR time for the $i^{th}$ patient enrolled in an AS program. Let the vector of times at which a total of $g_i$ biopsies are conducted for the $i^{th}$ patient be denoted by $C_i = \{C_{i0}, C_{i1}, ... C_{ig_i}; C_{ij} < C_{ik}, \forall j<k \}$. $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = C_{i(g_i-1)}, r_i = C_{ig_i}$ if GR is observed, and $l_i = C_{ig_i}, r_i=\infty$ if patient drops out of AS. The latter is also known as right censoring. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector for the PSA levels of the $i^{th}$ patient. The population of interest consists of all the patients enrolled in AS. For a sample of $n$ patients from this population the observed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_i; i = 1, \ldots n\}$.\\
+Let $T_i^*$ denote the true event time for the $i^{th}$ patient enrolled in an AS program. Let the vector of times at which biopsies are conducted for this patient be denoted by $T_i^b = \{T^b_{i0}, T^b_{i1}, \ldots T^b_{i{N_i^b}}; T^b_{ij} < T^b_{ik}, \forall j<k\}$, where $N_i^b$ are the total number of biopsies conducted. The true time of event $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = T^b_{i{N_i^b - 1}}, r_i = T^b_{i{N_i^b}}$ if the event (GR in the current context) is observed, and $l_i = T^b_{i{N_i^b}}, r_i=\infty$ if patient drops out of AS. The latter is also known as right censoring. Further let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector of the $i^{th}$ patient. The population of interest consists of all the patients enrolled in AS. For a sample of $n$ patients from this population the observed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_i; i = 1, \ldots n\}$.\\
 
-To model the evolution of the PSA measurements over time,  the joint model utilizes a linear mixed effects model. The longitudinal outcome $y_i(t)$ at a time $t$ is modeled as:
+To model the evolution of the longitudinal measurements over time, the joint model utilizes generalized linear mixed effects model. The distribution of longitudinal outcome $\boldsymbol{y}_i$ conditional on the random effects $\boldsymbol{b}_i$ is assumed to be a member of the exponential family. The corresponding linear predictor is given by:
 
 \begin{equation*}
-\begin{split}
-y_i(t) &= m_i(t) + \varepsilon_i(t), \\
-&= \boldsymbol{x}_i^T(t) \boldsymbol{\beta} + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i + \varepsilon_i(t)
-\end{split}
+k[E\{y_i(t) \mid \boldsymbol{b}_i\}] = m_i(t) = \boldsymbol{x}_i^T(t) \boldsymbol{\beta} + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i
 \end{equation*}
-%Do not introduce a space here, otherwise it starts a new paragraph
-where, $m_i(t)$ denotes the true and unobserved value of the longitudinal outcome at time $t$. The measurement error $\varepsilon_i(t) \sim N(0, \sigma^2)$ is assumed normally distributed with variance $\sigma^2$. $\boldsymbol{\beta}$ denotes the vector of the unknown fixed-effects parameters. $\boldsymbol{b}_i \sim N(0, \boldsymbol{D})$ denotes the $q \times 1$ vector of random effects, assumed normally distributed with mean zero, and $q \times q$ covariance matrix $\boldsymbol{D}$. $\boldsymbol{b}_i$ and $\varepsilon_i(t)$ are assumed independent. $\boldsymbol{x}_i(t)$ and $\boldsymbol{z}_i(t)$ denote row vectors of the design matrices for the fixed and random effects, respectively. For non continuous longitudinal outcomes, joint models utilize Generalized linear mixed models \citep{rizopoulos2012joint}.\\
+where, $k(\cdot)$ denotes a known one-to-one monotonic link function and $y_i(t)$ denotes the value of the longitudinal outcome for patient $i$ at time $t$. The row vector of design matrix for fixed effects is denoted by $\boldsymbol{x}_i(t)$ and for random effects is denoted by $\boldsymbol{z}_i(t)$. Correspondingly the fixed effects are denoted by $\boldsymbol{\beta}$ and random effects by $\boldsymbol{b}_i$. The random effects are assumed to be normally distributed with mean zero and $q \times q$ covariance matrix $\boldsymbol{D}$.\\
 
-To model the effect of PSA measurements on risk of GR, joint models utilize a relative risk sub-model where the hazard of GR at any time point $t$, denoted by $h_i(t)$, depends on the history of true and unobserved values of PSA levels $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ measured up to that time point. Joint models offer flexibility in modeling this dependence. In its simplest form, the hazard may depend on instantaneous value of PSA $m_i(t)$ at time $t$. More sophisticated ones are dependence of hazard at time $t$ on PSA-DT, PSA velocity $m'_i(t) = \dfrac{d m_i(t)}{dt}$, or even on the cumulative effect of PSA $\int_0^t m_i(s) \,ds$ up to $t$. The fact that any functional form of dependence is possible, is evident from the following expression for hazard at time $t$:
+To model the effect of longitudinal outcome on risk of GR, joint models utilize a relative risk sub-model. The hazard of GR for patient $i$ at any time point $t$, denoted by $h_i(t)$, depends on a function of subject specific linear predictor $m_i(t)$ and/or the random effects:
 
+\begin{align*}
+h_i(t \mid \mathcal{M}_i(t), \boldsymbol{w}_i) &= \lim_{\Delta t \to 0} Pr\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \boldsymbol{w}_i\}/\Delta t\\
+&=h_0(t) \exp[\boldsymbol{\gamma}^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\}]
+\end{align*}
+where $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ denotes the history of the underlying longitudinal process up to time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\boldsymbol{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\boldsymbol{\alpha}$ specifies the functional form \citep{brown2009assessing,rizopoulos2012joint,taylor2013real} of longitudinal outcome that is used in the linear predictor of the relative risk model. Some functional forms relevant to the problem at hand, and their interpretation are the following: 
+
+\begin{itemize}
+\item Association between hazard of GR at time $t$ and longitudinal response at the same time point:\\
+$f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\} = \alpha m_i(t)$
+\item Association between hazard of GR at time $t$ and longitudinal response, as well as slope of longitudinal response at the same time point:\\
+$f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\} = \alpha_1 m_i(t) + \alpha_2 m'_i(t), \text{with}\  m'_i(t) = \dfrac{d m_i(t)}{dt}$
+\end{itemize}
+
+Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using P-splines. More specifically:
 \begin{equation*}
-h_i(t \mid M_i(t), \boldsymbol{w}_i) = h_0(t) \exp[\boldsymbol{\gamma}^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\}]
+\log{h_0(t)} = \gamma_{h_0,0} + \sum_{q=1}^Q \gamma_{h_0,q} B_q(t, \boldsymbol{v})
 \end{equation*}
-where $h_0(t)$ is the baseline hazard at time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\boldsymbol{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\boldsymbol{\alpha}$ specifies the function form of longitudinal outcome that is used in the linear predictor of the relative risk model.\\
+where $B_q(t, \boldsymbol{v})$ denotes the $q^{th}$ basis function of a B-spline with knots $\boldsymbol{v} = v_1, \ldots v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}.
 
-While $\boldsymbol{\alpha}$ controls the strength of association between the hazard of GR and features of the PSA history, the fact that both Gleason scores and PSA levels are internally related to a patient's health, is manifested by the random effects $\boldsymbol{b}_i$ in the model. The joint model postulates that given the random effects, time to GR and the different PSA measurements taken over time are all mutually independent. As mentioned earlier, in PRIAS study PSA-DT is used to decide the schedule of biopsies. Although PSA-DT is computed using observed PSA values, dependence on observed longitudinal history $\mathcal{Y}(t) = \{y_i(v), 0\leq v \leq t\}$ at any time $t$, is not the same as dependence on patient's health. On the contrary dependence on patient's health, manifested by $\boldsymbol{b}_i$ is same as dependence on future unobserved values of PSA. Thus the inference for the model parameters $\boldsymbol{\theta} = {\{\boldsymbol{\beta}^T, \boldsymbol{\gamma}^T, \boldsymbol{\alpha}^T, \sigma^2, \{d_{jk} \mid j=k=1,...q\}\}}^T$ doesn't change even if uncertainty in biopsy schedule $C_i$ is not modeled. The kernel of the corresponding joint likelihood conditional on the random effects and the model parameters is given by:
+\subsection{Parameter estimation}
+Let $\boldsymbol{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to GR and longitudinal responses taken over time are all mutually independent. The kernel of the corresponding joint likelihood conditional on the random effects and the model parameters is given by:
 
+\begin{align*}
+p(l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) &= p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})\\
+p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) &= \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta})
+\end{align*}
+In this work, we estimate parameters using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. The corresponding posterior distribution is given by:
 \begin{equation*}
-p(T_i, l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) \propto p(T_i \mid l_i, r_i, \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})
+p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) \propto \prod_{i=1}^n  \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})  p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})
 \end{equation*}

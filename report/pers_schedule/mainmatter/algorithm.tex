@@ -32,7 +32,7 @@
 
 \node (decision2) [decision, below=0.5cm of decision1] {$u - t > 1$?};
 
-\node (decision4) [decision, right=1.5cm of decision2] {$u < T^{nv}$?};
+\node (decision4) [decision, right=1.5cm of decision2] {$u > T^{nv}$?};
 
 \node (pro3) [process, below=1cm of decision2] {
 	\begin{enumerate}[noitemsep,topsep=0pt, leftmargin=*]
@@ -62,13 +62,13 @@
 \draw [arrow] (decision1) -- node[anchor=south] {No} (pro6);
 \draw [arrow] (decision5) -- node[anchor=south] {No} (decision2);
 \draw [arrow] (pro6) -- (decision4);
-\draw [arrow] (decision4.east) |- ([xshift=0.35cm, yshift=-4cm]pro6.north east) |- node[anchor=south] {No} (takePSA);
+\draw [arrow] (decision4.east) |- ([xshift=0.35cm, yshift=-4cm]pro6.north east) |- node[anchor=south] {Yes} (takePSA);
 \draw [arrow] (decision2) -- node[anchor=south] {Yes} (decision4);
 \draw [arrow] (decision2) -- node[anchor=east] {No} (pro3);
 \draw [arrow] (pro3) -- (decision3);
 \draw [arrow] (pro4) |- (decision3);
 \draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
-\draw [arrow] (decision4) -- node[anchor=east] {Yes} (pro4);
+\draw [arrow] (decision4) -- node[anchor=east] {No} (pro4);
  \draw [arrow] (decision3) -- node[anchor=south]{No} (pro7);
 \draw [arrow] (pro7.west)|- ([xshift=-0.35cm, yshift=-7cm]pro5.north west) |- (propTime);
 \end{tikzpicture}

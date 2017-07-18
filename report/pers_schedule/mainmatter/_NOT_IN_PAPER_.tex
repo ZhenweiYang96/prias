@@ -10,28 +10,4 @@ Scheduling biopsies using personalized schedules is an iterative process. Only o
 Lastly, it is extremely likely that on consecutive visits to the hospital for PSA measurements, the personalized biopsy time is postponed or preponed. The choice of time of biopsy from consecutive visits is not clear. To resolve these issues, we propose to supplement the personalized scheduling methods with the following algorithm.
 
 
-The variance however depends on both $t$ and $\mathcal{Y}_j(s)$. To elucidate the relationship between variance and observed information, we computed the variance at different time points for a couple of patients from the PRIAS study. The corresponding joint model fitted to the data set is discussed in Section \ref{subsec : jm_fit_prias}. The first patient in question is patient nr. 2340. He visited the hospital 34 times and was then right censored. 4 out those 34 visits were for biopsies. The variance of predictive distribution after each of those visits is shown in Figure \ref{fig : variance_pred_dist}. It is clear that the variance drops by a large margin each time a repeat biopsy is conducted. i.e. when more information about $T^*_j$ is available. The effect of $\mathcal{Y}_j(s)$ on variance can be seen in Figure \ref{fig : variance_pred_dist_3174} which corresponds to patient nr. 3174, who visited the hospital 9 times and was censored after his last biopsy. The observed PSA measurements for this patient are shown in Figure \ref{fig : observed_psa_3174}. It can be seen that the variance doesn't depend much on number of PSA measurements, but rather on the PSA values. For patient nr. 3174, variance drops quickly when PSA measurements increase sharply.  This becomes intuitive when we look at the model parameter estimates (Section \ref{subsec : param_estimates_jm_fit_prias}), where PSA velocity $m'_i(t)$ is a strong predictor of the hazard of GR.
-
-\begin{figure}[!htb]
-    \centering
-    \captionsetup{justification=centering}
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{images/variance/variance_pred_dist_2340.png}
-        \caption{Variance of the predictive distribution $g(T^*_j)$ over a period of 9 years for patient 2340. Blue vertical lines indicate biopsies.}
-        \label{fig : variance_pred_dist_2340}
-    \end{subfigure}   
-    \begin{subfigure}[b]{0.45\textwidth}
-        \includegraphics[width=\textwidth]{images/variance/variance_pred_dist_3174.png}
-        \caption{Variance of the predictive distribution $g(T^*_j)$ over a period of 4 years for patient 3174. Blue vertical lines indicate biopsies.}
-        \label{fig : variance_pred_dist_3174}
-    \end{subfigure}
-    \caption{Variance of the predictive distribution $g(T^*_j)$}\label{fig : variance_pred_dist}
-\end{figure}
-
-\begin{figure}[!htb]
-    \centering
-    \captionsetup{justification=centering}
-    \includegraphics[width=0.5\textwidth]{images/observed_psa_3174.png}
-    \caption{Observed evolution of PSA for patient 3174.}
-    \label{fig : observed_psa_3174}
-\end{figure}
+Let $\boldsymbol{\theta} = {\{\boldsymbol{\beta}^T, \boldsymbol{\gamma}^T, \boldsymbol{\alpha}^T, \sigma^2, \{\boldsymbol{D}[j,k] \mid j=k=1, \ldots q\}\}}^T$ be the vector of the parameters of the joint model.

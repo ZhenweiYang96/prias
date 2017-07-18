@@ -225,6 +225,7 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
       
       #nearest_time_index = which(abs(dynamicCutOffTimes-curVisitTime)==min(abs(dynamicCutOffTimes-curVisitTime)))[1]
       nearest_time_index = which(abs(dynamicCutOffTimes-lastBiopsyTime)==min(abs(dynamicCutOffTimes-lastBiopsyTime)))[1]
+      
       cutoff =  simulatedDsList[[dsId]]$cutoffValues[[nearest_time_index]][alternative]
       if((medianFailureTime - pt025quantile > 3) & !is.na(cutoff)){
         proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, cutoff, lastBiopsyTime)
