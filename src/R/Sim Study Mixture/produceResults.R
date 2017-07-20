@@ -11,6 +11,16 @@ plotBiopsy2DPlot = function(nbSummary, offsetSummary, nbMeasure = "Median", offs
   print(p)
 }
 
+plotBiopsy2DPlot = function(nbSummary, offsetSummary, nbMeasure = "Median", offsetMeasure = "Median"){
+  df = data.frame(nb = nbSummary[nbMeasure,], offset=offsetSummary[offsetMeasure,], 
+                  methodCategory=colnames(nbSummary))
+  p = ggplot(data=df, aes(x=nb, y=offset*12, label=methodCategory)) + 
+    geom_label() + 
+    xlab(paste(nbMeasure,"Number of biopsies")) + ylab(paste(offsetMeasure, "Offset (months)")) + 
+    scale_y_continuous(breaks=seq(0, 100, 1)) + scale_x_continuous(breaks=seq(0, 100, 0.5))
+  print(p)
+}
+
 plot2DBoxPlot = function(nbSummary, offsetSummary){
   methodNames = colnames(nbSummary)
   methodCategory = sapply(methodNames, substr, 1, 10)
@@ -48,7 +58,35 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
                             biopsyResults$offset = as.numeric(as.character(biopsyResults$offset))
                             
-                            biopsyResults$methodCategory = sapply(biopsyResults$methodName, substr, 1, 10)
+                            biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
+                              if(x=="expectedFailureTime"){
+                                return("Mean")
+                              } 
+                              
+                              if(x=="medianFailureTime"){
+                                return("Median")
+                              } 
+                              
+                              if(x=="PRIAS"){
+                                return("PRIAS")
+                              }
+                              
+                              if(x=="JH"){
+                                return("Annual")
+                              }
+                              
+                              if(x=="youden"){
+                                return("Youden")
+                              }
+                              
+                              if(x=="f1score"){
+                                return("F1score")
+                              }
+                              
+                              if(x=="MixedYouden"){
+                                return("Mixed.Approach")
+                              }
+                            })
                             
                             imageFolderPath = paste("images/sim study/", rDataFolder, "/", simulatedDsList[[1]]$seed,"/", sep = "")
                             boxplotOffsetPath = paste(imageFolderPath, "boxplot_offset/", sep="")
@@ -61,8 +99,8 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             dir.create(nbVsOffsetMedianPath, recursive = T)
                             dir.create(nbVsOffsetMeanPath, recursive = T)
                             
-                            nbSummary = do.call(cbind, by(data = biopsyResults[, "nb"], INDICES = biopsyResults$methodName, summary))
-                            offsetSummary = do.call(cbind, by(data = biopsyResults[, "offset"], INDICES = biopsyResults$methodName, summary))
+                            nbSummary = do.call(cbind, by(data = biopsyResults[, "nb"], INDICES = biopsyResults$methodCategory, summary))
+                            offsetSummary = do.call(cbind, by(data = biopsyResults[, "offset"], INDICES = biopsyResults$methodCategory, summary))
                             
                             #Progression time
                             png(width=640, height=480, filename = paste(imageFolderPath, "progression_hist.png", sep=""))
@@ -74,8 +112,8 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             #boxplot offset
                             png(width=imgWidth, height=imgHeight, filename = paste(boxplotOffsetPath, DtSubFolder, minVisitsMethod,".png", sep=""))
                             p = ggplot(data = biopsyResults) +
-                              geom_boxplot(aes( reorder(methodName, offset, FUN=median), offset*12, fill=methodCategory)) +
-                              scale_y_continuous(breaks = 12*seq(0,20, by = 0.5)) +
+                              geom_boxplot(aes( reorder(methodCategory, offset, FUN=mean), offset*12)) +
+                              scale_y_continuous(breaks = 12*seq(0,20, by = 1)) +
                               ylab("Biopsy offset (months)") + xlab("Method")
                             print(p)
                             dev.off()
@@ -83,7 +121,7 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             #boxplot nb
                             png(width=imgWidth, height=imgHeight, filename = paste(boxplotNbPath, DtSubFolder, minVisitsMethod, ".png", sep=""))
                             p = ggplot(data = biopsyResults) +
-                              geom_boxplot(aes( reorder(methodName, nb, FUN=median), nb, fill=methodCategory)) +
+                              geom_boxplot(aes( reorder(methodCategory, nb, FUN=mean), nb)) +
                               scale_y_continuous(breaks = seq(0,20, by = 1)) +
                               ylab("Number of biopsies") + xlab("Method")
                             print(p)
@@ -107,6 +145,161 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
   stopCluster(ct)
 }
 
+boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
+  ct = makeCluster(detectCores())
+  registerDoParallel(ct)
+  
+  biopsyResults = foreach(simNum = simNumbers, .packages = c("ggplot2"),
+                           .export=c("timesPerSubject"), .combine="rbind")%dopar%{
+                             
+                             setwd("C:\\Users\\838035\\Google Drive\\PhD\\src\\prias")
+                             simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
+                             load(simFileLocation)
+                             
+                             simulatedDsList = temp
+                             
+                             simulatedDsList[[1]]$biopsyTimes[,"methodCategory"] = sapply(simulatedDsList[[1]]$biopsyTimes[,"methodName"], function(x){
+                               if(x=="expectedFailureTime"){
+                                 return("Expec. Time GR")
+                               } 
+                               
+                               if(x=="medianFailureTime"){
+                                 return("Median Time GR")
+                               } 
+                               
+                               if(x=="PRIAS"){
+                                 return("PRIAS")
+                               }
+                               
+                               if(x=="JH"){
+                                 return("Annual")
+                               }
+                               
+                               if(x=="youden"){
+                                 return("Youden")
+                               }
+                               
+                               if(x=="f1score"){
+                                 return("F1score")
+                               }
+                               
+                               if(x=="MixedYouden"){
+                                 return("Mixed.Approach")
+                               }
+                             })
+                             return(simulatedDsList[[1]]$biopsyTimes)
+                             #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==4,])
+                           }
+  
+  biopsyResults = data.frame(biopsyResults)
+  biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
+  biopsyResults$offset = as.numeric(as.character(biopsyResults$offset)) * 12
+  
+  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/nbBoxPlot.png")
+  p = ggplot(data = biopsyResults) +
+    geom_boxplot(aes(reorder(methodCategory, nb, FUN=mean), nb)) +
+    scale_y_continuous(breaks = seq(0,20, by = 1)) +
+    ylab("Number of biopsies") + xlab("Method")
+  print(p)
+  dev.off()
+  
+  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/offsetBoxPlot.png")
+  p = ggplot(data = biopsyResults) +
+    geom_boxplot(aes( reorder(methodCategory, nb, FUN=mean), offset)) +
+    scale_y_continuous(breaks = seq(0,240, by = 12)) +
+    ylab("Biopsy offset (months)") + xlab("Method")
+  print(p)
+  dev.off()
+  
+    
+  stopCluster(ct)
+}
+
+poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
+  ct = makeCluster(detectCores())
+  registerDoParallel(ct)
+  
+  resultsSummary = foreach(simNum = simNumbers, .packages = c("ggplot2"),
+                          .export=c("timesPerSubject"))%dopar%{
+                            
+                            setwd("C:\\Users\\838035\\Google Drive\\PhD\\src\\prias")
+                            simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
+                            load(simFileLocation)
+                            
+                            simulatedDsList = temp
+                            
+                            biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
+                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==4,])
+                            biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
+                            biopsyResults$offset = as.numeric(as.character(biopsyResults$offset))
+                            
+                            biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
+                              if(x=="expectedFailureTime"){
+                                return("Expec. Time GR")
+                              } 
+                              
+                              if(x=="medianFailureTime"){
+                                return("Median Time GR")
+                              } 
+                              
+                              if(x=="PRIAS"){
+                                return("PRIAS")
+                              }
+                              
+                              if(x=="JH"){
+                                return("Annual")
+                              }
+                              
+                              if(x=="youden"){
+                                return("Youden")
+                              }
+                              
+                              if(x=="f1score"){
+                                return("F1score")
+                              }
+                              
+                              if(x=="MixedYouden"){
+                                return("Mixed.Approach")
+                              }
+                            })
+                            
+                            #Now we need total eligible patients per method, nb Mean, Var, and Offset mean, var per method
+                            totalPatientsPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, length)
+                            nbMeanPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, mean)
+                            nbVarPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, var)
+                            offsetMeanPerMethod = by(biopsyResults$offset * 12, biopsyResults$methodCategory, mean)
+                            offsetVarPerMethod = by(biopsyResults$offset * 12, biopsyResults$methodCategory, var)
+                            
+                            return(list(totalPatientsPerMethod = totalPatientsPerMethod, 
+                                        nbMeanPerMethod = nbMeanPerMethod,
+                                        nbVarPerMethod = nbVarPerMethod,
+                                        offsetMeanPerMethod = offsetMeanPerMethod,
+                                        offsetVarPerMethod = offsetVarPerMethod))
+                            
+                          }
+  stopCluster(ct)
+  
+  methodNames = names(resultsSummary[[1]][[1]])
+  paramNames = names(resultsSummary[[1]])
+  
+  finalResultSummary = matrix(data = NA, nrow = length(methodNames), ncol=length(paramNames))
+  rownames(finalResultSummary) = methodNames
+  colnames(finalResultSummary) = paramNames
+  
+  finalResultSummary[,"totalPatientsPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
+  finalResultSummary[,"nbMeanPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  finalResultSummary[,"offsetMeanPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  finalResultSummary[,"nbVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  finalResultSummary[,"offsetVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+
+  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/meanNbVsOffset.png")
+  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], label=rownames(finalResultSummary), geom="label",
+            xlab="Mean number of biopsies", ylab="Mean offset (months)", xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25))
+  print(p)
+  dev.off()
+  
+  return(finalResultSummary)
+}
 
 deleteResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", minVisits = 1, imgWidth=1280, imgHeight=960){
   

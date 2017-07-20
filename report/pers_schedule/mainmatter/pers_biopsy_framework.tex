@@ -65,7 +65,7 @@ L_{k_1, k_2}(T^*_j, u) =
       k_1(u-T^*_j) & \text{otherwise}
     \end{cases}       
 \end{equation}
-where $k_1 > 0$, $k_2 > 0$ are constants parameterizing the loss function. The posterior expected loss function $E_g[L_{k_1, k_2}(T^*_j, u)]$ obtains its minimum at $u = \pi_j^{-1}\Big\{\dfrac{k_1}{k_1 + k_2}\Big\}$ \citep{robertBayesianChoice}. The choice of $k_1, k_2$ is equivalent to the choice of $\kappa$. More specifically, $\kappa = \dfrac{k_1}{k_1 + k_2}$.
+where $k_1 > 0$, $k_2 > 0$ are constants parameterizing the loss function. The posterior expected loss function $E_g[L_{k_1, k_2}(T^*_j, u)]$ obtains its minimum at $u = \pi_j^{-1}\Big\{\frac{k_1}{k_1 + k_2}\Big\}$ \citep{robertBayesianChoice}. The choice of $k_1, k_2$ is equivalent to the choice of $\kappa$. More specifically, $\kappa = \frac{k_1}{k_1 + k_2}$.
 
 \subsection{A mixed approach between $E_g[T^*_j]$ and dynamic risk of GR}
 \label{subsec : mixed_approach}
@@ -90,17 +90,17 @@ Since a closed form solution is not available for the variance expression, it is
 
 \subsubsection{Estimation of $\kappa$}
 \label{subsubsec : kappa_estimation}
-For schedules based on dynamic risk of GR, the value of $\kappa$ dictates the biopsy schedule and thus its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For e.g. if maximum acceptable risk is 75\% then $\kappa = 0.25$, and correspondingly all $k_1, k_2 \mid k_1=\dfrac{k_2}{3}$ can be used in equation (\ref{eq : loss_dynamic_risk}) to calculate $u$.\\
+For schedules based on dynamic risk of GR, the value of $\kappa$ dictates the biopsy schedule and thus its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For e.g. if maximum acceptable risk is 75\% then $\kappa = 0.25$, and correspondingly all $k_1, k_2 \mid k_1=\frac{k_2}{3}$ can be used in equation (\ref{eq : loss_dynamic_risk}) to calculate $u$.\\
 
 While a doctor's advice can be invaluable, it is also possible to automate the choice of $\kappa$. We propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints,sokolova2009systematic}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience GR and the rest are controls. However, a patient can be in control group at some time $t_a$ and in the cases at some future time point $t_b > t_a$, and thus time dependent binary classification is more relevant. In joint models, a patient $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep{rizopoulosJMbayes}. The time window $\Delta t$ can be either chosen on a clinical basis, or such that uncertainty in estimation of $\pi_j(t + \Delta t \mid t,s)$ is below a certain threshold or it can even be chosen such that $AUC(t, \Delta t, s)$ \citep{rizopoulosJMbayes} is largest. i.e. $\Delta t$ for which the model has the most discriminative capability at time $t$. The binary classification accuracy measures we maximize to select the threshold $\kappa$ are the following (the binary classification measures are functions of $t, \Delta t, s$, however the notation is dropped for readability): 
 
 \begin{itemize}
-%  \item Accuracy: $ACC = \dfrac{TP + TN}{TP + FP + TN + FN}$, where TP, FP, TN and FN are the number of true positives, false positives, true negatives and false negatives at time point $t$. In this case if $k_1 = TP + TN$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} ACC$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
+%  \item Accuracy: $ACC = \frac{TP + TN}{TP + FP + TN + FN}$, where TP, FP, TN and FN are the number of true positives, false positives, true negatives and false negatives at time point $t$. In this case if $k_1 = TP + TN$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} ACC$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
 
 \item Youden's index: $J = \text{Sensitivity} + \text{Specificity}- 1$,\\
 where sensitivity is defined as $Pr(\pi_j(t + \Delta t \mid t,s) \leq \kappa \mid T^*_j \epsilon (t, t + \Delta t])$ and specificity is defined as $Pr(\pi_j(t + \Delta t \mid t,s) > \kappa \mid T^*_j > t + \Delta t)$ \citep{rizopoulosJMbayes}. Let $k_1 = FP \cdot TP - FN \cdot TN$ and $k_2 = (TP+FN)(FP+TN) - k_1$, where TP, FP, TN and FN are the number of true positives, false positives, true negatives and false negatives at time point $t$. The optimal $k_1, k_2$ or equivalently the $\kappa$ is obtained from $\argmax{k_1, k_2} J$.
 
-\item F1 Score: $F1 = \dfrac{2TP}{2TP + FP + FN}$. In this case if $k_1 = 2TP$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} F1$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
+\item F1 Score: $F1 = \frac{2TP}{2TP + FP + FN}$. In this case if $k_1 = 2TP$ and $k_2 = FP + FN$, then $\argmax{k_1, k_2} F1$ gives the optimal $k_1, k_2$ or equivalently the $\kappa$.
 \end{itemize}
 
 \subsection{Algorithm}

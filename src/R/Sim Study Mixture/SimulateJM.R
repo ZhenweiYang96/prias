@@ -12,7 +12,7 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 10
+nDataSets = 2
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
@@ -26,7 +26,7 @@ methods = c("expectedFailureTime", "medianFailureTime","youden", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
 lastSeed = 4000
-for(i in 11:nDataSets){
+for(i in 1:nDataSets){
   print(paste("******** Started working on Data Set: ", i, "*******"))
   
   lastSeed = getNextSeed(lastSeed)
@@ -155,7 +155,7 @@ for(i in 11:nDataSets){
   simulatedDsList[[i]]$biopsyTimes$weibullShape = rep(tail(simulatedDsList[[i]]$weibullShape, nrow(simulatedDsList[[i]]$testDs.id)), nSchedulingMethods)
   
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1_exp/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   rm(temp)

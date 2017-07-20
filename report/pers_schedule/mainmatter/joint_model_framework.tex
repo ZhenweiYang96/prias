@@ -15,7 +15,7 @@ k[E\{y_i(t) \mid \boldsymbol{b}_i\}] = m_i(t) = \boldsymbol{x}_i^T(t) \boldsymbo
 \end{equation*}
 where, $k(\cdot)$ denotes a known one-to-one monotonic link function and $y_i(t)$ denotes the value of the longitudinal outcome for patient $i$ at time $t$. The row vector of design matrix for fixed effects is denoted by $\boldsymbol{x}_i(t)$ and for random effects is denoted by $\boldsymbol{z}_i(t)$. Correspondingly the fixed effects are denoted by $\boldsymbol{\beta}$ and random effects by $\boldsymbol{b}_i$. The random effects are assumed to be normally distributed with mean zero and $q \times q$ covariance matrix $\boldsymbol{D}$.\\
 
-To model the effect of longitudinal outcome on risk of GR, joint models utilize a relative risk sub-model. The hazard of GR for patient $i$ at any time point $t$, denoted by $h_i(t)$, depends on a function of subject specific linear predictor $m_i(t)$ and/or the random effects:
+To model the effect of longitudinal outcome on hazard of event, joint models utilize a relative risk sub-model. The hazard of event for patient $i$ at any time point $t$, denoted by $h_i(t)$, depends on a function of subject specific linear predictor $m_i(t)$ and/or the random effects:
 
 \begin{align*}
 h_i(t \mid \mathcal{M}_i(t), \boldsymbol{w}_i) &= \lim_{\Delta t \to 0} Pr\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \boldsymbol{w}_i\}/\Delta t\\
@@ -24,10 +24,10 @@ h_i(t \mid \mathcal{M}_i(t), \boldsymbol{w}_i) &= \lim_{\Delta t \to 0} Pr\{t \l
 where $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ denotes the history of the underlying longitudinal process up to time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\boldsymbol{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\boldsymbol{\alpha}$ specifies the functional form \citep{brown2009assessing,rizopoulos2012joint,taylor2013real} of longitudinal outcome that is used in the linear predictor of the relative risk model. Some functional forms relevant to the problem at hand, and their interpretation are the following: 
 
 \begin{itemize}
-\item Association between hazard of GR at time $t$ and longitudinal response at the same time point:\\
+\item Association between hazard of event at time $t$ and longitudinal response at the same time point:\\
 $f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\} = \alpha m_i(t)$
-\item Association between hazard of GR at time $t$ and longitudinal response, as well as slope of longitudinal response at the same time point:\\
-$f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\} = \alpha_1 m_i(t) + \alpha_2 m'_i(t), \text{with}\  m'_i(t) = \dfrac{d m_i(t)}{dt}$
+\item Association between hazard of event at time $t$ and longitudinal response, as well as slope of longitudinal response at the same time point:\\
+$f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\} = \alpha_1 m_i(t) + \alpha_2 m'_i(t), \text{with}\  m'_i(t) = \frac{d m_i(t)}{dt}$
 \end{itemize}
 
 Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using P-splines. More specifically:
@@ -37,13 +37,25 @@ Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly usi
 where $B_q(t, \boldsymbol{v})$ denotes the $q^{th}$ basis function of a B-spline with knots $\boldsymbol{v} = v_1, \ldots v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}.
 
 \subsection{Parameter estimation}
-Let $\boldsymbol{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to GR and longitudinal responses taken over time are all mutually independent. The kernel of the corresponding joint likelihood conditional on the random effects and the model parameters is given by:
+In this work, we estimate parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to event and longitudinal responses taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
 
 \begin{align*}
-p(l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) &= p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})\\
-p(\boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) &= \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta})
+p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})\\
+& \propto \prod_{i=1}^n  \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})  p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})
 \end{align*}
-In this work, we estimate parameters using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. The corresponding posterior distribution is given by:
+where the likelihood contribution of longitudinal outcome is
 \begin{equation*}
-p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) \propto \prod_{i=1}^n  \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})  p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})
+p(y_{il}\mid \boldsymbol{b}_i,\boldsymbol{\theta})=
+\exp\Bigg\{\frac{y_{il}\psi_{il}(\boldsymbol{b}_i)-c\{\psi_{il}(\boldsymbol{b}_i)\}}{a(\phi)} -d( y_{il},\phi)         \Bigg\},
 \end{equation*}
+where $\psi_{il}(\boldsymbol{b}_i)$ and $\phi$ denote the natural and dispersion parameters in the exponential family, respectively, and $c(\cdot)$, $d(\cdot)$ and $a(\cdot)$ are known functions specifying the member of the exponential family. The likelihood contribution of the survival outcome is given by
+\begin{equation*}
+p\{l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}\} = \exp\Big\{-\int_0^{l_i} h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\} - \exp\Big\{-\int_0^{r_i}h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\}
+\end{equation*}
+The integral in the likelihood function of the survival function does not have a closed-form solution, and therefore we used a 15-point Gauss–Kronrod quadrature rule to approximate it.\\
+
+For the parameters of the longitudinal outcomes we use standard default priors. More specifically, independent normal priors with zero mean and variance 100 for the fixed effects $\boldsymbol{\beta}$ and inverse Gamma priors for scale parameters. For the variance–covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the number $q$ of the random effects. For the survival model parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
+\begin{equation*}
+p(\gamma_{h_0} \mid \tau_h) \propto \tau_h^{\rho(\boldsymbol{K})/2} \exp\Big(-\frac{\tau_h}{2}\gamma_{h_0}^T \boldsymbol{K} \gamma_{h_0}\Big)
+\end{equation*}
+where $\tau_h$ is the smoothing parameter that takes a Gamma(1, 0.005) hyper-prior in order to ensure a proper posterior for $\gamma_{h_0}$, $\boldsymbol{K} = \Delta_r^T \Delta_r + 10^{-6} \boldsymbol{I}$, where $\Delta_r$ denotes the $r^{th}$ difference penalty matrix, and $\rho(\boldsymbol{K})$ denotes the rank of $\boldsymbol{K}$.
