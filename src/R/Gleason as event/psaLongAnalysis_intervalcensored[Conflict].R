@@ -4,9 +4,11 @@ training_long = prias_long[!prias_long$P_ID %in% c(3174, 2340, 911),]
 
 psa_data_set =  prias_long[!is.na(prias_long$log2psa),]
 training_psa_data_set = training_long[!is.na(training_long$log2psa),]
+
 training_psa_data_set$progression_time = ifelse(training_psa_data_set$progression_time_end==Inf, 
                                                 training_psa_data_set$progression_time_start, 
                                                 training_psa_data_set$progression_time_end)
+
 
 ggplot(data=psa_data_set[psa_data_set$P_ID==3174,], aes(x=visitTimeYears, y=psa)) + 
   geom_line() + geom_point() + 

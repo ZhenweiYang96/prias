@@ -8,7 +8,7 @@ The first step in creating a personalized schedule for biopsies is to come up wi
 \label{subsec : jm_specification}
 Let $T_i^*$ denote the true event time for the $i^{th}$ patient enrolled in an AS program. Let the vector of times at which biopsies are conducted for this patient be denoted by $T_i^b = \{T^b_{i0}, T^b_{i1}, \ldots T^b_{i{N_i^b}}; T^b_{ij} < T^b_{ik}, \forall j<k\}$, where $N_i^b$ are the total number of biopsies conducted. The true time of event $T_i^*$ cannot be observed directly and it is only known that it falls in an interval $(l_i, r_i]$, where $l_i = T^b_{i{N_i^b - 1}}, r_i = T^b_{i{N_i^b}}$ if the event (GR in the current context) is observed, and $l_i = T^b_{i{N_i^b}}, r_i=\infty$ if patient drops out of AS. The latter is also known as right censoring. Further let $\boldsymbol{y}_i$ denote the $n_i \times 1$ longitudinal outcome vector of the $i^{th}$ patient. The population of interest consists of all the patients enrolled in AS. For a sample of $n$ patients from this population the observed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_i; i = 1, \ldots n\}$.\\
 
-To model the evolution of the longitudinal measurements over time, the joint model utilizes generalized linear mixed effects model. The distribution of longitudinal outcome $\boldsymbol{y}_i$ conditional on the random effects $\boldsymbol{b}_i$ is assumed to be a member of the exponential family. The corresponding linear predictor is given by:
+To model the evolution of the longitudinal measurements over time, the joint model utilizes a generalized linear mixed effects model. The distribution of longitudinal outcome $\boldsymbol{y}_i$ conditional on the random effects $\boldsymbol{b}_i$ is assumed to be a member of the exponential family. The corresponding linear predictor is given by:
 
 \begin{equation*}
 k[E\{y_i(t) \mid \boldsymbol{b}_i\}] = m_i(t) = \boldsymbol{x}_i^T(t) \boldsymbol{\beta} + \boldsymbol{z}_i^T(t) \boldsymbol{b}_i
@@ -19,7 +19,7 @@ To model the effect of longitudinal outcome on hazard of event, joint models uti
 
 \begin{align*}
 h_i(t \mid \mathcal{M}_i(t), \boldsymbol{w}_i) &= \lim_{\Delta t \to 0} Pr\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \boldsymbol{w}_i\}/\Delta t\\
-&=h_0(t) \exp[\boldsymbol{\gamma}^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\}]
+&=h_0(t) \exp\{\boldsymbol{\gamma}^T\boldsymbol{w}_i + f\{M_i(t), \boldsymbol{b}_i, \boldsymbol{\alpha}\}\}
 \end{align*}
 where $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ denotes the history of the underlying longitudinal process up to time $t$. $\boldsymbol{w}_i$ is a vector of baseline covariates and $\boldsymbol{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\boldsymbol{\alpha}$ specifies the functional form \citep{brown2009assessing,rizopoulos2012joint,taylor2013real} of longitudinal outcome that is used in the linear predictor of the relative risk model. Some functional forms relevant to the problem at hand, and their interpretation are the following: 
 
@@ -49,12 +49,13 @@ p(y_{il}\mid \boldsymbol{b}_i,\boldsymbol{\theta})=
 \exp\Bigg\{\frac{y_{il}\psi_{il}(\boldsymbol{b}_i)-c\{\psi_{il}(\boldsymbol{b}_i)\}}{a(\phi)} -d( y_{il},\phi)         \Bigg\},
 \end{equation*}
 where $\psi_{il}(\boldsymbol{b}_i)$ and $\phi$ denote the natural and dispersion parameters in the exponential family, respectively, and $c(\cdot)$, $d(\cdot)$ and $a(\cdot)$ are known functions specifying the member of the exponential family. The likelihood contribution of the survival outcome is given by
-\begin{equation*}
+\begin{equation}
+\label{eq : likelihood_contribution_survival}
 p\{l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}\} = \exp\Big\{-\int_0^{l_i} h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\} - \exp\Big\{-\int_0^{r_i}h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\}
-\end{equation*}
-The integral in the likelihood function of the survival function does not have a closed-form solution, and therefore we used a 15-point Gauss–Kronrod quadrature rule to approximate it.\\
+\end{equation}
+The integral in Equation (\ref{eq : likelihood_contribution_survival}) does not have a closed-form solution, and therefore we used a 15-point Gauss–Kronrod quadrature rule to approximate it.\\
 
-For the parameters of the longitudinal outcomes we use standard default priors. More specifically, independent normal priors with zero mean and variance 100 for the fixed effects $\boldsymbol{\beta}$ and inverse Gamma priors for scale parameters. For the variance–covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the number $q$ of the random effects. For the survival model parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
+For the parameters of the longitudinal outcomes we use standard default priors. More specifically, independent normal priors with zero mean and variance 100 for the fixed effects $\boldsymbol{\beta}$ and inverse Gamma priors for scale parameters. For the variance–covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the number $q$ of the random effects. For the relative risk model's parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
 \begin{equation*}
 p(\gamma_{h_0} \mid \tau_h) \propto \tau_h^{\rho(\boldsymbol{K})/2} \exp\Big(-\frac{\tau_h}{2}\gamma_{h_0}^T \boldsymbol{K} \gamma_{h_0}\Big)
 \end{equation*}

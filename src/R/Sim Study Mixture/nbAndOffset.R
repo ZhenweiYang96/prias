@@ -221,8 +221,8 @@ computeNbAndOffset_Mixed=function(dsId, patientRowNum, minVisits=1, lastPossible
       patientDsSubset = patientDs_i[patientDs_i$visitTimeYears <= curVisitTime, ]
       
       pt025quantile = pDynSurvTimeOptimal(dsId, patientDsSubset, 0.975, lastBiopsyTime)
-      #medianFailureTime = pDynSurvTimeOptimal(dsId, patientDsSubset, 0.5, lastBiopsyTime)
-      medianFailureTime = expectedCondFailureTime(dsId, patientDsSubset, lastBiopsyTime)
+      medianFailureTime = pDynSurvTimeOptimal(dsId, patientDsSubset, 0.5, lastBiopsyTime)
+      #medianFailureTime = expectedCondFailureTime(dsId, patientDsSubset, lastBiopsyTime)
       
       #nearest_time_index = which(abs(dynamicCutOffTimes-curVisitTime)==min(abs(dynamicCutOffTimes-curVisitTime)))[1]
       nearest_time_index = which(abs(dynamicCutOffTimes-lastBiopsyTime)==min(abs(dynamicCutOffTimes-lastBiopsyTime)))[1]

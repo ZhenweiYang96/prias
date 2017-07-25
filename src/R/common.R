@@ -9,6 +9,7 @@ library(nlme)
 library(JMbayes)
 
 source("src/R/replaceMCMCContents.R")
+source("src/R/rocJM_mod.R")
 source("../JMBayes/Anirudh/dev/multiplot.R")
 
 ticksX = function(from=0, max, by, labels=waiver(), extraLabels=NA){

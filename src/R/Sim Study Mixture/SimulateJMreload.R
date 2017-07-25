@@ -4,19 +4,19 @@ library(splines)
 nSub <- 1000# number of subjects
 
 source("src/R/common.R")
-source("src/R/Simulation Study/simCommon.R")
-source("src/R/Simulation Study/rocAndCutoff.R")
-source("src/R/Simulation Study/nbAndOffset.R")
-source("src/R/Simulation Study/produceResults.R")
+source("src/R/Sim Study Mixture/simCommon.R")
+source("src/R/Sim Study Mixture/rocAndCutoff.R")
+source("src/R/Sim Study Mixture/nbAndOffset.R")
+source("src/R/Sim Study Mixture/produceResults.R")
 source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 1
+nDataSets = 10
 simulatedDsList = vector("list", nDataSets)
 
 for(i in 1:nDataSets){
-  load(paste("Rdata/Gleason as event/Sim Study/sc_8pt5_sh_3/Dt_1/simDs",i,".Rdata", sep=""))
+  load(paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
   simulatedDsList[[i]] = temp[[1]]
   rm(temp)
   
@@ -47,12 +47,14 @@ for(i in 1:nDataSets){
                                  .packages =  c("splines", "JMbayes", "coda"),
                                  .export = c("timesPerSubject"))%dopar%{
                                    res = c(P_ID=patientRowNum,
-                                           methodName="MixedYouden",
+                                           methodName="MixedF1Score",
                                            computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
                                                                     1, timesPerSubject-1,
-                                                                    alternative = "youden"))
+                                                                    alternative = "f1score"))
                                    return(res)
                                  })
+  mixed_res[,"weibullScale"] = tail(simulatedDsList[[i]]$weibullScale, nrow(simulatedDsList[[i]]$testDs.id))
+  mixed_res[,"weibullShape"] = tail(simulatedDsList[[i]]$weibullShape, nrow(simulatedDsList[[i]]$testDs.id))
   
   colnames(mixed_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
   simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
@@ -63,7 +65,7 @@ for(i in 1:nDataSets){
   stopCluster(ct)
   
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_8pt5_sh_3/Dt_1/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_mixed_f1/simDs",i,".Rdata", sep=""))
   
   #Save RAM
   rm(temp)

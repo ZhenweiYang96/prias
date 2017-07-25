@@ -61,30 +61,18 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
                             biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
                               if(x=="expectedFailureTime"){
                                 return("Mean")
-                              } 
-                              
-                              if(x=="medianFailureTime"){
+                              }else if(x=="medianFailureTime"){
                                 return("Median")
-                              } 
-                              
-                              if(x=="PRIAS"){
+                              }else if(x=="PRIAS"){
                                 return("PRIAS")
-                              }
-                              
-                              if(x=="JH"){
+                              }else if(x=="JH"){
                                 return("Annual")
-                              }
-                              
-                              if(x=="youden"){
+                              }else if(x=="youden"){
                                 return("Youden")
-                              }
-                              
-                              if(x=="f1score"){
+                              }else if(x=="f1score"){
                                 return("F1score")
-                              }
-                              
-                              if(x=="MixedYouden"){
-                                return("Mixed.Approach")
+                              }else{
+                                return(as.character(x))
                               }
                             })
                             
@@ -184,7 +172,7 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                                }
                                
                                if(x=="MixedYouden"){
-                                 return("Mixed.Approach")
+                                 return("Mixed Approach")
                                }
                              })
                              return(simulatedDsList[[1]]$biopsyTimes)
@@ -211,8 +199,9 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
   print(p)
   dev.off()
   
-    
   stopCluster(ct)
+  
+  return(biopsyResults)
 }
 
 poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
@@ -259,7 +248,7 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                               }
                               
                               if(x=="MixedYouden"){
-                                return("Mixed.Approach")
+                                return("Mixed Approach")
                               }
                             })
                             
