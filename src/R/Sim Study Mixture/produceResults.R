@@ -133,7 +133,11 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
   stopCluster(ct)
 }
 
-boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
+boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NA, subpopName = "all"){
+  if(is.na(subPopulationWeibullScale)){
+    stop("enter sub population weibull scale, or vector of scales")
+  }
+  
   ct = makeCluster(detectCores())
   registerDoParallel(ct)
   
@@ -146,6 +150,7 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                              
                              simulatedDsList = temp
                              
+                             simulatedDsList[[1]]$biopsyTimes = simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale %in% subPopulationWeibullScale,]
                              simulatedDsList[[1]]$biopsyTimes[,"methodCategory"] = sapply(simulatedDsList[[1]]$biopsyTimes[,"methodName"], function(x){
                                if(x=="expectedFailureTime"){
                                  return("Expec. Time GR")
@@ -164,11 +169,11 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                                }
                                
                                if(x=="youden"){
-                                 return("Youden")
+                                 return("Youden's J")
                                }
                                
                                if(x=="f1score"){
-                                 return("F1score")
+                                 return("F1-Score")
                                }
                                
                                if(x=="MixedYouden"){
@@ -176,14 +181,14 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                                }
                              })
                              return(simulatedDsList[[1]]$biopsyTimes)
-                             #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==4,])
                            }
   
   biopsyResults = data.frame(biopsyResults)
   biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
   biopsyResults$offset = as.numeric(as.character(biopsyResults$offset)) * 12
   
-  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/nbBoxPlot.png")
+  
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbBoxPlot_",subpopName,".png", sep=""))
   p = ggplot(data = biopsyResults) +
     geom_boxplot(aes(reorder(methodCategory, nb, FUN=mean), nb)) +
     scale_y_continuous(breaks = seq(0,20, by = 1)) +
@@ -191,7 +196,7 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
   print(p)
   dev.off()
   
-  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/offsetBoxPlot.png")
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetBoxPlot_",subpopName,".png", sep=""))
   p = ggplot(data = biopsyResults) +
     geom_boxplot(aes( reorder(methodCategory, nb, FUN=mean), offset)) +
     scale_y_continuous(breaks = seq(0,240, by = 12)) +
@@ -204,7 +209,11 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
   return(biopsyResults)
 }
 
-poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
+poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NA, subpopName = "all"){
+  if(is.na(subPopulationWeibullScale)){
+    stop("enter sub population weibull scale, or vector of scales")
+  }
+  
   ct = makeCluster(detectCores())
   registerDoParallel(ct)
   
@@ -217,8 +226,8 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                             
                             simulatedDsList = temp
                             
-                            biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
-                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale==4,])
+                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
+                            biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes[simulatedDsList[[1]]$biopsyTimes$weibullScale %in% subPopulationWeibullScale,])
                             biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
                             biopsyResults$offset = as.numeric(as.character(biopsyResults$offset))
                             
@@ -240,11 +249,11 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
                               }
                               
                               if(x=="youden"){
-                                return("Youden")
+                                return("Youden's J")
                               }
                               
                               if(x=="f1score"){
-                                return("F1score")
+                                return("F1-Score")
                               }
                               
                               if(x=="MixedYouden"){
@@ -281,11 +290,13 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1"){
   finalResultSummary[,"nbVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
   finalResultSummary[,"offsetVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
 
-  png(width=640, height=480, filename = "report/pers_schedule/images/sim_study/meanNbVsOffset.png")
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
   p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], label=rownames(finalResultSummary), geom="label",
             xlab="Mean number of biopsies", ylab="Mean offset (months)", xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25))
   print(p)
   dev.off()
+  
+  write.csv(finalResultSummary, file = paste("report/pers_schedule/csv/", "pooledInfo_", subpopName ,".csv", sep=""))
   
   return(finalResultSummary)
 }
