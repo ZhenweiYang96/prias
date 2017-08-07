@@ -2,12 +2,11 @@
 
 \section{Personalized schedules for repeat biopsies}
 \label{sec : pers_sched_approaches}
-Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. To elucidate the scheduling methods, let us assume that a personalized schedule is to be created a new patient enumerated $j$, who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that this patient did not have a GR at their last biopsy performed at time $t$, and that the PSA measurements are available up to a time point $s$. The goal is to find the optimal time $u \geq \text{max}(t,s)$ of the next biopsy.
+Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. To elucidate the scheduling methods, let us assume that a personalized schedule is to be created for a new patient enumerated $j$, who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that this patient did not have a GR at their last biopsy performed at time $t$, and that the PSA measurements are available up to a time point $s$. The goal is to find the optimal time $u \geq \text{max}(t,s)$ of the next biopsy.
 
 \subsection{Posterior predictive distribution for time to GR}
 \label{subsec : ppd_time_to_GR}
-Let $\mathcal{Y}_j(s)$ denote the history of PSA measurements taken up to time $s$ for patient $j$. The information from PSA history and repeat biopsies is manifested by the posterior predictive distribution $g(T^*_j)$. It is given by (conditioning on baseline covariates $\boldsymbol{w}_i$ is dropped for notational simplicity here onwards):
-
+Let $\mathcal{Y}_j(s)$ denote the history of PSA measurements taken up to time $s$ for patient $j$. The information from PSA history and repeat biopsies is manifested by the posterior predictive distribution $g(T^*_j)$,given by (conditioning on baseline covariates $\boldsymbol{w}_i$ is dropped for notational simplicity here onwards):
 \begin{equation}
 \label{eq : dyn_dist_fail_time}
 \begin{split}
@@ -16,12 +15,11 @@ g(T^*_j) &= p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n)\\
 &= \int \int p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta}) p(\boldsymbol{b}_j \mid T^*_j>t, \mathcal{Y}_j(s), \boldsymbol{\theta})p(\boldsymbol{\theta} \mid \mathcal{D}_n) \,d\boldsymbol{b}_j \,d\boldsymbol{\theta}
 \end{split}
 \end{equation}
-The posterior predictive distribution depends on the observed longitudinal history via the random effects $\boldsymbol{b_j}$. The posterior distribution of the parameters $\boldsymbol{\theta}$, denoted by $p(\boldsymbol{\theta} \mid \mathcal{D}_n)$ is obtained from the joint model fitted to the original data set of patients $\mathcal{D}_n$.
+The posterior predictive distribution depends on the observed longitudinal history via the random effects $\boldsymbol{b_j}$. The posterior distribution of the parameters $\boldsymbol{\theta}$, denoted by $p(\boldsymbol{\theta} \mid \mathcal{D}_n)$ is obtained as in Section \ref{subsec : jm_param_estimation_bayesian}.
 
 \subsection{Loss functions}
 \label{subsec : loss_functions}
 To find the time $u$ of next biopsy, we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose future biopsy time $u$ by minimizing the posterior expected loss $E_g[L(T^*_j, u)]$, where the expectation is taken w.r.t. the posterior predictive distribution $g(T^*_j)$. 
-
 \begin{equation*}
 E_g[L(T^*_j, u)] = \int_t^\infty L(T^*_j, u) p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n) \,dT^*_j
 \end{equation*}
@@ -30,7 +28,6 @@ Various loss functions $L(T^*_j, u)$ have been proposed in literature \citep{rob
 \subsubsection{Expected and median time of GR}
 \label{subsubsec : exp_median_fail_time}
 One of the reasons, patients did not comply with the existing PRIAS schedule was \textquoteleft complications on a previous biopsy \textquoteright. Therefore, it makes sense to have as less biopsies as possible. In the ideal case only 1 biopsy, performed at the exact time of GR is sufficient. Hence, neither a time which overshoots the true GR time $T^*_j$, nor a time which undershoots is preferred. In this regard, the squared loss function $L(T^*_j, u) = (T^*_j - u)^2$ and absolute loss function $L(T^*_j, u) = \mid T^*_j - u \mid$ have the properties that the posterior expected loss is symmetric on both sides of $T^*_j$. Secondly, both loss functions have well known solutions available. The posterior expected loss for the squared loss function is given by:
-
 \begin{equation}
 \label{eq : posterior_squared_loss}
 \begin{split}
@@ -39,7 +36,6 @@ E_g[L(T^*_j, u)] &= E_g[(T^*_j - u)^2]\\
 \end{split}
 \end{equation}
 The posterior expected loss in Equation (\ref{eq : posterior_squared_loss}) attains its minimum at $u = E_g[T^*_j]$, also known as expected time of GR. The posterior expected loss for the absolute loss function is given by:
-
 \begin{equation}
 \label{eq : posterior_absolute_loss}
 \begin{split}
@@ -52,7 +48,7 @@ The posterior expected loss in Equation (\ref{eq : posterior_absolute_loss}) att
 \begin{equation}
 \pi_j(u \mid t, s) = Pr(T^*_j \geq u \mid  T^*_j >t, \mathcal{Y}_j(s), D_n), u \geq t
 \end{equation}
-For ease of readability we denote $\pi_j^{-1}(0.5)$ as $\text{Median}[T^*_j]$ hereforth.
+For ease of readability we denote $\pi_j^{-1}(0.5)$ as $\text{Median}[T^*_j]$ here onwards.
 
 \subsubsection{Dynamic risk of GR}
 \label{subsubsec : dynamic_risk_definitions}
@@ -76,17 +72,17 @@ When the variance $Var_g[T^*_j]$ of $g(T^*_j)$ is small, then $E_g[T^*_j]$ as we
 \subsubsection{Estimation of $E_g[T^*_j]$ and $Var_g[T^*_j]$}
 Since there is no closed form solution available for $E_g[T^*_j]$, for its estimation we utilize the following relationship between expected time of GR and dynamic survival probability:
 
-\begin{equation*}
+\begin{equation}
+\label{eq : expected_time_survprob}
 E_g[T^*_j] = t + \int_t^\infty \pi_j(u \mid t, s) \,du
-\end{equation*}
-There is no closed form solution available for the integral and hence we approximate it using Gauss-Kronrod quadrature. We preferred this approach over Monte Carlo methods to estimate $E_g[T^*_j]$ from the posterior predictive distribution $g(T^*_j)$. This was done because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. Thus the latter approach was computationally faster. As mentioned earlier, a limitation of expected time of GR is that it is practically useful only when the variance of $g(T^*_j)$ is small. The variance is given by:
+\end{equation}
+There is no closed form solution available for the integral and hence we approximate it using Gauss-Kronrod quadrature. We preferred this approach over Monte Carlo methods to estimate $E_g[T^*_j]$ from the posterior predictive distribution $g(T^*_j)$. This was done because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. Thus the latter approach was computationally faster. As mentioned earlier, a limitation of $E_g[T^*_j]$ is that it is practically useful only when the $Var_g[T^*_j]$ is small. The variance is given by:
 
 \begin{equation}
-\begin{split}
-Var_g[T^*_j] &= E_g[{T^*_j}^2] - {E_g[T^*_j]}^2\\
-&= 2 \int_t^\infty {(u-t) \pi_j(u \mid t, s) \,du} - {\bigg(\int_t^\infty \pi_j(u \mid t, s) \,du\bigg)}^2
-\end{split}
+\label{eq : var_time_survprob}
+Var_g[T^*_j] = 2 \int_t^\infty {(u-t) \pi_j(u \mid t, s) \,du} - {\bigg(\int_t^\infty \pi_j(u \mid t, s) \,du\bigg)}^2
 \end{equation}
+
 Since a closed form solution is not available for the variance expression, it is estimated similar to the estimation of $E_g[T^*_j]$. The variance depends both on last biopsy time $t$ and PSA history $\mathcal{Y}_j(s)$. The impact of the observed information on variance is demonstrated in Figure \ref{fig : variance_pred_dist} and discussed in Section \ref{subsec : demo_prias_pers_schedule}.
 
 \subsubsection{Estimation of $\kappa$}

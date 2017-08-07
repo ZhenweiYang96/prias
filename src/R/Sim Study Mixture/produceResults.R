@@ -133,8 +133,8 @@ produceResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", im
   stopCluster(ct)
 }
 
-boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NA, subpopName = "all"){
-  if(is.na(subPopulationWeibullScale)){
+boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NULL, subpopName = "all"){
+  if(is.null(subPopulationWeibullScale)){
     stop("enter sub population weibull scale, or vector of scales")
   }
   
@@ -209,8 +209,8 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
   return(biopsyResults)
 }
 
-poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NA, subpopName = "all"){
-  if(is.na(subPopulationWeibullScale)){
+poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NULL, subpopName = "all"){
+  if(is.null(subPopulationWeibullScale)){
     stop("enter sub population weibull scale, or vector of scales")
   }
   
@@ -278,25 +278,63 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   stopCluster(ct)
   
   methodNames = names(resultsSummary[[1]][[1]])
-  paramNames = names(resultsSummary[[1]])
+  paramNames = c("totalPatientsPerMethod","nbMeanPerMethod","nbMeanVarPerMethod",
+                 "offsetMeanPerMethod","offsetMeanVarPerMethod","nbVarPerMethod",
+                 "nbVarVarPerMethod","offsetVarPerMethod","offsetVarVarPerMethod")
   
   finalResultSummary = matrix(data = NA, nrow = length(methodNames), ncol=length(paramNames))
   rownames(finalResultSummary) = methodNames
   colnames(finalResultSummary) = paramNames
   
-  finalResultSummary[,"totalPatientsPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
-  finalResultSummary[,"nbMeanPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
-  finalResultSummary[,"offsetMeanPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
-  finalResultSummary[,"nbVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
-  finalResultSummary[,"offsetVarPerMethod"] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  finalResultSummary[,paramNames[1]] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
 
-  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
-  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], label=rownames(finalResultSummary), geom="label",
-            xlab="Mean number of biopsies", ylab="Mean offset (months)", xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25))
+  finalResultSummary[,paramNames[2]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  finalResultSummary[,paramNames[3]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]]}), MARGIN = 1, FUN = var)
+  
+  finalResultSummary[,paramNames[4]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  finalResultSummary[,paramNames[5]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]]}), MARGIN = 1, FUN = var)
+  
+  finalResultSummary[,paramNames[6]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  finalResultSummary[,paramNames[7]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]]}), MARGIN = 1, FUN = var)
+  
+  finalResultSummary[,paramNames[8]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  finalResultSummary[,paramNames[9]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]]}), MARGIN = 1, FUN = var)
+
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbMeanBoxPlot_",subpopName,".png", sep=""))
+  ydata = c(sapply(resultsSummary, function(x){x[["nbMeanPerMethod"]]}))
+  xdata = rep(methodNames,length(resultsSummary))
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean: Number of biopsies", xlab="Method") + ticksY(0, 10, 0.5)
   print(p)
   dev.off()
   
-  write.csv(finalResultSummary, file = paste("report/pers_schedule/csv/", "pooledInfo_", subpopName ,".csv", sep=""))
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetMeanBoxPlot_",subpopName,".png", sep=""))
+  ydata = c(sapply(resultsSummary, function(x){x[["offsetMeanPerMethod"]]}))
+  xdata = rep(methodNames,length(resultsSummary))
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean: Biopsy offset (months)", xlab="Method") + ticksY(0, 100, 1)
+  print(p)
+  dev.off()
+  
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbVarBoxPlot_",subpopName,".png", sep=""))
+  ydata = c(sapply(resultsSummary, function(x){x[["nbVarPerMethod"]]}))
+  xdata = rep(methodNames,length(resultsSummary))
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance: number of biopsies", xlab="Method") + ticksY(0, 100, 1)
+  print(p)
+  dev.off()
+  
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetVarBoxPlot_",subpopName,".png", sep=""))
+  ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]}))
+  xdata = rep(methodNames,length(resultsSummary))
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance: Biopsy offset (months)", xlab="Method") + ticksY(0, 500, 25)
+  print(p)
+  dev.off()
+  
+  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
+  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], label=rownames(finalResultSummary), geom="label",
+            xlab="Mean: Number of biopsies", ylab="Mean: Biopsy offset (months)", xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25))
+  print(p)
+  dev.off()
+  
+  write.csv(round(finalResultSummary,3), file = paste("report/pers_schedule/csv/", "pooledInfo_", subpopName ,".csv", sep=""))
   
   return(finalResultSummary)
 }

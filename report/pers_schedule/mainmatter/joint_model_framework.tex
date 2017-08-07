@@ -2,7 +2,7 @@
 
 \section{Joint models for time to event and longitudinal outcomes}
 \label{sec : jm_framework}
-The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other patient specific characteristics. In PRIAS, PSA levels are measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. Thus PSA levels can be modeled as a longitudinal outcome. As mentioned earlier, patients in PRIAS have a Gleason score of 6 or less at the time of induction in the study, and patients are removed from AS the first time GR takes place. Since our interest lies in finding the time of GR, we model it as a time to event outcome. A joint model for time to event and longitudinal outcomes is used to model the association between the two types of outcomes. We next present a short introduction of the joint modeling framework we will use in this work.
+The first step in creating a personalized schedule for biopsies is to come up with a model for Gleason scores, PSA levels and other patient specific characteristics. In PRIAS, PSA is measured at the time of induction, every 3 months for the first 2 years in the study and then every 6 months thereafter. As for GR, the first time it is observed patients are taken off AS. Since our interest lies in finding the time of GR, we model it as a time to event outcome. We model the PSA levels as a longitudinal outcome. A joint model for time to event and longitudinal outcomes is used to model the association between the two types of outcomes. We next present a short introduction to the joint modeling framework we will use in this work.
 
 \subsection{Joint model specification}
 \label{subsec : jm_specification}
@@ -37,25 +37,26 @@ Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly usi
 where $B_q(t, \boldsymbol{v})$ denotes the $q^{th}$ basis function of a B-spline with knots $\boldsymbol{v} = v_1, \ldots v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}.
 
 \subsection{Parameter estimation}
-In this work, we estimate parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to event and longitudinal responses taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
+\label{subsec : jm_param_estimation_bayesian}
+We estimate parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to event and longitudinal responses taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
 
 \begin{align*}
 p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \boldsymbol{y}_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})\\
 & \propto \prod_{i=1}^n  \prod_{l=1}^{n_i} p(y_{il} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})  p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})
 \end{align*}
-where the likelihood contribution of longitudinal outcome is
+where the likelihood contribution of longitudinal outcome is:
 \begin{equation*}
 p(y_{il}\mid \boldsymbol{b}_i,\boldsymbol{\theta})=
 \exp\Bigg\{\frac{y_{il}\psi_{il}(\boldsymbol{b}_i)-c\{\psi_{il}(\boldsymbol{b}_i)\}}{a(\phi)} -d( y_{il},\phi)         \Bigg\},
 \end{equation*}
-where $\psi_{il}(\boldsymbol{b}_i)$ and $\phi$ denote the natural and dispersion parameters in the exponential family, respectively, and $c(\cdot)$, $d(\cdot)$ and $a(\cdot)$ are known functions specifying the member of the exponential family. The likelihood contribution of the survival outcome is given by
+where $\psi_{il}(\boldsymbol{b}_i)$ and $\phi$ denote the natural and dispersion parameters in the exponential family, respectively, and $c(\cdot)$, $d(\cdot)$ and $a(\cdot)$ are known functions specifying the member of the exponential family. The likelihood contribution of the time to event outcome is given by:
 \begin{equation}
 \label{eq : likelihood_contribution_survival}
 p\{l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}\} = \exp\Big\{-\int_0^{l_i} h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\} - \exp\Big\{-\int_0^{r_i}h_i(s \mid \mathcal{M}_i(s), \boldsymbol{w}_i)\,ds\Big\}
 \end{equation}
-The integral in Equation (\ref{eq : likelihood_contribution_survival}) does not have a closed-form solution, and therefore we used a 15-point Gauss–Kronrod quadrature rule to approximate it.\\
+The integral in Equation (\ref{eq : likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss–Kronrod quadrature rule to approximate it.\\
 
-For the parameters of the longitudinal outcomes we use standard default priors. More specifically, independent normal priors with zero mean and variance 100 for the fixed effects $\boldsymbol{\beta}$ and inverse Gamma priors for scale parameters. For the variance–covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the number $q$ of the random effects. For the relative risk model's parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
+We use independent normal priors with zero mean and variance 100 for the fixed effects $\boldsymbol{\beta}$ and inverse Gamma priors for scale parameters. For the variance–covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the number $q$ of the random effects. For the relative risk model's parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
 \begin{equation*}
 p(\gamma_{h_0} \mid \tau_h) \propto \tau_h^{\rho(\boldsymbol{K})/2} \exp\Big(-\frac{\tau_h}{2}\gamma_{h_0}^T \boldsymbol{K} \gamma_{h_0}\Big)
 \end{equation*}

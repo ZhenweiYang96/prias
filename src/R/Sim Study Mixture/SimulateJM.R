@@ -12,7 +12,7 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 60
+nDataSets = 366
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
@@ -25,8 +25,8 @@ methods = c("expectedFailureTime", "medianFailureTime","youden", "f1score")
             #"accuracy", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 16000
-for(i in 41:nDataSets){
+lastSeed = 19557
+for(i in 317:nDataSets){
   print(paste("******** Started working on Data Set: ", i, "*******"))
   
   lastSeed = getNextSeed(lastSeed)

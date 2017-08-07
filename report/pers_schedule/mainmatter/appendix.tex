@@ -1,4 +1,170 @@
 % !TEX root =  ../main.tex 
 
-\section{Appendix Heading}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse accumsan magna est, quis elementum leo laoreet eu. Donec sollicitudin elit non massa venenatis, in viverra dolor sagittis. Maecenas ac justo pulvinar, consectetur mauris hendrerit, vulputate lacus. Etiam tristique sapien quis sem commodo, et eleifend tortor viverra. In hac habitasse platea dictumst. Phasellus vel tempus risus, sit amet consectetur massa. Duis rutrum lectus eu ligula egestas iaculis. Sed condimentum, ipsum in dignissim condimentum, nisi turpis blandit massa, et aliquam magna ligula eget lacus. Donec ac eleifend nulla, quis cursus nisi. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse accumsan magna est, quis elementum leo laoreet eu. Donec sollicitudin elit non massa venenatis, in viverra dolor sagittis. Maecenas ac justo pulvinar, consectetur mauris hendrerit, vulputate lacus. Etiam tristique sapien quis sem commodo, et eleifend tortor viverra. In hac habitasse platea dictumst. Phasellus vel tempus risus, sit amet consectetur massa. Duis rutrum lectus eu ligula egestas iaculis. Sed condimentum, ipsum in dignissim condimentum, nisi turpis blandit massa, et aliquam magna ligula eget lacus. Donec ac eleifend nulla, quis cursus nisi.
+\section{Appendix}
+
+\subsection{Personalized schedules for repeat biopsies}
+\subsubsection{Derivation of Equation \ref{eq : expected_time_survprob}}
+\begin{equation*}
+\begin{split}
+E_g[T^*_j] &= \int_t^{\infty} T^*_j p(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n)\,dT^*_j\\
+&= \int_t^{\infty} T^*_j \frac{p(T^*_j \mid \mathcal{Y}_j(s), \mathcal{D}_n)}{p(T^*_j > t \mid \mathcal{Y}_j(s), \mathcal{D}_n)}\,dT^*_j\\
+&= t + \int_t^\infty \pi_j(u \mid t, s) \,du
+\end{split}
+\end{equation*}
+
+\subsubsection{Derivation of Equation \ref{eq : var_time_survprob}}
+\begin{equation*}
+\begin{split}
+Var_g[T^*_j] &= E_g[(T^*_j)^2] - E_g[T^*_j]^2
+\end{split}
+\end{equation*}
+
+
+
+\subsection{Simulation study}
+This section presents the figures and tables for related to the simulation study results from Section \ref{sec: simulation_study}. More specifically:
+
+\begin{itemize}
+  \item Figure \ref{fig : meanNbVsOffset_G1}, Figure \ref{fig : meanNbVsOffset_G2} and Figure \ref{fig : meanNbVsOffset_G3} show plots of average number of biopsies against average offset for each of the 7 scheduling methods present in the simulation study.
+  \item Figure \ref{fig : nbBoxPlot_G1} and Figure \ref{fig : offsetBoxPlot_G1} show boxplots of number of biopsies and offset for each of the 6 scheduling methods for the patients in subgroup $G_1$. Similar plots for subgroup $G_2$ and $G_3$ are shown in Figure \ref{fig : nbAndOffsetBoxPlot_G2} and Figure \ref{fig : nbAndOffsetBoxPlot_G3} respectively.
+  \item Figure \ref{fig : nbMeanBoxPlot_all} and Figure \ref{fig : offsetMeanBoxPlot_all} show the variation in estimated mean number of biopsies and estimated mean offset computed during the 254 simulations, for patients from all subgroups. The same plots for each of the subgroups are shown in Figure \ref{fig : nbAndOffsetMeanBoxPlot_G1}, Figure \ref{fig : nbAndOffsetMeanBoxPlot_G2} and Figure \ref{fig : nbAndOffsetMeanBoxPlot_G3}.
+\end{itemize} 
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/meanNbVsOffset_scale_4.png}
+		\caption{Plot for subgroup $G_1$}
+		\label{fig : meanNbVsOffset_G1}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{images/sim_study/meanNbVsOffset_scale_5.png}
+		\caption{Plot for subgroup $G_2$}
+		\label{fig : meanNbVsOffset_G2}
+    \end{subfigure}  
+    \begin{subfigure}[b]{0.45\textwidth}
+		\includegraphics[width=\textwidth]{images/sim_study/meanNbVsOffset_scale_6.png}
+		\caption{Plot for subgroup $G_3$}
+		\label{fig : meanNbVsOffset_G3}
+    \end{subfigure}      
+    \caption{Estimated mean number of biopsies and mean offset (months) for the 7 scheduling methods for the 3 sub-groups. Method names are abbreviated for ease of graphing.}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbBoxPlot_scale_4.png}
+        \caption{Boxplot for number of biopsies.}
+        \label{fig : nbBoxPlot_G1}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetBoxPlot_scale_4.png}
+        \caption{Boxplot for offset (months)}
+        \label{fig : offsetBoxPlot_G1}
+    \end{subfigure}      
+    \caption{Boxplot for number of biopsies and offset (months), for all patients in subgroup $G_1$ across all simulations. Method names are abbreviated for ease of graphing.}
+    \label{fig : nbAndOffsetBoxPlot_G1}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbBoxPlot_scale_5.png}
+        \caption{Boxplot for number of biopsies.}
+        \label{fig : nbBoxPlot_G2}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetBoxPlot_scale_5.png}
+        \caption{Boxplot for offset (months)}
+        \label{fig : offsetBoxPlot_G2}
+    \end{subfigure}      
+    \caption{Boxplot for number of biopsies and offset (months), for all patients in subgroup $G_2$ across all simulations. Method names are abbreviated for ease of graphing.}
+     \label{fig : nbAndOffsetBoxPlot_G2}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbBoxPlot_scale_6.png}
+        \caption{Boxplot for number of biopsies.}
+        \label{fig : nbBoxPlot_G3}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetBoxPlot_scale_6.png}
+        \caption{Boxplot for offset (months)}
+        \label{fig : offsetBoxPlot_G3}
+    \end{subfigure}      
+    \caption{Boxplot for number of biopsies and offset (months), for all patients in subgroup $G_3$ across all simulations. Method names are abbreviated for ease of graphing.}
+     \label{fig : nbAndOffsetBoxPlot_G3}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbMeanBoxPlot_all.png}
+        \caption{Boxplot for mean number of biopsies.}
+        \label{fig : nbMeanBoxPlot_all}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetMeanBoxPlot_all.png}
+        \caption{Boxplot for mean offset (months)}
+        \label{fig : offsetMeanBoxPlot_all}
+    \end{subfigure}      
+    \caption{Boxplot showing variation in mean number of biopsies and mean offset (months) for all of the patients across the 254 simulations.}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbMeanBoxPlot_scale_4.png}
+        \caption{Boxplot for mean number of biopsies.}
+        \label{fig : nbMeanBoxPlot_G1}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetMeanBoxPlot_scale_4.png}
+        \caption{Boxplot for mean offset (months)}
+        \label{fig : offsetMeanBoxPlot_G1}
+    \end{subfigure}      
+    \caption{Boxplot showing variation in mean number of biopsies and mean offset (months) for patients in subgroup $G_1$ across the 254 simulations.}
+    \label{fig : nbAndOffsetMeanBoxPlot_G1}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbMeanBoxPlot_scale_5.png}
+        \caption{Boxplot for mean number of biopsies.}
+        \label{fig : nbMeanBoxPlot_G2}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetMeanBoxPlot_scale_5.png}
+        \caption{Boxplot for mean offset (months)}
+        \label{fig : offsetMeanBoxPlot_G2}
+    \end{subfigure}      
+    \caption{Boxplot showing variation in mean number of biopsies and mean offset (months) for patients in subgroup $G_2$ across the 254 simulations.}
+    \label{fig : nbAndOffsetMeanBoxPlot_G2}
+\end{figure}
+
+\begin{figure}[!htb]
+    \centering
+    \captionsetup{justification=centering}
+     \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/nbMeanBoxPlot_scale_6.png}
+        \caption{Boxplot for mean number of biopsies.}
+        \label{fig : nbMeanBoxPlot_G3}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{images/sim_study/offsetMeanBoxPlot_scale_6.png}
+        \caption{Boxplot for mean offset (months)}
+        \label{fig : offsetMeanBoxPlot_G3}
+    \end{subfigure}      
+    \caption{Boxplot showing variation in mean number of biopsies and mean offset (months) for patients in subgroup $G_3$ across the 254 simulations.}
+    \label{fig : nbAndOffsetMeanBoxPlot_G3}
+\end{figure}
