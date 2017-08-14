@@ -12,13 +12,15 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 10
-simulatedDsList = vector("list", nDataSets)
+datasetNumbers = 338:340
+simulatedDsList = vector("list", max(datasetNumbers))
 
-for(i in 1:nDataSets){
+for(i in datasetNumbers){
   load(paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
   simulatedDsList[[i]] = temp[[1]]
   rm(temp)
+  
+  print(paste("******** Started working on Data Set: ", i, "*******"))
   
   ##############  THE COMMENTED PART IS FOR THE DYN_DT ################
   #simulatedDsList[[i]]$testDs = simulatedDsList[[i]]$testDs[,1:6]
@@ -65,7 +67,9 @@ for(i in 1:nDataSets){
   stopCluster(ct)
   
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_mixed_f1/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
+  
+  print(paste("******** End working on Data Set: ", i, "*******"))
   
   #Save RAM
   rm(temp)

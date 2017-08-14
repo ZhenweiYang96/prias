@@ -10,6 +10,7 @@
 
 %% Useful packages
 \usepackage[tbtags]{amsmath}
+\usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
@@ -44,8 +45,11 @@
 %Use 4 levels of sections using package titlesec
 %\setcounter{secnumdepth}{4}
 \newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\\\}
-
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
 \newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
+%\DeclareMathOperator{\argmax}{arg\,max}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
 
 \begin{document}
 \title{PRIAS Personalized Biopsy Schedules}
@@ -64,6 +68,7 @@
 \input{mainmatter/pers_schedule_prias}
 \input{mainmatter/sim_study}
 \input{mainmatter/discussion}
+\input{mainmatter/acknowledgement}
 
 \textbf{}
 
