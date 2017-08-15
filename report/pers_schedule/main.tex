@@ -46,8 +46,8 @@
 %\setcounter{secnumdepth}{4}
 \newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\\\}
 \newcommand*\diff{\mathop{}\!\mathrm{d}}
-\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
-%\DeclareMathOperator{\argmax}{arg\,max}
+%\newcommand{\argmax}[1]{\underset{#1}{\operatorname{arg}\,\operatorname{max}}\;}
+\DeclareMathOperator{\argmax}{arg\,max}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
 
@@ -61,10 +61,11 @@
 \maketitle
 
 \input{mainmatter/abstract}
-\doublespacing
+%\doublespacing
 \input{mainmatter/introduction}
 \input{mainmatter/joint_model_framework}
-\input{mainmatter/pers_biopsy_framework}
+\input{mainmatter/pers_sched_framework/pers_biopsy_framework}
+\input{mainmatter/choosing_schedule}
 \input{mainmatter/pers_schedule_prias}
 \input{mainmatter/sim_study}
 \input{mainmatter/discussion}

@@ -1,0 +1,25 @@
+% !TEX root =  ../main.tex 
+
+\section{Personalized schedules for repeat biopsies}
+\label{sec : pers_sched_approaches}
+Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. To elucidate the scheduling methods, let us assume that a personalized schedule is to be created for a new patient enumerated $j$, who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that this patient did not have a GR at his last biopsy performed at time $t$, and that the PSA levels are available up to a time point $s$. The goal is to find the optimal time $u \geq \text{max}(t,s)$ of the next biopsy. 
+
+\input{mainmatter/pers_sched_framework/ppd_time_to_GR}
+\input{mainmatter/pers_sched_framework/loss_functions}
+
+% In case no GR is observed at $u$, the process is to be repeated a total $N_j^b$ times until GR is detected at a future time $T^b_{j{N_j^b}}$. 
+%$T^b_{j{N_j^b}}$ is the time at which GR is detected and $N_j^b$ is the number of biopsies conducted until that time. In this context, the most useful biopsy schedule for a patient will be the one with the least number of biopsies $N_j^b$ and the smallest offset $O_j = T^b_{j{N_j^b}} - T_j^*$ possible. 
+
+\input{mainmatter/pers_sched_framework/estimation}
+
+\subsection{Algorithm}
+\label{subsec : pers_sched_algorithm}
+Given the personalized scheduling methods, the next step is to iteratively create an entire schedule until GR is detected for the patient. To this end, the algorithm in Figure \ref{fig : sched_algorithm} elucidates the process of creating a personalized schedule for patient $j$. Since PRIAS and most AS programs strongly advise against conducting more than 1 biopsy per year, the algorithm adjusts the optimal time $u$ of biopsy in case the last biopsy was performed less than an year ago.
+
+\begin{figure}
+\centering
+\captionsetup{justification=centering}
+\input{mainmatter/pers_sched_framework/algorithm}
+\caption{Algorithm for creating a personalized schedule for patient $j$. $t$ denotes the time of the latest biopsy. $s$ denotes the time of the latest available PSA measurement. $u$ denotes the proposed time of personalized biopsy based on $g(T^*_j)$.  $u^{pv}$ denotes the time at which a repeat biopsy was proposed at the last visit to the hospital. $T^{nv}$ denotes the time of the next visit for PSA measurement.} 
+\label{fig : sched_algorithm}
+\end{figure}
