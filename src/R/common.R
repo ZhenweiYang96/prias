@@ -29,9 +29,9 @@ sourceDir <- function(path, trace = TRUE, ...) {
 }
 
 plotRandomProfile = function(count=1, fitted=F){
-  pid_sample = sample(x = unique(psa_data_set$P_ID), size = count)
+  pid_sample = sample(x = unique(training_psa_data_set$P_ID), size = count)
   print(pid_sample)
-  plot<-ggplot(data=psa_data_set[psa_data_set$P_ID %in% pid_sample,], aes(x=visitTimeYears, y=log(psa + 1, base = 2))) + 
+  plot<-ggplot(data=training_psa_data_set[training_psa_data_set$P_ID %in% pid_sample,], aes(x=visitTimeYears, y=log(psa, base = 2))) + 
     geom_line(aes(group=P_ID))
   if(fitted==T){
     plot + geom_line(aes(y=fitted, x=visitTimeYears, color=P_ID, group=P_ID)) 

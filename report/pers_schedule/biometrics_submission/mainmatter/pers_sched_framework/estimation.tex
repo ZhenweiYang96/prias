@@ -1,0 +1,40 @@
+% !TEX root =  ../../main.tex 
+
+\subsection{Estimation}
+\subsubsection{Estimation of $E_g[T^*_j]$ and $\mbox{var}_g[T^*_j]$}
+Since there is no closed form solution available for $E_g[T^*_j]$, for its estimation we utilize the following relationship between expected time of GR and dynamic survival probability:
+
+\begin{equation}
+\label{eq : expected_time_survprob}
+E_g[T^*_j] = t + \int_t^\infty \pi_j(u \mid t, s) \rmn{d} u
+\end{equation}
+There is no closed form solution available for the integral and hence we approximate it using Gauss-Kronrod quadrature. We preferred this approach over Monte Carlo methods to estimate $E_g[T^*_j]$ from the posterior predictive distribution $g(T^*_j)$. This was done because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. Thus the latter approach was computationally faster. As mentioned earlier, a limitation of $E_g[T^*_j]$ is that it is practically useful only when the $\mbox{var}_g[T^*_j]$ is small. The variance is given by:
+
+\begin{equation}
+\label{eq : var_time_survprob}
+\mbox{var}_g[T^*_j] = 2 \int_t^\infty {(u-t) \pi_j(u \mid t, s) \rmn{d} u} - \Big\{\int_t^\infty \pi_j(u \mid t, s) \rmn{d} u\Big\}^2
+\end{equation}
+
+Since a closed form solution is not available for the variance expression, it is estimated similar to the estimation of $E_g[T^*_j]$. The variance depends both on last biopsy time $t$ and PSA history $\mathcal{Y}_j(s)$. The impact of the observed information on variance is demonstrated in Figure \ref{fig : variance_pred_dist_3174} and Figure \ref{fig : variance_pred_dist_911}, and discussed in Section \ref{subsec : demo_prias_pers_schedule}.
+
+\subsubsection{Estimation of $\kappa$}
+\label{subsubsec : kappa_estimation}
+For schedules based on dynamic risk of GR, the value of $\kappa$ dictates the biopsy schedule and thus its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For e.g. if maximum acceptable risk is 75\% then $\kappa = 0.25$.
+
+In cases where the choice of $k$ cannot be based on the input of the physician or the patients, we propose to automate the choice of this threshold parameter. More specifically, we propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints,sokolova2009systematic}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience GR and the rest are controls. However, a patient can be in control group at some time $t$ and in the cases at some future time point $t + \Delta t$, and thus time dependent binary classification is more relevant. In joint models, a patient $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep{rizopoulosJMbayes}. The time window $\Delta t$ can be either chosen on a clinical basis, or such that uncertainty in estimation of $\pi_j(t + \Delta t \mid t,s)$ is below a certain threshold or it can even be chosen such that $AUC(t, \Delta t, s)$ \citep{rizopoulosJMbayes} is largest, i.e. $\Delta t$ for which the model has the most discriminative capability at time $t$.
+
+In regards to automatic selection of the threshold $\kappa$ using binary classification accuracy measures, our goal is to focus on patients who will surely obtain GR in the time window $\Delta t$. To this end, the measure which combines both sensitivity and precision is $F_1$-Score. It is defined as:
+\begin{align*}
+F_1 &= \frac{2}{\{TPR\}^{-1} + \{PPV\}^{-1}}, F_1 \epsilon [0,1],\\
+\text{TPR} &= \mbox{Pr}\big\{\pi_j(t + \Delta t \mid t,s) \leq \kappa \mid T^*_j \epsilon (t, t + \Delta t]\big\},\\
+\text{PPV} &= \mbox{Pr}\big\{T^*_j \epsilon (t, t + \Delta t] \mid \pi_j(t + \Delta t \mid t,s) \leq \kappa \big\}
+\end{align*}
+where TPR and PPV denote time dependent true positive rate (sensitivity) and positive predictive value (precision) \citep{rizopoulosJMbayes}. Since a high $F_1$ score is desired, the optimal value of $\kappa$ is $\argmax_{\kappa} F_1$.
+
+%To automatically select the threshold $\kappa$, the first binary classification accuracy measure we use is Youden's $J$. It is defined as (the binary classification measures are functions of $t, \Delta t, s$, however the notation is dropped for readability):
+%\begin{align*}
+%J &= \text{TPR} - \text{FPR}, J\epsilon [-1,1],\\
+%\text{TPR} &= \mbox{Pr}\big\{\pi_j(t + \Delta t \mid t,s) \leq \kappa \mid T^*_j \epsilon (t, t + \Delta t]\big\},\\
+%\text{FPR} &= \mbox{Pr}\big\{\pi_j(t + \Delta t \mid t,s) > \kappa \mid T^*_j > t + \Delta t \big\}
+%\end{align*}
+%where TPR and FPR denote time dependent true positive rate and false positive rate \citep{rizopoulosJMbayes}. The optimal value of $\kappa$ is $\argmax_{\kappa} J$. The second binary classification accuracy measure we use is $\text{F}_1$-Score. Unlike Youden's $J$, $F_1$-Score is a measure of classification accuracy for cases only. It is defined as:

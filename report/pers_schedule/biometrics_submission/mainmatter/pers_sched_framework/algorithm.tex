@@ -1,0 +1,79 @@
+\resizebox{0.65\columnwidth}{!}{%
+
+\begin{tikzpicture}
+\node (start) [startstop] {
+Enter Active Surveillance.
+\begin{enumerate}
+\item Conduct a biopsy.
+\item Set $t=T^{nv}=0$ 
+\item Set $u = \infty$
+\end{enumerate}
+};
+
+\node (takePSA) [process_wide_5cm, below=1cm of start] {
+\begin{enumerate}
+\item Measure PSA at $T^{nv}$ 
+\item Set $s=T^{nv}$
+\end{enumerate}
+};
+
+\node (propTime) [process_wide_3pt5cm, below=1cm of takePSA] {
+\begin{enumerate}
+\item Set $u^{pv} = u$ 
+\item Update $g(T^*_j)$ 
+\item Propose $u$
+\end{enumerate}
+};
+
+\node (decision1) [decision, below = 1.5cm of propTime] {$u < u^{pv}$};
+\node (pro6) [process, right = 1.35cm of decision1] {Set $u = u^{pv}$};
+
+\node (decision5) [decision, left=1.5cm of decision1] {$u \leq s$};
+
+\node (pro5) [process, below=1.5cm of decision5] {Set $u = s$};
+
+\node (decision2) [decision, below=0.5cm of decision1] {$u - t > 1$};
+
+\node (decision4) [decision, right=1.5cm of decision2] {$u > T^{nv}$};
+
+\node (pro3) [process_wide_3pt5cm, below=1cm of decision2] {
+\begin{enumerate}
+\item Conduct Biopsy at $t + 1$ 
+\item Set $t = t + 1$
+\end{enumerate}
+};
+
+\node (pro4) [process_wide_3pt5cm, below=1cm of decision4] {
+\begin{enumerate}
+\item Conduct Biopsy at $u$
+\item Set $t = u$
+\end{enumerate}
+};
+
+\node (decision3) [decision, below=1cm of pro3] {$\mbox{Gleason} > 6$};
+\node (pro7) [process, left=1cm of decision3] {Set $u=\infty$};
+
+\node (stop) [startstop, below = 1cm of decision3] {Remove patient from AS};
+
+\draw [arrow] (start) -- (takePSA);
+\draw [arrow] (takePSA) -- (propTime);
+\draw [arrow] (propTime) -- (decision1);
+\draw [arrow] (decision1) -- node[anchor=south] {Yes} (decision5);
+\draw [arrow] (decision5) -- node[anchor=east] {Yes} (pro5);
+\draw [arrow] (pro5) -- (decision2);
+\draw [arrow] (decision1) -- node[anchor=south] {No} (pro6);
+\draw [arrow] (decision5) -- node[anchor=south] {No} (decision2);
+\draw [arrow] (pro6) -- (decision4);
+\draw [arrow] (decision4.east) |- ([xshift=0.35cm, yshift=-4.15cm]pro6.north east) |- node[anchor=south] {Yes} (takePSA);
+\draw [arrow] (decision2) -- node[anchor=south] {Yes} (decision4);
+\draw [arrow] (decision2) -- node[anchor=east] {No} (pro3);
+\draw [arrow] (pro3) -- (decision3);
+\draw [arrow] (pro4) |- (decision3);
+\draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
+\draw [arrow] (decision4) -- node[anchor=east] {No} (pro4);
+\draw [arrow] (decision3) -- node[anchor=south]{No} (pro7);
+\draw [arrow] (pro7.west)|- ([xshift=-0.35cm, yshift=-7.8cm]pro5.north west) |- (propTime);
+\end{tikzpicture}
+
+}%
+
