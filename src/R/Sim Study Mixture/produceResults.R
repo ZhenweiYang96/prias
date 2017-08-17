@@ -251,11 +251,11 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
                             
                             biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
                               if(x=="expectedFailureTime"){
-                                return("Expec. Time GR")
+                                return("Exp. Time GR")
                               } 
                               
                               if(x=="medianFailureTime"){
-                                return("Median Time GR")
+                                return("Med. Time GR")
                               } 
                               
                               if(x=="PRIAS"){
@@ -299,27 +299,36 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   stopCluster(ct)
   
   methodNames = names(resultsSummary[[1]][[1]])
-  paramNames = c("totalPatientsPerMethod","nbMeanPerMethod","nbMeanVarPerMethod",
-                 "offsetMeanPerMethod","offsetMeanVarPerMethod","nbVarPerMethod",
-                 "nbVarVarPerMethod","offsetVarPerMethod","offsetVarVarPerMethod")
+  # paramNames = c("totalPatientsPerMethod","nbMeanPerMethod","nbMeanSDPerMethod",
+  #                "offsetMeanPerMethod","offsetMeanSDPerMethod","nbSDPerMethod",
+  #                "nbVarSDPerMethod","offsetSDPerMethod","offsetVarSDPerMethod")
+  paramNames = c("totalPatientsPerMethod","nbMeanPerMethod", "offsetMeanPerMethod",
+                 "nbSDPerMethod", "offsetSDPerMethod")
   
   finalResultSummary = matrix(data = NA, nrow = length(methodNames), ncol=length(paramNames))
   rownames(finalResultSummary) = methodNames
   colnames(finalResultSummary) = paramNames
   
-  finalResultSummary[,paramNames[1]] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
+  # finalResultSummary[,paramNames[1]] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
+  # 
+  # finalResultSummary[,paramNames[2]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  # finalResultSummary[,paramNames[3]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]]}), MARGIN = 1, FUN = var)
+  # 
+  # finalResultSummary[,paramNames[4]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  # finalResultSummary[,paramNames[5]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]]}), MARGIN = 1, FUN = var)
+  # 
+  # finalResultSummary[,paramNames[6]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  # finalResultSummary[,paramNames[7]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]]}), MARGIN = 1, FUN = var)
+  # 
+  # finalResultSummary[,paramNames[8]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
+  # finalResultSummary[,paramNames[9]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]]}), MARGIN = 1, FUN = var)
 
+  finalResultSummary[,paramNames[1]] = apply(sapply(resultsSummary, FUN = function(x){x[["totalPatientsPerMethod"]]}), MARGIN = 1, sum)
+  
   finalResultSummary[,paramNames[2]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
-  finalResultSummary[,paramNames[3]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbMeanPerMethod"]]}), MARGIN = 1, FUN = var)
-  
-  finalResultSummary[,paramNames[4]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
-  finalResultSummary[,paramNames[5]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]]}), MARGIN = 1, FUN = var)
-  
-  finalResultSummary[,paramNames[6]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
-  finalResultSummary[,paramNames[7]] = apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]]}), MARGIN = 1, FUN = var)
-  
-  finalResultSummary[,paramNames[8]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
-  finalResultSummary[,paramNames[9]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]]}), MARGIN = 1, FUN = var)
+  finalResultSummary[,paramNames[3]] = apply(sapply(resultsSummary, FUN = function(x){x[["offsetMeanPerMethod"]] * x[["totalPatientsPerMethod"]]}), MARGIN = 1, FUN = sum) / finalResultSummary[,"totalPatientsPerMethod"]
+  finalResultSummary[,paramNames[4]] = sqrt(apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary)))
+  finalResultSummary[,paramNames[5]] = sqrt(apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary)))
 
   #+ theme(text = element_text(size=15)) + coord_flip()
   #+ theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust = 1))
@@ -356,13 +365,17 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   print(p)
   dev.off()
   
-  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
-  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], label=rownames(finalResultSummary), geom="label",
-            xlab="Mean: Number of biopsies", ylab="Mean: Biopsy offset (months)", xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25))
+  png(width=600, height=400, filename= paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
+  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], 
+            label=rownames(finalResultSummary),
+            xlab="Mean number of biopsies", ylab="Mean biopsy offset (months)", 
+            xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25)) + 
+    theme(text = element_text(size=14), axis.text=element_text(size=15)) + geom_label(size=5)
+            
   print(p)
   dev.off()
   
-  write.csv(round(finalResultSummary,3), file = paste("report/pers_schedule/csv/", "pooledInfo_", subpopName ,".csv", sep=""))
+  write.csv(round(finalResultSummary,2), file = paste("report/pers_schedule/csv/", "pooledInfo_", subpopName ,".csv", sep=""))
   
   return(resultsSummary)
 }

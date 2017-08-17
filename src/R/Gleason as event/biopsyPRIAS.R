@@ -178,7 +178,7 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=sqrt(variances))) + 
     geom_line(aes(x=visitTimeYears, y=sqrt(variances))) + 
     geom_vline(aes(xintercept = biopsyTimes, na.rm=T), color="blue", linetype="dashed") + xlab("Time (years)") + 
-    ylab(TeX('$S.D.\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
+    ylab(TeX('$SD\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
     ticksY(0, 10, 1) + theme(text = element_text(size=14), axis.text=element_text(size=15), plot.title = element_text(hjust = 0.5))
   
   print(pp)  

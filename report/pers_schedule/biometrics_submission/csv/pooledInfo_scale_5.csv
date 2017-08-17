@@ -1,9 +1,9 @@
-"","totalPatientsPerMethod","nbMeanPerMethod","nbMeanVarPerMethod","offsetMeanPerMethod","offsetMeanVarPerMethod","nbVarPerMethod","nbVarVarPerMethod","offsetVarPerMethod","offsetVarVarPerMethod"
-"Annual",33907,5.181,0.055,5.995,0.148,4.539,0.901,12.079,1.486
-"Expec. Time GR",33907,1.778,0.014,13.53,1.369,0.967,0.055,96.449,420.765
-"F1-Score",33907,4.631,0.056,6.656,0.248,3.311,0.345,18.831,49.817
-"Median Time GR",33907,1.896,0.019,12.307,1.086,1.353,0.117,88.969,457.587
-"Mixed-F1",33907,3.681,0.038,10.303,0.715,1.908,0.169,51.378,63.659
-"Mixed-Youden",33907,3.697,0.032,10.416,0.821,1.856,0.16,60.359,2208.361
-"PRIAS",33907,4.816,0.049,8.57,0.854,3.962,0.809,74.896,1763.49
-"Youden's J",33907,4.521,0.042,7.669,1.258,2.788,0.231,88.793,16722.334
+"","totalPatientsPerMethod","nbMeanPerMethod","offsetMeanPerMethod","nbSDPerMethod","offsetSDPerMethod"
+"Annual",33907,5.18,5.99,2.13,3.48
+"Expec. Time GR",33907,1.78,13.53,0.98,9.82
+"F1-Score",33907,4.63,6.66,1.82,4.34
+"Median Time GR",33907,1.9,12.31,1.16,9.43
+"Mixed-F1",33907,3.68,10.3,1.38,7.17
+"Mixed-Youden",33907,3.7,10.42,1.36,7.77
+"PRIAS",33907,4.82,8.57,1.99,8.65
+"Youden's J",33907,4.52,7.67,1.67,9.42
