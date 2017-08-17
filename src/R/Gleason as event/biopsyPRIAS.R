@@ -93,13 +93,11 @@ for(patientId in demoPatientPID){
 
   minVisits = 1
   plotList = vector("list", nrow(demoPatient) - minVisits)
-  for(j in minVisits:nrow(demoPatient)){
+  #for(j in minVisits:nrow(demoPatient)){
+  for(j in c(13,18)){
     subDataSet = demoPatient[1:j, ]
     
     subDataSet$expectedFailureTime = NA
-    subDataSet$survTimeMedian = NA
-    subDataSet$survProbYouden = NA
-    subDataSet$survProbAccuracy = NA
     subDataSet$survProbF1Score = NA
     
     curVisitTime = tail(subDataSet$visitTimeYears, 1)
@@ -116,54 +114,46 @@ for(patientId in demoPatientPID){
                              survTimes = survTimes)$summaries[[1]][, "Median"])
 
     nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-curVisitTime)==min(abs(dynamicCutoffTimes_PRIAS-curVisitTime)))[1]
-    survProbYouden = cutoffValues_PRIAS[[nearest_time_index]]["youden"]
-    # survProbAccuracy = cutoffValues_PRIAS[[nearest_time_index]]["accuracy"]
-    # survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
-    # survProbMedian = 0.5
-    if(is.na(survProbYouden)){
-      subDataSet$survTimeYouden[1] = NA
+    survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
+    if(is.na(survProbF1Score)){
+      subDataSet$survTimeF1Score[1] = NA
     }else{
-      subDataSet$survTimeYouden[1] = survTimes[which(abs(survProbs-survProbYouden)==min(abs(survProbs-survProbYouden)))[1]]
-      subDataSet$survTimeYouden[1] = modifyScheduledBiopsyTime(subDataSet$survTimeYouden[1], curVisitTime, lastBiopsyTime)
+      subDataSet$survTimeF1Score[1] = survTimes[which(abs(survProbs-survProbF1Score)==min(abs(survProbs-survProbF1Score)))[1]]
+      subDataSet$survTimeF1Score[1] = modifyScheduledBiopsyTime(subDataSet$survTimeF1Score[1], curVisitTime, lastBiopsyTime)
     }
-    # subDataSet$survTimeMedian[1] = if(is.na(survProbMedian)){NA}else{survTimes[which(abs(survProbs-survTimeMedian)==min(abs(survProbs-survTimeMedian)))[1]]}
-    # subDataSet$survTimeAccuracy[1] = if(is.na(survProbAccuracy)){NA}else{survTimes[which(abs(survProbs-survProbAccuracy)==min(abs(survProbs-survProbAccuracy)))[1]]}
-    # subDataSet$survTimeF1Score[1] = if(is.na(survProbF1Score)){NA}else{survTimes[which(abs(survProbs-survProbF1Score)==min(abs(survProbs-survProbF1Score)))[1]]}
-    
     subDataSet$expectedFailureTime[1]= expectedCondFailureTime(joint_psa_replaced_prias, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
                                                                  lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
     subDataSet$expectedFailureTime[1] = modifyScheduledBiopsyTime(subDataSet$expectedFailureTime[1], curVisitTime, lastBiopsyTime)
     
-    print(survProbYouden)
+    print(survProbF1Score)
     print(subDataSet$expectedFailureTime[1])
-    print(subDataSet$survTimeYouden[1])
+    print(subDataSet$survTimeF1Score[1])
     #print(sqrt(varCondFailureTime(joint_psa_replaced, subDataSet, 
     #                                 idVar = "P_ID", lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)))
      
     plotList[[j-minVisits + 1]] = ggplot(data=subDataSet[!is.na(subDataSet$psa),]) + geom_point(aes(x = visitTimeYears, y=psa)) +
        geom_line(aes(x = visitTimeYears, y=psa)) +
-       geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T), color="Expected GR Time")) +
-       geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T), color="Last Biopsy")) +
-       geom_vline(aes(xintercept = max(survTimeYouden, na.rm = T), color="Dynamic risk of GR (Youden)")) +
-       # geom_vline(aes(xintercept = max(survTimeYouden, na.rm = T), color="SurvTimeYouden")) +
-       # geom_vline(aes(xintercept = max(survTimeAccuracy, na.rm = T), color="SurvTimeAccuracy")) +
-       # geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), color="SurvTimeF1Score")) +
-       ticksX(0, 20, 1) +
-       #theme(legend.position="none") +
-       theme(legend.title=element_blank())+
-       xlab("Time(years)") + ylab("PSA (ng/mL")
+      #geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T), color="Last Biopsy", linetype="solid")) + 
+      #geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T), color="Expected GR Time", linetype="dashed")) +
+      # geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), color="Dynamic risk of GR (F1)", linetype="dotted")) +
+      geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="longdash")) +
+      geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="dotdash")) +
+      geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="solid")) + 
+       ticksX(0, 20, 2) + ylim(6, 22.5) + scale_linetype_identity(guide="legend") + 
+       theme(text = element_text(size=14), axis.text=element_text(size=15), legend.position="none")+
+       xlab("Time(years)") + ylab("PSA (ng/mL)")
      
     # print(plotList[[j-minVisits + 1]])
   }
   
   #png(width=1280, height=960, filename = paste("images/prias_demo/prias_demo_pid_new", patientId, ".png", sep=""))
   #plotList = lapply(plotList, function(x){x + theme(legend.position="none")})
-  multiplot(plotList[[5]], plotList[[12]], plotList[[18]], plotList[[25]], cols = 2)
+  multiplot(plotList[[13]], plotList[[18]], cols = 2)
   
   #dev.off()
 }
 
-plotVarianceOverTime = function(modelObject, prias_P_ID){
+plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
   environment(varCondFailureTime) <- asNamespace('JMbayes')
   
@@ -185,11 +175,11 @@ plotVarianceOverTime = function(modelObject, prias_P_ID){
   biopsyTimes = prias_long_i$visitTimeYears[!is.na(prias_long_i$gleason)]
   prias_long_i$biopsyTimes = c(biopsyTimes, rep(NA, nrow(prias_long_i)-length(biopsyTimes)))
   
-  pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=variances)) + 
-    geom_line(aes(x=visitTimeYears, y=variances)) + 
-    geom_vline(aes(xintercept = biopsyTimes, na.rm=T), color="blue") + xlab("Time (years)") + 
-    ylab("Variance") + ggtitle(paste("Patient ID:", prias_P_ID)) + ticksX(0, max = 20, 1) +
-    ticksY(0, 100, 5)
+  pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=sqrt(variances))) + 
+    geom_line(aes(x=visitTimeYears, y=sqrt(variances))) + 
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T), color="blue", linetype="dashed") + xlab("Time (years)") + 
+    ylab(TeX('$S.D.\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
+    ticksY(0, 10, 1) + theme(text = element_text(size=14), axis.text=element_text(size=15), plot.title = element_text(hjust = 0.5))
   
   print(pp)  
 }

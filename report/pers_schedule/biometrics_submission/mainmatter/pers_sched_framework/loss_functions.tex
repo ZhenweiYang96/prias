@@ -1,8 +1,8 @@
-% !TEX root =  ../main.tex 
+% !TEX root =  ../pers_schedules.tex 
 
 \subsection{Loss functions}
 \label{subsec : loss_functions}
-To find the time $u$ of next biopsy, we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose future biopsy time $u$ by minimizing the posterior expected loss $E_g\big[L\{T^*_j, u\}\big]$, where the expectation is taken w.r.t. the posterior predictive distribution $g(T^*_j)$. 
+To find the time $u$ of next biopsy, we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose future biopsy time $u$ by minimizing the posterior expected loss $E_g\big[L\{T^*_j, u\}\big]$, where the expectation is taken w.r.t. the PPD $g(T^*_j)$. The former is given by:
 \begin{equation*}
 E_g\big[L\{T^*_j, u\}\big] = \int_t^\infty L\{T^*_j, u\} p\big(T^*_j \mid T^*_j > t, \mathcal{Y}_j(s), \mathcal{D}_n\big) \rmn{d} T^*_j
 \end{equation*}
@@ -10,7 +10,7 @@ Various loss functions $L\{T^*_j, u\}$ have been proposed in literature \citep{r
 
 \subsubsection{Expected and median time of GR}
 \label{subsubsec : exp_median_fail_time}
-One of the reasons, patients did not comply with the existing PRIAS schedule was \textquoteleft complications on a previous biopsy \textquoteright. Therefore, it makes sense to have as less biopsies as possible. In the ideal case only 1 biopsy, performed at the exact time of GR is sufficient. Hence, neither a time which overshoots the true GR time $T^*_j$, nor a time which undershoots is preferred. In this regard, the squared loss function $L\{T^*_j, u\} = (T^*_j - u)^2$ and absolute loss function $L\{T^*_j, u\} = \left|{T^*_j - u}\right|$ have the properties that the posterior expected loss is symmetric on both sides of $T^*_j$. Secondly, both loss functions have well known solutions available. The posterior expected loss for the squared loss function is given by:
+One of the reasons, patients did not comply with the existing PRIAS schedule was \textquoteleft complications on a previous biopsy\textquoteright. Therefore, it makes sense to have as less biopsies as possible. In the ideal case only 1 biopsy, performed at the exact time of GR is sufficient. Hence, neither a time which overshoots the true GR time $T^*_j$, nor a time which undershoots is preferred. In this regard, the squared loss function $L\{T^*_j, u\} = (T^*_j - u)^2$ and absolute loss function $L\{T^*_j, u\} = \left|{T^*_j - u}\right|$ have the properties that the posterior expected loss is symmetric on both sides of $T^*_j$. Secondly, both loss functions have well known solutions available. The posterior expected loss for the squared loss function is given by:
 \begin{equation}
 \label{eq : posterior_squared_loss}
 \begin{split}
@@ -27,7 +27,6 @@ E_g\big[L\{T^*_j, u\}\big] &= E_g\big[\left|{T^*_j - u}\right|\big]\\
 \end{split}
 \end{equation}
 The posterior expected loss in (\ref{eq : posterior_absolute_loss}) attains its minimum at the median of $g(T^*_j)$, given by $u = \pi_j^{-1}(0.5 \mid t,s)$, where $\pi_j^{-1}(\cdot)$ is the inverse of dynamic survival probability $\pi_j(u \mid t, s)$ of patient $j$ \citep{rizopoulos2011dynamic}. It is given by:
-
 \begin{equation}
 \label{eq : dynamic_surv_prob}
 \pi_j(u \mid t, s) = \mbox{Pr}\big\{T^*_j \geq u \mid  T^*_j >t, \mathcal{Y}_j(s), D_n\big\}, u \geq t
@@ -36,18 +35,17 @@ For ease of readability we denote $\pi_j^{-1}(0.5 \mid t,s)$ as $\mbox{median}[T
 
 \subsubsection{Dynamic risk of GR}
 \label{subsubsec : dynamic_risk_definitions}
-In a practical scenario it is possible that a doctor or a patient may not want to exceed a certain risk $1 - \kappa, \kappa \epsilon [0,1]$ of GR since the last biopsy. This could be because the cutoff $1 - \kappa$ may differentiate between patients who will obtain GR and those who will not, in a period of time. Secondly, some patients can be apprehensive about delaying biopsies beyond a certain risk cutoff. In this regard, a biopsy can be scheduled at a time point $u$ such that the dynamic risk of GR is higher than a certain threshold $1 - \kappa,\ $ beyond $u$. To this end, the posterior expected loss for the following multilinear loss function can be minimized to find the optimal $u$:
-
+In a practical scenario it is possible that a doctor or a patient may not want to exceed a certain risk $1 - \kappa, \kappa \epsilon [0,1]$ of GR since the last biopsy. This could be because the cutoff $1 - \kappa$ may differentiate between patients who will obtain GR in a given period of time, and those who will not. Or, some patients can be apprehensive about delaying biopsies beyond a certain risk cutoff. In this regard, a biopsy can be scheduled at a time point $u$ such that the dynamic risk of GR is higher than a certain threshold $1 - \kappa,\ $ beyond $u$. To this end, the posterior expected loss for the following multilinear loss function can be minimized to find the optimal $u$:
 \begin{equation}
 \label{eq : loss_dynamic_risk}
 L_{k_1, k_2}(T^*_j, u) =
     \begin{cases}
-      k_2(T^*_j-u) & \text{if } T^*_j > u\\
-      k_1(u-T^*_j) & \text{otherwise}
+      k_2(T^*_j-u), k_2>0 & \text{if } T^*_j > u\\
+      k_1(u-T^*_j), k_1>0 & \text{otherwise}
     \end{cases}       
 \end{equation}
-where $k_1 > 0$, $k_2 > 0$ are constants parameterizing the loss function. The posterior expected loss function $E_g\big[L_{k_1, k_2}\{T^*_j, u\}\big]$ obtains its minimum at $u = \pi_j^{-1}\big\{k_1/{(k_1 + k_2)} \mid t,s \big\}$ \citep{robertBayesianChoice}. The choice of two constants $k_1$ and $k_2$ is equivalent to the choice of $\kappa = {k_1}/{(k_1 + k_2)}$.
+where $k_1, k_2$ are constants parameterizing the loss function. The posterior expected loss $E_g\big[L_{k_1, k_2}\{T^*_j, u\}\big]$ obtains its minimum at $u = \pi_j^{-1}\big\{k_1/{(k_1 + k_2)} \mid t,s \big\}$ \citep{robertBayesianChoice}. The choice of two constants $k_1$ and $k_2$ is equivalent to the choice of $\kappa = {k_1}/{(k_1 + k_2)}$.
 
 \subsubsection{A mixed approach}
 \label{subsubsec : mixed_approach}
- When the variance $\mbox{var}_g[T^*_j]$ of $g(T^*_j)$ is small, then $E_g[T^*_j]$ as well as $\mbox{median}[T^*_j]$ are practically very useful. However when the variance is large, there may not be a clear central tendency of the distribution. Thus a biopsy scheduled using $E_g[T^*_j]$ or $\mbox{median}[T^*_j]$ will exceed or fall short of $T^*_j$ by a big margin. Exceeding the true GR time by a large margin can lead to grave medical consequences. In PRIAS schedule the maximum possible delay in detection of GR is 3 years. Thus we propose that if the difference between the 0.025 quantile and $E_g[T^*_j]$ or $\mbox{median}[T^*_j]$ is more than 3 years then proposals based on dynamic risk of GR be used instead. We call this approach a mixed approach.
+ When the variance $\mbox{var}_g[T^*_j]$ of $g(T^*_j)$ is small, then $E_g[T^*_j]$ as well as $\mbox{median}[T^*_j]$ are practically very useful. However when the variance is large, there may not be a clear central tendency of the distribution. Thus a biopsy scheduled using $E_g[T^*_j]$ or $\mbox{median}[T^*_j]$ will exceed or fall short of $T^*_j$ by a big margin. Exceeding the true GR time by a large margin can lead to grave medical consequences. In PRIAS schedule the maximum possible delay in detection of GR is 3 years. Thus we propose that if the difference between the 0.025 quantile of $g(T^*_j)$, and $E_g[T^*_j]$ or $\mbox{median}[T^*_j]$ is more than 3 years then proposals based on dynamic risk of GR be used instead. We call this approach a mixed approach.

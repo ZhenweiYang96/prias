@@ -1,5 +1,4 @@
-% !TEX root =  ../main.tex 
-
+% !TEX root =  ../pers_schedules.tex 
 \section{Personalized schedules for repeat biopsies}
 \label{sec : pers_sched_approaches}
 Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. To elucidate the scheduling methods, let us assume that a personalized schedule is to be created for a new patient enumerated $j$, who is not present in the original sample of patients $\mathcal{D}_n$. Further let us assume that this patient did not have a GR at his last biopsy performed at time $t$, and that the PSA levels are available up to a time point $s$. The goal is to find the optimal time $u \geq \text{max}(t,s)$ of the next biopsy. 
@@ -15,8 +14,8 @@ Given the personalized scheduling methods, the next step is to iteratively creat
 %When submitting replace figure with figure* to make it span an entire column
 %With referee option it gives an error
 \begin{figure}
+\label{fig : sched_algorithm}
 \centerline{\input{mainmatter/pers_sched_framework/algorithm}}
 %\centerline{\includegraphics[width=0.5\textwidth]{mainmatter/pers_sched_framework/algorithm.tikz}}
 \caption{Algorithm for creating a personalized schedule for patient $j$. $t$ denotes the time of the latest biopsy. $s$ denotes the time of the latest available PSA measurement. $u$ denotes the proposed time of personalized biopsy based on $g(T^*_j)$.  $u^{pv}$ denotes the time at which a repeat biopsy was proposed at the last visit to the hospital. $T^{nv}$ denotes the time of the next visit for PSA measurement.} 
-\label{fig : sched_algorithm}
 \end{figure}
