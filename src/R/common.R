@@ -76,7 +76,7 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
   })
   
   if(individually==T){
-    lapply(plotData, function(data){
+    return(lapply(plotData, function(data){
       plot = ggplot(data=data)
       if(transformPSA==F){
         plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp), fill = "grey", alpha=0.4)
@@ -87,7 +87,8 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
         xlab("Follow-up time (Years)") + 
         ylab(expression('log'[2]*'(PSA)'))
       print(plot)
-    })
+      return(plot)
+    }))
   }else{
     newPlotData = do.call(rbind, plotData)
     newPlotData$model = rep(paste("Model",1:length(plotData)), each=nrow(newDF))
@@ -103,6 +104,8 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
       xlab("Follow-up time (Years)") + 
       ylab(expression('log'[2]*'(PSA)'))
     print(plot)
+    
+    return(plot)
   }
 }
 

@@ -12,7 +12,7 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-nDataSets = 366
+nDataSets = 200
 getNextSeed = function(lastSeed){
   lastSeed + 1
 }
@@ -25,8 +25,8 @@ methods = c("expectedFailureTime", "medianFailureTime","youden", "f1score")
             #"accuracy", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 19557
-for(i in 317:nDataSets){
+lastSeed = 171219
+for(i in 101:nDataSets){
   print(paste("******** Started working on Data Set: ", i, "*******"))
   
   lastSeed = getNextSeed(lastSeed)
@@ -115,20 +115,20 @@ for(i in 317:nDataSets){
   colnames(jh_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
   simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, jh_res)
   
-  # mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
-  #                                .combine = rbind,
-  #                                .packages =  c("splines", "JMbayes", "coda"),
-  #                                .export = c("timesPerSubject"))%dopar%{
-  #                                  res = c(P_ID=patientRowNum,
-  #                                          methodName="MixedF1Score",
-  #                                          computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
-  #                                                                   1, timesPerSubject-1,
-  #                                                                   alternative = "f1score"))
-  #                                  return(res)
-  #                                })
-  # 
-  # colnames(mixed_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  # simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
+  mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
+                                  .combine = rbind,
+                                  .packages =  c("splines", "JMbayes", "coda"),
+                                  .export = c("timesPerSubject"))%dopar%{
+                                    res = c(P_ID=patientRowNum,
+                                            methodName="MixedF1Score",
+                                            computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
+                                                                     1, timesPerSubject-1,
+                                                                     alternative = "f1score"))
+                                    return(res)
+                                  })
+   
+  colnames(mixed_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
   
   mixed_res2 = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
                                   .combine = rbind,

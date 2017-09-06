@@ -1,30 +1,28 @@
 % !TEX root =  ../../pers_schedules.tex 
 
 \subsection{Estimation}
-\subsubsection{Estimation of $E_g[T^*_j]$ and $\mbox{var}_g[T^*_j]$}
-Since there is no closed form solution available for $E_g[T^*_j]$, for its estimation we utilize the following relationship between expected time of GR and dynamic survival probability:
+Since there is no closed form solution available for $E_g(T^*_j)$, for its estimation we utilize the following relationship between $E_g(T^*_j)$ and $\pi_j(u \mid t, s)$:
 \begin{equation}
 \label{eq : expected_time_survprob}
-E_g[T^*_j] = t + \int_t^\infty \pi_j(u \mid t, s) \rmn{d} u
+E_g(T^*_j) = t + \int_t^\infty \pi_j(u \mid t, s) \rmn{d} u.
 \end{equation}
-There is no closed form solution available for the integral in (\ref{eq : expected_time_survprob}) either, and hence we approximate it using Gauss-Kronrod quadrature. We preferred this approach over Monte Carlo methods to estimate $E_g[T^*_j]$ from the PPD $g(T^*_j)$, because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. The latter approach was thus computationally faster. As mentioned earlier, a limitation of $E_g[T^*_j]$ is that it is practically useful only when the $\mbox{var}_g[T^*_j]$ is small, which is given by:
-\begin{equation}
-\label{eq : var_time_survprob}
-\mbox{var}_g[T^*_j] = 2 \int_t^\infty {(u-t) \pi_j(u \mid t, s) \rmn{d} u} - \Big\{\int_t^\infty \pi_j(u \mid t, s) \rmn{d} u\Big\}^2
-\end{equation}
+There is no closed form solution available for the integral in (\ref{eq : expected_time_survprob}), and hence we approximate it using Gauss-Kronrod quadrature. We preferred this approach over Monte Carlo methods to estimate $E_g(T^*_j)$ from $g(T^*_j)$, because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \boldsymbol{b_j}, \boldsymbol{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. The former approach was thus computationally faster. 
 
-Since a closed form solution is not available for the variance expression, it is estimated similar to the estimation of $E_g[T^*_j]$. The variance depends both on last biopsy time $t$ and PSA history $\mathcal{Y}_j(s)$. The impact of the observed information on variance is discussed in detail in Section \ref{subsec : demo_prias_pers_schedule}.
+%As mentioned earlier, selection of the optimal biopsy time based on $E_g(T_j^*)$ alone will not be practically useful when the $\mbox{var}_g(T^*_j)$ is small, which is given by:
+%\begin{equation}
+%\label{eq : var_time_survprob}
+%\mbox{var}_g(T^*_j) = 2 \int_t^\infty {(u-t) \pi_j(u \mid t, s) \rmn{d} u} - \Big\{\int_t^\infty \pi_j(u \mid t, s) \rmn{d} u\Big\}^2.
+%\end{equation}
+%Since a closed form solution is not available for the variance expression, it is estimated similar to the estimation of $E_g(T^*_j)$. The variance depends both on last biopsy time $t$ and PSA history $\mathcal{Y}_j(s)$. The impact of the observed information on variance is discussed in detail in Section \ref{subsec : demo_prias_pers_schedule}.
 
-\subsubsection{Estimation of $\kappa$}
-\label{subsubsec : kappa_estimation}
-For schedules based on dynamic risk of GR, the value of $\kappa$ dictates the biopsy schedule and thus its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For e.g. if maximum acceptable risk is 75\% then $\kappa = 0.25$.
+For schedules based on dynamic risk of GR, the value of $\kappa$ dictates the biopsy schedule and thus its choice has important consequences. In certain cases it may be chosen on the basis of doctor's advice or the amount of risk that is acceptable to the patient. For example, if the maximum acceptable risk is 75\%, then $\kappa = 0.25$.
 
-In cases where the choice of $k$ cannot be based on the input of the physician or the patients, we propose to automate the choice of this threshold parameter. More specifically, we propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints,sokolova2009systematic}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience GR and the rest are controls. However, a patient can be in control group at some time $t$ and in the cases at some future time point $t + \Delta t$, and thus time dependent binary classification is more relevant. In joint models, a patient $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep{rizopoulosJMbayes}. The time window $\Delta t$ can be automatically chosen as $\argmax_{\Delta t}AUC(t, \Delta t, s)$, the latter being a measure of discriminative capability of the model \citep{rizopoulosJMbayes}. However such a time window may not be clinically relevant at all. In AS programs at any point in time, it is of interest to identify patients who may obtain GR in the next 1 year from those who do not, so that they can be provided immediate attention (in exceptional cases a biopsy within an year of the last one). Thus, in this work we use a $\Delta t$ of 1 year.
+In cases where $\kappa$ cannot be chosen on the basis of the input of the physician or the patients, we propose to automate the choice of $\kappa$. More specifically, we propose to choose a $\kappa$ for which a binary classification accuracy measure \citep{lopez2014optimalcutpoints}, discriminating between cases and controls, is maximized. In PRIAS, cases are patients who experience GR and the rest are controls. However, a patient can be in control group at some time $t$ and in the cases at some future time point $t + \Delta t$, and thus time dependent binary classification is more relevant. In joint models, a patient $j$ is predicted to be a case if $\pi_j(t + \Delta t \mid t,s) \leq \kappa$ and a control if $\pi_j(t + \Delta t \mid t,s) > \kappa$ \citep*{rizopoulosJMbayes, landmarking2017}. The time window $\Delta t$ can be automatically chosen as $\argmax_{\Delta t}AUC(t, \Delta t, s)$, the latter being a measure of discriminative capability of the model \citep{rizopoulosJMbayes,landmarking2017}. However such a time window may not be clinically relevant at all. In AS programs at any point in time, it is of interest to identify patients who may obtain GR in the next 1 year from those who do not, so that they can be provided immediate attention (in exceptional cases a biopsy within an year of the last one). Thus, in this work we use a $\Delta t$ of 1 year.
 
-For automatic selection of the threshold $\kappa$, we require a binary classification accuracy measure which is in line with the goal to focus on patients whose true time of GR falls in the time window $\Delta t$. To this end, the measure which combines both sensitivity and precision is $F_1$-Score. It is defined as:
+For automatic selection of the threshold $\kappa$, we require a binary classification accuracy measure which is in line with the goal to focus on patients whose true time of GR falls in the time window $\Delta t$. To this end, the measure which combines both sensitivity and precision is $F_1$ score. It is defined as:
 \begin{align*}
-F_1(t, \Delta t, s) &= 2\frac{\mbox{TPR}(t, \Delta t, s) \mbox{PPV}(t, \Delta t, s)}{\mbox{TPR}(t, \Delta t, s) + \mbox{PPV}(t, \Delta t, s)}, F_1 \epsilon [0,1],\\
+F_1(t, \Delta t, s) &= 2\frac{\mbox{TPR}(t, \Delta t, s) \mbox{PPV}(t, \Delta t, s)}{\mbox{TPR}(t, \Delta t, s) + \mbox{PPV}(t, \Delta t, s)}, \quad F_1 \epsilon [0,1],\\
 \mbox{TPR}(t, \Delta t, s) &= \mbox{Pr}\big\{\pi_j(t + \Delta t \mid t,s) \leq \kappa \mid T^*_j \epsilon (t, t + \Delta t]\big\},\\
-\mbox{PPV}(t, \Delta t, s) &= \mbox{Pr}\big\{T^*_j \epsilon (t, t + \Delta t] \mid \pi_j(t + \Delta t \mid t,s) \leq \kappa \big\}
+\mbox{PPV}(t, \Delta t, s) &= \mbox{Pr}\big\{T^*_j \epsilon (t, t + \Delta t] \mid \pi_j(t + \Delta t \mid t,s) \leq \kappa \big\}.
 \end{align*}
-where $\mbox{TPR}(\cdot)$ and $\mbox{PPV}(\cdot)$ denote time dependent true positive rate (sensitivity) and positive predictive value (precision), the estimation for which proceeds as in \citet{rizopoulosJMbayes}. Since a high $F_1$ score is desired, the optimal value of $\kappa$ is $\argmax_{\kappa} F_1(t, \Delta t, s)$.
+where $\mbox{TPR}(\cdot)$ and $\mbox{PPV}(\cdot)$ denote time dependent true positive rate (sensitivity) and positive predictive value (precision), respectively. The estimation for both proceeds as in \citet{landmarking2017}. Since a high $F_1$ score is desired, the optimal value of $\kappa$ is $\argmax_{\kappa} F_1(t, \Delta t, s)$. In this work we compute the latter using a grid search approach. That is, $F_1$ is computed using the available dataset over a fine grid of $\kappa$ values in the interval $[0,1]$ and $\kappa$ corresponding to the highest $F_1$ is chosen.

@@ -1,4 +1,4 @@
-\resizebox{\columnwidth}{!}{
+\resizebox{2\columnwidth}{!}{
 \begin{tikzpicture}
 \node (start) [startstop_big] {
 Enter Active Surveillance.
@@ -15,7 +15,7 @@ Enter Active Surveillance.
 };
 
 \node (decision1) [decision, below = 1.0cm of propTime] {$u \leq u^{pv}$};
-\node (pro6) [process, right = 2.45cm of decision1] {Set $u = u^{pv}$.};
+\node (pro6) [process, right = 2.345cm of decision1] {Set $u = u^{pv}$.};
 
 \node (takePSA) [process_wide_4pt5cm, right=1.5cm of propTime] {
 (1) Set $s=s^{nv}$.\\
@@ -31,7 +31,7 @@ Enter Active Surveillance.
 
 \node (decision4) [decision, right=2.5cm of decision2] {$u > s^{nv}$};
 
-\node (pro8) [process, right=1cm of pro6] {Set $u^{pv}=u$.};
+\node (pro8) [process, right=1.03cm of pro6] {Set $u^{pv}=u$.};
 
 \node (pro3) [process, below=1.0cm of decision2] {Set $u = t + 1$.};
 
@@ -54,7 +54,7 @@ Enter Active Surveillance.
 \draw [arrow] (decision1) -- node[anchor=south] {No} (pro6);
 \draw [arrow] (decision5) -- node[anchor=south] {No} (decision2);
 \draw [arrow] (pro6) -- (decision4);
-\draw [arrow] (decision4.east) |- ([xshift=2.65cm, yshift=-4.15cm]pro6.north east) -- node[anchor=east] {Yes} (pro8);
+\draw [arrow] (decision4.east) |- ([xshift=2.65cm, yshift=-3.95cm]pro6.north east) -- node[anchor=east] {Yes} (pro8);
 
 \draw [arrow] (pro8) |- (takePSA);
 
@@ -65,7 +65,6 @@ Enter Active Surveillance.
 \draw [arrow] (decision3) -- node[anchor=east] {Yes} (stop);
 \draw [arrow] (decision4) -- node[anchor=east] {No} (pro4);
 \draw [arrow] (decision3) -- node[anchor=south]{No} (pro7);
-\draw [arrow] (pro7.north)|- ([xshift=-0.3cm, yshift=-5.25cm]pro5.north west) |- (propTime);
+\draw [arrow] (pro7.north)|- ([xshift=-0.375cm, yshift=-5.25cm]pro5.north west) |- (propTime);
 \end{tikzpicture}
 }
-

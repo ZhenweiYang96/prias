@@ -15,8 +15,7 @@
 %  as are almost all equations in the journal.  Use a recent version of the
 %  journal as a guide. 
 %  
-%\documentclass[useAMS,usenatbib, referee]{biom}
-\documentclass[useAMS, usenatbib]{biom}
+\documentclass[useAMS,usenatbib, referee]{biom_supp}
 %
 %  If your system does not have the AMS fonts version 2.0 installed, then
 %  remove the useAMS option.
@@ -41,9 +40,10 @@
 %  PostScript Type 1 Computer Modern fonts you will need to do this to get
 %  smoother fonts in a PDF file) then uncomment the next line
 %  \usepackage{Times}
-\usepackage[tbtags]{amsmath}
+\usepackage{amsmath}
 
 %Following 3 lines for Tikz
+\usepackage{xr}
 \usepackage{tikz}
 \usepackage{tikzscale}
 \usepackage{graphicx}
@@ -51,21 +51,36 @@
 \usetikzlibrary{shapes.geometric, arrows, positioning}
 %%%%% PLACE YOUR OWN MACROS HERE %%%%%
 
+\externaldocument{pers_schedules}
+
 \def\bSig\mathbf{\Sigma}
 \newcommand{\VS}{V\&S}
 \newcommand{\tr}{\mbox{tr}}
+%\renewcommand{\figurename}{Web Figure}
+%\renewcommand{\tablename}{Web Table}
+
+\renewcommand\thesection{Web Appendix \Alph{section}}
+
+\makeatletter
+\renewcommand{\fnum@figure}{Web Figure \thefigure}
+\makeatother
+
+%Single spacing for tables
+\makeatletter
+\AtBeginEnvironment{tabular}{%
+  \def\baselinestretch{1}\@currsize}%
+\makeatother
+
+%\renewcommand{\thetable}{Web \arabic{table}}
 
 \DeclareMathOperator{\argmax}{arg\,max}
 
 
-\tikzstyle{startstop_big} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black,text width = 8.5cm, fill=red!30]
 \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black,text width = 5cm, fill=red!30]
 \tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=blue!30]
 \tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width = 3cm, draw=black, fill=orange!30]
 \tikzstyle{process_wide_3pt5cm} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width = 3.5cm, draw=black, fill=orange!30]
-\tikzstyle{process_wide_4cm} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width = 4cm, draw=black, fill=orange!30]
-\tikzstyle{process_wide_4pt5cm} = [rectangle, minimum width=3cm, minimum height=1cm, text width = 4.5cm, draw=black, fill=orange!30]
-\tikzstyle{process_wide_5cm} = [rectangle, minimum width=3cm, minimum height=1cm, text width = 5cm, draw=black, fill=orange!30]
+\tikzstyle{process_wide_5cm} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width = 5cm, draw=black, fill=orange!30]
 \tikzstyle{decision} = [diamond, minimum width=1cm, minimum height=1cm,text centered,text width = 2.25cm, draw=black, fill=green!30]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
@@ -86,8 +101,8 @@
 %  the examples below in creating your author and affiliation information.
 %  Also consult a recent issue of the journal for examples of formatting.
 
-\title[Personalized schedules for prostate cancer biopsies]
-{Personalized schedules for prostate cancer biopsies}
+\title[Web-based Supplementary Materials  for ``Personalized schedules'']
+{Web-based Supplementary Materials for ``Personalized schedules for biopsies in prostate cancer patients''}
 
 %  Here are examples of different configurations of author/affiliation
 %  displays.  According to the Biometrics style, in some instances,
@@ -139,9 +154,9 @@
 %  Three or more authors from same institution with one corresponding email
 %  displayed
 
-%\author{Anirudh Tomer$^*$\email{atomer@erasmusmc.nl}, 
-%Jane Author, and Dimitris Rizopoulos \\
-%Department of Statistics, University of Latex, Coventry CV4 7AL, U.K}
+\author{John Author$^*$\email{author@address.edu}, 
+Jane Author, and Dick Author \\
+Department of Statistics, University of Latex, Coventry CV4 7AL, U.K}
 
 %  Three or more authors, with at least two different institutions,
 %  more than one email displayed 
@@ -157,14 +172,10 @@
 %  Three or more authors with at least two different institutions and only
 %  one email displayed
 
-\author{Anirudh Tomer$^{1,*}$\email{atomer@erasmusmc.nl}, 
-Daan Nieboer$^{2}$, 
-Monique J. Roobol$^3$,
-Ewout W. Steyerberg$^{2}$, 
-and Dimitris Rizopoulos$^{1}$ \\
-$^{1}$Department of Biostatistics, Erasmus University Medical Center, the Netherlands \\
-$^{2}$Department of Public Health, Erasmus University Medical Center, the Netherlands \\
-$^{3}$Department of Urology, Erasmus University Medical Center, the Netherlands}
+%\author{John Author$^{1,*}$\email{author@address.edu}, 
+%Wilma Flinstone$^{2}$, and Barney Rubble$^{2}$ \\
+%$^{1}$Department of Statistics, University of Warwick, Coventry CV4 7AL, U.K \\
+%$^{2}$Department of Geology, University of Bedrock, Bedrock, Kansas, U.S.A.}
 
 
 \begin{document}
@@ -205,30 +216,12 @@ Accepted March} 0000.}
 %  expect.  When using the referee option, this will not count the pages
 %  with tables and figures.  
 
-\label{firstpage}
-
-%  put the summary for your paper here
-
-%\begin{abstract}
-%This is the summary for this paper.
-%\end{abstract}
-
-\input{mainmatter/abstract}
-
-%  Please place your key words in alphabetical order, separated
-%  by semicolons, with the first letter of the first word capitalized,
-%  and a period at the end of the list.
-%
-
-\begin{keywords}
-Personalized medicine; Prostate cancer; Active surveillance; Joint models.
-\end{keywords}
-
 %  As usual, the \maketitle command creates the title and author/affiliations
 %  display 
 
 \maketitle
 
+\label{firstpage}
 %  If you are using the referee option, a new page, numbered page 1, will
 %  start after the summary and keywords.  The page numbers thus count the
 %  number of pages of your manuscript in the preferred submission style.
@@ -247,13 +240,14 @@ Personalized medicine; Prostate cancer; Active surveillance; Joint models.
 %  Please DO NOT attempt to reformat the style of equation numbering!
 %  For that matter, please do not attempt to redefine anything!
 
-\input{mainmatter/introduction}
-\input{mainmatter/joint_model_framework}
-\input{mainmatter/pers_sched_framework/pers_biopsy_framework}
-\input{mainmatter/choosing_schedule}
-\input{mainmatter/pers_schedule_prias}
-\input{mainmatter/sim_study}
-\input{mainmatter/discussion}
+\input{supplementary/jm_param_estimation}
+\clearpage
+\input{supplementary/derivation_estimation_mean_var}
+\clearpage
+\input{supplementary/prias_param_estimates}
+\clearpage
+\input{supplementary/sim_study_graphs}
+\clearpage
 
 %  The \backmatter command formats the subsequent headings so that they
 %  are in the journal style.  Please keep this command in your document
@@ -262,22 +256,6 @@ Personalized medicine; Prostate cancer; Active surveillance; Joint models.
 %  and References sections. 
 
 \backmatter
-
-%  This section is optional.  Here is where you will want to cite
-%  grants, people who helped with the paper, etc.  But keep it short!
-
-\input{mainmatter/acknowledgement}
-
-%  If your paper refers to supplementary web material, then you MUST
-%  include this section!!  See Instructions for Authors at the journal
-%  website http://www.biometrics.tibs.org
-
-\section*{Supplementary Materials}
-
-Web Appendix A and C, referenced in Section~\ref{sec : jm_framework} and  Section~\ref{sec : pers_schedule_PRIAS}  respectively, and the derivation of Equation (\ref{eq : expected_time_survprob}) in Web Appendix B, are available in the document supplementary\_material.pdf.\vspace*{-8pt}
-
-%Web Appendix A and C, referenced in Section~\ref{sec : jm_framework} and  Section~\ref{sec : pers_schedule_PRIAS}  respectively, and the derivation of Equations ~\ref{eq : expected_time_survprob} and ~\ref{eq : var_time_survprob} in Web Appendix B, are available with
-%this paper at the Biometrics website on Wiley Online Library.\vspace*{-8pt}
 
 %  Here, we create the bibliographic entries manually, following the
 %  journal style.  If you use this method or use natbib, PLEASE PAY
@@ -296,21 +274,8 @@ Web Appendix A and C, referenced in Section~\ref{sec : jm_framework} and  Sectio
 %
 %  \bibliographystyle{biom} 
 % \bibliography{mybibilo.bib}
-
 \bibliographystyle{biom} 
 \bibliography{bibliography}
-
-\appendix
-
-%  To get the journal style of heading for an appendix, mimic the following.
-
-%\section{}
-%\subsection{Title of appendix}
-
-%Put your short appendix here.  Remember, longer appendices are
-%possible when presented as Supplementary Web Material.  Please 
-%review and follow the journal policy for this material, available
-%under Instructions for Authors at \texttt{http://www.biometrics.tibs.org}.
 
 \label{lastpage}
 
