@@ -1,5 +1,5 @@
 % !TEX root =  ../pers_schedules.tex 
-\section{Joint model for time to event and longitudinal outcomes}
+\section{Joint Model for Time to Event and Longitudinal Outcomes}
 \label{sec : jm_framework}
 We start with the definition of the joint modeling framework that will be used to fit a model to the available dataset, and then to plan biopsies for future patients. Let $T_i^*$ denote the true GR time for the $i$-th patient enrolled in an AS program. Let the vector of times at which biopsies are conducted for this patient be denoted by $T_i^b = \{T^b_{i0}, T^b_{i1}, \ldots, T^b_{i{N_i^b}}; T^b_{ij} < T^b_{ik}, \forall j<k\}$, where $N_i^b$ are the total number of biopsies conducted. Because of the periodical nature of biopsy schedules, $T_i^*$ cannot be observed directly and it is only known to fall in an interval $(l_i, r_i]$, where $l_i = T^b_{i{N_i^b - 1}}, r_i = T^b_{i{N_i^b}}$ if GR is observed, and $l_i = T^b_{i{N_i^b}}, r_i=\infty$ if patient drops out of AS before GR is observed. Further let $\bmath{y}_i$ denote the $n_i \times 1$  vector of PSA levels for the $i$-th patient. For a sample of $n$ patients the observed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \bmath{y}_i; i = 1, \ldots, n\}$.
 
@@ -26,7 +26,7 @@ f\{M_i(t), \bmath{b}_i, \bmath{\alpha}\} = \alpha_1 m_i(t) + \alpha_2 m'_i(t),\q
 \end{array}
 \right.
 \end{eqnarray*}
-These formulations of $f(\cdot)$ postulate that the hazard of GR at time $t$ may be associated with the underlying level of PSA $m_i(t)$ at $t$, or with both the level and velocity of the PSA $m'_i(t)$ at $t$. Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using P-splines. More specifically:
+These formulations of $f(\cdot)$ postulate that the hazard of GR at time $t$ may be associated with the underlying level $m_i(t)$ of the PSA at $t$, or with both the level and velocity $m'_i(t)$ of the PSA at $t$. Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using P-splines. More specifically:
 \begin{equation*}
 \log{h_0(t)} = \gamma_{h_0,0} + \sum_{q=1}^Q \gamma_{h_0,q} B_q(t, \bmath{v}),
 \end{equation*}

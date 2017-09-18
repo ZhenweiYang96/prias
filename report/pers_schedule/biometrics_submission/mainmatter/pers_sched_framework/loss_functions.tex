@@ -1,6 +1,6 @@
 % !TEX root =  ../pers_schedules.tex 
 
-\subsection{Loss functions}
+\subsection{Loss Functions}
 \label{subsec : loss_functions}
 To find the time $u$ of the next biopsy, we use principles from statistical decision theory in a Bayesian setting \citep{bergerDecisionTheory,robertBayesianChoice}. More specifically, we propose to choose $u$ by minimizing the posterior expected loss $E_g\big\{L(T^*_j, u)\big\}$, where the expectation is taken with respect to $g(T^*_j)$. The former is given by:
 \begin{equation*}
@@ -42,6 +42,6 @@ L_{k_1, k_2}(T^*_j, u) =
 \end{equation}
 where $k_1, k_2$ are constants parameterizing the loss function. The posterior expected loss $E_g\big\{L_{k_1, k_2}(T^*_j, u)\big\}$ obtains its minimum at $u = \pi_j^{-1}\big\{k_1/{(k_1 + k_2)} \mid t,s \big\}$ \citep{robertBayesianChoice}. The choice of the two constants $k_1$ and $k_2$ is equivalent to the choice of $\kappa = {k_1}/{(k_1 + k_2)}$.
 
-\subsubsection{A hybrid approach}
+\subsubsection{A Hybrid Approach}
 \label{subsubsec : mixed_approach}
-In practice, for some patients we may not have sufficient information, resulting in high variance of $g(T_j)$, which in turn would make using a measure of central tendency such as mean or median time of GR unreliable (i.e., overshooting the true $T_j^*$ by a big margin). In such occasions, the approach based on dynamic risk of GR could be more robust. This consideration leads us to a hybrid approach, namely, to select $u$ using dynamic risk of GR based approach when the spread of $g(T_j^*)$ is large, while using $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ when the spread of $g(T_j^*)$ is small. What constitutes a large spread will be application-specific. In the PRIAS schedule, the maximum possible delay in detection of GR is three years. Thus we propose that if the difference between the 0.025 quantile of $g(T^*_j)$, and $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ is more than three years then proposals based on dynamic risk of GR be used instead.
+In practice, for some patients we may not have sufficient information, resulting in high variance of $g(T_j)$, which in turn would make using a measure of central tendency such as mean or median time of GR unreliable (i.e., overshooting the true $T_j^*$ by a big margin). In such occasions, the approach based on dynamic risk of GR could be more robust. This consideration leads us to a hybrid approach, namely, to select $u$ using dynamic risk of GR based approach when the spread of $g(T_j^*)$ is large, while using $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ when the spread of $g(T_j^*)$ is small. What constitutes a large spread will be application-specific. In the PRIAS, within the first 10 years, the maximum possible delay in detection of GR is three years. Thus we propose that if the difference between the 0.025 quantile of $g(T^*_j)$, and $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ is more than three years then proposals based on dynamic risk of GR be used instead.

@@ -83,7 +83,7 @@ source("../JMBayes/Anirudh/dev/expectedCondFailureTime.R")
 source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
 
 #demoPatientPID = c(911, 1573, 2340, 3225, 3174)
-demoPatientPID = c(2340)
+demoPatientPID = c(911)
 
 maxPossibleFailureTime = 20
 for(patientId in demoPatientPID){
@@ -94,7 +94,8 @@ for(patientId in demoPatientPID){
   minVisits = 1
   plotList = vector("list", nrow(demoPatient) - minVisits)
   #for(j in minVisits:nrow(demoPatient)){
-  for(j in c(13,18)){
+  #for(j in c(13)){ # for 2340
+  for(j in c(12,15)){ # for 911
     subDataSet = demoPatient[1:j, ]
     
     subDataSet$expectedFailureTime = NA
@@ -103,7 +104,7 @@ for(patientId in demoPatientPID){
     curVisitTime = tail(subDataSet$visitTimeYears, 1)
     #lastBiopsyTime = getLastBiopsyTime(patientId, upperLimitTime = curVisitTime)
     lastBiopsyTime = tail(subDataSet$visitTimeYears[!is.na(subDataSet$gleason)],1)
-    lastBiopsyTime  = 0
+    #lastBiopsyTime  = 1.03561643835616
     
     subDataSet$lastBiopsyTime = lastBiopsyTime
 
@@ -113,7 +114,7 @@ for(patientId in demoPatientPID){
                              idVar="P_ID", last.time = lastBiopsyTime,
                              survTimes = survTimes)$summaries[[1]][, "Median"])
 
-    nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-curVisitTime)==min(abs(dynamicCutoffTimes_PRIAS-curVisitTime)))[1]
+    nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)==min(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)))[1]
     survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
     if(is.na(survProbF1Score)){
       subDataSet$survTimeF1Score[1] = NA
@@ -128,8 +129,7 @@ for(patientId in demoPatientPID){
     print(survProbF1Score)
     print(subDataSet$expectedFailureTime[1])
     print(subDataSet$survTimeF1Score[1])
-    #print(sqrt(varCondFailureTime(joint_psa_replaced, subDataSet, 
-    #                                 idVar = "P_ID", lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)))
+    #print(sqrt(varCondFailureTime(joint_psa_replaced_prias, subDataSet[!is.na(subDataSet$log2psa),], idVar = "P_ID", lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)))
      
     plotList[[j-minVisits + 1]] = ggplot(data=subDataSet[!is.na(subDataSet$psa),]) + geom_point(aes(x = visitTimeYears, y=psa)) +
        geom_line(aes(x = visitTimeYears, y=psa)) +
@@ -139,8 +139,8 @@ for(patientId in demoPatientPID){
       geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="longdash")) +
       geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="dotdash")) +
       geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="solid")) + 
-       ticksX(0, 20, 2) + ylim(6, 22.5) + scale_linetype_identity(guide="legend") + 
-       theme(text = element_text(size=14), axis.text=element_text(size=15), legend.position="none")+
+       ticksX(0, 20, 2) + ylim(5, 22.5) + scale_linetype_identity(guide="legend") + 
+       theme(text = element_text(size=13), axis.text=element_text(size=13), legend.position="none", plot.title = element_text(hjust = 0.5))+
        xlab("Time(years)") + ylab("PSA (ng/mL)")
      
     # print(plotList[[j-minVisits + 1]])
@@ -148,7 +148,7 @@ for(patientId in demoPatientPID){
   
   #png(width=1280, height=960, filename = paste("images/prias_demo/prias_demo_pid_new", patientId, ".png", sep=""))
   #plotList = lapply(plotList, function(x){x + theme(legend.position="none")})
-  multiplot(plotList[[13]], plotList[[18]], cols = 2)
+  #multiplot(plotList[[13]], plotList[[18]], cols = 2)
   
   #dev.off()
 }
@@ -177,10 +177,12 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   
   pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=sqrt(variances))) + 
     geom_line(aes(x=visitTimeYears, y=sqrt(variances))) + 
-    geom_vline(aes(xintercept = biopsyTimes, na.rm=T), color="blue", linetype="dashed") + xlab("Time (years)") + 
-    ylab(TeX('$SD\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
-    ticksY(0, 10, 1) + theme(text = element_text(size=14), axis.text=element_text(size=15), plot.title = element_text(hjust = 0.5))
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T)) + xlab("Time (years)") + 
+    #ylab(TeX('$SD\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
+    ylab(TeX('$SD\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
+    ticksY(0, 10, 1) + theme(text = element_text(size=13), axis.text=element_text(size=13), plot.title = element_text(hjust = 0.5))
   
-  print(pp)  
+  print(pp)
+  return(prias_long_i$variances) 
 }
 

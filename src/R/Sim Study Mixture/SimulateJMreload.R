@@ -12,11 +12,11 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-datasetNumbers = 338:340
+datasetNumbers = 1:565
 simulatedDsList = vector("list", max(datasetNumbers))
 
 for(i in datasetNumbers){
-  load(paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
+  load(paste("C:/Users/838035/Old Sim Results/Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed_f1mixed/Dt_1/simDs",i,".Rdata", sep=""))
   simulatedDsList[[i]] = temp[[1]]
   rm(temp)
   
@@ -44,30 +44,36 @@ for(i in datasetNumbers){
   lastPossibleVisit = timesPerSubject - 1
   
   #Combo of patientRowNum and Method
-  mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
+  Cut95_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
                                  .combine = rbind,
-                                 .packages =  c("splines", "JMbayes", "coda"),
-                                 .export = c("timesPerSubject"))%dopar%{
+                                 .packages =  c("splines", "JMbayes", "coda"))%dopar%{
                                    res = c(P_ID=patientRowNum,
-                                           methodName="MixedF1Score",
-                                           computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
-                                                                    1, timesPerSubject-1,
-                                                                    alternative = "f1score"))
+                                           methodName="Cut95",
+                                           computeNbAndOffset(dsId = i, patientRowNum=patientRowNum,
+                                                              minVisits = 1,
+                                                              methodName = "Cut95",
+                                                              lastPossibleVisit = lastPossibleVisit))
                                    return(res)
                                  })
-  mixed_res[,"weibullScale"] = tail(simulatedDsList[[i]]$weibullScale, nrow(simulatedDsList[[i]]$testDs.id))
-  mixed_res[,"weibullShape"] = tail(simulatedDsList[[i]]$weibullShape, nrow(simulatedDsList[[i]]$testDs.id))
-  
-  colnames(mixed_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
   
   tEnd = Sys.time()
   print(tEnd-tStart)
   
   stopCluster(ct)
   
+  colnames(Cut95_res) = colnames(simulatedDsList[[i]]$biopsyTimes)[1:4]
+  Cut95_res$nb = as.numeric(as.character(Cut95_res$nb))
+  Cut95_res$offset = as.numeric(as.character(Cut95_res$offset))
+  Cut95_res$P_ID = as.numeric(as.character(Cut95_res$P_ID))
+  
+  temp = simulatedDsList[[i]]$biopsyTimes[simulatedDsList[[i]]$biopsyTimes$methodName=="Annual",]
+  Cut95_res$weibullScale = temp$weibullScale
+  
+  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, Cut95_res)
+  simulatedDsList[[i]]$biopsyTimes = simulatedDsList[[i]]$biopsyTimes[order(simulatedDsList[[i]]$biopsyTimes$P_ID, decreasing = F),]
+  
   temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
+  save(temp,file = paste("C:/Users/838035/Old Sim Results/Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed_f1mixed/Dt_1/simDs",i,".Rdata", sep=""))
   
   print(paste("******** End working on Data Set: ", i, "*******"))
   

@@ -148,70 +148,24 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
                              simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
                              load(simFileLocation)
                              
-                             simulatedDsList = temp
-                             
-                             biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
-                             biopsyResults$P_ID = as.numeric(as.character(biopsyResults$P_ID))
-                             biopsyResults = biopsyResults[order(biopsyResults$P_ID, decreasing = F),]
-                             
-                             nTestPatients = nrow(simulatedDsList[[1]]$testDs.id)
-                             nTypesMethod = length(unique(biopsyResults$methodName))
-                             biopsyResults$weibullScale = rep(tail(simulatedDsList[[1]]$weibullScale, nTestPatients), each = nTypesMethod)
-                             biopsyResults = biopsyResults[biopsyResults$weibullScale %in% subPopulationWeibullScale,]
-                             
-                             biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
-                             biopsyResults$offset = as.numeric(as.character(biopsyResults$offset)) * 12
-                             
-                             biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
-                               if(x=="expectedFailureTime"){
-                                 return("Expec. Time GR")
-                               } 
-                               
-                               if(x=="medianFailureTime"){
-                                 return("Median Time GR")
-                               } 
-                               
-                               if(x=="PRIAS"){
-                                 return("PRIAS")
-                               }
-                               
-                               if(x=="JH"){
-                                 return("Annual")
-                               }
-                               
-                               if(x=="youden"){
-                                 return("Youden's J")
-                               }
-                               
-                               if(x=="f1score"){
-                                 return("F1-Score")
-                               }
-                               
-                               if(x=="MixedYouden"){
-                                 return("Mixed-Youden")
-                               }
-                               if(x=="MixedF1Score"){
-                                 return("Mixed-F1")
-                               }
-                             })
-                             return(biopsyResults)
-  }
+                             return(temp[[1]]$biopsyTimes)
+                  }
   stopCluster(ct)
   
-  png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbBoxPlot_",subpopName,".png", sep=""))
-  p = ggplot(data = biopsyResults) +
-    geom_boxplot(aes(reorder(methodCategory, nb, FUN=mean), nb)) +
+  png(width=640, height=480, filename = paste("report/pers_schedule/biometrics_submission/images/sim_study/", "nbBoxPlot_",subpopName,".png", sep=""))
+  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
+    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), nb)) +
     scale_y_continuous(breaks = seq(0,20, by = 2)) +
     ylab("Number of biopsies") + xlab("Schedule") + 
-    theme(text = element_text(size=14), axis.text=element_text(size=15))+ coord_flip()
+    theme(text = element_text(size=14), axis.text=element_text(size=13))+ coord_flip()
   print(p)
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetBoxPlot_",subpopName,".png", sep=""))
-  p = ggplot(data = biopsyResults) +
-    geom_boxplot(aes(reorder(methodCategory, nb, FUN=mean), offset)) +
+  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
+    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), offset)) +
     ylab("Biopsy offset (months)") + xlab("Schedule") + 
-    theme(text = element_text(size=14), axis.text=element_text(size=15))+ coord_flip()
+    theme(text = element_text(size=14), axis.text=element_text(size=13))+ coord_flip()
   print(p)
   dev.off()
   
@@ -233,61 +187,15 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
                             simFileLocation = paste("Rdata/Gleason as event/Sim Study/",rDataFolder, "/", DtSubFolder, "/simDs", simNum, ".Rdata", sep="")
                             load(simFileLocation)
                             
-                            simulatedDsList = temp
-                            
-                            #biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
-                            biopsyResults = data.frame(simulatedDsList[[1]]$biopsyTimes)
-                            biopsyResults$P_ID = as.numeric(as.character(biopsyResults$P_ID))
-                            biopsyResults = biopsyResults[order(biopsyResults$P_ID, decreasing = F),]
-                            
-                            nTestPatients = nrow(simulatedDsList[[1]]$testDs.id)
-                            nTypesMethod = length(unique(biopsyResults$methodName))
-                            biopsyResults$weibullScale = rep(tail(simulatedDsList[[1]]$weibullScale, nTestPatients), each = nTypesMethod)
-                            biopsyResults = biopsyResults[biopsyResults$weibullScale %in% subPopulationWeibullScale,]
-                            
-                            biopsyResults$nb = as.numeric(as.character(biopsyResults$nb))
-                            biopsyResults$offset = as.numeric(as.character(biopsyResults$offset)) * 12
-                            
-                            biopsyResults$methodCategory = sapply(biopsyResults$methodName, function(x){
-                              if(x=="expectedFailureTime"){
-                                return("Exp. Time GR")
-                              } 
-                              
-                              if(x=="medianFailureTime"){
-                                return("Med. Time GR")
-                              } 
-                              
-                              if(x=="PRIAS"){
-                                return("PRIAS")
-                              }
-                              
-                              if(x=="JH"){
-                                return("Annual")
-                              }
-                              
-                              if(x=="youden"){
-                                return("Youden's J")
-                              }
-                              
-                              if(x=="f1score"){
-                                return("F1-Score")
-                              }
-                              
-                              if(x=="MixedYouden"){
-                                return("Mixed-Youden")
-                              }
-                              if(x=="MixedF1Score"){
-                                return("Mixed-F1")
-                              }
-                            })
+                            biopsyResults = temp[[1]]$biopsyTimes[temp[[1]]$biopsyTimes$weibullScale %in% subPopulationWeibullScale,]
                             
                             #Now we need total eligible patients per method, nb Mean, Var, and Offset mean, var per method
-                            totalPatientsPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, length)
-                            nbMeanPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, mean)
-                            nbVarPerMethod = by(biopsyResults$nb, biopsyResults$methodCategory, var)
-                            offsetMeanPerMethod = by(biopsyResults$offset, biopsyResults$methodCategory, mean)
-                            offsetVarPerMethod = by(biopsyResults$offset, biopsyResults$methodCategory, var)
-                            offsetNbCov = by(biopsyResults[, c("offset", "nb")], biopsyResults$methodCategory, var)
+                            totalPatientsPerMethod = by(biopsyResults$nb, biopsyResults$methodName, length)
+                            nbMeanPerMethod = by(biopsyResults$nb, biopsyResults$methodName, mean)
+                            nbVarPerMethod = by(biopsyResults$nb, biopsyResults$methodName, var)
+                            offsetMeanPerMethod = by(biopsyResults$offset, biopsyResults$methodName, mean)
+                            offsetVarPerMethod = by(biopsyResults$offset, biopsyResults$methodName, var)
+                            offsetNbCov = by(biopsyResults[, c("offset", "nb")], biopsyResults$methodName, var)
                             
                             return(list(totalPatientsPerMethod = totalPatientsPerMethod, 
                                         nbMeanPerMethod = nbMeanPerMethod,
@@ -331,11 +239,14 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   finalResultSummary[,paramNames[4]] = sqrt(apply(sapply(resultsSummary, FUN = function(x){x[["nbVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary)))
   finalResultSummary[,paramNames[5]] = sqrt(apply(sapply(resultsSummary, FUN = function(x){x[["offsetVarPerMethod"]] * (x[["totalPatientsPerMethod"]]-1)}), MARGIN = 1, FUN = sum) / (finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary)))
 
+  finalResultSummary[,c(3,5)] = finalResultSummary[,c(3,5)] * 12 
+  
   #Calculate mahalanobis distance
   tt = lapply(resultsSummary, FUN = function(resItem){Map('*', resItem[["offsetNbCov"]], resItem[["totalPatientsPerMethod"]]-1)})
   pooledCovariance = Map('/', lapply(methodNames, FUN=function(i){Reduce("+",lapply(tt, FUN=function(x){x[[i]]}))}), finalResultSummary[,"totalPatientsPerMethod"] - length(resultsSummary))
   rm(tt)
-  for(i in 1:8){mahal[i] = mahalanobis(c(0,0), center=finalResultSummary[i, c(2,3)], cov = pooledCovariance[[i]])}
+  mahal = rep(NA, 8)
+  for(i in 1:8){mahal[i] = mahalanobis(c(0,1), center=finalResultSummary[i, c(3,2)], cov = pooledCovariance[[i]])}
   names(mahal) = methodNames
   #+ theme(text = element_text(size=15)) + coord_flip()
   #+ theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust = 1))
@@ -344,12 +255,7 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   ydata = c(sapply(resultsSummary, function(x){x[["nbMeanPerMethod"]]}))
   
   xdata = rep(methodNames,length(resultsSummary))
-  xdata[xdata=="Expec. Time GR"] = "Exp. time GR"
-  xdata[xdata=="Median Time GR"] = "Med. time GR"
-  xdata[xdata=="F1-Score"] = "Dyn. risk GR"
-  xdata[xdata=="Mixed-F1"] = "Mixed"
-  
-  indicesIgnore = xdata=="Mixed-Youden" | xdata=="Youden's J"
+  indicesIgnore = xdata=="Hybrid-Youden" | xdata=="Youden"
   xdata = xdata[!indicesIgnore]
   ydata = ydata[!indicesIgnore]
   
@@ -359,10 +265,10 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetMeanBoxPlot_",subpopName,".png", sep=""))
-  ydata = c(sapply(resultsSummary, function(x){x[["offsetMeanPerMethod"]]}))
+  ydata = c(sapply(resultsSummary, function(x){x[["offsetMeanPerMethod"]]})) * 12
   xdata = rep(methodNames,length(resultsSummary))
   p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean biopsy offset (months)", xlab="Schedule") + ticksY(0, 100, 1) +
-    theme(text = element_text(size=14), axis.text=element_text(size=15))+ coord_flip()
+    theme(text = element_text(size=13), axis.text=element_text(size=13))+ coord_flip()
   print(p)
   dev.off()
   
@@ -370,24 +276,26 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   ydata = c(sapply(resultsSummary, function(x){x[["nbVarPerMethod"]]}))
   xdata = rep(methodNames,length(resultsSummary))
   p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance of number of biopsies", xlab="Schedule") + ticksY(0, 100, 1) +
-    theme(text = element_text(size=14), axis.text=element_text(size=15)) + coord_flip()
+    theme(text = element_text(size=13), axis.text=element_text(size=13)) + coord_flip()
   print(p)
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetVarBoxPlot_",subpopName,".png", sep=""))
-  ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]}))
+  ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]})) * 12 *12
   xdata = rep(methodNames,length(resultsSummary))
   p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance of biopsy offset (months)", xlab="Schedule") + ticksY(0, 500, 50) +
-    theme(text = element_text(size=14), axis.text=element_text(size=15)) + coord_flip()
+    theme(text = element_text(size=13), axis.text=element_text(size=13)) + coord_flip()
   print(p)
   dev.off()
   
-  png(width=600, height=400, filename= paste("report/pers_schedule/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
-  p = qplot(x = finalResultSummary[,"nbMeanPerMethod"], y=finalResultSummary[,"offsetMeanPerMethod"], 
-            label=rownames(finalResultSummary),
+  png(width=600, height=400, filename= paste("report/pers_schedule/biometrics_submission/images/sim_study/", "meanNbVsOffset_",subpopName,".png", sep=""))
+  p = qplot(x = finalResultSummary[c(1:3, 5:6, 8), "nbMeanPerMethod"], 
+            y=finalResultSummary[c(1:3, 5:6, 8), "offsetMeanPerMethod"], 
+            label=rownames(finalResultSummary)[c(1:3, 5:6, 8)],
             xlab="Mean number of biopsies", ylab="Mean biopsy offset (months)", 
-            xlim=c(min(finalResultSummary[,"nbMeanPerMethod"])-0.5,max(finalResultSummary[,"nbMeanPerMethod"])+0.25)) + 
-    theme(text = element_text(size=14), axis.text=element_text(size=15)) + geom_label(size=5)
+            xlim=c(min(finalResultSummary[c(1:3, 5:6, 8),"nbMeanPerMethod"])-0.5,
+                   max(finalResultSummary[c(1:3, 5:6, 8),"nbMeanPerMethod"])+0.25)) + 
+    theme(text = element_text(size=15), axis.text=element_text(size=15)) + geom_label(size=5)
             
   print(p)
   dev.off()

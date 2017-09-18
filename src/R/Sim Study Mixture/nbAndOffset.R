@@ -7,13 +7,11 @@ computeNbAndOffset_PRIAS = function(dsId, patientRowNum){
   offset = NA
   
   fixedSchedule = c(1, 4, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50)
-  fixedScheduleIndex = 1
   
-  skipFixedBiopsies = FALSE
   lastBiopsyTime = 0
   proposedBiopsyTime = Inf
   
-  #Min number of measurements before which PSA-DT cant be used
+  #Min number of measurements before which PSA-DT can't be used
   for(j in 4:nrow(patientDs)){
     curVisitTime = patientDs$visitTimeYears[j]
     
@@ -22,7 +20,6 @@ computeNbAndOffset_PRIAS = function(dsId, patientRowNum){
       offset = proposedBiopsyTime - progressionTime
       lastBiopsyTime = proposedBiopsyTime
       proposedBiopsyTime = Inf
-      skipFixedBiopsies = FALSE
     }
     
     if(!is.na(offset) & offset > 0){
@@ -37,16 +34,19 @@ computeNbAndOffset_PRIAS = function(dsId, patientRowNum){
       }else{
         proposedBiopsyTime = lastBiopsyTime + 1
       }
-    }else if(skipFixedBiopsies==FALSE){
+    }else{
+      fixedScheduleIndex = 1
       proposedBiopsyTime = fixedSchedule[fixedScheduleIndex]
       fixedScheduleIndex = fixedScheduleIndex + 1
       
-      while((proposedBiopsyTime - lastBiopsyTime) < 1){
+      while((proposedBiopsyTime - lastBiopsyTime) <= 0){
         proposedBiopsyTime = fixedSchedule[fixedScheduleIndex]
         fixedScheduleIndex = fixedScheduleIndex + 1
       }
       
-      skipFixedBiopsies = TRUE
+      if(proposedBiopsyTime - lastBiopsyTime < 1){
+        proposedBiopsyTime = lastBiopsyTime + 1
+      }
     }
   }
   
@@ -147,6 +147,8 @@ computeNbAndOffset = function(dsId, patientRowNum, methodName="expectedFailureTi
         }else{
           proposedBiopsyTime = NA
         }
+      }else if(methodName %in% c("Cut95")){
+        proposedBiopsyTime = pDynSurvTimeOptimal(dsId, patientDsSubset, 0.95, lastBiopsyTime)
       }
       
       #print("Iteration Next")

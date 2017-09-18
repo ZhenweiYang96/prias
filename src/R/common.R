@@ -7,6 +7,7 @@ library(survival)
 library(splines)
 library(nlme)
 library(JMbayes)
+library(latex2exp)
 
 source("src/R/replaceMCMCContents.R")
 source("src/R/rocJM_mod.R")
@@ -85,7 +86,7 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
         ticksX(from=0, max = 10, by = 1) + 
         ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
         xlab("Follow-up time (Years)") + 
-        ylab(expression('log'[2]*'(PSA)'))
+        ylab(expression('log'[2]*'(PSA)')) + theme(text = element_text(size=13), axis.text=element_text(size=13))
       print(plot)
       return(plot)
     }))
@@ -102,7 +103,7 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
       ticksX(from=0, max = 10, by = 1) + 
       ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
       xlab("Follow-up time (Years)") + 
-      ylab(expression('log'[2]*'(PSA)'))
+      ylab(expression('log'[2]*'(PSA)')) + theme(text = element_text(size=13), axis.text=element_text(size=13))
     print(plot)
     
     return(plot)
