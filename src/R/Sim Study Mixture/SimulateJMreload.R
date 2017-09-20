@@ -66,8 +66,7 @@ for(i in datasetNumbers){
   Cut95_res$offset = as.numeric(as.character(Cut95_res$offset))
   Cut95_res$P_ID = as.numeric(as.character(Cut95_res$P_ID))
   
-  temp = simulatedDsList[[i]]$biopsyTimes[simulatedDsList[[i]]$biopsyTimes$methodName=="Annual",]
-  Cut95_res$weibullScale = temp$weibullScale
+  Cut95_res$weibullScale = simulatedDsList[[i]]$biopsyTimes$weibullScale[simulatedDsList[[i]]$biopsyTimes$methodName=="Annual"]
   
   simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, Cut95_res)
   simulatedDsList[[i]]$biopsyTimes = simulatedDsList[[i]]$biopsyTimes[order(simulatedDsList[[i]]$biopsyTimes$P_ID, decreasing = F),]
