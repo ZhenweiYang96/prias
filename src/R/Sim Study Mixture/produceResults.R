@@ -169,7 +169,7 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
   print(p)
   dev.off()
   
-    return(biopsyResults)
+  return(biopsyResults)
 }
 
 poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPopulationWeibullScale = NULL, subpopName = "all"){
@@ -260,7 +260,7 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   ydata = ydata[!indicesIgnore]
   
   p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean number of biopsies", xlab="Schedule") + ticksY(0, 10, 0.5) +
-    theme(text = element_text(size=14), axis.text=element_text(size=15)) + coord_flip()
+    theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
   
@@ -268,23 +268,25 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   ydata = c(sapply(resultsSummary, function(x){x[["offsetMeanPerMethod"]]})) * 12
   xdata = rep(methodNames,length(resultsSummary))
   p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean biopsy offset (months)", xlab="Schedule") + ticksY(0, 100, 1) +
-    theme(text = element_text(size=13), axis.text=element_text(size=13))+ coord_flip()
+    theme(text = element_text(size=12), axis.text=element_text(size=12))+ coord_flip()
   print(p)
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbVarBoxPlot_",subpopName,".png", sep=""))
   ydata = c(sapply(resultsSummary, function(x){x[["nbVarPerMethod"]]}))
   xdata = rep(methodNames,length(resultsSummary))
-  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance of number of biopsies", xlab="Schedule") + ticksY(0, 100, 1) +
-    theme(text = element_text(size=13), axis.text=element_text(size=13)) + coord_flip()
+  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Standard Deviation of number of biopsies", xlab="Schedule") + 
+    ticksY(0, 10, 0.5) +
+    theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetVarBoxPlot_",subpopName,".png", sep=""))
-  ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]})) * 12 *12
+  ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]})) * 12 * 12
   xdata = rep(methodNames,length(resultsSummary))
-  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Variance of biopsy offset (months)", xlab="Schedule") + ticksY(0, 500, 50) +
-    theme(text = element_text(size=13), axis.text=element_text(size=13)) + coord_flip()
+  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Standard Deviation of biopsy offset (months)", xlab="Schedule") + 
+    ticksY(0, 50, 2.5) +
+    theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
   
@@ -336,3 +338,4 @@ deleteResultImages = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", min
   
   stopCluster(ct)
 }
+

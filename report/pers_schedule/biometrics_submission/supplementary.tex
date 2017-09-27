@@ -65,6 +65,10 @@
 \renewcommand{\fnum@figure}{Web Figure \thefigure}
 \makeatother
 
+\AtBeginDocument{%
+  \renewcommand{\thetable}{Web Table \arabic{table}}
+}
+
 %Single spacing for tables
 \makeatletter
 \AtBeginEnvironment{tabular}{%
@@ -101,8 +105,8 @@
 %  the examples below in creating your author and affiliation information.
 %  Also consult a recent issue of the journal for examples of formatting.
 
-\title[Web-based Supplementary Materials  for ``Personalized schedules'']
-{Web-based Supplementary Materials for ``Personalized Schedules for Prostate Cancer Biopsies''}
+\title[Supplementary Materials  for ``Personalized Schedules'']
+{Web-based Supplementary Materials for ``Personalized Schedules for Surveillance of Cancer Patients''}
 
 %  Here are examples of different configurations of author/affiliation
 %  displays.  According to the Biometrics style, in some instances,
@@ -249,6 +253,8 @@ Accepted March} 0000.}
 \input{supplementary/jm_param_estimation}
 \clearpage
 \input{supplementary/derivation_estimation_mean_var}
+\clearpage
+\input{supplementary/prias_ds}
 \clearpage
 \input{supplementary/prias_param_estimates}
 \clearpage

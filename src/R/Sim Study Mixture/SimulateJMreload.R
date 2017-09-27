@@ -1,7 +1,8 @@
 library(MASS)
 library(splines)
 
-nSub <- 1000# number of subjects
+#number of subjects
+nSub <- 1000
 
 source("src/R/common.R")
 source("src/R/Sim Study Mixture/simCommon.R")
@@ -12,7 +13,7 @@ source("src/R/rocJM_mod.R")
 
 cores = detectCores()
 
-datasetNumbers = 1:565
+datasetNumbers = c(501:565)
 simulatedDsList = vector("list", max(datasetNumbers))
 
 for(i in datasetNumbers){

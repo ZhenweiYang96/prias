@@ -10,7 +10,10 @@ In the main manuscript, for the personalized schedules based on dynamic risk of 
 \end{align*}
 where $\mbox{TPR}(\cdot)$ and $\mbox{FPR}(\cdot)$ denote time dependent true positive rate (sensitivity) and false positive rate ($1 - \mbox{Specificity}$). The estimation for both is similar to the estimation of $\mbox{AUC}(t, \Delta t, s)$ given by \citet{landmarking2017}. The optimal value of $\kappa$ is $\argmax_{\kappa} \mbox{J}(t, \Delta t, s)$.
 
-The simulation study results for Youden's $\mbox{J}$ were not presented in the main manuscript for brevity and are presented here in Web Table \ref{table : sim_study_pooled_estimates_extended}. In addition results for a hybrid approach between median time of GR and dynamic risk of GR based on Youden's $\mbox{J}$ are also presented.
+The simulation study results for Youden's $\mbox{J}$ were not presented in the main manuscript for brevity and are presented here in \ref{table : sim_study_pooled_estimates_extended}. In addition results for a hybrid approach between median time of GR and dynamic risk of GR based on Youden's $\mbox{J}$ are also presented. 
+
+\subsection{Results for a fixed $\kappa = 0.95$}
+We have also presented results for a fixed $\kappa$ of 0.95, which means that the next biopsy is scheduled at a time point where risk of GR is 5\%. The results for this approach are presented in \ref{table : sim_study_pooled_estimates_extended}.
 
 \begin{table}[!htb]
 \caption{Estimated mean and standard deviation of the number of biopsies and offset (months). Method names are abbreviated for consistency with Figure \ref{fig : meanNbVsOffset}.}
@@ -29,6 +32,7 @@ Dyn. risk GR ($\mbox{F}_1$ score)       & 4.69            & 6.66                
 Hybrid ($\mbox{F}_1$ score)      & 3.75            & 9.70                & 1.71          & 7.25              \\
 Dyn. risk GR (Youden's $\mbox{J}$)      & 4.56            & 8.00                & 2.00             & 11.00 \\
 Hybrid (Youden's $\mbox{J}$)   & 3.76            & 9.74                & 1.70           & 7.46    \\
+Dyn. risk GR ($\kappa=0.95$) & 5.15 & 6.02 & 2.51 & 3.47\\
 \hline
 \multicolumn{5}{c}{b) Subgroup $G_1$: 41484 patients}\\
 \hline
@@ -42,6 +46,7 @@ Dyn. risk GR ($\mbox{F}_1$ score)       & 3.85            & 6.75                
 Hybrid ($\mbox{F}_1$ score)       & 3.25            & 10.25               & 2.16          & 8.07              \\
 Dyn. risk GR (Youden's $\mbox{J}$)      & 3.73            & 8.93                & 2.41          & 14.56            \\
 Hybrid (Youden's $\mbox{J}$)   & 3.25            & 10.31                & 2.15          & 8.36              \\
+Dyn. risk GR ($\kappa=0.95$) & 4.23 & 6.05 & 3.10 & 3.46\\
 \hline      
 \multicolumn{5}{c}{c) Subgroup $G_2$: 41423 patients}\\
 \hline
@@ -55,6 +60,7 @@ Dyn. risk GR ($\mbox{F}_1$ score)       & 4.63            & 6.66                
 Hybrid ($\mbox{F}_1$ score)       & 3.68            & 10.32                & 1.37          & 7.45              \\
 Dyn. risk GR (Youden's $\mbox{J}$)      & 4.52            & 7.67                & 1.67          & 9.57           \\
 Hybrid (Youden's $\mbox{J}$)   & 3.69             & 10.36               & 1.37          & 7.56              \\
+Dyn. risk GR ($\kappa=0.95$) & 5.09 & 5.99 & 2.11 & 3.47\\
 \hline      
 \multicolumn{5}{c}{d) Subgroup $G_3$: 41874 patients}\\
 \hline
@@ -68,6 +74,7 @@ Dyn. risk GR ($\mbox{F}_1$ score)       & 5.58            & 6.58                
 Hybrid ($\mbox{F}_1$ score)       & 4.32            & 8.55                & 1.26          & 5.91              \\
 Dyn. risk GR (Youden's $\mbox{J}$)      & 5.42            & 7.40                & 1.44          & 7.61  \\        
 Hybrid (Youden's $\mbox{J}$)   & 4.32            & 8.56                & 1.26          & 6.16              \\
+Dyn. risk GR ($\kappa=0.95$) & 6.11 & 6.01 & 1.76 & 3.46\\
 \hline     
 \end{tabular}
 \end{table}
@@ -77,7 +84,7 @@ In this section we present figures related to the simulation study results discu
 
 \begin{itemize}
   \item Variation in estimated mean for number of biopsies and offset (months) for different methods is shown in Web Figure \ref{fig : nbMeanBoxPlot_all} and Web Figure \ref{fig : offsetMeanBoxPlot_all}.
-  \item Variation in estimated variance for number of biopsies and offset (months) for different methods is shown in Web Figure \ref{fig : nbVarBoxPlot_all} and Web Figure \ref{fig : offsetVarBoxPlot_all}.
+  \item Variation in estimated standard deviation of number of biopsies and offset (months) for different methods is shown in Web Figure \ref{fig : nbSDBoxPlot_all} and Web Figure \ref{fig : offsetSDBoxPlot_all}.
 \end{itemize}
 
 \begin{figure}[!htb]
@@ -87,21 +94,21 @@ In this section we present figures related to the simulation study results discu
 \end{figure}
 
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbVarBoxPlot_all.png}}
-\caption{Boxplot showing variation in estimated variance of number of biopsies across the simulations, for different methods. Patients from all subgroups are considered.}
-\label{fig : nbVarBoxPlot_all}
-\end{figure}
-
-\begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetMeanBoxPlot_all.png}}
 \caption{Boxplot showing variation in estimated mean of biopsy offset (months) across the simulations, for different methods. Patients from all subgroups are considered.}
 \label{fig : offsetMeanBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetVarBoxPlot_all.png}}
-\caption{Boxplot showing variation in estimated variance of biopsy offset (months) across the simulations, for different methods. Patients from all subgroups are considered.}
-\label{fig : offsetVarBoxPlot_all}
+\centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbSDBoxPlot_all.png}}
+\caption{Boxplot showing variation in estimated standard deviation of number of biopsies across the simulations, for different methods. Patients from all subgroups are considered.}
+\label{fig : nbSDBoxPlot_all}
+\end{figure}
+
+\begin{figure}[!htb]
+\centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetSDBoxPlot_all.png}}
+\caption{Boxplot showing variation in estimated standard deviation of biopsy offset (months) across the simulations, for different methods. Patients from all subgroups are considered.}
+\label{fig : offsetSDBoxPlot_all}
 \end{figure}
 
 
