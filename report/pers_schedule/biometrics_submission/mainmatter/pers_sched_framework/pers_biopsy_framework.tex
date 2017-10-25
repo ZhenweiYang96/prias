@@ -9,7 +9,7 @@ Once a joint model for GR and PSA levels is obtained, the next step is to use it
 
 \subsection{Algorithm}
 \label{subsec : pers_sched_algorithm}
-The aforementioned personalized schedules, schedule biopsy at a time $u > \mbox{max}(t,s)$. However, if time $u < T^*_j$, then GR is not detected at $u$ and at least one more biopsy is required at an optimal time $u^{new} > \mbox{max}(u,s)$. This process is iteratively repeated until GR is detected. To aid in medical decision making, we elucidate this process via an algorithm in Figure \ref{fig : sched_algorithm}. Since it is medically required that biopsies are conducted at a gap of at least one year, when $u - t < 1$, the algorithm postpones $u$ to $t + 1$, because it is the time nearest to $u$, at which the one year gap condition is satisfied.
+The aforementioned personalized schedules, schedule biopsy at a time $u > \mbox{max}(t,s)$. However, if time $u < T^*_j$, then GR is not detected at $u$ and at least one more biopsy is required at an optimal time $u^{new} > \mbox{max}(u,s)$. This process is iteratively repeated until GR is detected. To aid in medical decision making, we elucidate this process via an algorithm in Figure \ref{fig : sched_algorithm}. Since AS programs strongly advise that biopsies are conducted at a gap of at least one year, when $u - t < 1$, the algorithm postpones $u$ to $t + 1$, because it is the time nearest to $u$, at which the one year gap condition is satisfied.
 
 %When submitting replace figure with figure* to make it span an entire column
 %With referee option it gives an error

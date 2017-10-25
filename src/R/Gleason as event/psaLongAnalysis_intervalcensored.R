@@ -137,3 +137,30 @@ joint_psa_replaced_prias = replaceMCMCContents(mvJoint_psa_spline_pt51pt22pt5_pt
 save.image(file = "Rdata/Gleason as event/psa_spline_pt51pt22pt5_pt5.Rdata")
 
 #########################################################################
+
+m1 = mvglmer(list(log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                    ns(visitTimeYears, df=4, Boundary.knots=c(0, 7)) + 
+                    (ns(visitTimeYears, knots=c(0.4821918), Boundary.knots=c(0, 7))|P_ID)), 
+             data=training_psa_data_set, families = list(gaussian))
+
+m4 = mvglmer(list(log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                    ns(visitTimeYears, knots=c(1, 2, 4), Boundary.knots=c(0, 7)) + 
+                    (ns(visitTimeYears, knots=c(1), Boundary.knots=c(0, 7))|P_ID)), 
+             data=training_psa_data_set, families = list(gaussian))
+
+m2 = mvglmer(list(log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                    ns(visitTimeYears, df=4, Boundary.knots=c(0, 7)) + 
+                    (ns(visitTimeYears, knots=c(0.4821918, 1.1917808), Boundary.knots=c(0, 7))|P_ID)), 
+             data=training_psa_data_set, families = list(gaussian))
+
+
+m3 = mvglmer(list(log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                    ns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)) + 
+                    (ns(visitTimeYears, knots=c(0.1, 0.5), Boundary.knots=c(0, 7))|P_ID)), 
+             data=training_psa_data_set, families = list(gaussian))
+
+
+m5 = mvglmer(list(log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                    ns(visitTimeYears, knots=c(1, 2, 4), Boundary.knots=c(0, 7)) + 
+                    (ns(visitTimeYears, knots=c(1,2), Boundary.knots=c(0, 7))|P_ID)), 
+             data=training_psa_data_set, families = list(gaussian))

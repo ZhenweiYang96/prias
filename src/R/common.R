@@ -136,9 +136,9 @@ fitUnivaritePSAModel = function(fixedSplineKnots=c(0.1,0.5, 4), randomSplineKnot
   return(model)
 }
 
-getLastBiopsyTime = function(pid, upperLimitTime = Inf){
+getLastBiopsyTime = function(pid, lastnumber=1, upperLimitTime = Inf){
   temp = prias_long[prias_long$P_ID %in% pid & prias_long$visitTimeYears<=upperLimitTime,][, c("visitTimeYears", "gleason")]
-  lastBiopsyTime = max(temp[complete.cases(temp),]$visitTimeYears)
+  lastBiopsyTime = tail(temp[complete.cases(temp),]$visitTimeYears, lastnumber)[1]
   return(lastBiopsyTime)
 }
 

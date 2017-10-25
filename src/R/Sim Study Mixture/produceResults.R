@@ -154,8 +154,8 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
   
   png(width=640, height=480, filename = paste("report/pers_schedule/biometrics_submission/images/sim_study/", "nbBoxPlot_",subpopName,".png", sep=""))
   p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
-    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), nb)) +
-    scale_y_continuous(breaks = seq(0,20, by = 2)) +
+    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), nb), outlier.shape = NA) +
+    scale_y_continuous(breaks = seq(1,13, by = 2), limits=c(1, 13)) + 
     ylab("Number of biopsies") + xlab("Schedule") + 
     theme(text = element_text(size=14), axis.text=element_text(size=13))+ coord_flip()
   print(p)
@@ -163,9 +163,11 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetBoxPlot_",subpopName,".png", sep=""))
   p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
-    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), offset)) +
+    geom_boxplot(aes(reorder(methodName, nb, FUN=mean), offset*12), outlier.shape = NA) +
+    coord_cartesian(ylim=c(0,45)) + 
     ylab("Biopsy offset (months)") + xlab("Schedule") + 
-    theme(text = element_text(size=14), axis.text=element_text(size=13))+ coord_flip()
+    theme(text = element_text(size=14), axis.text=element_text(size=13))
+  p = p + coord_flip(ylim=c(0,45))
   print(p)
   dev.off()
   

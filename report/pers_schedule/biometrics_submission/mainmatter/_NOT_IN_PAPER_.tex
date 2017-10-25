@@ -2,6 +2,8 @@ The burden of unnecessary biopsies is not only medical but also financial. \cite
 
 At the time of induction in PRIAS, patients must have a Gleason score of six or less, DRE score of cT2c or less and a PSA of 10 ng/mL or less. When the Gleason score becomes greater than six, it is also known as Gleason reclassification (referred to as GR hereafter).
 
+The time window $\Delta t$ can be automatically chosen as $\argmax_{\Delta t}\mbox{AUC}(t, \Delta t, s)$, the latter being a measure of discriminative capability of the model \citep{rizopoulosJMbayes,landmarking2017}. However such a time window may not be clinically relevant at all. 
+
 \subsubsection{Scheduling multiple biopsies}
 \label{subsubsec : pers_sched_algorithm}
 Scheduling biopsies using personalized schedules is an iterative process. Only one biopsy is scheduled at once, using all the information available up to that point in time. The information is manifested via the predictive distribution $g(T^*_j)$. It is important to note that new biopsy times are only proposed when the patient visits the hospital for a PSA measurement or for biopsy, since $g(T^*_j)$ is updated only at these time points. If a biopsy is conducted at time $t$, then scheduling the next biopsy at time $u \geq \text{max}(t,s)$ for patient $j$ is the goal. Although the predictive distribution $g(T^*_j)$ is updated with the new information $T^*_j > t$, there are a couple of restrictions on time $u$, namely:
