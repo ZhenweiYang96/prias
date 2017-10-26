@@ -65,9 +65,9 @@
 \renewcommand{\fnum@figure}{Web Figure \thefigure}
 \makeatother
 
-%\AtBeginDocument{%
-%  \renewcommand{\thetable}{Web Table \arabic{table}}
-%}
+\AtBeginDocument{%
+	\renewcommand{\thetable}{Web Table \arabic{table}}
+}
 
 %Single spacing for tables
 \makeatletter
@@ -75,7 +75,7 @@
   \def\baselinestretch{1}\@currsize}%
 \makeatother
 
-%\renewcommand{\thetable}{Web \arabic{table}}
+%\renewcommand{\thetable}{Web Table \arabic{table}}
 
 \DeclareMathOperator{\argmax}{arg\,max}
 
@@ -106,7 +106,7 @@
 %  Also consult a recent issue of the journal for examples of formatting.
 
 \title[Supplementary Materials  for ``Personalized Schedules'']
-{Web-based Supplementary Materials for ``Personalized Schedules for Surveillance of Cancer Patients''}
+{Web-based Supplementary Materials for ``Personalized Schedules for Surveillance of Low Risk Prostate Cancer Patients''}
 
 %  Here are examples of different configurations of author/affiliation
 %  displays.  According to the Biometrics style, in some instances,
@@ -161,12 +161,12 @@
 \author{Anirudh Tomer$^{1,*}$\email{atomer@erasmusmc.nl}, 
 Daan Nieboer$^{2}$, 
 Monique J. Roobol$^3$, \\
-\textbf{Ewout W. Steyerberg}$^{\bmath{2}}$, 
+\textbf{Ewout W. Steyerberg}$^{\bmath{2, 4}}$, 
 \textbf{and Dimitris Rizopoulos}$^{\bmath{1}}$ \\ \\
 $^{1}$Department of Biostatistics, Erasmus University Medical Center, the Netherlands \\
 $^{2}$Department of Public Health, Erasmus University Medical Center, the Netherlands \\
-$^{3}$Department of Urology, Erasmus University Medical Center, the Netherlands}
-
+$^{3}$Department of Urology, Erasmus University Medical Center, the Netherlands \\
+$^{4}$Department of Medical Statistics and Bioinformatics, Leiden University Medical Center, the Netherlands}
 
 %  Three or more authors, with at least two different institutions,
 %  more than one email displayed 

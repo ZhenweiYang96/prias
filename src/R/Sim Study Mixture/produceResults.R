@@ -153,20 +153,20 @@ boxplotAllPatients = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", sub
   stopCluster(ct)
   
   png(width=640, height=480, filename = paste("report/pers_schedule/biometrics_submission/images/sim_study/", "nbBoxPlot_",subpopName,".png", sep=""))
-  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
+  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden", "Cut95"),]) +
     geom_boxplot(aes(reorder(methodName, nb, FUN=mean), nb), outlier.shape = NA) +
     scale_y_continuous(breaks = seq(1,13, by = 2), limits=c(1, 13)) + 
     ylab("Number of biopsies") + xlab("Schedule") + 
-    theme(text = element_text(size=14), axis.text=element_text(size=13))+ coord_flip()
+    theme(text = element_text(size=12), axis.text=element_text(size=12))+ coord_flip()
   print(p)
   dev.off()
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetBoxPlot_",subpopName,".png", sep=""))
-  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden"),]) +
+  p = ggplot(data = biopsyResults[!biopsyResults$methodName %in% c("Youden", "Hybrid-Youden", "Cut95"),]) +
     geom_boxplot(aes(reorder(methodName, nb, FUN=mean), offset*12), outlier.shape = NA) +
     coord_cartesian(ylim=c(0,45)) + 
     ylab("Biopsy offset (months)") + xlab("Schedule") + 
-    theme(text = element_text(size=14), axis.text=element_text(size=13))
+    theme(text = element_text(size=12), axis.text=element_text(size=12))
   p = p + coord_flip(ylim=c(0,45))
   print(p)
   dev.off()
@@ -254,14 +254,17 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   #+ theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust = 1))
   
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbMeanBoxPlot_",subpopName,".png", sep=""))
-  ydata = c(sapply(resultsSummary, function(x){x[["nbMeanPerMethod"]]}))
   
+  ydata = c(sapply(resultsSummary, function(x){x[["nbMeanPerMethod"]]}))
   xdata = rep(methodNames,length(resultsSummary))
-  indicesIgnore = xdata=="Hybrid-Youden" | xdata=="Youden"
+  indicesIgnore = xdata %in% c("Hybrid-Youden", "Youden")
   xdata = xdata[!indicesIgnore]
   ydata = ydata[!indicesIgnore]
   
-  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean number of biopsies", xlab="Schedule") + ticksY(0, 10, 0.5) +
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", 
+            ylab="Mean number of biopsies", xlab="Schedule",
+            outlier.shape = NA) + 
+    scale_y_continuous(breaks=seq(0,10, 0.5)) +
     theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
@@ -269,7 +272,9 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetMeanBoxPlot_",subpopName,".png", sep=""))
   ydata = c(sapply(resultsSummary, function(x){x[["offsetMeanPerMethod"]]})) * 12
   xdata = rep(methodNames,length(resultsSummary))
-  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Mean biopsy offset (months)", xlab="Schedule") + ticksY(0, 100, 1) +
+  p = qplot(y=ydata,x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", outlier.shape=NA,
+            ylab="Mean biopsy offset (months)", xlab="Schedule") + 
+    scale_y_continuous(breaks=seq(0,100, 2)) +
     theme(text = element_text(size=12), axis.text=element_text(size=12))+ coord_flip()
   print(p)
   dev.off()
@@ -277,8 +282,9 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "nbVarBoxPlot_",subpopName,".png", sep=""))
   ydata = c(sapply(resultsSummary, function(x){x[["nbVarPerMethod"]]}))
   xdata = rep(methodNames,length(resultsSummary))
-  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Standard Deviation of number of biopsies", xlab="Schedule") + 
-    ticksY(0, 10, 0.5) +
+  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", outlier.shape=NA,
+            ylab="Standard Deviation of number of biopsies", xlab="Schedule") + 
+    scale_y_continuous(breaks=seq(0,10, 0.5)) +
     theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
@@ -286,8 +292,9 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   png(width=640, height=480, filename = paste("report/pers_schedule/images/sim_study/", "offsetVarBoxPlot_",subpopName,".png", sep=""))
   ydata = c(sapply(resultsSummary, function(x){x[["offsetVarPerMethod"]]})) * 12 * 12
   xdata = rep(methodNames,length(resultsSummary))
-  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", ylab="Standard Deviation of biopsy offset (months)", xlab="Schedule") + 
-    ticksY(0, 50, 2.5) +
+  p = qplot(y=sqrt(ydata),x=reorder(xdata, ydata, FUN=mean), geom = "boxplot", outlier.shape=NA,
+            ylab="Standard Deviation of biopsy offset (months)", xlab="Schedule") + 
+    scale_y_continuous(breaks=seq(0,50, 2.5), limits=c(2.5, 15)) +
     theme(text = element_text(size=12), axis.text=element_text(size=12)) + coord_flip()
   print(p)
   dev.off()
@@ -299,7 +306,9 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
             xlab="Mean number of biopsies", ylab="Mean biopsy offset (months)", 
             xlim=c(min(finalResultSummary[c(1:3, 5:6, 8),"nbMeanPerMethod"])-0.5,
                    max(finalResultSummary[c(1:3, 5:6, 8),"nbMeanPerMethod"])+0.25)) + 
-    theme(text = element_text(size=15), axis.text=element_text(size=15)) + geom_label(size=5)
+    theme(text = element_text(size=12), axis.text=element_text(size=12)) +
+    geom_point() + scale_y_continuous(breaks=seq(6,16, 2)) + 
+    geom_label(size=4, nudge_y = -0.5)
             
   print(p)
   dev.off()

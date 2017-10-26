@@ -24,15 +24,15 @@ where $\alpha_1$ and $\alpha_2$ are measures of strength of the association betw
 
 From the joint model fitted to the PRIAS dataset we found that only $\log_2 \mbox{PSA}$ velocity was strongly associated with hazard of GR. For any patient, a unit increase in $\log_2 \mbox{PSA}$ velocity led to an 11 fold increase in the hazard of GR. The parameter estimates for the fitted joint model are presented in detail in Web Appendix C of the supplementary material. 
 
-\subsection{Demonstration for Patient 1}
+\subsection{Personalized Schedules for the First Demonstration Patient}
 \label{subsec : demo_prias_pers_schedule}
-Using the demonstration dataset, we next present the functioning of personalized schedules based on expected time of GR and dynamic risk of GR. The evolution of PSA, time of last biopsy and proposed biopsy times for the first demonstration patient are shown in the top panel of Figure \ref{web_fig : prias_demo_pid_911}. We can see the combined effect of decreasing PSA levels and a negative repeat biopsy on personalized schedules, between year three and year 4.5 for this patient. In accordance with the many negative repeat biopsies and consistently decreasing PSA, the proposed time of biopsy based on dynamic risk of GR increases from 14 years to 15 years in this period. Whereas, the proposed time of biopsy based on expected time of GR increases from 16.6 years to 18.8 years. We can also see in the bottom panel of Figure \ref{web_fig : prias_demo_pid_911} that after each negative repeat biopsy, $\mbox{SD}[T^*_j] = \sqrt{\mbox{var}_g(T^*_j)}$ decreases sharply. Thus, if the expected time of GR based approach is used, then the offset $O^S_j$ will be smaller on average for biopsies scheduled after the second repeat biopsy than those scheduled after the first repeat biopsy.
+Using the demonstration dataset, we next present the functioning of personalized schedules based on expected time of GR and dynamic risk of GR. The evolution of PSA, time of last biopsy and proposed biopsy times for the first demonstration patient are shown in the top panel of Figure \ref{web_fig : prias_demo_pid_911}. We can see the combined effect of decreasing PSA levels and a negative repeat biopsy on personalized schedules, between year three and year 4.5 for this patient. In accordance with the two negative repeat biopsies and consistently decreasing PSA, the proposed time of biopsy based on dynamic risk of GR increases from 14 years to 15 years in this period. Whereas, the proposed time of biopsy based on expected time of GR increases from 16.6 years to 18.8 years. We can also see in the bottom panel of Figure \ref{web_fig : prias_demo_pid_911} that after each negative repeat biopsy, $\mbox{SD}[T^*_j] = \sqrt{\mbox{var}_g(T^*_j)}$ decreases sharply. Thus, if the expected time of GR based approach is used, then the offset $O^S_j$ will be smaller on average for biopsies scheduled after the second repeat biopsy than those scheduled after the first repeat biopsy.
 
 \begin{figure}
 \centerline{
 \includegraphics[width=\columnwidth]{images/prias_demo/case_911.png}
 }
-\caption{Top panel: Evolution of PSA, history of repeat biopsies and corresponding personalized schedules for demonstration patient 1. Bottom Panel: History of repeat biopsies and $\mbox{SD}_g(T^*_j) = \sqrt{\mbox{var}_g(T^*_j)}$ over time for demonstration patient 1.}
+\caption{Top panel: Evolution of PSA, history of repeat biopsies and corresponding personalized schedules for the first demonstration patient. Bottom Panel: History of repeat biopsies and $\mbox{SD}_g(T^*_j) = \sqrt{\mbox{var}_g(T^*_j)}$ over time for the first demonstration patient.}
 \label{web_fig : prias_demo_pid_911}
 \end{figure}
 
