@@ -2,11 +2,11 @@
 
 \section{Demonstration of Personalized Schedules}
 \label{sec : pers_schedule_PRIAS}
-To demonstrate how the personalized schedules work, we apply them to the patients enrolled in PRIAS. To this end, we divide the PRIAS dataset into a training dataset with 5264 patients and a demonstration dataset with three patients who never experienced GR. We fit a joint model to the training dataset and then use it to create personalized schedules for patients in demonstration dataset. We fit the joint model using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}, which uses the Bayesian methodology to estimate the model parameters.
+To demonstrate how the personalized schedules work, we apply them to the patients enrolled in PRIAS study. To this end, we divide the PRIAS dataset into a training dataset with 5264 patients and a demonstration dataset with three patients who never experienced GR. We fit a joint model to the training dataset and then use it to create personalized schedules for patients in demonstration dataset. We fit the joint model using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}, which uses the Bayesian methodology to estimate the model parameters.
 
 \subsection{Fitting the Joint Model to PRIAS Dataset}
 \label{subsec : jm_fit_prias}
-The training dataset contains age at the time of induction in PRIAS, PSA levels and the time interval in which GR is detected, for 5264 prostate cancer patients. PSA was measured at every three months for the first two years and every six months thereafter. To detect GR, biopsies were conducted as per the PRIAS schedule (Section \ref{sec : introduction}). For the longitudinal analysis of PSA we use $\log_2 \mbox{PSA}$ measurements instead of the raw data \citep{nieboer2015nonlinear}. The longitudinal sub-model of the joint model we fit is given by:
+The training dataset contains age at the time of inclusion in PRIAS, PSA levels and the time interval in which GR is detected, for 5264 prostate cancer patients. PSA was measured at every three months for the first two years and every six months thereafter. To detect GR, biopsies were conducted as per the PRIAS schedule (Section \ref{sec : introduction}). Although in PRIAS, patients with a higher PSA-DT may be biopsied more frequently, the joint model still gives unbiased estimates for all of the parameters. This is because the parameters of the joint model are estimated using a full likelihood approach \citep{tsiatis2004joint} and consequently the model allows interval censoring  to depend upon the observed PSA values. For the longitudinal analysis of PSA we use $\log_2 \mbox{PSA}$ measurements instead of the raw data \citep{nieboer2015nonlinear}. The longitudinal sub-model of the joint model we fit is given by:
 \begin{equation}
 \label{eq : long_model_prias}
 \begin{aligned}
@@ -20,9 +20,9 @@ where $B_k(t, \mathcal{K})$ denotes the $k$-th basis function of a B-spline with
 \label{eq : hazard_prias}
 h_i(t) = h_0(t) \exp\big\{\gamma_1 (\mbox{Age}-70)  + \gamma_2 (\mbox{Age}-70)^2 + \alpha_1 m_i(t) + \alpha_2 m'_i(t)\big\}.
 \end{equation}
-where $\alpha_1$ and $\alpha_2$ are measures of strength of the association between hazard of GR and $\log_2 \mbox{PSA}$ value $m_i(t)$ and $\log_2 \mbox{PSA}$ velocity $m'_i(t)$, respectively. Since the PRIAS schedule depends only on the observed PSA values (via PSA-DT), the interval censoring observed in PRIAS is independent and non informative of the underlying health of the patient.
+where $\alpha_1$ and $\alpha_2$ are measures of strength of the association between hazard of GR and $\log_2 \mbox{PSA}$ value $m_i(t)$ and $\log_2 \mbox{PSA}$ velocity $m'_i(t)$, respectively.
 
-From the joint model fitted to the PRIAS dataset we found that only $\log_2 \mbox{PSA}$ velocity was strongly associated with hazard of GR. For any patient, a unit increase in $\log_2 \mbox{PSA}$ velocity led to an 11 fold increase in the hazard of GR. The parameter estimates for the fitted joint model are presented in detail in Web Appendix C of the supplementary material. 
+From the joint model fitted to the PRIAS dataset we found that only $\log_2 \mbox{PSA}$ velocity and the age at the time of inclusion in AS were strongly associated with the hazard of GR. For any patient, an increase in $\log_2 \mbox{PSA}$ velocity from -0.07 to 0.12 (first and third quartiles of the fitted velocities, respectively) led to a 1.55 fold increase in the hazard of GR. A 10 year increase in the age led to a 1.44 fold increase in the hazard of GR. The parameter estimates for the fitted joint model are presented in detail in Web Appendix C of the supplementary material. 
 
 \subsection{Personalized Schedules for the First Demonstration Patient}
 \label{subsec : demo_prias_pers_schedule}
@@ -30,7 +30,7 @@ Using the demonstration dataset, we next present the functioning of personalized
 
 \begin{figure}
 \centerline{
-\includegraphics[width=\columnwidth]{images/prias_demo/case_911.png}
+\includegraphics[width=\columnwidth]{images/prias_demo/case_911.eps}
 }
 \caption{Top panel: Evolution of PSA, history of repeat biopsies and corresponding personalized schedules for the first demonstration patient. Bottom Panel: History of repeat biopsies and $\mbox{SD}_g(T^*_j) = \sqrt{\mbox{var}_g(T^*_j)}$ over time for the first demonstration patient.}
 \label{web_fig : prias_demo_pid_911}

@@ -57,7 +57,7 @@ mvglm_psa_spline_pt1pt54_pt1 = mvglmer(list(
 
 save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1.Rdata")
 
-mvJoint_psa_spline_pt51pt22pt5_pt5_tdval = mvJointModelBayes(mvglm_psa_spline_pt1pt54_pt1, survModel.training, 
+mvJoint_psa_spline_pt1pt54_pt1_tdval = mvJointModelBayes(mvglm_psa_spline_pt1pt54_pt1, survModel.training, 
                                                              timeVar = "visitTimeYears")
 save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1.Rdata")
 
@@ -73,6 +73,14 @@ lme_psa_spline_pt1pt54_pt1 = lme(fixed=log2psa ~  I(Age - 70) +  I((Age - 70)^2)
                                  data=training_psa_data_set,
                                  control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"), 
                                  method = "REML")
+
+lme_psa_spline_pt1pt54_pt1_randompartcomplex = lme(fixed=log2psa ~  I(Age - 70) +  I((Age - 70)^2) + 
+                                   ns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)), 
+                                 random = ~ns(visitTimeYears, knots=c(0.1, 0.5), Boundary.knots=c(0, 7))|P_ID, 
+                                 data=training_psa_data_set,
+                                 control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"), 
+                                 method = "REML")
+
 
 joint_psa_spline_pt1pt54_pt1_tdboth = jointModelBayes(lme_psa_spline_pt1pt54_pt1, survModel.training_rightCens, 
                                                       timeVar = "visitTimeYears", param = "td-both",
@@ -92,6 +100,9 @@ mvJoint_psa_spline_pt1pt54_pt1_tdboth_rc = mvJointModelBayes(mvglm_psa_spline_pt
                                                                              "log2psa" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)),
                                                                                               random=~0 + dns(visitTimeYears, knots=c(0.1), Boundary.knots=c(0, 7)),
                                                                                               indFixed = 4:7, indRandom=2:3, name = "slope")))
+
+mvJoint_psa_spline_pt1pt54_pt1_tdval_rc = mvJointModelBayes(mvglm_psa_spline_pt1pt54_pt1, survModel.training_rightCens, 
+                                                            timeVar = "visitTimeYears")
 
 save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1_rc.Rdata")
 

@@ -1,0 +1,16 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Joint Model for Time to Event and Longitudinal Outcomes}{}% 2
+\BOOKMARK [1][-]{section.3}{Personalized Schedules for Repeat Biopsies}{}% 3
+\BOOKMARK [2][-]{subsection.3.1}{Posterior Predictive Distribution for Time to GR}{section.3}% 4
+\BOOKMARK [2][-]{subsection.3.2}{Loss Functions}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.3}{Estimation}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.4}{Algorithm}{section.3}% 7
+\BOOKMARK [1][-]{section.4}{Evaluation of Schedules}{}% 8
+\BOOKMARK [2][-]{subsection.4.1}{Choosing a Schedule}{section.4}% 9
+\BOOKMARK [1][-]{section.5}{Demonstration of Personalized Schedules}{}% 10
+\BOOKMARK [2][-]{subsection.5.1}{Fitting the Joint Model to PRIAS Dataset}{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.2}{Personalized Schedules for the First Demonstration Patient}{section.5}% 12
+\BOOKMARK [1][-]{section.6}{Simulation Study}{}% 13
+\BOOKMARK [2][-]{subsection.6.1}{Simulation Setup}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.2}{Results}{section.6}% 15
+\BOOKMARK [1][-]{section.7}{Discussion}{}% 16

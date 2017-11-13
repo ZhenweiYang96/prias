@@ -29,13 +29,14 @@ sourceDir <- function(path, trace = TRUE, ...) {
   }
 }
 
-plotRandomProfile = function(count=1, fitted=F){
-  pid_sample = sample(x = unique(training_psa_data_set$P_ID), size = count)
+plotProfile = function(fitted=F, patientRowNum=1){
+  pid_sample = training.prias.id$P_ID[sample(1:length(training.prias.id), size = 1)]
   print(pid_sample)
   plot<-ggplot(data=training_psa_data_set[training_psa_data_set$P_ID %in% pid_sample,], aes(x=visitTimeYears, y=log(psa, base = 2))) + 
     geom_line(aes(group=P_ID))
   if(fitted==T){
-    plot + geom_line(aes(y=fitted, x=visitTimeYears, color=P_ID, group=P_ID)) 
+    plot + geom_line(aes(y=fitted, x=visitTimeYears, color="new")) + 
+      geom_line(aes(y=fitted_2, x=visitTimeYears, color="old")) 
   }else{
     plot
   }
@@ -62,6 +63,27 @@ effectPlotData <- function (object, newdata, orig_data) {
   newdata$low <- pred - 1.96 * ses
   newdata$upp <- pred + 1.96 * ses
   newdata
+}
+
+plotLog2PSAJMFit = function(jmfit, patientRowNum){
+  patientId = training.prias.id$P_ID[patientRowNum]
+  
+  ds = training_psa_data_set[training_psa_data_set$P_ID == patientId,]
+  
+  X = model.matrix(~ 1 + I(Age - 70) + I((Age - 70)^2) + 
+                     ns(visitTimeYears, knots = c(0.1, 0.5, 4), 
+                        Boundary.knots = c(0, 7)), data = ds)
+  Z = model.matrix(~ 1 + ns(visitTimeYears, knots = c(0.1, 0.5), Boundary.knots = c(0, 7)), 
+                   data = ds)
+  
+  b <- jmfit$statistics$postMeans$b[,patientRowNum]
+  
+  ds$xBetaZb = X %*% jmfit$statistics$postMeans$betas + Z%*%b
+  
+  p=ggplot(data=ds) + geom_point(aes(x=visitTimeYears, y=log2psa)) + 
+    geom_line(aes(x=visitTimeYears, y=xBetaZb))
+  
+  print(p)
 }
 
 plotPSAFittedCurve = function(models, transformPSA=F, individually=T){

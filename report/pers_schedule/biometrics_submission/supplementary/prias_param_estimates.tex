@@ -10,11 +10,11 @@ The posterior parameter estimates for the joint model we fitted to the PRIAS dat
        -0.140 & 0.431 & 1.326
      \end{bmatrix}
 \end{equation*} 
-The effect of age only affects the baseline $\log_2 \mbox{PSA}$ score. However it is so small that it can be ignored for all practical purposes. Since the longitudinal evolution of $\log_2 \mbox{PSA}$ is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation we present the fitted evolution of PSA (Web Figure \ref{fig : fitted_trend_psa}) over a period of 10 years for a hypothetical patient.
+The effect of age only affects the baseline $\log_2 \mbox{PSA}$ score. However it is so small that it can be ignored for all practical purposes. Since the longitudinal evolution of $\log_2 \mbox{PSA}$ is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Web Figure \ref{fig : fitted_trend_psa} we present the fitted evolution of PSA over a period of 10 years for a hypothetical patient who was included in AS at the age of 70 years.
 
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/fitted_trend_psa.png}}
-\caption{Fitted evolution of $\log_2 \mbox{PSA}$ over a period of 10 years with 95\% credible interval, for a patient who was inducted in AS at the Age of 70 years.}
+\centerline{\includegraphics[width=\columnwidth]{images/fitted_trend_psa.eps}}
+\caption{Fitted evolution of $\log_2 \mbox{PSA}$ over a period of 10 years with 95\% credible interval, for a hypothetical patient who was included in AS at the age of 70 years.}
 \label{fig : fitted_trend_psa}
 \end{figure}
 
@@ -37,7 +37,9 @@ $\sigma$                               & 0.324 & 0.001 & 0.321 & 0.326          
 \end{center}
 \end{table}
 
-For the relative risk sub-model, the parameter estimates in \ref{tab : PSA_survival} show that only $\log_2 \mbox{PSA}$ velocity is strongly associated with hazard of GR. For any patient, a unit increase in $\log_2 \mbox{PSA}$ velocity corresponds to a 11 time increase in hazard of GR. The effect of $\log_2 \mbox{PSA}$ value and effect of age on hazard of GR are small enough to be safely ignored for all practical purposes.
+\clearpage
+
+For the relative risk sub-model, the parameter estimates in \ref{tab : PSA_survival} show that only $\log_2 \mbox{PSA}$ velocity and the age at the time of inclusion in AS are strongly associated with the hazard of GR. For any patient, an increase in $\log_2 \mbox{PSA}$ velocity from -0.07 to 0.12 (first and third quartiles of the fitted velocities, respectively) corresponds to a 1.55 fold increase in the hazard of GR. A 10 year increase in the age at the time of inclusion in AS corresponds to a 1.44 fold increase in the hazard of GR. The effect of $\log_2 \mbox{PSA}$ value is small enough to be safely ignored for all practical purposes.
 
 \begin{table}[!htb]
 \begin{center}

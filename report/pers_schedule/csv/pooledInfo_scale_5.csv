@@ -1,9 +1,0 @@
-"","totalPatientsPerMethod","nbMeanPerMethod","offsetMeanPerMethod","nbSDPerMethod","offsetSDPerMethod"
-"Annual",33907,5.18,5.99,2.13,3.48
-"Expec. Time GR",33907,1.78,13.53,0.98,9.82
-"F1-Score",33907,4.63,6.66,1.82,4.34
-"Median Time GR",33907,1.9,12.31,1.16,9.43
-"Mixed-F1",33907,3.68,10.3,1.38,7.17
-"Mixed-Youden",33907,3.7,10.42,1.36,7.77
-"PRIAS",33907,4.82,8.57,1.99,8.65
-"Youden's J",33907,4.52,7.67,1.67,9.42

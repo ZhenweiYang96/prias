@@ -1,4 +1,4 @@
-prias.id$progression_time_start[prias.id$progression_time_start == 0] = 10e-8
+prias.id$progression_time_start[prias.id$progression_time_start == 0] = 10e-3
 
 training.prias.id = prias.id[!(prias.id$P_ID %in% c(3174, 2340, 911)),]
 

@@ -1,7 +1,7 @@
 % !TEX root =  ../pers_schedules.tex 
 \section{Simulation Study}
 \label{sec: simulation_study}
-The application of personalized schedules for patients from PRIAS demonstrated that these schedules adapt according to the historical data of each patient. However we could not perform a full scale comparison between personalized and PRIAS schedule, because the true time of GR was not known for the PRIAS patients. To this end, we conducted a simulation study comparing personalized schedules with PRIAS and annual schedule, whose details are presented next.
+The application of personalized schedules for patients from PRIAS demonstrated that these schedules adapt according to the historical data of each patient. However we could not perform a full scale comparison between personalized and PRIAS schedules, because the true time of GR was not known for the PRIAS patients. To this end, we conducted a simulation study comparing personalized schedules with PRIAS and annual schedule, whose details are presented next.
 
 \subsection{Simulation Setup}
 \label{subsec : simulation_setup}
@@ -22,7 +22,7 @@ where $n_k$ denotes the number of test patients, $\widehat{E(O^S_k)} = {\sum_{l=
 The pooled estimates of the aforementioned criteria are summarized in Table \ref{table : sim_study_pooled_estimates}. In addition, mean offset is plotted against mean number of biopsies conducted to detect GR in Figure \ref{fig : meanNbVsOffset}. From the figure it is evident that across the schedules there is an inverse relationship between $E(N^S_j)$ and $E(O^S_j)$. For example, the annual schedule conducts on average 5.2 biopsies to detect GR, which is the highest among all schedules, however it has the least average offset of 6 months as well. On the other hand the schedule based on expected time of GR conducts only 1.9 biopsies on average to detect GR, the least among all schedules, but it also has the highest average offset of 15 months. The schedule based on median time of GR performs similar to that based on expected time of GR. Since the annual schedule attempts to contain the offset within an year it has the least $\mbox{SD}(O^S_j) = \sqrt{\mbox{var}(O^S_j)}$. However to achieve so, it conducts a wide range of number of biopsies from patient to patient, i.e., highest $\mbox{SD}(N^S_j) = \sqrt{\mbox{var}(N^S_j)}$. Schedules based on expected and median time of GR perform the opposite of annual schedule in terms of $\mbox{SD}(N^S_j)$ and $\mbox{SD}(O^S_j)$.
 
 \begin{figure}
-\centerline{\includegraphics[width=\columnwidth]{images/sim_study/meanNbVsOffset_all.png}}
+\centerline{\includegraphics[width=\columnwidth]{images/sim_study/meanNbVsOffset_all.eps}}
 \caption{Estimated mean number of biopsies and mean offset (months) for the 6 schedules, using all simulated patients.}
 \label{fig : meanNbVsOffset}
 \end{figure}
@@ -33,7 +33,7 @@ The pooled estimates of the aforementioned criteria are summarized in Table \ref
 \label{table : sim_study_pooled_estimates}
 \begin{tabular}{lrrrr}
 \Hline
-\multicolumn{5}{c}{a) All subgroups}\\
+\multicolumn{5}{c}{a) All hypothetical subgroups}\\
 \hline
 Schedule          & $E(N^S_j)$ & $E(O^S_j)$ & ${\mbox{SD}(N^S_j)}$ & ${\mbox{SD}(O^S_j)}$ \\
 \hline
@@ -44,7 +44,7 @@ Hybrid       & 3.75            & 9.70                & 1.71          & 7.25     
 Med. GR time & 2.06            & 13.88               & 1.41          & 11.80              \\
 Exp. GR time & 1.92            & 15.08               & 1.19          & 12.11             \\
 \hline
-\multicolumn{5}{c}{b) Subgroup $G_1$}\\
+\multicolumn{5}{c}{b) Hypothetical subgroup $G_1$}\\
 \hline
 Schedule        & $E(N^S_j)$ & $E(O^S_j)$ & ${\mbox{SD}(N^S_j)}$ & ${\mbox{SD}(O^S_j)}$ \\
 \hline
@@ -55,7 +55,7 @@ Hybrid       & 3.25            & 10.25               & 2.16          & 8.07     
 Med. GR time & 1.84            & 20.66               & 1.76          & 14.62             \\
 Exp. GR time & 1.72            & 21.65               & 1.47          & 14.75             \\
 \hline      
-\multicolumn{5}{c}{c) Subgroup $G_2$}\\
+\multicolumn{5}{c}{c) Hypothetical subgroup $G_2$}\\
 \hline
 Schedule        & $E(N^S_j)$ & $E(O^S_j)$ & ${\mbox{SD}(N^S_j)}$ & ${\mbox{SD}(O^S_j)}$ \\
 \hline
@@ -66,7 +66,7 @@ Hybrid       & 3.68            & 10.32                & 1.37          & 7.45    
 Med. GR time & 1.89             & 12.33               & 1.16          & 9.44              \\
 Exp. GR time & 1.77            & 13.54               & 0.98          & 9.83              \\
 \hline      
-\multicolumn{5}{c}{d) Subgroup $G_3$}\\
+\multicolumn{5}{c}{d) Hypothetical subgroup $G_3$}\\
 \hline
 Schedule        & $E(N^S_j)$ & $E(O^S_j)$ & ${\mbox{SD}(N^S_j)}$ & ${\mbox{SD}(O^S_j)}$ \\
 \hline
@@ -85,13 +85,13 @@ The PRIAS schedule conducts only 0.3 biopsies less than the annual schedule, but
 The performance of each schedule differs for the three subgroups $G_1, G_2$ and $G_3$. The annual schedule remains the most consistent across subgroups in terms of the offset, but it conducts 2 extra biopsies for subgroup $G_3$ (slowly progressing PCa) than $G_1$ (faster progressing PCa). The performance of schedule based on expected time of GR is the most consistent in terms of number of biopsies but it detects GR an year later on average in subgroup $G_1$ than $G_3$. For the dynamic risk of GR based schedule and the hybrid schedule the dynamics are similar to that of the annual schedule. Unlike the latter two schedules, the PRIAS schedule not only conducts more biopsies in $G_3$ than $G_1$ but also detects GR later in $G_3$ than $G_1$.
 
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbBoxPlot_all.png}}
+\centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbBoxPlot_all.eps}}
 \caption{Boxplot showing variation in number of biopsies conducted by different methods, using all simulated patients.}
 \label{fig : nbBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetBoxPlot_all.png}}
+\centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetBoxPlot_all.eps}}
 \caption{Boxplot showing variation in biopsy offset (months) for different methods, using all simulated patients.}
 \label{fig : offsetBoxPlot_all}
 \end{figure}

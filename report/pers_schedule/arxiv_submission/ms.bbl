@@ -1,0 +1,1360 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.8 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\sortlist[entry]{nyt/global/}
+  \entry{akhavan2017markov}{article}{}
+    \name{author}{3}{}{%
+      {{hash=ATR}{%
+         family={Akhavan-Tabatabaei},
+         familyi={A\bibinitperiod-T\bibinitperiod},
+         given={Raha},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=SDM}{%
+         family={S{\'a}nchez},
+         familyi={S\bibinitperiod},
+         given={Diana\bibnamedelima Marcela},
+         giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=YTG}{%
+         family={Yeung},
+         familyi={Y\bibinitperiod},
+         given={Thomas\bibnamedelima G},
+         giveni={T\bibinitperiod\bibinitdelim G\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {SAGE Publications}%
+    }
+    \strng{namehash}{ATRSDMYTG1}
+    \strng{fullhash}{ATRSDMYTG1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2017}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{number}{2}
+    \field{pages}{196\bibrangedash 211}
+    \field{title}{A {Markov} decision process model for cervical cancer
+  screening policies in Colombia}
+    \field{volume}{37}
+    \field{journaltitle}{Medical Decision Making}
+    \field{year}{2017}
+  \endentry
+
+  \entry{ayer2012or}{article}{}
+    \name{author}{3}{}{%
+      {{hash=AT}{%
+         family={Ayer},
+         familyi={A\bibinitperiod},
+         given={Turgay},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=AO}{%
+         family={Alagoz},
+         familyi={A\bibinitperiod},
+         given={Oguzhan},
+         giveni={O\bibinitperiod},
+      }}%
+      {{hash=SNK}{%
+         family={Stout},
+         familyi={S\bibinitperiod},
+         given={Natasha\bibnamedelima K},
+         giveni={N\bibinitperiod\bibinitdelim K\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {INFORMS}%
+    }
+    \strng{namehash}{ATAOSNK1}
+    \strng{fullhash}{ATAOSNK1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2012}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{number}{5}
+    \field{pages}{1019\bibrangedash 1034}
+    \field{title}{A {POMDP} approach to personalize mammography screening
+  decisions}
+    \field{volume}{60}
+    \field{journaltitle}{Operations Research}
+    \field{year}{2012}
+  \endentry
+
+  \entry{bebu2017OptimalScreening}{article}{}
+    \name{author}{2}{}{%
+      {{hash=BI}{%
+         family={Bebu},
+         familyi={B\bibinitperiod},
+         given={Ionut},
+         giveni={I\bibinitperiod},
+      }}%
+      {{hash=LJM}{%
+         family={Lachin},
+         familyi={L\bibinitperiod},
+         given={John\bibnamedelima M.},
+         giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Oxford University Press}%
+    }
+    \strng{namehash}{BILJM1}
+    \strng{fullhash}{BILJM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2017}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \verb{doi}
+    \verb 10.1093/biostatistics/kxx009
+    \endverb
+    \field{note}{\mbox{doi}:\url{10.1093/biostatistics/kxx009}}
+    \field{title}{Optimal screening schedules for disease progression with
+  application to diabetic retinopathy}
+    \verb{url}
+    \verb + https://doi.org/10.1093/biostatistics/kxx009
+    \endverb
+    \field{journaltitle}{Biostatistics}
+    \field{year}{2017}
+  \endentry
+
+  \entry{bergerDecisionTheory}{book}{}
+    \name{author}{1}{}{%
+      {{hash=BJO}{%
+         family={Berger},
+         familyi={B\bibinitperiod},
+         given={James\bibnamedelima O},
+         giveni={J\bibinitperiod\bibinitdelim O\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer Science \& Business Media}%
+    }
+    \strng{namehash}{BJO1}
+    \strng{fullhash}{BJO1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1985}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{isbn}{9781475742862}
+    \field{title}{Statistical Decision Theory and Bayesian Analysis}
+    \field{year}{1985}
+  \endentry
+
+  \entry{bokhorst2015compliance}{article}{}
+    \true{moreauthor}
+    \name{author}{9}{}{%
+      {{hash=BLP}{%
+         family={Bokhorst},
+         familyi={B\bibinitperiod},
+         given={Leonard\bibnamedelima P},
+         giveni={L\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=AAR}{%
+         family={Alberts},
+         familyi={A\bibinitperiod},
+         given={Arnout\bibnamedelima R},
+         giveni={A\bibinitperiod\bibinitdelim R\bibinitperiod},
+      }}%
+      {{hash=RA}{%
+         family={Rannikko},
+         familyi={R\bibinitperiod},
+         given={Antti},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=VR}{%
+         family={Valdagni},
+         familyi={V\bibinitperiod},
+         given={Riccardo},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=PT}{%
+         family={Pickles},
+         familyi={P\bibinitperiod},
+         given={Tom},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=KY}{%
+         family={Kakehi},
+         familyi={K\bibinitperiod},
+         given={Yoshiyuki},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=BCH}{%
+         family={Bangma},
+         familyi={B\bibinitperiod},
+         given={Chris\bibnamedelima H},
+         giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod},
+      }}%
+      {{hash=RMJ}{%
+         family={Roobol},
+         familyi={R\bibinitperiod},
+         given={Monique\bibnamedelima J},
+         giveni={M\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=sgP}{%
+         prefix={study\bibnamedelima group},
+         prefixi={s\bibinitperiod\bibinitdelim g\bibinitperiod},
+         family={PRIAS},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{BLP+1}
+    \strng{fullhash}{BLPAARRAVRPTKYBCHRMJPsg+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2015}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{number}{5}
+    \field{pages}{814\bibrangedash 821}
+    \field{title}{Compliance rates with the {Prostate Cancer Research
+  International Active Surveillance (PRIAS)} protocol and disease
+  reclassification in noncompliers}
+    \field{volume}{68}
+    \field{journaltitle}{European Urology}
+    \field{year}{2015}
+  \endentry
+
+  \entry{bokhorst2016decade}{article}{}
+    \true{moreauthor}
+    \name{author}{8}{}{%
+      {{hash=BLP}{%
+         family={Bokhorst},
+         familyi={B\bibinitperiod},
+         given={Leonard\bibnamedelima P},
+         giveni={L\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=VR}{%
+         family={Valdagni},
+         familyi={V\bibinitperiod},
+         given={Riccardo},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=RA}{%
+         family={Rannikko},
+         familyi={R\bibinitperiod},
+         given={Antti},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=KY}{%
+         family={Kakehi},
+         familyi={K\bibinitperiod},
+         given={Yoshiyuki},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=PT}{%
+         family={Pickles},
+         familyi={P\bibinitperiod},
+         given={Tom},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=BCH}{%
+         family={Bangma},
+         familyi={B\bibinitperiod},
+         given={Chris\bibnamedelima H},
+         giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod},
+      }}%
+      {{hash=RMJ}{%
+         family={Roobol},
+         familyi={R\bibinitperiod},
+         given={Monique\bibnamedelima J},
+         giveni={M\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=sgP}{%
+         prefix={study\bibnamedelima group},
+         prefixi={s\bibinitperiod\bibinitdelim g\bibinitperiod},
+         family={PRIAS},
+         familyi={P\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{BLP+1}
+    \strng{fullhash}{BLPVRRAKYPTBCHRMJPsg+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2016}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{number}{6}
+    \field{pages}{954\bibrangedash 960}
+    \field{title}{A decade of active surveillance in the {PRIAS} study: an
+  update and evaluation of the criteria used to recommend a switch to active
+  treatment}
+    \field{volume}{70}
+    \field{journaltitle}{European Urology}
+    \field{year}{2016}
+  \endentry
+
+  \entry{brown2009assessing}{article}{}
+    \name{author}{1}{}{%
+      {{hash=BER}{%
+         family={Brown},
+         familyi={B\bibinitperiod},
+         given={Elizabeth\bibnamedelima R.},
+         giveni={E\bibinitperiod\bibinitdelim R\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Institute of Mathematical Statistics}%
+    }
+    \strng{namehash}{BER1}
+    \strng{fullhash}{BER1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2009}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{number}{3}
+    \field{pages}{1163\bibrangedash 1182}
+    \field{title}{Assessing the association between trends in a biomarker and
+  risk of event with an application in pediatric {HIV/AIDS}}
+    \field{volume}{3}
+    \field{journaltitle}{The Annals of Applied Statistics}
+    \field{year}{2009}
+  \endentry
+
+  \entry{Gleason_interobs_var}{article}{}
+    \name{author}{4}{}{%
+      {{hash=CGD}{%
+         family={Carlson},
+         familyi={C\bibinitperiod},
+         given={Grant\bibnamedelima D.},
+         giveni={G\bibinitperiod\bibinitdelim D\bibinitperiod},
+      }}%
+      {{hash=CCB}{%
+         family={Calvanese},
+         familyi={C\bibinitperiod},
+         given={Christina\bibnamedelima B.},
+         giveni={C\bibinitperiod\bibinitdelim B\bibinitperiod},
+      }}%
+      {{hash=KH}{%
+         family={Kahane},
+         familyi={K\bibinitperiod},
+         given={Hillel},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=EJI}{%
+         family={Epstein},
+         familyi={E\bibinitperiod},
+         given={Jonathan\bibnamedelima I.},
+         giveni={J\bibinitperiod\bibinitdelim I\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{CGD+1}
+    \strng{fullhash}{CGDCCBKHEJI1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1998}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{number}{4}
+    \field{pages}{525\bibrangedash 529}
+    \field{title}{Accuracy of biopsy {Gleason} scores from a large uropathology
+  laboratory: use of a diagnostic protocol to minimize observer variability}
+    \field{volume}{51}
+    \field{journaltitle}{Urology}
+    \field{year}{1998}
+  \endentry
+
+  \entry{cook1994equivalence}{article}{}
+    \name{author}{2}{}{%
+      {{hash=CRD}{%
+         family={Cook},
+         familyi={C\bibinitperiod},
+         given={R.\bibnamedelima Dennis},
+         giveni={R\bibinitperiod\bibinitdelim D\bibinitperiod},
+      }}%
+      {{hash=WWK}{%
+         family={Wong},
+         familyi={W\bibinitperiod},
+         given={Weng\bibnamedelima K.},
+         giveni={W\bibinitperiod\bibinitdelim K\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Taylor \& Francis Group}%
+    }
+    \strng{namehash}{CRDWWK1}
+    \strng{fullhash}{CRDWWK1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1994}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{number}{426}
+    \field{pages}{687\bibrangedash 692}
+    \field{title}{On the equivalence of constrained and compound optimal
+  designs}
+    \field{volume}{89}
+    \field{journaltitle}{Journal of the American Statistical Association}
+    \field{year}{1994}
+  \endentry
+
+  \entry{eilers1996flexible}{article}{}
+    \name{author}{2}{}{%
+      {{hash=EPH}{%
+         family={Eilers},
+         familyi={E\bibinitperiod},
+         given={Paul\bibnamedelima HC},
+         giveni={P\bibinitperiod\bibinitdelim H\bibinitperiod},
+      }}%
+      {{hash=MBD}{%
+         family={Marx},
+         familyi={M\bibinitperiod},
+         given={Brian\bibnamedelima D},
+         giveni={B\bibinitperiod\bibinitdelim D\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Institute of Mathematical Statistics}%
+    }
+    \strng{namehash}{EPHMBD1}
+    \strng{fullhash}{EPHMBD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1996}
+    \field{sortinit}{E}
+    \field{sortinithash}{E}
+    \field{number}{2}
+    \field{pages}{89\bibrangedash 121}
+    \field{title}{Flexible smoothing with {B-splines} and penalties}
+    \field{volume}{11}
+    \field{journaltitle}{Statistical Science}
+    \field{year}{1996}
+  \endentry
+
+  \entry{erenay2014optimizing}{article}{}
+    \name{author}{3}{}{%
+      {{hash=EFS}{%
+         family={Erenay},
+         familyi={E\bibinitperiod},
+         given={Fatih\bibnamedelima Safa},
+         giveni={F\bibinitperiod\bibinitdelim S\bibinitperiod},
+      }}%
+      {{hash=AO}{%
+         family={Alagoz},
+         familyi={A\bibinitperiod},
+         given={Oguzhan},
+         giveni={O\bibinitperiod},
+      }}%
+      {{hash=SA}{%
+         family={Said},
+         familyi={S\bibinitperiod},
+         given={Adnan},
+         giveni={A\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {INFORMS}%
+    }
+    \strng{namehash}{EFSAOSA1}
+    \strng{fullhash}{EFSAOSA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2014}
+    \field{sortinit}{E}
+    \field{sortinithash}{E}
+    \field{number}{3}
+    \field{pages}{381\bibrangedash 400}
+    \field{title}{Optimizing colonoscopy screening for colorectal cancer
+  prevention and surveillance}
+    \field{volume}{16}
+    \field{journaltitle}{Manufacturing \& Service Operations Management}
+    \field{year}{2014}
+  \endentry
+
+  \entry{esserman2014addressing}{article}{}
+    \true{moreauthor}
+    \name{author}{10}{}{%
+      {{hash=ELJ}{%
+         family={Esserman},
+         familyi={E\bibinitperiod},
+         given={Laura\bibnamedelima J},
+         giveni={L\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=TIM}{%
+         family={Thompson},
+         familyi={T\bibinitperiod},
+         given={Ian\bibnamedelima M},
+         giveni={I\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=RB}{%
+         family={Reid},
+         familyi={R\bibinitperiod},
+         given={Brian},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=NP}{%
+         family={Nelson},
+         familyi={N\bibinitperiod},
+         given={Peter},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=RDF}{%
+         family={Ransohoff},
+         familyi={R\bibinitperiod},
+         given={David\bibnamedelima F},
+         giveni={D\bibinitperiod\bibinitdelim F\bibinitperiod},
+      }}%
+      {{hash=WHG}{%
+         family={Welch},
+         familyi={W\bibinitperiod},
+         given={H\bibnamedelima Gilbert},
+         giveni={H\bibinitperiod\bibinitdelim G\bibinitperiod},
+      }}%
+      {{hash=HS}{%
+         family={Hwang},
+         familyi={H\bibinitperiod},
+         given={Shelley},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=BDA}{%
+         family={Berry},
+         familyi={B\bibinitperiod},
+         given={Donald\bibnamedelima A},
+         giveni={D\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=KKW}{%
+         family={Kinzler},
+         familyi={K\bibinitperiod},
+         given={Kenneth\bibnamedelima W},
+         giveni={K\bibinitperiod\bibinitdelim W\bibinitperiod},
+      }}%
+      {{hash=BWC}{%
+         family={Black},
+         familyi={B\bibinitperiod},
+         given={William\bibnamedelima C},
+         giveni={W\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{ELJ+1}
+    \strng{fullhash}{ELJTIMRBNPRDFWHGHSBDAKKWBWC+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2014}
+    \field{sortinit}{E}
+    \field{sortinithash}{E}
+    \field{number}{6}
+    \field{pages}{e234\bibrangedash e242}
+    \field{title}{Addressing overdiagnosis and overtreatment in cancer: a
+  prescription for change}
+    \field{volume}{15}
+    \field{journaltitle}{The lancet oncology}
+    \field{year}{2014}
+  \endentry
+
+  \entry{lauter1976optimal}{article}{}
+    \name{author}{1}{}{%
+      {{hash=LE}{%
+         family={L{\"a}uter},
+         familyi={L\bibinitperiod},
+         given={E.},
+         giveni={E\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Taylor \& Francis}%
+    }
+    \strng{namehash}{LE1}
+    \strng{fullhash}{LE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{1976}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \field{number}{1}
+    \field{pages}{51\bibrangedash 68}
+    \field{title}{Optimal multipurpose designs for regression models}
+    \field{volume}{7}
+    \field{journaltitle}{Mathematische Operationsforschung und Statistik}
+    \field{year}{1976}
+  \endentry
+
+  \entry{loeb2013systematic}{article}{}
+    \name{author}{9}{}{%
+      {{hash=LS}{%
+         family={Loeb},
+         familyi={L\bibinitperiod},
+         given={Stacy},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=VA}{%
+         family={Vellekoop},
+         familyi={V\bibinitperiod},
+         given={Annelies},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=AHU}{%
+         family={Ahmed},
+         familyi={A\bibinitperiod},
+         given={Hashim\bibnamedelima U},
+         giveni={H\bibinitperiod\bibinitdelim U\bibinitperiod},
+      }}%
+      {{hash=CJ}{%
+         family={Catto},
+         familyi={C\bibinitperiod},
+         given={James},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=EM}{%
+         family={Emberton},
+         familyi={E\bibinitperiod},
+         given={Mark},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=NR}{%
+         family={Nam},
+         familyi={N\bibinitperiod},
+         given={Robert},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=RDJ}{%
+         family={Rosario},
+         familyi={R\bibinitperiod},
+         given={Derek\bibnamedelima J},
+         giveni={D\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=SV}{%
+         family={Scattoni},
+         familyi={S\bibinitperiod},
+         given={Vincenzo},
+         giveni={V\bibinitperiod},
+      }}%
+      {{hash=LY}{%
+         family={Lotan},
+         familyi={L\bibinitperiod},
+         given={Yair},
+         giveni={Y\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{LS+1}
+    \strng{fullhash}{LSVAAHUCJEMNRRDJSVLY1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2013}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \field{number}{6}
+    \field{pages}{876\bibrangedash 892}
+    \field{title}{Systematic review of complications of prostate biopsy}
+    \field{volume}{64}
+    \field{journaltitle}{European Urology}
+    \field{year}{2013}
+  \endentry
+
+  \entry{lopez2014optimalcutpoints}{article}{}
+    \true{moreauthor}
+    \name{author}{4}{}{%
+      {{hash=LRM}{%
+         family={L{\'o}pez-Rat{\'o}n},
+         familyi={L\bibinitperiod-R\bibinitperiod},
+         given={M{\'o}nica},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=RAMX}{%
+         family={Rodr{\'\i}guez-{\'A}lvarez},
+         familyi={R\bibinitperiod-{\'A}\bibinitperiod},
+         given={Mar{\'\i}a\bibnamedelima Xos{\'e}},
+         giveni={M\bibinitperiod\bibinitdelim X\bibinitperiod},
+      }}%
+      {{hash=CSC}{%
+         family={Cadarso-Su{\'a}rez},
+         familyi={C\bibinitperiod-S\bibinitperiod},
+         given={Carmen},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=GSF}{%
+         family={Gude-Sampedro},
+         familyi={G\bibinitperiod-S\bibinitperiod},
+         given={Francisco},
+         giveni={F\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Foundation for Open Access Statistics}%
+    }
+    \strng{namehash}{LRM+1}
+    \strng{fullhash}{LRMRAMXCSCGSF+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2014}
+    \field{sortinit}{L}
+    \field{sortinithash}{L}
+    \field{number}{8}
+    \field{pages}{1\bibrangedash 36}
+    \field{title}{{OptimalCutpoints: an R package for selecting optimal
+  cutpoints in diagnostic tests}}
+    \field{volume}{61}
+    \field{journaltitle}{Journal of Statistical Software}
+    \field{year}{2014}
+  \endentry
+
+  \entry{nieboer2015nonlinear}{article}{}
+    \name{author}{8}{}{%
+      {{hash=ND}{%
+         family={Nieboer},
+         familyi={N\bibinitperiod},
+         given={Daan},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=VY}{%
+         family={Vergouwe},
+         familyi={V\bibinitperiod},
+         given={Yvonne},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=RMJ}{%
+         family={Roobol},
+         familyi={R\bibinitperiod},
+         given={Monique\bibnamedelima J},
+         giveni={M\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=ADP}{%
+         family={Ankerst},
+         familyi={A\bibinitperiod},
+         given={Donna\bibnamedelima P},
+         giveni={D\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=KMW}{%
+         family={Kattan},
+         familyi={K\bibinitperiod},
+         given={Michael\bibnamedelima W},
+         giveni={M\bibinitperiod\bibinitdelim W\bibinitperiod},
+      }}%
+      {{hash=VAJ}{%
+         family={Vickers},
+         familyi={V\bibinitperiod},
+         given={Andrew\bibnamedelima J},
+         giveni={A\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=SEW}{%
+         family={Steyerberg},
+         familyi={S\bibinitperiod},
+         given={Ewout\bibnamedelima W},
+         giveni={E\bibinitperiod\bibinitdelim W\bibinitperiod},
+      }}%
+      {{hash=GPBC}{%
+         family={Group},
+         familyi={G\bibinitperiod},
+         given={Prostate Biopsy\bibnamedelima Collaborative},
+         giveni={P\bibinitperiod\bibinitdelim B\bibinitperiod\bibinitdelim
+  C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{ND+1}
+    \strng{fullhash}{NDVYRMJADPKMWVAJSEWGPBC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2015}
+    \field{sortinit}{N}
+    \field{sortinithash}{N}
+    \field{number}{4}
+    \field{pages}{426\bibrangedash 434}
+    \field{title}{Nonlinear modeling was applied thoughtfully for risk
+  prediction: the {Prostate Biopsy Collaborative Group}}
+    \field{volume}{68}
+    \field{journaltitle}{Journal of clinical epidemiology}
+    \field{year}{2015}
+  \endentry
+
+  \entry{rizopoulos2011dynamic}{article}{}
+    \name{author}{1}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Wiley}%
+    }
+    \strng{namehash}{RD1}
+    \strng{fullhash}{RD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2011}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{number}{3}
+    \field{pages}{819\bibrangedash 829}
+    \field{title}{Dynamic Predictions and Prospective Accuracy in Joint Models
+  for Longitudinal and Time-to-Event Data}
+    \field{volume}{67}
+    \field{journaltitle}{Biometrics}
+    \field{year}{2011}
+  \endentry
+
+  \entry{rizopoulos2012joint}{book}{}
+    \name{author}{1}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {CRC Press}%
+    }
+    \strng{namehash}{RD1}
+    \strng{fullhash}{RD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2012}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{isbn}{9781439872864}
+    \field{title}{Joint Models for Longitudinal and Time-to-Event Data: With
+  Applications in R}
+    \field{year}{2012}
+  \endentry
+
+  \entry{rizopoulosJMbayes}{article}{}
+    \name{author}{1}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Foundation for Open Access Statistics}%
+    }
+    \strng{namehash}{RD1}
+    \strng{fullhash}{RD1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2016}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{issn}{1548-7660}
+    \field{number}{7}
+    \field{pages}{1\bibrangedash 46}
+    \field{title}{The {R} Package {JMbayes} for Fitting Joint Models for
+  Longitudinal and Time-to-Event Data Using {MCMC}}
+    \field{volume}{72}
+    \field{journaltitle}{Journal of Statistical Software}
+    \field{year}{2016}
+  \endentry
+
+  \entry{landmarking2017}{article}{}
+    \name{author}{3}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=MG}{%
+         family={Molenberghs},
+         familyi={M\bibinitperiod},
+         given={Geert},
+         giveni={G\bibinitperiod},
+      }}%
+      {{hash=LEM}{%
+         family={Lesaffre},
+         familyi={L\bibinitperiod},
+         given={Emmanuel\bibnamedelima M.E.H.},
+         giveni={E\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{RDMGLEM1}
+    \strng{fullhash}{RDMGLEM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2017}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \verb{doi}
+    \verb 10.1002/bimj.201600238
+    \endverb
+    \field{issn}{1521-4036}
+    \field{note}{\mbox{doi}:\url{10.1002/bimj.201600238}}
+    \field{title}{Dynamic predictions with time-dependent covariates in
+  survival analysis using joint modeling and landmarking}
+    \verb{url}
+    \verb http://dx.doi.org/10.1002/bimj.201600238
+    \endverb
+    \field{journaltitle}{Biometrical Journal}
+    \field{year}{2017}
+  \endentry
+
+  \entry{rizopoulos2014bma}{article}{}
+    \name{author}{4}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=HLA}{%
+         family={Hatfield},
+         familyi={H\bibinitperiod},
+         given={Laura\bibnamedelima A.},
+         giveni={L\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=CBP}{%
+         family={Carlin},
+         familyi={C\bibinitperiod},
+         given={Bradley\bibnamedelima P.},
+         giveni={B\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=TJJ}{%
+         family={Takkenberg},
+         familyi={T\bibinitperiod},
+         given={Johanna\bibnamedelima J.M.},
+         giveni={J\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Taylor \& Francis}%
+    }
+    \strng{namehash}{RD+1}
+    \strng{fullhash}{RDHLACBPTJJ1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2014}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{number}{508}
+    \field{pages}{1385\bibrangedash 1397}
+    \field{title}{Combining Dynamic Predictions From Joint Models for
+  Longitudinal and Time-to-Event Data Using {Bayesian} Model Averaging}
+    \field{volume}{109}
+    \field{journaltitle}{Journal of the American Statistical Association}
+    \field{year}{2014}
+  \endentry
+
+  \entry{drizopoulosPersScreening}{article}{}
+    \name{author}{5}{}{%
+      {{hash=RD}{%
+         family={Rizopoulos},
+         familyi={R\bibinitperiod},
+         given={Dimitris},
+         giveni={D\bibinitperiod},
+      }}%
+      {{hash=TJMG}{%
+         family={Taylor},
+         familyi={T\bibinitperiod},
+         given={Jeremy M.\bibnamedelima G.},
+         giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod\bibinitdelim
+  G\bibinitperiod},
+      }}%
+      {{hash=VRJ}{%
+         family={Van\bibnamedelima Rosmalen},
+         familyi={V\bibinitperiod\bibinitdelim R\bibinitperiod},
+         given={Joost},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=SEW}{%
+         family={Steyerberg},
+         familyi={S\bibinitperiod},
+         given={Ewout\bibnamedelima W.},
+         giveni={E\bibinitperiod\bibinitdelim W\bibinitperiod},
+      }}%
+      {{hash=TJJM}{%
+         family={Takkenberg},
+         familyi={T\bibinitperiod},
+         given={Johanna J.\bibnamedelima M.},
+         giveni={J\bibinitperiod\bibinitdelim J\bibinitperiod\bibinitdelim
+  M\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Oxford University Press}%
+    }
+    \strng{namehash}{RD+1}
+    \strng{fullhash}{RDTJMGVRJSEWTJJM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2016}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{number}{1}
+    \field{pages}{149\bibrangedash 164}
+    \field{title}{Personalized screening intervals for biomarkers using joint
+  models for longitudinal and survival data}
+    \field{volume}{17}
+    \field{journaltitle}{Biostatistics}
+    \field{year}{2016}
+  \endentry
+
+  \entry{robertBayesianChoice}{book}{}
+    \name{author}{1}{}{%
+      {{hash=RC}{%
+         family={Robert},
+         familyi={R\bibinitperiod},
+         given={Christian},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Springer Science \& Business Media}%
+    }
+    \strng{namehash}{RC1}
+    \strng{fullhash}{RC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2007}
+    \field{sortinit}{R}
+    \field{sortinithash}{R}
+    \field{isbn}{9780387715995}
+    \field{title}{The {Bayesian} choice: from decision-theoretic foundations to
+  computational implementation}
+    \field{year}{2007}
+  \endentry
+
+  \entry{taylor2013real}{article}{}
+    \name{author}{9}{}{%
+      {{hash=TJM}{%
+         family={Taylor},
+         familyi={T\bibinitperiod},
+         given={Jeremy\bibnamedelima M.G.},
+         giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=PY}{%
+         family={Park},
+         familyi={P\bibinitperiod},
+         given={Yongseok},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=ADP}{%
+         family={Ankerst},
+         familyi={A\bibinitperiod},
+         given={Donna\bibnamedelima P.},
+         giveni={D\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=PLC}{%
+         family={Proust-Lima},
+         familyi={P\bibinitperiod-L\bibinitperiod},
+         given={Cecile},
+         giveni={C\bibinitperiod},
+      }}%
+      {{hash=WS}{%
+         family={Williams},
+         familyi={W\bibinitperiod},
+         given={Scott},
+         giveni={S\bibinitperiod},
+      }}%
+      {{hash=KL}{%
+         family={Kestin},
+         familyi={K\bibinitperiod},
+         given={Larry},
+         giveni={L\bibinitperiod},
+      }}%
+      {{hash=BK}{%
+         family={Bae},
+         familyi={B\bibinitperiod},
+         given={Kyoungwha},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=PT}{%
+         family={Pickles},
+         familyi={P\bibinitperiod},
+         given={Tom},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=SH}{%
+         family={Sandler},
+         familyi={S\bibinitperiod},
+         given={Howard},
+         giveni={H\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Wiley}%
+    }
+    \strng{namehash}{TJM+1}
+    \strng{fullhash}{TJMPYADPPLCWSKLBKPTSH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2013}
+    \field{sortinit}{T}
+    \field{sortinithash}{T}
+    \field{number}{1}
+    \field{pages}{206\bibrangedash 213}
+    \field{title}{Real-time individual predictions of prostate cancer
+  recurrence using joint models}
+    \field{volume}{69}
+    \field{journaltitle}{Biometrics}
+    \field{year}{2013}
+  \endentry
+
+  \entry{tosoian2011active}{article}{}
+    \name{author}{8}{}{%
+      {{hash=TJJ}{%
+         family={Tosoian},
+         familyi={T\bibinitperiod},
+         given={Jeffrey\bibnamedelima J},
+         giveni={J\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=TBJ}{%
+         family={Trock},
+         familyi={T\bibinitperiod},
+         given={Bruce\bibnamedelima J},
+         giveni={B\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=LP}{%
+         family={Landis},
+         familyi={L\bibinitperiod},
+         given={Patricia},
+         giveni={P\bibinitperiod},
+      }}%
+      {{hash=FZ}{%
+         family={Feng},
+         familyi={F\bibinitperiod},
+         given={Zhaoyong},
+         giveni={Z\bibinitperiod},
+      }}%
+      {{hash=EJI}{%
+         family={Epstein},
+         familyi={E\bibinitperiod},
+         given={Jonathan\bibnamedelima I},
+         giveni={J\bibinitperiod\bibinitdelim I\bibinitperiod},
+      }}%
+      {{hash=PAW}{%
+         family={Partin},
+         familyi={P\bibinitperiod},
+         given={Alan\bibnamedelima W},
+         giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod},
+      }}%
+      {{hash=WPC}{%
+         family={Walsh},
+         familyi={W\bibinitperiod},
+         given={Patrick\bibnamedelima C},
+         giveni={P\bibinitperiod\bibinitdelim C\bibinitperiod},
+      }}%
+      {{hash=CHB}{%
+         family={Carter},
+         familyi={C\bibinitperiod},
+         given={H\bibnamedelima Ballentine},
+         giveni={H\bibinitperiod\bibinitdelim B\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {American Society of Clinical Oncology}%
+    }
+    \strng{namehash}{TJJ+1}
+    \strng{fullhash}{TJJTBJLPFZEJIPAWWPCCHB1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2011}
+    \field{sortinit}{T}
+    \field{sortinithash}{T}
+    \field{number}{16}
+    \field{pages}{2185\bibrangedash 2190}
+    \field{title}{Active surveillance program for prostate cancer: an update of
+  the {Johns Hopkins} experience}
+    \field{volume}{29}
+    \field{journaltitle}{Journal of Clinical Oncology}
+    \field{year}{2011}
+  \endentry
+
+  \entry{tsiatis2004joint}{article}{}
+    \name{author}{2}{}{%
+      {{hash=TAA}{%
+         family={Tsiatis},
+         familyi={T\bibinitperiod},
+         given={Anastasios\bibnamedelima A},
+         giveni={A\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+      {{hash=DM}{%
+         family={Davidian},
+         familyi={D\bibinitperiod},
+         given={Marie},
+         giveni={M\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Institute of Statistical Science, Academia Sinica}%
+    }
+    \strng{namehash}{TAADM1}
+    \strng{fullhash}{TAADM1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2004}
+    \field{sortinit}{T}
+    \field{sortinithash}{T}
+    \field{number}{3}
+    \field{pages}{809\bibrangedash 834}
+    \field{title}{Joint modeling of longitudinal and time-to-event data: an
+  overview}
+    \field{volume}{14}
+    \field{journaltitle}{Statistica Sinica}
+    \field{year}{2004}
+  \endentry
+
+  \entry{welty2015extended}{article}{}
+    \true{moreauthor}
+    \name{author}{10}{}{%
+      {{hash=WCJ}{%
+         family={Welty},
+         familyi={W\bibinitperiod},
+         given={Christopher\bibnamedelima J},
+         giveni={C\bibinitperiod\bibinitdelim J\bibinitperiod},
+      }}%
+      {{hash=CJE}{%
+         family={Cowan},
+         familyi={C\bibinitperiod},
+         given={Janet\bibnamedelima E},
+         giveni={J\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+      {{hash=NH}{%
+         family={Nguyen},
+         familyi={N\bibinitperiod},
+         given={Hao},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=SK}{%
+         family={Shinohara},
+         familyi={S\bibinitperiod},
+         given={Katsuto},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=PN}{%
+         family={Perez},
+         familyi={P\bibinitperiod},
+         given={Nannette},
+         giveni={N\bibinitperiod},
+      }}%
+      {{hash=GKL}{%
+         family={Greene},
+         familyi={G\bibinitperiod},
+         given={Kirsten\bibnamedelima L},
+         giveni={K\bibinitperiod\bibinitdelim L\bibinitperiod},
+      }}%
+      {{hash=CJM}{%
+         family={Chan},
+         familyi={C\bibinitperiod},
+         given={June\bibnamedelima M},
+         giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod},
+      }}%
+      {{hash=MMV}{%
+         family={Meng},
+         familyi={M\bibinitperiod},
+         given={Maxwell\bibnamedelima V},
+         giveni={M\bibinitperiod\bibinitdelim V\bibinitperiod},
+      }}%
+      {{hash=SJP}{%
+         family={Simko},
+         familyi={S\bibinitperiod},
+         given={Jeffry\bibnamedelima P},
+         giveni={J\bibinitperiod\bibinitdelim P\bibinitperiod},
+      }}%
+      {{hash=CMR}{%
+         family={Cooperberg},
+         familyi={C\bibinitperiod},
+         given={Matthew\bibnamedelima R},
+         giveni={M\bibinitperiod\bibinitdelim R\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Elsevier}%
+    }
+    \strng{namehash}{WCJ+1}
+    \strng{fullhash}{WCJCJENHSKPNGKLCJMMMVSJPCMR+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2015}
+    \field{sortinit}{W}
+    \field{sortinithash}{W}
+    \field{number}{3}
+    \field{pages}{807\bibrangedash 811}
+    \field{title}{Extended followup and risk factors for disease
+  reclassification in a large active surveillance cohort for localized prostate
+  cancer}
+    \field{volume}{193}
+    \field{journaltitle}{The Journal of Urology}
+    \field{year}{2015}
+  \endentry
+
+  \entry{zhang2012optimization}{article}{}
+    \name{author}{5}{}{%
+      {{hash=ZJ}{%
+         family={Zhang},
+         familyi={Z\bibinitperiod},
+         given={Jingyu},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=DBT}{%
+         family={Denton},
+         familyi={D\bibinitperiod},
+         given={Brian\bibnamedelima T},
+         giveni={B\bibinitperiod\bibinitdelim T\bibinitperiod},
+      }}%
+      {{hash=BH}{%
+         family={Balasubramanian},
+         familyi={B\bibinitperiod},
+         given={Hari},
+         giveni={H\bibinitperiod},
+      }}%
+      {{hash=SND}{%
+         family={Shah},
+         familyi={S\bibinitperiod},
+         given={Nilay\bibnamedelima D},
+         giveni={N\bibinitperiod\bibinitdelim D\bibinitperiod},
+      }}%
+      {{hash=IBA}{%
+         family={Inman},
+         familyi={I\bibinitperiod},
+         given={Brant\bibnamedelima A},
+         giveni={B\bibinitperiod\bibinitdelim A\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {INFORMS}%
+    }
+    \strng{namehash}{ZJ+1}
+    \strng{fullhash}{ZJDBTBHSNDIBA1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelyear}{2012}
+    \field{sortinit}{Z}
+    \field{sortinithash}{Z}
+    \field{number}{4}
+    \field{pages}{529\bibrangedash 547}
+    \field{title}{Optimization of prostate biopsy referral decisions}
+    \field{volume}{14}
+    \field{journaltitle}{Manufacturing \& Service Operations Management}
+    \field{year}{2012}
+  \endentry
+\endsortlist
+\endinput

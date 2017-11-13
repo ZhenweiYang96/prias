@@ -83,7 +83,7 @@ source("../JMBayes/Anirudh/dev/expectedCondFailureTime.R")
 source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
 
 #demoPatientPID = c(911, 1573, 2340, 3225, 3174)
-demoPatientPID = c(911)
+demoPatientPID = c(2340)
 
 maxPossibleFailureTime = 20
 for(patientId in demoPatientPID){
@@ -94,8 +94,9 @@ for(patientId in demoPatientPID){
   minVisits = 1
   plotList = vector("list", nrow(demoPatient) - minVisits)
   #for(j in minVisits:nrow(demoPatient)){
-  #for(j in c(13)){ # for 2340
-  for(j in c(12,15)){ # for 911
+  for(j in c(12,18)){ # for 2340
+  #for(j in c(12,15)){ # for 911
+  #for(j in c(3,8)){ # for 3174
     subDataSet = demoPatient[1:j, ]
     
     subDataSet$expectedFailureTime = NA
@@ -136,11 +137,14 @@ for(patientId in demoPatientPID){
       #geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T), color="Last Biopsy", linetype="solid")) + 
       #geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T), color="Expected GR Time", linetype="dashed")) +
       # geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), color="Dynamic risk of GR (F1)", linetype="dotted")) +
-      geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="longdash")) +
-      geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="dotdash")) +
-      geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="solid")) + 
-       ticksX(0, 20, 2) + ylim(5, 22.5) + scale_linetype_identity(guide="legend") + 
-       theme(text = element_text(size=13), axis.text=element_text(size=13), legend.position="none", plot.title = element_text(hjust = 0.5))+
+      geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time")) +
+      geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Dyn. risk GR")) +
+      geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="Latest biopsy")) + 
+       ticksX(0, 20, 2) + ylim(5, 25) + 
+      scale_linetype_manual(values=c("dotted", "twodash", "solid")) +
+       theme(text = element_text(size=11), axis.text=element_text(size=11), 
+             legend.title = element_blank(),
+             plot.title = element_text(hjust = 0.5))+
        xlab("Time(years)") + ylab("PSA (ng/mL)")
      
     # print(plotList[[j-minVisits + 1]])
@@ -177,14 +181,22 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   
   pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=sqrt(variances))) + 
     geom_line(aes(x=visitTimeYears, y=sqrt(variances))) + 
-    geom_vline(aes(xintercept = biopsyTimes, na.rm=T)) + xlab("Time (years)") + 
-    #ylab(TeX('$SD\\left[T^*_j\\right]$')) + ggtitle(paste("Patient ID:", 3174)) + ticksX(0, max = 20, 1) +
+    geom_vline(aes(xintercept = 0, linetype="Exp. GR Time")) +
+    geom_vline(aes(xintercept = 0, linetype="Dyn. risk GR")) +
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy")) + xlab("Time (years)") + 
+    scale_linetype_manual(values=c("dotted", "twodash", "solid"))  +
     ylab(TeX('$SD\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
-    ticksY(0, 10, 1) + theme(text = element_text(size=13), axis.text=element_text(size=13), plot.title = element_text(hjust = 0.5))
+    ticksY(0, 10, 1) + 
+    theme(text = element_text(size=11), axis.text=element_text(size=11), 
+          legend.title = element_blank(),
+          plot.title = element_text(hjust = 0.5)) 
   
   print(pp)
-  return(prias_long_i$variances) 
+  return(pp) 
 }
 
+ggsave(file="report/pers_schedule/biometrics_submission/images/prias_demo/case_2340.eps", 
+       grid_arrange_shared_legend(p1,p2, plotList[[18]], nrow = 2, ncol = 2),
+       width=8.27, height=9.69/1.25)
 
 
