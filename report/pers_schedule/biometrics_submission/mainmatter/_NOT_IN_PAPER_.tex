@@ -28,3 +28,14 @@ Lastly, it is extremely likely that on consecutive visits to the hospital for PS
 
 
 Let $\boldsymbol{\theta} = {\{\boldsymbol{\beta}^T, \boldsymbol{\gamma}^T, \boldsymbol{\alpha}^T, \sigma^2, \{\boldsymbol{D}[j,k] \mid j=k=1, \ldots q\}\}}^T$ be the vector of the parameters of the joint model.
+
+
+For the relative risk model's parameters $\bmath{\gamma}$ and the association parameters $\bmath{\alpha}$, we use a global-local ridge-type shrinkage prior. For example, for the $s$-{th} element of $\bmath{\alpha}$ we assume (similarly for $\bmath{\gamma}$):
+\begin{equation*} 
+\alpha_s \sim \mathcal{N}(0, \tau\psi_s), \quad \tau^{-1} \sim \mbox{Gamma}(0.1, 0.1),  \quad \psi_s^{-1} \sim \mbox{Gamma}(1, 0.01).
+\end{equation*} 
+The global smoothing parameter $\tau$ has sufficiently mass near zero to ensure shrinkage, while the local smoothing parameter $\psi_s$ allows individual coefficients to attain large values. For the penalized version of the B-spline approximation to the baseline hazard, we use the following prior for parameters $\gamma_{h_0}$ \citep{lang2004bayesian}:
+\begin{equation*}
+p(\gamma_{h_0} \mid \tau_h) \propto \tau_h^{\rho(\bmath{K})/2} \exp\bigg(-\frac{\tau_h}{2}\gamma_{h_0}^T \bmath{K} \gamma_{h_0}\bigg),
+\end{equation*}
+where $\tau_h$ is the smoothing parameter that takes a Gamma(1, 0.005) hyper-prior in order to ensure a proper posterior for $\gamma_{h_0}$, $\bmath{K} = \Delta_r^T \Delta_r + 10^{-6} \bmath{I}$, where $\Delta_r$ denotes the $r$-th difference penalty matrix, and $\rho(\bmath{K})$ denotes the rank of $\bmath{K}$.

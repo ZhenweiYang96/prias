@@ -25,21 +25,21 @@ E_g\big\{L(T^*_j, u)\big\} &= E_g\big(\left|{T^*_j - u}\right|\big)\\
 \end{split}
 \end{equation}
 The posterior expected loss in (\ref{eq : posterior_absolute_loss}) attains its minimum at the median of $g(T^*_j)$, given by $u = \pi_j^{-1}(0.5 \mid t,s)$, where $\pi_j^{-1}(\cdot)$ is the inverse of dynamic survival probability $\pi_j(u \mid t, s)$ of patient $j$ \citep{rizopoulos2011dynamic}. It is given by:
-\begin{equation}
+\begin{equation*}
 \label{eq : dynamic_surv_prob}
 \pi_j(u \mid t, s) = \mbox{Pr}\big\{T^*_j \geq u \mid  T^*_j >t, \mathcal{Y}_j(s), D_n\big\}, \quad u \geq t.
-\end{equation}
+\end{equation*}
 For ease of readability we denote $\pi_j^{-1}(0.5 \mid t,s)$ as $\mbox{median}(T^*_j)$ hereafter.
 
 Even though the mean or median time of GR may be obvious choices from a statistical perspective, from the viewpoint of doctors or patients, it could be more intuitive to make the decision for the next biopsy by placing a cutoff $1 - \kappa$, where $0 \leq \kappa \leq 1$, on the dynamic incidence/risk of GR. This approach would be successful if $\kappa$ can sufficiently well differentiate between patients who will obtain GR in a given period of time, and those who will not. This approach is also useful when patients are apprehensive about delaying biopsies beyond a certain risk cutoff. Thus, a biopsy can be scheduled at a time point $u$ such that the dynamic risk of GR is higher than a certain threshold $1 - \kappa,\ $ beyond $u$. To this end, the posterior expected loss for the following multilinear loss function can be minimized to find the optimal $u$:
-\begin{equation}
+\begin{equation*}
 \label{eq : loss_dynamic_risk}
 L_{k_1, k_2}(T^*_j, u) =
     \begin{cases}
       k_2(T^*_j-u), k_2>0 & \text{if } T^*_j > u,\\
-      k_1(u-T^*_j), k_1>0 & \text{otherwise}.
+      k_1(u-T^*_j), k_1>0 & \text{otherwise},
     \end{cases}       
-\end{equation}
+\end{equation*}
 where $k_1, k_2$ are constants parameterizing the loss function. The posterior expected loss $E_g\big\{L_{k_1, k_2}(T^*_j, u)\big\}$ obtains its minimum at $u = \pi_j^{-1}\big\{k_1/{(k_1 + k_2)} \mid t,s \big\}$ \citep{robertBayesianChoice}. The choice of the two constants $k_1$ and $k_2$ is equivalent to the choice of $\kappa = {k_1}/{(k_1 + k_2)}$.
 
 In practice, for some patients we may not have sufficient information to accurately estimate their PSA profile. The resulting high variance of $g(T^*_j)$ could make using a measure of central tendency such as mean or median time of GR unreliable (i.e., overshooting the true $T_j^*$ by a big margin). In such occasions, the approach based on dynamic risk of GR could be more robust. This consideration leads us to a hybrid approach, namely, to select $u$ using dynamic risk of GR based approach when the spread of $g(T_j^*)$ is large, while using $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ when the spread of $g(T_j^*)$ is small. What constitutes a large spread will be application-specific. In PRIAS, within the first 10 years, the maximum possible delay in detection of GR is three years. Thus we propose that if the difference between the 0.025 quantile of $g(T^*_j)$, and $E_g(T^*_j)$ or $\mbox{median}(T^*_j)$ is more than three years then proposals based on dynamic risk of GR be used instead.

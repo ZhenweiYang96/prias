@@ -61,7 +61,7 @@ mvJoint_psa_spline_pt1pt54_pt1_tdval = mvJointModelBayes(mvglm_psa_spline_pt1pt5
                                                              timeVar = "visitTimeYears")
 save.image(file = "Rdata/Gleason as event/psa_spline_pt1pt54_pt1.Rdata")
 
-mvJoint_psa_spline_pt1pt54_pt1_tdboth = mvJointModelBayes(mvglm_psa_spline_pt1pt54_pt1, survModel.training, timeVar = "visitTimeYears", 
+mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3 = mvJointModelBayes(mvglm_psa_spline_pt1pt54_pt1_t3, survModel.training, timeVar = "visitTimeYears", 
                                                               Formulas = list("log2psa" = "value",
                                                                               "log2psa" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)),
                                                                                                random=~0 + dns(visitTimeYears, knots=c(0.1), Boundary.knots=c(0, 7)),

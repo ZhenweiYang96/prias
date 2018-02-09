@@ -28,7 +28,8 @@ computeNbAndOffset_PRIAS = function(dsId, patientRowNum){
     
     betaReg = lm(logpsa1~visitTimeYears, data = patientDs[1:j, ])$coefficients[2]
     
-    if((1/betaReg) <= 10){
+    #in the paper we submitted the 1/betaReg >= 0 condition was not present
+    if((1/betaReg) <= 10 & (1/betaReg)>=0){
       if((curVisitTime - lastBiopsyTime) > 1){
         proposedBiopsyTime = curVisitTime
       }else{

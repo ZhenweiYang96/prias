@@ -46,10 +46,17 @@ plotProfile = function(fitted=F, patientRowNum=1){
 # the following function creates the predicted values
 # and the 95% CIs
 #######################################################################
-effectPlotData <- function (object, newdata, orig_data) {
+effectPlotLmeData <- function (object, newdata, orig_data) {
   form <- formula(object)
   namesVars <- all.vars(form)
+  
   betas <- if (!inherits(object, "lme")) coef(object) else fixef(object)
+  
+  #you can replace the contents of lme object by these coefficients
+  #betas <- joint_psa_replaced_prias_t3$postMeans$betas
+  #betas <- mvJoint_psa_spline_pt1pt54_pt1_tdboth_light$statistics$postMeans$betas1
+  #betas <- mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3$statistics$postMeans$betas1
+  
   V <- if (inherits(object, "geeglm")) object$geese$vbeta else vcov(object)
   orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
   Terms <- delete.response(terms(form))
@@ -65,32 +72,131 @@ effectPlotData <- function (object, newdata, orig_data) {
   newdata
 }
 
-plotLog2PSAJMFit = function(jmfit, patientRowNum){
-  patientId = training.prias.id$P_ID[patientRowNum]
+effectPlotJMData <- function (mvJMbayesObject, lmeObject, newdata, orig_data) {
+  form <- formula(lmeObject)
+  namesVars <- all.vars(form)
   
-  ds = training_psa_data_set[training_psa_data_set$P_ID == patientId,]
+  betas <- mvJMbayesObject$mcmc$betas1
   
-  X = model.matrix(~ 1 + I(Age - 70) + I((Age - 70)^2) + 
-                     ns(visitTimeYears, knots = c(0.1, 0.5, 4), 
-                        Boundary.knots = c(0, 7)), data = ds)
-  Z = model.matrix(~ 1 + ns(visitTimeYears, knots = c(0.1, 0.5), Boundary.knots = c(0, 7)), 
-                   data = ds)
+  orig_data <- orig_data[complete.cases(orig_data[namesVars]), ]
+  Terms <- delete.response(terms(form))
+  mfX <- model.frame(Terms, data = orig_data)
+  Terms_new <- attr(mfX, "terms")
+  mfX_new <- model.frame(Terms_new, newdata, xlev = .getXlevels(Terms, mfX))
+  X <- model.matrix(Terms_new, mfX_new)
   
-  b <- jmfit$statistics$postMeans$b[,patientRowNum]
+  predMcmc <- betas %*% t(X)
   
-  ds$xBetaZb = X %*% jmfit$statistics$postMeans$betas + Z%*%b
-  
-  p=ggplot(data=ds) + geom_point(aes(x=visitTimeYears, y=log2psa)) + 
-    geom_line(aes(x=visitTimeYears, y=xBetaZb))
-  
-  print(p)
+  newdata$pred <- apply(predMcmc, 2, mean)
+  newdata$low <- apply(predMcmc, 2, quantile, probs=0.025)
+  newdata$upp <- apply(predMcmc, 2, quantile, probs=0.975)
+  newdata
 }
 
-plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
-  newDF <- with(psa_data_set, expand.grid(visitTimeYears = seq(0, 10, by = 0.5),
+#not mvjoint model bayes
+plotLog2PSAJMFit = function(jmfit, patientId){
+  
+  ds = pria[psa_data_set$P_ID == patientId, ]
+  
+  pred = predict(jmfit, ds, type="Subject", idVar="P_ID", 
+                 FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
+  
+  ds = ds[,c("visitTimeYears", "log2psa")]
+  ds$type="Observed"
+  
+  ds = rbind(ds, data.frame("visitTimeYears"=attributes(pred)$time.to.pred[[1]], 
+                            "log2psa"=c(pred), type="Fitted"))
+ 
+  
+  breaks = if(round(max(ds$visitTimeYears))>2){
+    seq(0, round(max(ds$visitTimeYears)), by=1)
+  }else if(round(max(ds$visitTimeYears))==2){
+    seq(0, round(max(ds$visitTimeYears)), length.out=5)
+  }else{
+    seq(0, round(max(ds$visitTimeYears)), length.out=3)
+  }
+    
+  p=ggplot(data=ds) + 
+    geom_line(aes(x=visitTimeYears, y=log2psa, linetype=type)) + 
+    scale_linetype_manual(values=c("twodash", "solid")) + 
+    scale_x_continuous(breaks=breaks) + 
+    theme(text = element_text(size=11), axis.text=element_text(size=11),
+          legend.text = element_text(size=11), legend.title = element_blank(),
+          plot.title = element_text(hjust = 0.5, size=13)) +
+    xlab("Time(years)") + ylab(expression('log'[2]*'(PSA)'))
+  
+  print(p)
+  
+  return(p)
+}
+
+
+#Example usage
+# plotMarginalPSAFittedCurveJM(list(mvJoint_psa_spline_pt1pt54_pt1_tdboth_light, 
+# mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3),
+# lme_psa_spline_pt1pt54_pt1, individually = F, 
+# modelNames = c("Normally distributed errors", "t-distributed (df=3) errors"))
+plotMarginalPSAFittedCurveJM = function(models, lmeObject, transformPSA=F, individually=T, modelNames=NULL){
+  newDF <- with(training_psa_data_set, expand.grid(visitTimeYears = seq(0, 10, by = 0.5),
+                                                   Age = 70))
+  plotData = lapply(models, function(model){
+    temp = effectPlotJMData(model, lmeObject, newDF, training_psa_data_set)
+    
+    if(transformPSA==T){
+      temp[,c(3,4,5)] = exp(temp[,c(3,4,5)])
+    }
+    temp
+  })
+  
+  if(individually==T){
+    return(lapply(plotData, function(data){
+      plot = ggplot(data=data)
+      if(transformPSA==F){
+        plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp), fill = "grey", alpha=0.4)
+      } 
+      plot = plot + geom_line(aes(y=pred, x=visitTimeYears), color="black") +
+        ticksX(from=0, max = 10, by = 1) + 
+        ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
+        xlab("Follow-up time (Years)") + 
+        ylab(expression('Fitted marginal '*'log'[2]*'(PSA)')) + 
+        theme(text = element_text(size=13), axis.text=element_text(size=13))
+      print(plot)
+      return(plot)
+    }))
+  }else{
+    newPlotData = do.call(rbind, plotData)
+    
+    if(!is.null(modelNames)){
+      newPlotData$Model = rep(modelNames, each=nrow(newDF))
+    }else{
+      newPlotData$Model = rep(paste("Model",1:length(plotData)), each=nrow(newDF))  
+    }
+    
+    plot = ggplot(data=newPlotData)
+    if(transformPSA==F){
+      plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp, group=Model), 
+                                fill = "grey", alpha=0.4)
+    } 
+    plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=Model, linetype=Model)) +
+      ticksX(from=0, max = 10, by = 1) + 
+      ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
+      xlab("Follow-up time (Years)") + 
+      ylab(expression('Fitted marginal '*'log'[2]*'(PSA)')) + 
+      theme(text = element_text(size=11), axis.text=element_text(size=11), 
+            legend.position = "top", legend.title = element_blank(), 
+            legend.text = element_text(size=11)) + 
+      scale_linetype_manual(values=c("twodash", "solid")) 
+    print(plot)
+    
+    return(plot)
+  }
+}
+
+plotPSAFittedCurveLME = function(models, transformPSA=F, individually=T, modelNames=NULL){
+  newDF <- with(training_psa_data_set, expand.grid(visitTimeYears = seq(0, 10, by = 0.5),
                                           Age = 70))
   plotData = lapply(models, function(model){
-    temp = effectPlotData(model, newDF, psa_data_set)
+    temp = effectPlotData(model, newDF, training_psa_data_set)
     
     if(transformPSA==T){
       temp[,c(3,4,5)] = exp(temp[,c(3,4,5)])
@@ -114,18 +220,26 @@ plotPSAFittedCurve = function(models, transformPSA=F, individually=T){
     }))
   }else{
     newPlotData = do.call(rbind, plotData)
-    newPlotData$model = rep(paste("Model",1:length(plotData)), each=nrow(newDF))
+    
+    if(!is.null(modelNames)){
+      newPlotData$Model = rep(modelNames, each=nrow(newDF))
+    }else{
+      newPlotData$Model = rep(paste("Model",1:length(plotData)), each=nrow(newDF))  
+    }
     
     plot = ggplot(data=newPlotData)
     if(transformPSA==F){
-      plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp, group=model), 
+      plot = plot + geom_ribbon(aes(x=visitTimeYears, ymin=low, ymax=upp, group=Model), 
                                 fill = "grey", alpha=0.4)
     } 
-    plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=model, color=model)) +
+    plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=Model, linetype=Model)) +
       ticksX(from=0, max = 10, by = 1) + 
       ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
       xlab("Follow-up time (Years)") + 
-      ylab(expression('log'[2]*'(PSA)')) + theme(text = element_text(size=13), axis.text=element_text(size=13))
+      ylab(expression('log'[2]*'(PSA)')) + 
+      theme(text = element_text(size=11), axis.text=element_text(size=11), 
+            legend.position = "top", legend.title = element_blank()) + 
+      scale_linetype_manual(values=c("twodash", "solid")) 
     print(plot)
     
     return(plot)
