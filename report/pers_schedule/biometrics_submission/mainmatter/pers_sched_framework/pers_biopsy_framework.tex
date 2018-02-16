@@ -1,7 +1,7 @@
 % !TEX root =  ../pers_schedules.tex 
 \section{Personalized Schedules for Repeat Biopsies}
 \label{sec : pers_sched_approaches}
-Once a joint model for GR and PSA levels is obtained, the next step is to use it to create personalized schedules for biopsies. Let us assume that a personalized schedule is to be created for a new patient $j$, who is not present in the original sample $\mathcal{D}_n$ of patients. Further let us assume that this patient did not have a GR at his last biopsy performed at time $t$, and that the PSA levels are available up to a time point $s$. The goal is to find the optimal time $u > \mbox{max}(t,s)$ of the next biopsy. 
+We intend to use the JM fitted to $\mathcal{D}_n$, to create personalized schedules of biopsies. To this end, let us assume that a schedule is to be created for a new patient $j$, who is not present in $\mathcal{D}_n$. Let $t$ be the time of his latest biopsy, and $\mathcal{Y}_j(s)$ denote his historical PSA measurements up to time $s$. The goal is to find the optimal time $u > \mbox{max}(t,s)$ of the next biopsy.
 
 \input{mainmatter/pers_sched_framework/ppd_time_to_GR}
 \input{mainmatter/pers_sched_framework/loss_functions}
@@ -9,7 +9,7 @@ Once a joint model for GR and PSA levels is obtained, the next step is to use it
 
 \subsection{Algorithm}
 \label{subsec : pers_sched_algorithm}
-The aforementioned personalized schedules, schedule biopsy at a time $u > \mbox{max}(t,s)$. However, if time $u < T^*_j$, then GR is not detected at $u$ and at least one more biopsy is required at an optimal time $u^{new} > \mbox{max}(u,s)$. This process is repeated until GR is detected. To aid in medical decision making, we elucidate this process via an algorithm in Figure \ref{fig : sched_algorithm}. Since AS programs strongly advise that biopsies are conducted at a gap of at least one year, when $u - t < 1$, the algorithm postpones $u$ to $t + 1$, because it is the time nearest to $u$, at which the one year gap condition is satisfied.
+When a biopsy gets scheduled at a time $u < T^*_j$, then GR is not detected at $u$ and at least one more biopsy is required at an optimal time $u^{new} > \mbox{max}(u,s)$. This process is repeated until GR is detected. To aid in medical decision making, we elucidate this process via an algorithm in Figure \ref{fig : sched_algorithm}. Since AS programs strongly advise that two biopsies have a gap of at least one year, when $u - t < 1$, the algorithm postpones $u$ to $t + 1$, because it is the time nearest to $u$, at which the one year gap condition is satisfied.
 
 %When submitting replace figure with figure* to make it span an entire column
 %With referee option it gives an error

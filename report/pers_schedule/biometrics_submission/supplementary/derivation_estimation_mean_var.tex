@@ -1,6 +1,6 @@
 % !TEX root =  ../supplementary.tex
-\section{Derivations for Equation \ref{eq : expected_time_survprob} and \ref{eq : var_time_survprob} of the Main Manuscript}
-In this section we present the derivations for Equation \ref{eq : expected_time_survprob} and \ref{eq : var_time_survprob} of the main manuscript. To this end, we first expand the formula for dynamic survival probability presented in Section \ref{subsec : loss_functions} of the main manuscript.
+\section{Derivations and Computations for $E_g(T^*_j)$ and $\mbox{var}_g(T^*_j)$}
+In this section we present the derivations for $E_g(T^*_j)$ and $\mbox{var}_g(T^*_j)$, corresponding to Equations \ref{eq : expected_time_survprob} and \ref{eq : var_time_survprob} of the main manuscript, respectively. To this end, we first expand the formula for dynamic survival probability presented in Section \ref{subsec : loss_functions} of the main manuscript.
 \begin{equation}
 \label{eq : dyn_surv_prob_expanded}
 \begin{split}
@@ -11,7 +11,7 @@ In this section we present the derivations for Equation \ref{eq : expected_time_
 \end{equation}
 where $H_j(u | \bmath{b}_j, \bmath{\theta}) = \int_0^u h_i(s \mid \bmath{b}_j, \bmath{\theta}\big)\rmn{d} s$ is the cumulative hazard up to time point $u$.
 
-\subsection{Derivation of Equation \ref{eq : expected_time_survprob} of the Main Manuscript}
+\subsection{Derivation of $E_g(T^*_j)$, Shown in Equation \ref{eq : expected_time_survprob} of the Main Manuscript}
 \begin{equation*}
 E_g(T^*_j) = \int_t^{\infty} T^*_j g(T^*_j)\rmn{d} T^*_j.
 \end{equation*}
@@ -43,7 +43,7 @@ In light of these results, we obtain:
 E_g(T^*_j) = t + \int_t^{\infty} \pi_j(T^*_j \mid t, s) \rmn{d} T^*_j.
 \end{equation*}
 
-\subsection{Derivation of Equation \ref{eq : var_time_survprob} of the Main Manuscript}
+\subsection{Derivation of $\mbox{var}_g(T^*_j)$, Shown in Equation \ref{eq : var_time_survprob} of the Main Manuscript}
 Since $\mbox{var}_g(T^*_j) = E_g\{(T^*_j)^2\} - E_g(T^*_j)^2$, we first show the derivation for $E_g\{(T^*_j)^2\}$.
 \begin{equation*}
 E_g\{(T^*_j)^2\} = \int_t^{\infty} (T^*_j)^2 g(T^*_j)\rmn{d} T^*_j.
@@ -65,3 +65,6 @@ Therefore,
 &=2 \int_t^{\infty} (T^*_j - t) \pi_j(T^*_j \mid t, s) \rmn{d} T^*_j -  \Big\{\int_t^\infty \pi_j(T^*_j \mid t, s) \rmn{d} T^*_j \Big\}^2.
 \end{split}
 \end{equation*}
+
+\subsection{Computations for $E_g(T^*_j)$ and $\mbox{var}_g(T^*_j)$}
+As we have shown above, we compute $E_g(T^*_j)$ and $\mbox{var}_g(T^*_j)$ by first expressing them in terms of the dynamic survival probability in (\ref{eq : dyn_surv_prob_expanded}) and then calculating the survival probability values. We preferred this approach over Monte Carlo methods to estimate $E_g(T^*_j)$ from $g(T^*_j)$, because sampling directly from $g(T^*_j)$ involved an additional step of sampling from the distribution $p(T^*_j \mid T^*_j > t, \bmath{b}_j, \bmath{\theta})$, as compared to the estimation of $\pi_j(u \mid t, s)$ \citep{rizopoulos2011dynamic}. The former approach was thus computationally faster.

@@ -83,20 +83,20 @@ source("../JMBayes/Anirudh/dev/expectedCondFailureTime.R")
 source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
 
 #demoPatientPID = c(911, 1573, 2340, 3225, 3174)
-demoPatientPID = c(3174)
+demoPatientPID = c(911)
 
 maxPossibleFailureTime = 20
 for(patientId in demoPatientPID){
   print(paste("Patient:", patientId))
   
   demoPatient = prias_long[prias_long$P_ID == patientId,]
-
+  
   minVisits = 1
   plotList = vector("list", nrow(demoPatient) - minVisits)
   #for(j in minVisits:nrow(demoPatient)){
   #for(j in c(12,18)){ # for 2340
-  #for(j in c(12,15)){ # for 911
-  for(j in c(3,8,9)){ # for 3174
+  for(j in c(12,15)){ # for 911
+  #for(j in c(3,8)){ # for 3174
     subDataSet = demoPatient[1:j, ]
     
     subDataSet$expectedFailureTime = NA
@@ -108,13 +108,13 @@ for(patientId in demoPatientPID){
     #lastBiopsyTime  = 1.03561643835616
     
     subDataSet$lastBiopsyTime = lastBiopsyTime
-
+    
     print(paste("Last biopsy time:", lastBiopsyTime))
     survTimes = seq(lastBiopsyTime, maxPossibleFailureTime, 0.1)
-    survProbs = c(1,survfitJM(joint_psa_replaced_prias_norm, subDataSet[!is.na(subDataSet$psa),],
-                             idVar="P_ID", last.time = lastBiopsyTime,
-                             survTimes = survTimes)$summaries[[1]][, "Median"])
-
+    survProbs = c(1,survfitJM(joint_psa_replaced_prias_t3, subDataSet[!is.na(subDataSet$psa),],
+                              idVar="P_ID", last.time = lastBiopsyTime,
+                              survTimes = survTimes)$summaries[[1]][, "Median"])
+    
     nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)==min(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)))[1]
     survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
     
@@ -122,39 +122,53 @@ for(patientId in demoPatientPID){
       subDataSet$survTimeF1Score[1] = NA
     }else{
       subDataSet$survTimeF1Score[1] = survTimes[which(abs(survProbs-survProbF1Score)==min(abs(survProbs-survProbF1Score)))[1]]
-
-      subDataSet$survTimeF1Score[1] = expectedCondFailureTime(joint_psa_replaced_prias_norm, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
-                                                              lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
+      
+      #subDataSet$survTimeF1Score[1] = expectedCondFailureTime(joint_psa_replaced_prias_norm, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
+      #                                                        lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
       subDataSet$survTimeF1Score[1] = modifyScheduledBiopsyTime(subDataSet$survTimeF1Score[1], curVisitTime, lastBiopsyTime)
     }
     subDataSet$expectedFailureTime[1]= expectedCondFailureTime(joint_psa_replaced_prias_t3, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
-                                                                 lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
+                                                               lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
     subDataSet$expectedFailureTime[1] = modifyScheduledBiopsyTime(subDataSet$expectedFailureTime[1], curVisitTime, lastBiopsyTime)
     
     print(survProbF1Score)
     print(subDataSet$survTimeF1Score[1])
     print(subDataSet$expectedFailureTime[1])
     #print(sqrt(varCondFailureTime(joint_psa_replaced_prias, subDataSet[!is.na(subDataSet$log2psa),], idVar = "P_ID", lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)))
-     
+    
     breaks=1
     if(subDataSet$expectedFailureTime[1]>8 | subDataSet$survTimeF1Score[1]>8){
       breaks = 2
     }
     
-    plotList[[j-minVisits + 1]] = ggplot(data=subDataSet[!is.na(subDataSet$psa),]) + geom_point(aes(x = visitTimeYears, y=psa)) +
-       geom_line(aes(x = visitTimeYears, y=psa)) +
-      # geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time")) +
-      # geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Dyn. risk GR")) +
-      geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time (t-distributed, df=3 errors)")) +
-      geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Exp. GR Time (Normally distributed errors)")) +
-      geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="Latest biopsy")) + 
-       ticksX(0, 20, breaks) + ylim(0, 100) + 
-      scale_linetype_manual(values=c("dotted", "dashed", "solid")) +
-       theme(text = element_text(size=11), axis.text=element_text(size=11), 
-             legend.text = element_blank(size=11),
-             plot.title = element_text(hjust = 0.5, size=13))+
-       xlab("Time(years)") + ylab("PSA (ng/mL)")
-     
+    tt = predict(joint_psa_replaced_prias_t3, subDataSet[!is.na(subDataSet$psa),], type="Subject", idVar="P_ID", 
+                 FtTimes = seq(min(subDataSet$visitTimeYears), max(subDataSet$visitTimeYears), length.out = 50))
+    
+    subDataSet$rowType=rep("Observed", nrow(subDataSet))
+    newRows = subDataSet[rep(1, length(c(tt))),]
+    newRows$rowType="Fitted"
+    newRows$visitTimeYears = attributes(tt)$time.to.pred[[1]]
+    newRows$log2psa = c(tt)
+    
+    subDataSet = rbind(subDataSet, newRows)
+    
+    plotList[[j-minVisits + 1]] = ggplot() + 
+      #geom_point(aes(x = visitTimeYears, y=psa)) +
+      geom_line(data=subDataSet[!is.na(subDataSet$psa),], mapping=aes(x = visitTimeYears, y=log2psa, linetype=rowType)) +
+      geom_vline(data=subDataSet[!is.na(subDataSet$psa),], mapping=aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time"), show.legend=F) +
+      geom_vline(data=subDataSet[!is.na(subDataSet$psa),], mapping=aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Dyn. risk GR"), show.legend=F) +
+      geom_vline(data=subDataSet[!is.na(subDataSet$psa),], mapping=aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="Latest biopsy"), show.legend=F) +
+      #geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time (t-distributed, df=3 errors)")) +
+      #geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Exp. GR Time (Normally distributed errors)")) +
+      ticksX(0, 20, breaks) + ylim(0, 6) + 
+      scale_linetype_manual(values=c("dotted", "dashed", "longdash", "solid", "solid")) +
+      theme(text = element_text(size=11), axis.text=element_text(size=11), 
+            legend.text = element_text(size=11),
+            legend.title = element_blank(),
+            plot.title = element_text(hjust = 0.5, size=13))+
+      xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)'))
+      #ylab("PSA (ng/mL)")
+    
     # print(plotList[[j-minVisits + 1]])
   }
   
@@ -164,6 +178,7 @@ for(patientId in demoPatientPID){
   
   #dev.off()
 }
+
 
 ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/demo_expfail_norm_t3.eps", 
        grid_arrange_shared_legend(plotlist = temp, ncol=3, nrow=3),
@@ -195,14 +210,15 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   biopsyTimes = prias_long_i$visitTimeYears[!is.na(prias_long_i$gleason)]
   prias_long_i$biopsyTimes = c(biopsyTimes, rep(NA, nrow(prias_long_i)-length(biopsyTimes)))
   
-  pp = ggplot(data=prias_long_i) + geom_point(aes(x=visitTimeYears, y=sqrt(variances))) + 
-    geom_line(aes(x=visitTimeYears, y=sqrt(variances))) + 
-    geom_vline(aes(xintercept = 0, linetype="Exp. GR Time")) +
-    geom_vline(aes(xintercept = 0, linetype="Dyn. risk GR")) +
-    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy")) + xlab("Time (years)") + 
-    scale_linetype_manual(values=c("dotted", "twodash", "solid"))  +
-    ylab(TeX('$SD\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
-    ticksY(0, 10, 1) + 
+  pp = ggplot(data=prias_long_i) + 
+    geom_line(aes(x=visitTimeYears, y=sqrt(variances), linetype="Fitted")) + 
+    geom_vline(aes(xintercept = 0, linetype="Exp. GR Time"), show.legend = F) +
+    geom_vline(aes(xintercept = 0, linetype="Dyn. risk GR"), show.legend = F) +
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy"), show.legend = F) + 
+    xlab("Time (years)") + 
+    scale_linetype_manual(values=c("dotted", "twodash", "dashed", "solid"))  +
+    ylab(TeX('$SD_g\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
+    ticksY(0, 10, 1) + ylim(0,7) +
     theme(text = element_text(size=11), axis.text=element_text(size=11), 
           legend.title = element_blank(), legend.text = element_text(size=11),
           plot.title = element_text(hjust = 0.5)) 
@@ -211,10 +227,9 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   return(pp) 
 }
 
-ggsave(file="report/pers_schedule/biometrics_submission/images/prias_demo/case_2340.eps", 
-       grid_arrange_shared_legend(p1,p2, plotList[[18]], nrow = 2, ncol = 2),
+ggsave(file="report/pers_schedule/biometrics_submission/images/prias_demo/case_911_t3.eps", 
+       grid_arrange_shared_legend(plotList[[12]],plotList[[15]],pp, nrow = 2, ncol = 2),
        width=8.27, height=9.69/1.25)
-
 
 compareVarianceOverTime = function(jmfitNorm, jmfitT3, prias_P_ID, sd=T){
   source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
@@ -252,12 +267,12 @@ compareVarianceOverTime = function(jmfitNorm, jmfitT3, prias_P_ID, sd=T){
                       visitTimeYears=rep(prias_long_i$visitTimeYears,2))
   plotDf$biopsyTimes = c(biopsyTimes, rep(NA, nrow(plotDf)-length(biopsyTimes)))
   
-  pp = ggplot(data=plotDf) + geom_point(aes(x=visitTimeYears, y=sd)) + 
+  pp = ggplot(data=plotDf) +
     geom_line(aes(x=visitTimeYears, y=sd, linetype=type)) + 
-    scale_linetype_manual(values=c("solid", "dotted", "dashed"))  +
-    ylab(TeX('$SD\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
-    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy")) + xlab("Time (years)") + 
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy"), show.legend = F) + 
+    xlab("Time (years)") + ylab(TeX('$SD_g\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
     ticksY(0, 10, 1) + 
+    scale_linetype_manual(values=c("solid", "dotted", "dashed"))  +
     theme(text = element_text(size=11), axis.text=element_text(size=11), 
           legend.title = element_blank(), legend.text = element_text(size=11),
           plot.title = element_text(hjust = 0.5, size=11)) 
@@ -266,70 +281,17 @@ compareVarianceOverTime = function(jmfitNorm, jmfitT3, prias_P_ID, sd=T){
   return(pp) 
 }
 
-# variance_911 = compareVarianceOverTime(joint_psa_replaced_prias_norm, joint_psa_replaced_prias_t3, 911) + ggtitle("Demo patient 1")
-ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/variance_demo_patients.eps", 
+variance_3174 = compareVarianceOverTime(joint_psa_replaced_prias_norm, joint_psa_replaced_prias_t3, 3174) + ggtitle("Demo patient 2")
+ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/variance_demo_patients_norm_t3.eps", 
        grid_arrange_shared_legend(variance_911, variance_3174, variance_2340, ncol=2, nrow=2),
        width=8.27, height=8.27 * 2.45/3)
-
-#Plotting to show model fit
-plotLog2PSAJMFitT3VsNorm = function(jmfitNorm, jmfitT3, patientId, maxRowNum=NA){
-  
-  ds = prias_long[prias_long$P_ID == patientId, ]
-  
-  if(!is.na(maxRowNum)){
-    ds=ds[1:maxRowNum,]
-  }
-  
-  lastBiopsyTime = tail(ds$visitTimeYears[!is.na(ds$gleason)],1)
-  
-  predNorm = predict(jmfitNorm, ds[!is.na(ds$psa),], type="Subject", idVar="P_ID", 
-                     last.time = lastBiopsyTime,
-                     FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
-  
-  predT3 = predict(jmfitT3, ds[!is.na(ds$psa),], type="Subject", idVar="P_ID", 
-                   FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
-  
-  ds = ds[,c("visitTimeYears", "log2psa")]
-  ds$type="Observed"
-  
-  ds = rbind(ds, data.frame("visitTimeYears"=attributes(predNorm)$time.to.pred[[1]], 
-                            "log2psa"=c(predNorm), type="Fitted (Normally distributed errors)"))
-  
-  ds = rbind(ds, data.frame("visitTimeYears"=attributes(predT3)$time.to.pred[[1]], 
-                            "log2psa"=c(predT3), type="Fitted (t-distributed df=3, errors)"))
-  
-  
-  breaks = if(round(max(ds$visitTimeYears))>6){
-    seq(0, round(max(ds$visitTimeYears)), by=2)
-  }else if(round(max(ds$visitTimeYears))>2){
-    seq(0, round(max(ds$visitTimeYears)), by=1)
-  }else if(round(max(ds$visitTimeYears))==2){
-    seq(0, round(max(ds$visitTimeYears)), length.out=5)
-  }else{
-    seq(0, round(max(ds$visitTimeYears)), length.out=3)
-  }
-  
-  p=ggplot(data=ds[!is.na(ds$log2psa),]) + 
-    geom_line(aes(x=visitTimeYears, y=log2psa, linetype=type)) + 
-    scale_x_continuous(breaks=breaks) + 
-    geom_vline(xintercept = lastBiopsyTime, linetype="twodash") + 
-    scale_linetype_manual(values=c("dotted", "dashed","solid")) + 
-    theme(text = element_text(size=11), axis.text=element_text(size=11),
-          legend.text = element_text(size=11), legend.title = element_blank(),
-          plot.title = element_text(hjust = 0.5, size=13)) +
-    xlab("Time(years)") + ylab(expression('log'[2]*'(PSA)'))
-  
-  print(p)
-  
-  return(p)
-}
-
 
 set.seed(2017)
 pidSample = training.prias.id$P_ID[sample(1:nrow(training.prias.id), size = 30)]
 
 plots = lapply(pidSample, plotLog2PSAJMFitT3VsNorm, 
-               jmfitNorm=joint_psa_replaced_prias, jmfitT3=joint_psa_replaced_prias_t3)
+               jmfitNorm=joint_psa_replaced_prias_norm, jmfitT3=joint_psa_replaced_prias_t3,
+               modelNames=c("Fitted", "Fitted"))
 
 plots[sapply(plots, function(x){
   dat = x$data
@@ -346,35 +308,64 @@ ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/subject
        width=8.27, height=8.27)
 
 #Demo patients, dynamic fit of the profile
-demoPlots = vector("list", 6)
+demoPlots = vector("list", 9)
+modelNames = c("Fitted", "Fitted")
+modelNames=c("Fitted (Normally distributed errors)","Fitted (t-distributed df=3, errors)")
 demoPlots[[1]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 911, maxRowNum = 12) + 
+                                          patientId = 911, maxRowNum = 12,
+                                          modelNames = modelNames) + 
   ggtitle("Demo patient 1")
 demoPlots[[2]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 3174, maxRowNum = 3) + 
-  ggtitle("Demo patient 2")
+                                          patientId = 911, maxRowNum = 15,
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 1")
 demoPlots[[3]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 2340, maxRowNum = 12) + 
-  ggtitle("Demo patient 3")
+                                          patientId = 911, maxRowNum = NA,
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 1")
+
 
 demoPlots[[4]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 911, maxRowNum = 15) + 
-  ggtitle("Demo patient 1")
+                                          patientId = 3174, maxRowNum = 3, 
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 2")
 demoPlots[[5]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 3174, maxRowNum = 8) + 
+                                          patientId = 3174, maxRowNum = 8,
+                                          modelNames = modelNames) + 
   ggtitle("Demo patient 2")
 demoPlots[[6]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
                                           jmfitT3 = joint_psa_replaced_prias_t3,
-                                          patientId = 2340, maxRowNum = 18) + 
+                                          patientId = 3174, maxRowNum = NA,
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 2")
+
+demoPlots[[7]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
+                                          jmfitT3 = joint_psa_replaced_prias_t3,
+                                          patientId = 2340, maxRowNum = 12,
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 3")
+demoPlots[[8]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
+                                          jmfitT3 = joint_psa_replaced_prias_t3,
+                                          patientId = 2340, maxRowNum = 18,
+                                          modelNames = modelNames) + 
   ggtitle("Demo patient 3")
 
-ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/fitted_demo_patients.eps", 
-       grid_arrange_shared_legend(plotlist = demoPlots, ncol=3, nrow=2),
-       width=8.27, height=8.27 * 2.25/3)
+demoPlots[[9]] = plotLog2PSAJMFitT3VsNorm(jmfitNorm = joint_psa_replaced_prias_norm,
+                                          jmfitT3 = joint_psa_replaced_prias_t3,
+                                          patientId = 2340, maxRowNum = NA,
+                                          modelNames = modelNames) + 
+  ggtitle("Demo patient 3")
 
+ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/fitted_demo_patients_norm_t3.eps", 
+       grid_arrange_shared_legend(plotlist = demoPlots, ncol=3, nrow=3),
+       width=8.27, height=8.27)
+
+ggsave(file="report/pers_schedule/biometrics_submission/images/model_fit/fitted_demo_patients_t3.eps", 
+       grid_arrange_shared_legend(plotlist =  demoPlots[c(3,6,9)], ncol=3, nrow=1),
+       width=8.27, height=8.27/2.5)
 

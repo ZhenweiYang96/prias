@@ -48,16 +48,15 @@ You may find below our response to the specific issues raised.
 
 	\begin{figure}[!htb]
 	\centerline{\includegraphics[width=\columnwidth]{images/model_fit/demo_expfail_norm_t3.eps}}
-	\caption{Dynamic expected failure time for the three demonstration patients at three different follow up times, using joint models with assumption of normal distributed errors, and t-distributed (df=3) errors.}
+	\caption{Dynamic expected failure time for the three demonstration patients at three different follow-up times, using joint models with assumption of normal distributed errors, and t-distributed (df=3) errors.}
 	\label{fig : demo_expfail_norm_t3}
 	\end{figure}
 
 	\begin{figure}[!htb]
-	\centerline{\includegraphics[width=\columnwidth]{images/model_fit/variance_demo_patients.eps}}
-	\caption{Dynamic variance of the posterior predictive distribution of event time for the three demonstration patients at three different follow up times, using joint models with assumption of normal distributed errors, and t-distributed (df=3) errors.}
-	\label{fig : variance_demo_patients}
+	\centerline{\includegraphics[width=\columnwidth]{images/model_fit/variance_demo_patients_norm_t3.eps}}
+	\caption{Dynamic variance of the posterior predictive distribution of event time for the three demonstration patients at three different follow-up times, using joint models with assumption of normal distributed errors, and t-distributed (df=3) errors.}
+	\label{fig : variance_demo_patients_norm_t3}
 	\end{figure}
-
 
 	\item The three patients were chosen on the basis of specific characteristics of their data. This is because we wanted to demonstrate three main features of the personalized schedules. For example, the first demonstration patient had many repeat biopsies, and thus via his profile we show how the variance of posterior predictive distribution of GR time decreases with each biopsy. Via the second demonstration patient we show how the schedules change with changes in PSA alone (no repeat biopsies). Whereas, via the third demonstration patient we show how the schedules work when information from PSA and repeat biopsies is not in concordance with each other. We would like to also mention that it is not the case that we conducted an exhaustive search to purposefully select only these three patients. 
 
@@ -70,16 +69,16 @@ You may find below our response to the specific issues raised.
 	\caption{Theoretical log baseline hazard of the simulated population versus mean of the fitted log baseline hazard. The 95\% confidence interval for the fitted log baseline hazard is obtained from the 500 simulations.}
 	\label{fig : fitted_baseline_hazard}
 	\end{figure}
-	\item As noted by the referee, indeed PRIAS switches to the annual schedule if a patient's PSA doubling time (PSA-DT), measured as the inverse of the slope of the regression line through the base two logarithm of PSA values, is less than 10 years. In this regard, the joint model allows the schedule to depend upon the observed PSA values (e.g., via PSA-DT). This is because the parameters are estimated using a full likelihood approach \citep{tsiatis2004joint}. To show this, consider the following full general specification of the JM that we use. Let $\boldsymbol{Y}_i$ denote the observed PSA measurements for the $i$-th patient, and $l_i, r_i$ denote the two time points of the interval in which GR occurs for the $i$-th patient. In addition let $T_i^S$ and $\mathcal{V}_i$ denote the schedule of biopsies and schedule of PSA measurements, respectively. Under the assumption that both of these schedules may depend upon only the observed $\boldsymbol{Y}_i$, the joint likelihood of all four processes is given by:
+	\item As noted by the referee, indeed PRIAS switches to the annual schedule if a patient's PSA doubling time (PSA-DT), measured as the inverse of the slope of the regression line through the base two logarithm of PSA values, is less than 10 years. In this regard, the joint model allows the schedule to depend upon the observed PSA values (e.g., via PSA-DT). This is because the parameters are estimated using a full likelihood approach \citep{tsiatis2004joint}. To show this, consider the following full general specification of the JM that we use. Let $\boldsymbol{y}_i$ denote the $n_i \times 1$ vector of PSA measurements for the $i$-th patient, and $l_i, r_i$ denote the two time points of the interval in which GR occurs for the $i$-th patient. In addition let $T_i^S$ and $\mathcal{V}_i$ denote the schedule of biopsies and schedule of PSA measurements, respectively. Under the assumption that both of these schedules may depend upon only the observed $\boldsymbol{y}_i$, the joint likelihood of all four processes is given by:
 
 	\begin{equation}
 	\label{eq : decomposition_likelihood}
-	p(\boldsymbol{Y}_i, l_i, r_i, T_i^S, \mathcal{V}_i \mid \boldsymbol{\theta}, \boldsymbol{\psi}) = p(\boldsymbol{Y}_i, l_i, r_i \mid \theta) \times p(T_i^S, \mathcal{V}_i \mid \boldsymbol{Y}_i, \boldsymbol{\psi})
+	p(\boldsymbol{y}_i, l_i, r_i, T_i^S, \mathcal{V}_i \mid \boldsymbol{\theta}, \boldsymbol{\psi}) = p(\boldsymbol{y}_i, l_i, r_i \mid \theta) \times p(T_i^S, \mathcal{V}_i \mid \boldsymbol{y}_i, \boldsymbol{\psi})
 	\end{equation}
 
-	From this decomposition we can see that even if the processes $T_i^S$ and $\mathcal{V}_i$ may be determined from $\boldsymbol{Y}_i$, if we are interested in the parameters $\boldsymbol{\theta}$ of the joint distribution of longitudinal and event outcome, we can maximize the likelihood based on the first term and ignore the second term. In other words, the second term will not carry information for $\boldsymbol{\theta}$.
+	From this decomposition we can see that even if the processes $T_i^S$ and $\mathcal{V}_i$ may be determined from $\boldsymbol{y}_i$, if we are interested in the parameters $\boldsymbol{\theta}$ of the joint distribution of longitudinal and event outcome, we can maximize the likelihood based on the first term and ignore the second term. In other words, the second term will not carry information for $\boldsymbol{\theta}$.
 
-	In order to demonstrate this we simulated a dataset with 750 patients. The true event times $T^*_i$ for these patients were generated using parameters from a joint model fitted to the PRIAS dataset. However this joint model did not include association between velocity of log PSA values and hazard of GR. That is, the hazard of GR $h_i(t)$ at any time $t$ depends only on the underlying log PSA value $m_i(t)$ at that time. Furthermore, for these patients we used the schedule of PRIAS to generate the interval $l_i \leq T^*_i \leq r_i$ in which GR is detected. Thus the observed data for $i$-th patient is $\{\boldsymbol{Y}_i, l_i, r_i\}$. Our aim is to show that if there is no association between $h_i(t)$ and velocity of log PSA value $m'_i(t)$, then even though the biopsy schedule depends on PSA-DT (which is a crude measure of PSA velocity), a JM fitted with both value and velocity associations will have an insignificant velocity association. In the fitted JM we found the value association (95\% credible interval in brackets) to be 0.182 [0.090, 0.274], and the velocity association to be -0.001 [-0.295, 0.254]. That is even though the schedule of biopsies depended upon observed PSA values it did not lead to a spurious association. 
+	In order to demonstrate this we simulated a dataset with 750 patients. The true event times $T^*_i$ for these patients were generated using parameters from a joint model fitted to the PRIAS dataset. However this joint model did not include association between velocity of log PSA values and hazard of GR. That is, the hazard of GR $h_i(t)$ at any time $t$ depends only on the underlying log PSA value $m_i(t)$ at that time. Furthermore, for these patients we used the schedule of PRIAS to generate the interval $l_i \leq T^*_i \leq r_i$ in which GR is detected. Thus the observed data for $i$-th patient is $\{\boldsymbol{y}_i, l_i, r_i\}$. Our aim is to show that if there is no association between $h_i(t)$ and velocity of log PSA value $m'_i(t)$, then even though the biopsy schedule depends on PSA-DT (which is a crude measure of PSA velocity), a JM fitted with both value and velocity associations will have an insignificant velocity association. In the fitted JM we found the value association (95\% credible interval in brackets) to be 0.182 [0.090, 0.274], and the velocity association to be -0.001 [-0.295, 0.254]. That is even though the schedule of biopsies depended upon observed PSA values it did not lead to a spurious association. 
 
 	With regards to the second question about the use of right censoring in the simulation study instead of interval censored data, this cannot lead to any differences in results. The reason is that we use a full likelihood approach as described in Section \ref{sec : jm_framework} of the original manuscript. Parameter estimation using full likelihood approaches always gives consistent and asymptotically unbiased results \citep{gentleman1994maximum}.
 
@@ -89,13 +88,14 @@ You may find below our response to the specific issues raised.
 	\begin{center}
 	\caption{Area under the receiver operating characteristic curves, and 95\% confidence interval in brackets, obtained using 15 bootstrapped datasets.}
 	\label{tab : AUC_reply_letter}
-	\begin{tabular}{lrrr}
-	\Hline
-	Association of hazard of GR                      & Year one   & Year two & Year three \\ 
-	\hline
-	with both $\log_2 \mbox{PSA}$ value and velocity                    & 0.613 [0.582, 0.632] & 0.648 [0.608, 0.685] & 0.593 [0.560, 0.638] \\
-	with only $\log_2 \mbox{PSA}$ value                   & 0.595 [0.565, 0.618] & 0.609 [0.568, 0.654] & 0.590 [0.536, 0.628] \\
-	\hline
+	\begin{tabular}{rrr}
+\Hline
+Year                      & $\log_2 \mbox{PSA}$ value and velocity association & $\log_2 \mbox{PSA}$ value association\\ 
+\hline
+1 & 0.613 [0.582, 0.632] & 0.595 [0.565, 0.618]\\
+2 & 0.648 [0.608, 0.685] & 0.609 [0.568, 0.654]\\
+3 & 0.593 [0.560, 0.638] & 0.590 [0.536, 0.628]\\
+\hline
 	\end{tabular}	
 	\end{center}
 	\end{table}

@@ -1,24 +1,23 @@
 % !TEX root =  ../supplementary.tex
-
 \section{Joint Model for Time to Event and Longitudinal Outcomes}
 \label{web_sec : jm_framework}
-We start with the definition of the joint modeling framework that will be used to fit a model to the available dataset, and then to plan biopsies for future patients. Let $T_i^*$ denote the true Gleason reclassification (referred to as GR hereafter) time for the $i$-th patient enrolled in an AS program. Let $S$ be the schedule of biopsies prescribed to this patient. The corresponding vector of time of biopsies is denoted by $T_i^S = \{T^S_{i0}, T^S_{i1}, \ldots, T^S_{i{N_i^S}}; T^S_{ij} < T^S_{ik}, \forall j<k\}$, where $N_i^S$ are the total number of biopsies conducted. Because of the periodical nature of biopsy schedules, $T_i^*$ cannot be observed directly and it is only known to fall in an interval $l_i < T_i^* \leq r_i$, where $l_i = T^S_{i{N_i^S - 1}}, r_i = T^S_{i{N_i^S}}$ if GR is observed, and $l_i = T^S_{i{N_i^S}}, r_i=\infty$ if GR is not observed yet. Further let $\bmath{y}_i$ denote the $n_i \times 1$  vector of PSA levels for the $i$-th patient. For a sample of $n$ patients the observed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \bmath{y}_i; i = 1, \ldots, n\}$.
+We start with a short introduction of the joint modeling (JM) framework we will use in our following developments. Let $T_i^*$ denote the true Gleason reclassification (GR) time for the $i$-th patient and let $S$ be the schedule of his biopsies. Let the vector of the time of biopsies be denoted by $T_i^S = \{T^S_{i0}, T^S_{i1}, \ldots, T^S_{i{N_i^S}}; T^S_{ij} < T^S_{ik}, \forall j<k\}$, where $N_i^S$ are the total number of biopsies conducted. Because biopsy schedules are periodical, $T_i^*$ cannot be observed directly and it is only known to fall in an interval $l_i < T_i^* \leq r_i$, where $l_i = T^S_{i{N_i^S - 1}}, r_i = T^S_{i{N_i^S}}$ if GR is observed, and $l_i = T^S_{i{N_i^S}}, r_i=\infty$ if GR is not observed yet. Further let $\bmath{y}_i$ denote the $n_i \times 1$ vector of PSA levels for the $i$-th patient. For a sample of $n$ patients the observ{}ed data is denoted by $\mathcal{D}_n = \{l_i, r_i, \bmath{y}_i; i = 1, \ldots, n\}$.
 
-The longitudinal outcome of interest, namely PSA level, is continuous in nature and thus to model it the joint model utilizes a linear mixed effects model (LMM) of the form:
+The longitudinal outcome of interest, namely PSA level, is continuous in nature and thus to model it the JM utilizes a linear mixed effects model (LMM) of the form:
 \begin{equation*}
 \begin{split}
 y_i(t) &= m_i(t) + \varepsilon_i(t)\\
 &=\bmath{x}_i^T(t) \bmath{\beta} + \bmath{z}_i^T(t) \bmath{b}_i + \varepsilon_i(t),
 \end{split}
 \end{equation*}
-where $\bmath{x}_i(t)$ denotes the row vector of the design matrix for fixed effects and $\bmath{z}_i(t)$ denotes the same for random effects. Correspondingly, the fixed effects are denoted by $\bmath{\beta}$ and random effects by $\bmath{b}_i$. The random effects are assumed to be normally distributed with mean zero and $q \times q$ covariance matrix $\bmath{D}$. The true and unobserved PSA level at time $t$ is denoted by $m_i(t)$. Unlike $y_i(t)$, the former is not contaminated with the measurement error $\varepsilon_i(t)$. The error is assumed to be normally distributed with mean zero and variance $\sigma^2$, and is independent of the random effects $\bmath{b}_i$.
+where $\bmath{x}_i(t)$ and $\bmath{z}_i(t)$ denote the row vectors of the design matrix for fixed and random effects, respectively. The fixed and random effects are denoted by $\bmath{\beta}$ and $\bmath{b}_i$, respectively. The random effects are assumed to be normally distributed with mean zero and $q \times q$ covariance matrix $\bmath{D}$. The true and unobserved, error free PSA level at time $t$ is denoted by $m_i(t)$. The error $\varepsilon_i(t)$ is assumed to be t-distributed with three degrees of freedom and scale $\sigma$ (see \ref{subsec : t_dist_choice}), and is independent of the random effects $\bmath{b}_i$.
 
-To model the effect of PSA on hazard of GR, joint models utilize a relative risk sub-model. The hazard of GR for patient $i$ at any time point $t$, denoted by $h_i(t)$, depends on a function of subject specific linear predictor $m_i(t)$ and/or the random effects:
+To model the effect of PSA on hazard of GR, JMs utilize a relative risk sub-model. The hazard of GR for patient $i$ at any time point $t$, denoted by $h_i(t)$, depends on a function of subject specific linear predictor $m_i(t)$ and/or the random effects:
 \begin{align*}
 h_i(t \mid \mathcal{M}_i(t), \bmath{w}_i) &= \lim_{\Delta t \to 0} \frac{\mbox{Pr}\big\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \bmath{w}_i\big\}}{\Delta t}\\
 &=h_0(t) \exp\big[\bmath{\gamma}^T\bmath{w}_i + f\{\mathcal{M}_i(t), \bmath{b}_i, \bmath{\alpha}\}\big], \quad t>0,
 \end{align*}
-where $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ denotes the history of the underlying PSA levels up to time $t$. The vector of baseline covariates is denoted by $\bmath{w}_i$, and $\bmath{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\bmath{\alpha}$ specifies the functional form of PSA levels \citep{brown2009assessing,rizopoulos2012joint,taylor2013real,rizopoulos2014bma} that is used in the linear predictor of the relative risk model. Some functional forms relevant to the problem at hand are the following: 
+where $\mathcal{M}_i(t) = \{m_i(v), 0\leq v \leq t\}$ denotes the history of the underlying PSA levels up to time $t$. The vector of baseline covariates is denoted by $\bmath{w}_i$, and $\bmath{\gamma}$ are the corresponding parameters. The function $f(\cdot)$ parametrized by vector $\bmath{\alpha}$ specifies the functional form of PSA levels \citep{brown2009assessing,rizopoulos2012joint,taylor2013real,rizopoulos2014bma} that is used in the linear predictor of the relative risk sub-model. Some functional forms relevant to the problem at hand are the following: 
 \begin{eqnarray*}
 \left \{
 \begin{array}{l}
@@ -33,16 +32,18 @@ These formulations of $f(\cdot)$ postulate that the hazard of GR at time $t$ may
 \end{equation*}
 where $B_q(t, \bmath{v})$ denotes the $q$-th basis function of a B-spline with knots $\bmath{v} = v_1, \ldots, v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}.
 
+\clearpage
+
 \subsection{Parameter Estimation}
-We estimate parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\bmath{\theta}$ denote the vector of the parameters of the joint model. The joint model postulates that given the random effects, time to GR and longitudinal responses taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
+We estimate parameters of the JM using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\bmath{\theta}$ denote the vector of the parameters of the JM. The JM postulates that given the random effects, time to GR and longitudinal responses taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
 \begin{align*}
 p(\bmath{\theta}, \bmath{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \bmath{y}_i \mid \bmath{b}_i, \bmath{\theta}) p(\bmath{b}_i \mid \bmath{\theta}) p(\bmath{\theta})\\
-& \propto \prod_{i=1}^n p(l_i, r_i \mid \bmath{b}_i, \bmath{\theta}) p(\bmath{y_i} \mid \bmath{b}_i, \bmath{\theta}) p(\bmath{b}_i \mid \bmath{\theta}) p(\bmath{\theta}),\\
+& \propto \prod_{i=1}^n p(l_i, r_i \mid \bmath{b}_i, \bmath{\theta}) p(\bmath{y}_i \mid \bmath{b}_i, \bmath{\theta}) p(\bmath{b}_i \mid \bmath{\theta}) p(\bmath{\theta}),\\
 p(\bmath{b}_i \mid \bmath{\theta}) &= \frac{1}{\sqrt{(2 \pi)^q \text{det}(\bmath{D})}} \exp(\bmath{b}_i^T \bmath{D}^{-1} \bmath{b}_i),
 \end{align*}
 where the likelihood contribution of longitudinal outcome conditional on random effects is:
 \begin{align*}
-p(\bmath{y_i} \mid \bmath{b}_i, \bmath{\theta}) &= \frac{1}{\big(\sqrt{2 \pi \sigma^2}\big)^{n_i}} \exp\bigg(-\frac{{\lVert{\bmath{y_i} - \bmath{X}_i\bmath{\beta} - \bmath{Z}_i\bmath{b}_i}\rVert}^2}{\sigma^2}\bigg),\\
+p(\bmath{y}_i \mid \bmath{b}_i, \bmath{\theta}) &= \frac{1}{\big(\sqrt{2 \pi \sigma^2}\big)^{n_i}} \exp\bigg(-\frac{{\lVert{\bmath{y}_i - \bmath{X}_i\bmath{\beta} - \bmath{Z}_i\bmath{b}_i}\rVert}^2}{\sigma^2}\bigg),\\
 \bmath{X}_i &= \{\bmath{x}_i(t_{i1})^T, \ldots, \bmath{x}_i(t_{in_i})^T\}^T,\\
 \bmath{Z}_i &= \{\bmath{z}_i(t_{i1})^T, \ldots, \bmath{z}_i(t_{in_i})^T\}^T.
 \end{align*}
@@ -54,3 +55,16 @@ p(l_i,r_i\mid \bmath{b}_i,\bmath{\theta}) = \exp\Big\{-\int_0^{l_i} h_i(s \mid \
 The integral in (\ref{web_eq : likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate it.
 
 We use independent normal priors with zero mean and variance 100 for the fixed effects $\bmath{\beta}$, and inverse Gamma prior with shape and rate both equal to 0.01 for the parameter $\sigma^2$. For the variance-covariance matrix $\bmath{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to $q$ (number of random effects). For the relative risk model's parameters $\bmath{\gamma}$ and the association parameters $\bmath{\alpha}$, we use independent normal priors with zero mean and variance 100.
+
+\clearpage
+\subsection{Interval Censoring in Time of Gleason Reclassification}
+\label{subsec : int_censoring_fulllikelihood_proof}
+The true time of GR $T^*_i$ is not known for any of the patients. In order to detect GR, PRIAS uses a fixed schedule of biopsies wherein biopsies are conducted at year one, year four, year seven and year ten of follow-up, and every five years thereafter. However, PRIAS switches to a more frequent annual biopsy schedule for faster progressing patients. These are patients with PSA doubling time (PSA-DT) of less than 10 years. The latter is measured as the inverse of the slope of the regression line through the base two logarithm of PSA values. Thus, the interval $l_i < T_i^* \leq r_i$ in which GR is detected depends on the observed PSA values. 
+
+It is natural to question in this scenario if the parameters of the JM are affected by PSA-DT dependent interval censoring. However, because the parameters of the JM are estimated using a full likelihood approach \citep{tsiatis2004joint}, the JM allows the schedule of biopsies to depend upon the observed PSA values (e.g., via PSA-DT). To show this, consider the following full general specification of the JM that we use. Let $\boldsymbol{y}_i$ denote the observed PSA measurements for the $i$-th patient, and $l_i, r_i$ denote the two time points of the interval in which GR occurs for the $i$-th patient. In addition let $T_i^S$ and $\mathcal{V}_i$ denote the schedule of biopsies and schedule of PSA measurements, respectively. Under the assumption that both of these schedules may depend upon only the observed $\boldsymbol{y}_i$, the joint likelihood of all four processes is given by:
+\begin{equation}
+p(\boldsymbol{y}_i, l_i, r_i, T_i^S, \mathcal{V}_i \mid \boldsymbol{\theta}, \boldsymbol{\psi}) = p(\boldsymbol{y}_i, l_i, r_i \mid \theta) \times p(T_i^S, \mathcal{V}_i \mid \boldsymbol{y}_i, \boldsymbol{\psi}).
+\end{equation}
+From this decomposition we can see that even if the processes $T_i^S$ and $\mathcal{V}_i$ may be determined from $\boldsymbol{y}_i$, if we are interested in the parameters $\boldsymbol{\theta}$ of the joint distribution of longitudinal and event outcome, we can maximize the likelihood based on the first term and ignore the second term. In other words, the second term will not carry information for $\boldsymbol{\theta}$.
+
+It is important to note that, since we use a full likelihood approach, the estimates that we obtain are consistent and asymptotically unbiased \citep{gentleman1994maximum}, despite the interval censoring observed. 

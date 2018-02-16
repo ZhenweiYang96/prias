@@ -1,93 +1,49 @@
-demoPatientPID = c(3174)
-
-maxPossibleFailureTime = 20
-for(patientId in demoPatientPID){
-  print(paste("Patient:", patientId))
+compareVarianceOverTime = function(jmfitNorm, jmfitT3, prias_P_ID, sd=T){
+  source("../JMBayes/Anirudh/dev/varCondFailureTime.R")
+  environment(varCondFailureTime) <- asNamespace('JMbayes')
   
-  demoPatient = prias_long[prias_long$P_ID == patientId,]
+  ct= makeCluster(detectCores())
+  registerDoParallel(ct)
   
-  minVisits = 1
-  plotList = vector("list", nrow(demoPatient) - minVisits)
-  #for(j in minVisits:nrow(demoPatient)){
-  #for(j in c(12,18)){ # for 2340
-  #for(j in c(12,15)){ # for 911
-  for(j in c(3,8)){ # for 3174
-    subDataSet = demoPatient[1:j, ]
-    
-    subDataSet$expectedFailureTime = NA
-    subDataSet$survProbF1Score = NA
-    
-    curVisitTime = tail(subDataSet$visitTimeYears, 1)
-    #lastBiopsyTime = getLastBiopsyTime(patientId, upperLimitTime = curVisitTime)
-    lastBiopsyTime = tail(subDataSet$visitTimeYears[!is.na(subDataSet$gleason)],1)
-    #lastBiopsyTime  = 1.03561643835616
-    
-    subDataSet$lastBiopsyTime = lastBiopsyTime
-    
-    print(paste("Last biopsy time:", lastBiopsyTime))
-    survTimes = seq(lastBiopsyTime, maxPossibleFailureTime, 0.1)
-    survProbs = c(1,survfitJM(joint_psa_replaced_prias_norm, subDataSet[!is.na(subDataSet$psa),],
-                              idVar="P_ID", last.time = lastBiopsyTime,
-                              survTimes = survTimes)$summaries[[1]][, "Median"])
-    
-    nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)==min(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)))[1]
-    survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
-    
-    if(is.na(survProbF1Score)){
-      subDataSet$survTimeF1Score[1] = NA
-    }else{
-      subDataSet$survTimeF1Score[1] = survTimes[which(abs(survProbs-survProbF1Score)==min(abs(survProbs-survProbF1Score)))[1]]
-      
-      subDataSet$survTimeF1Score[1] = expectedCondFailureTime(joint_psa_replaced_prias_norm, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
-                                                              lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
-      subDataSet$survTimeF1Score[1] = modifyScheduledBiopsyTime(subDataSet$survTimeF1Score[1], curVisitTime, lastBiopsyTime)
-    }
-    #subDataSet$expectedFailureTime[1]= expectedCondFailureTime(joint_psa_replaced_prias_t3, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
-    #                                                             lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
-    #subDataSet$expectedFailureTime[1] = modifyScheduledBiopsyTime(subDataSet$expectedFailureTime[1], curVisitTime, lastBiopsyTime)
-    
-    survProbs = c(1,survfitJM(joint_psa_replaced_prias_t3_2, subDataSet[!is.na(subDataSet$psa),],
-                              idVar="P_ID", last.time = lastBiopsyTime,
-                              survTimes = survTimes)$summaries[[1]][, "Median"])
-    
-    nearest_time_index = which(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)==min(abs(dynamicCutoffTimes_PRIAS-lastBiopsyTime)))[1]
-    survProbF1Score = cutoffValues_PRIAS[[nearest_time_index]]["f1score"]
-    
-    if(is.na(survProbF1Score)){
-      subDataSet$expectedFailureTime[1] = NA
-    }else{
-      subDataSet$expectedFailureTime[1] = survTimes[which(abs(survProbs-survProbF1Score)==min(abs(survProbs-survProbF1Score)))[1]]
-      subDataSet$expectedFailureTime[1] = expectedCondFailureTime(joint_psa_replaced_prias_t3_2, subDataSet[!is.na(subDataSet$psa),], idVar = "P_ID", 
-                                                              lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)
-      subDataSet$expectedFailureTime[1] = modifyScheduledBiopsyTime(subDataSet$expectedFailureTime[1], curVisitTime, lastBiopsyTime)
-    }
-    
-    
-    print(survProbF1Score)
-    print(subDataSet$survTimeF1Score[1])
-    print(subDataSet$expectedFailureTime[1])
-    #print(sqrt(varCondFailureTime(joint_psa_replaced_prias, subDataSet[!is.na(subDataSet$log2psa),], idVar = "P_ID", lastBiopsyTime, maxPossibleFailureTime = maxPossibleFailureTime)))
-    
-    plotList[[j-minVisits + 1]] = ggplot(data=subDataSet[!is.na(subDataSet$psa),]) + geom_point(aes(x = visitTimeYears, y=psa)) +
-      geom_line(aes(x = visitTimeYears, y=psa)) +
-      # geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time")) +
-      # geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Dyn. risk GR")) +
-      geom_vline(aes(xintercept = max(expectedFailureTime, na.rm = T),  linetype="Exp. GR Time (t-distributed, df=3 errors)")) +
-      geom_vline(aes(xintercept = max(survTimeF1Score, na.rm = T), linetype="Exp. GR Time (Normally disttributed Errors)")) +
-      geom_vline(aes(xintercept = max(lastBiopsyTime, na.rm = T),linetype="Latest biopsy")) + 
-      ticksX(0, 20, 1) + ylim(0, 100) + 
-      scale_linetype_manual(values=c("dotted", "dashed", "solid")) +
-      theme(text = element_text(size=11), axis.text=element_text(size=11), 
-            legend.title = element_blank(),
-            plot.title = element_text(hjust = 0.5))+
-      xlab("Time(years)") + ylab("PSA (ng/mL)")
-    
-    # print(plotList[[j-minVisits + 1]])
-  }
+  prias_long_i = prias_long[prias_long$P_ID==prias_P_ID,]
+  biopsyTimes = prias_long_i$visitTimeYears[!is.na(prias_long_i$gleason)]
+  prias_long_i$biopsyTimes = c(biopsyTimes, rep(NA, nrow(prias_long_i)-length(biopsyTimes)))
   
-  #png(width=1280, height=960, filename = paste("images/prias_demo/prias_demo_pid_new", patientId, ".png", sep=""))
-  #plotList = lapply(plotList, function(x){x + theme(legend.position="none")})
-  #multiplot(plotList[[13]], plotList[[18]], cols = 2)
+  nrowOrig = nrow(prias_long_i)
   
-  #dev.off()
+  variances_norm=foreach(k=1:nrow(prias_long_i),.combine='c', .export=c("varCondFailureTime"),
+                         .packages=c("JMbayes", "splines")) %dopar%{
+                           #variances=foreach(k=1:5,.combine='rbind', .packages=c("JMbayes", "splines")) %dopar%{
+                           subset = prias_long_i[1:k,]
+                           last.time = tail(subset$visitTimeYears[!is.na(subset$gleason)],1)
+                           return(varCondFailureTime(jmfitNorm, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 20))
+                         }
+  
+  variances_t3=foreach(k=1:nrow(prias_long_i),.combine='c', .export=c("varCondFailureTime"),
+                       .packages=c("JMbayes", "splines")) %dopar%{
+                         #variances=foreach(k=1:5,.combine='rbind', .packages=c("JMbayes", "splines")) %dopar%{
+                         subset = prias_long_i[1:k,]
+                         last.time = tail(subset$visitTimeYears[!is.na(subset$gleason)],1)
+                         return(varCondFailureTime(jmfitT3, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 20))
+                       }
+  
+  stopCluster(ct)
+  
+  plotDf = data.frame(sd = sqrt(c(variances_norm, variances_t3)), 
+                      type=rep(c("Normally distributed errors", "t-distributed (df=3) errors"),each=nrowOrig), 
+                      visitTimeYears=rep(prias_long_i$visitTimeYears,2))
+  plotDf$biopsyTimes = c(biopsyTimes, rep(NA, nrow(plotDf)-length(biopsyTimes)))
+  
+  pp = ggplot(data=plotDf) +
+    geom_line(aes(x=visitTimeYears, y=sd, linetype=type)) + 
+    geom_vline(aes(xintercept = biopsyTimes, na.rm=T, linetype="Latest biopsy"), show.legend = F) + 
+    xlab("Time (years)") + ylab(TeX('$SD_g\\left[T^*_j\\right]$')) + ticksX(0, max = 20, 1) +
+    ticksY(0, 10, 1) + 
+    scale_linetype_manual(values=c("solid", "dotted", "dashed"))  +
+    theme(text = element_text(size=11), axis.text=element_text(size=11), 
+          legend.title = element_blank(), legend.text = element_text(size=11),
+          plot.title = element_text(hjust = 0.5, size=11)) 
+  
+  print(pp)
+  return(pp) 
 }

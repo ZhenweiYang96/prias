@@ -46,3 +46,6 @@ ggsave(file="report/pers_schedule/biometrics_submission/images/qqplot_t3.eps",
 ggsave(file="report/pers_schedule/biometrics_submission/images/qqplot_norm_t3.eps", 
        multiplot(p1,p2, cols=2),
        width=8.27, height=8.27/2)
+
+###################
+joint_psa_replaced_prias_t3$Funs$densLong = function(y, eta.y, scale, log = FALSE, data){dgt(x=y, mu=eta.y, sigma=scale, df = 3, log = log)}

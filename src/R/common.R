@@ -11,7 +11,7 @@ library(latex2exp)
 
 source("src/R/replaceMCMCContents.R")
 source("src/R/rocJM_mod.R")
-source("../JMBayes/Anirudh/dev/multiplot.R")
+source("../JMBayes/Anirudh/dev/grid_arrange_shared_legend.R")
 
 ticksX = function(from=0, max, by, labels=waiver(), extraLabels=NA){
   scale_x_continuous(breaks = c(seq(from, max, by = by), extraLabels), labels = labels)
@@ -94,32 +94,65 @@ effectPlotJMData <- function (mvJMbayesObject, lmeObject, newdata, orig_data) {
 }
 
 #not mvjoint model bayes
-plotLog2PSAJMFit = function(jmfit, patientId){
+#Either of the two models can be NULL
+#use jointModelBayes object not mvJointModelBayes
+plotLog2PSAJMFitT3VsNorm = function(jmfitNorm, jmfitT3, 
+                                    patientId, maxRowNum=NA, 
+                                    modelNames=c("Fitted (Normally distributed errors)","Fitted (t-distributed df=3, errors)")){
   
-  ds = pria[psa_data_set$P_ID == patientId, ]
+  ds = prias_long[prias_long$P_ID == patientId, ]
   
-  pred = predict(jmfit, ds, type="Subject", idVar="P_ID", 
-                 FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
+  if(!is.na(maxRowNum)){
+    ds=ds[1:maxRowNum,]
+  }
+  
+  lastBiopsyTime = tail(ds$visitTimeYears[!is.na(ds$gleason)],1)
+  
+  if(!is.null(jmfitNorm)){
+    predNorm = predict(jmfitNorm, ds[!is.na(ds$psa),], type="Subject", idVar="P_ID", 
+                       last.time = lastBiopsyTime,
+                       FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
+  }
+  
+  if(!is.null(jmfitT3)){
+    predT3 = predict(jmfitT3, ds[!is.na(ds$psa),], type="Subject", idVar="P_ID", 
+                     FtTimes = seq(min(ds$visitTimeYears), max(ds$visitTimeYears), length.out = 50))
+  }
   
   ds = ds[,c("visitTimeYears", "log2psa")]
   ds$type="Observed"
   
-  ds = rbind(ds, data.frame("visitTimeYears"=attributes(pred)$time.to.pred[[1]], 
-                            "log2psa"=c(pred), type="Fitted"))
- 
+  if(!is.null(jmfitNorm)){
+    ds = rbind(ds, data.frame("visitTimeYears"=attributes(predNorm)$time.to.pred[[1]], 
+                              "log2psa"=c(predNorm), type=modelNames[1]))
+  }
   
-  breaks = if(round(max(ds$visitTimeYears))>2){
+  if(!is.null(jmfitT3)){
+    ds = rbind(ds, data.frame("visitTimeYears"=attributes(predT3)$time.to.pred[[1]], 
+                              "log2psa"=c(predT3), type=modelNames[2]))
+  }
+  
+  breaks = if(round(max(ds$visitTimeYears))>6){
+    seq(0, round(max(ds$visitTimeYears)), by=2)
+  }else if(round(max(ds$visitTimeYears))>2){
     seq(0, round(max(ds$visitTimeYears)), by=1)
   }else if(round(max(ds$visitTimeYears))==2){
     seq(0, round(max(ds$visitTimeYears)), length.out=5)
   }else{
     seq(0, round(max(ds$visitTimeYears)), length.out=3)
   }
-    
-  p=ggplot(data=ds) + 
+  
+  linetypes = c("dotted", "dashed", "solid", "solid")
+  
+  if(is.null(jmfitNorm) | is.null(jmfitT3)){
+    linetypes = c("dotted", "solid", "solid")  
+  }
+  
+  p=ggplot(data=ds[!is.na(ds$log2psa),]) + 
     geom_line(aes(x=visitTimeYears, y=log2psa, linetype=type)) + 
-    scale_linetype_manual(values=c("twodash", "solid")) + 
     scale_x_continuous(breaks=breaks) + 
+    geom_vline(aes(xintercept = lastBiopsyTime, linetype="Latest biopsy"), show.legend=F) + 
+    scale_linetype_manual(values=linetypes) + 
     theme(text = element_text(size=11), axis.text=element_text(size=11),
           legend.text = element_text(size=11), legend.title = element_blank(),
           plot.title = element_text(hjust = 0.5, size=13)) +
@@ -157,7 +190,7 @@ plotMarginalPSAFittedCurveJM = function(models, lmeObject, transformPSA=F, indiv
       plot = plot + geom_line(aes(y=pred, x=visitTimeYears), color="black") +
         ticksX(from=0, max = 10, by = 1) + 
         ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
-        xlab("Follow-up time (Years)") + 
+        xlab("Time (Years)") + 
         ylab(expression('Fitted marginal '*'log'[2]*'(PSA)')) + 
         theme(text = element_text(size=13), axis.text=element_text(size=13))
       print(plot)
@@ -180,7 +213,7 @@ plotMarginalPSAFittedCurveJM = function(models, lmeObject, transformPSA=F, indiv
     plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=Model, linetype=Model)) +
       ticksX(from=0, max = 10, by = 1) + 
       ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
-      xlab("Follow-up time (Years)") + 
+      xlab("Time (Years)") + 
       ylab(expression('Fitted marginal '*'log'[2]*'(PSA)')) + 
       theme(text = element_text(size=11), axis.text=element_text(size=11), 
             legend.position = "top", legend.title = element_blank(), 
@@ -194,7 +227,7 @@ plotMarginalPSAFittedCurveJM = function(models, lmeObject, transformPSA=F, indiv
 
 plotPSAFittedCurveLME = function(models, transformPSA=F, individually=T, modelNames=NULL){
   newDF <- with(training_psa_data_set, expand.grid(visitTimeYears = seq(0, 10, by = 0.5),
-                                          Age = 70))
+                                                   Age = 70))
   plotData = lapply(models, function(model){
     temp = effectPlotData(model, newDF, training_psa_data_set)
     
@@ -213,7 +246,7 @@ plotPSAFittedCurveLME = function(models, transformPSA=F, individually=T, modelNa
       plot = plot + geom_line(aes(y=pred, x=visitTimeYears), color="black") +
         ticksX(from=0, max = 10, by = 1) + 
         ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
-        xlab("Follow-up time (Years)") + 
+        xlab("Time (Years)") + 
         ylab(expression('log'[2]*'(PSA)')) + theme(text = element_text(size=13), axis.text=element_text(size=13))
       print(plot)
       return(plot)
@@ -235,7 +268,7 @@ plotPSAFittedCurveLME = function(models, transformPSA=F, individually=T, modelNa
     plot = plot + geom_line(aes(y=pred, x=visitTimeYears, group=Model, linetype=Model)) +
       ticksX(from=0, max = 10, by = 1) + 
       ticksY(from=0, 25, by = if(transformPSA==F){0.1}else{0.5}) + 
-      xlab("Follow-up time (Years)") + 
+      xlab("Time (Years)") + 
       ylab(expression('log'[2]*'(PSA)')) + 
       theme(text = element_text(size=11), axis.text=element_text(size=11), 
             legend.position = "top", legend.title = element_blank()) + 
@@ -248,25 +281,25 @@ plotPSAFittedCurveLME = function(models, transformPSA=F, individually=T, modelNa
 
 fitUnivaritePSAModel = function(fixedSplineKnots=c(0.1,0.5, 4), randomSplineKnots=c(0.1), 
                                 boundaryKnots=range(psa_data_set$visitTimeYears), method="ML"){
-
+  
   fixedFormula = as.formula(paste("log2psa ~ I(Age - 70) + I((Age - 70)^2) + ",
-                  "ns(visitTimeYears, knots=c(", paste(fixedSplineKnots, collapse=", "), 
-                  "), Boundary.knots=c(", paste(boundaryKnots, collapse=", "),"))", sep=""))
+                                  "ns(visitTimeYears, knots=c(", paste(fixedSplineKnots, collapse=", "), 
+                                  "), Boundary.knots=c(", paste(boundaryKnots, collapse=", "),"))", sep=""))
   
   randomFormula = as.formula(paste("~ns(visitTimeYears, knots=c(", paste(randomSplineKnots, collapse=", "), 
-                        "), Boundary.knots=c(", paste(boundaryKnots, collapse=", "),"))|P_ID", sep=""))
+                                   "), Boundary.knots=c(", paste(boundaryKnots, collapse=", "),"))|P_ID", sep=""))
   
   model = lme(fixed=fixedFormula, random = randomFormula, 
-      data=psa_data_set,
-      control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"), 
-      method = method)
+              data=psa_data_set,
+              control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"), 
+              method = method)
   
   model$call$fixed = fixedFormula
   model$call$random = randomFormula
   
   print(anova(model, type="marginal"))
   plot = qplot(x=model$fitted[,2], y=model$residuals[,2], xlab="Fitted", 
-        ylab="Residuals", geom=c("point", "smooth"))
+               ylab="Residuals", geom=c("point", "smooth"))
   print(plot)
   
   return(model)
@@ -302,7 +335,7 @@ plotDynamicSurvProb = function(pid, fittedJointModel, futureTimeDt = 3){
   #subsetting twice because there are two rows for the last time, and -1 to remove one of those two rows
   longprof[longprof$visitTimeYears>=lastPSATime, c("survMean", "survLow", "survUp")][-1,] =
     (sfit$summaries[[1]][, c("Mean", "Lower", "Upper")] * (ymax-ymin) + ymin)
-
+  
   p=ggplot() +
     geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred)) +
     geom_point(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=logpsa1, x=visitTimeYears), colour="red", alpha=0.4) +
@@ -312,7 +345,7 @@ plotDynamicSurvProb = function(pid, fittedJointModel, futureTimeDt = 3){
     xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)')) +
     scale_y_continuous(limits = c(ymin, ymax),breaks = round(seq(ymin, ymax, 0.25),2), 
                        sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
-
+  
   print(p)
 }
 
