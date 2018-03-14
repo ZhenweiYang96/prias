@@ -71,7 +71,7 @@ df = data.frame(hazard = c(log(mixtureTheoreticalHazard), fittedHazardMean),
 ggplot(data=df[df$time > 0.1 & df$time<=8,]) + 
   geom_line(aes(x=time, y=(hazard), linetype=Baseline.Hazard)) + 
   geom_ribbon(aes(x=time, ymin=(confIntLow), ymax=(confIntHigh)), fill = "grey", alpha=0.4) + 
-  scale_x_continuous(breaks = seq(0, 10, 1)) + 
+  scale_x_continuous(breaks = c(0.1, seq(1, 10, 1))) + 
   scale_linetype_manual(values=c("twodash", "solid")) +
   theme(legend.title=element_blank(), legend.position = "top",
         text = element_text(size=11), axis.text=element_text(size=11),
