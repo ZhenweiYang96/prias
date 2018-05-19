@@ -1,5 +1,3 @@
-prias.id$progression_time_start[prias.id$progression_time_start == 0] = 10e-3
-
 training.prias.id = prias.id[!(prias.id$P_ID %in% c(3174, 2340, 911)),]
 
 ###########################################################################
@@ -15,6 +13,9 @@ prias.id.rightCens$progression_time = ifelse(prias.id$progression_time_end==Inf,
 
 survModel_rightCens = coxph(Surv(progression_time, progressed) ~ I(Age - 70) +  I((Age - 70)^2), 
                                     data=prias.id.rightCens, x = T, model = T)
+
+
+#
 
 training.prias.id.rightCens = training.prias.id
 training.prias.id.rightCens$progressed = ifelse(training.prias.id$progressed>0, 1, 0)

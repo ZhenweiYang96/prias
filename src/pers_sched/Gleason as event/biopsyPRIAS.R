@@ -202,7 +202,7 @@ plotVarianceOverTime = function(modelObject, prias_P_ID, sd=T){
   #variances=foreach(k=1:5,.combine='rbind', .packages=c("JMbayes", "splines")) %dopar%{
     subset = prias_long_i[1:k,]
     last.time = tail(subset$visitTimeYears[!is.na(subset$gleason)],1)
-    return(varCondFailureTime(modelObject, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 20))
+    return(varCondFailureTime(modelObject, subset[!is.na(subset$psa),], "P_ID", last.time, maxPossibleFailureTime = 15))
   }
   
   stopCluster(ct)

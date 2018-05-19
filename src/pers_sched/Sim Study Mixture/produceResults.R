@@ -256,7 +256,7 @@ poolInformation = function(rDataFolder, simNumbers, DtSubFolder = "Dt_1", subPop
   #+ theme(text = element_text(size=15), axis.text.x = element_text(angle = 45, hjust = 1))
   
   xdata = rep(methodNames,length(resultsSummary))
-  indicesIgnore = xdata %in% c("Hybrid-Youden", "Youden", "Cut95")
+  indicesIgnore = xdata %in% c("Hybrid-Youden", "Youden", "Cut95", "Med. GR Time")
   xdata = xdata[!indicesIgnore]
   
   ydata = c(sapply(resultsSummary, function(x){x[["nbMeanPerMethod"]]}))

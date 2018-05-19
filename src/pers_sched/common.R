@@ -9,9 +9,10 @@ library(nlme)
 library(JMbayes)
 library(latex2exp)
 
-source("src/R/replaceMCMCContents.R")
-source("src/R/rocJM_mod.R")
+source("src/pers_sched/replaceMCMCContents.R")
+source("src/pers_sched/rocJM_mod.R")
 source("../JMBayes/Anirudh/dev/grid_arrange_shared_legend.R")
+source("../JMBayes/Anirudh/dev/expectedCondFailureTime.R")
 
 ticksX = function(from=0, max, by, labels=waiver(), extraLabels=NA){
   scale_x_continuous(breaks = c(seq(from, max, by = by), extraLabels), labels = labels)
@@ -149,14 +150,15 @@ plotLog2PSAJMFitT3VsNorm = function(jmfitNorm, jmfitT3,
   }
   
   p=ggplot(data=ds[!is.na(ds$log2psa),]) + 
-    geom_line(aes(x=visitTimeYears, y=log2psa, linetype=type)) + 
+    geom_line(data=ds[ds$type!="Observed",], aes(x=visitTimeYears, y=log2psa, linetype=type)) + 
+    geom_point(size=4, data=ds[ds$type=="Observed",], aes(x=visitTimeYears, y=log2psa)) +
     scale_x_continuous(breaks=breaks) + 
     geom_vline(aes(xintercept = lastBiopsyTime, linetype="Latest biopsy"), show.legend=F) + 
     scale_linetype_manual(values=linetypes) + 
-    theme(text = element_text(size=11), axis.text=element_text(size=11),
-          legend.text = element_text(size=11), legend.title = element_blank(),
+    theme(text = element_text(size=13), axis.text=element_text(size=13),
+          legend.text = element_text(size=13), legend.title = element_blank(),
           plot.title = element_text(hjust = 0.5, size=13)) +
-    xlab("Time(years)") + ylab(expression('log'[2]*'(PSA)'))
+    xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)'))
   
   print(p)
   
@@ -311,44 +313,74 @@ getLastBiopsyTime = function(pid, lastnumber=1, upperLimitTime = Inf){
   return(lastBiopsyTime)
 }
 
-plotDynamicSurvProb = function(pid, fittedJointModel, futureTimeDt = 3){
+plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3){
   #Do not use psa_data_set here. That was only created to have a data set of non NA PSA's
-  lastBiopsyTime = getLastBiopsyTime(pid)
   
-  patientDs = psa_data_set[psa_data_set$P_ID %in% pid,]
+  patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
+  
   lastPSATime = max(patientDs$visitTimeYears)
-  futureTimes = seq(lastPSATime, lastPSATime + futureTimeDt, 0.1)
+  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  #lastBiopsyTime = 0
+  
+  futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
   
   sfit = survfitJM(fittedJointModel, patientDs, idVar="P_ID", survTimes = futureTimes, last.time = lastBiopsyTime)
   
   longprof = predict(fittedJointModel, patientDs, type = "Subject",
                      interval = "confidence", return = TRUE, idVar="P_ID", FtTimes = futureTimes)
   
-  longprof[longprof$visitTimeYears>lastPSATime,]$logpsa1=NA
+  longprof$log2psa[(nrow(patientDs)+1):nrow(longprof)] = NA
   longprof$survMean = rep(NA, nrow(longprof))
   longprof$survLow = rep(NA, nrow(longprof))
   longprof$survUp = rep(NA, nrow(longprof))
   
-  ymin = min(c(longprof[longprof$visitTimeYears<=lastPSATime,]$pred, longprof[longprof$visitTimeYears<=lastPSATime,]$logpsa1))
-  ymax = max(c(longprof[longprof$visitTimeYears<=lastPSATime,]$pred, longprof[longprof$visitTimeYears<=lastPSATime,]$logpsa1))
+  ymin = min(c(longprof[longprof$visitTimeYears<=lastPSATime,]$pred, longprof[longprof$visitTimeYears<=lastPSATime,]$log2psa), na.rm = T)
+  ymax = max(c(longprof[longprof$visitTimeYears<=lastPSATime,]$pred, longprof[longprof$visitTimeYears<=lastPSATime,]$log2psa), na.rm = T)
   
   #subsetting twice because there are two rows for the last time, and -1 to remove one of those two rows
-  longprof[longprof$visitTimeYears>=lastPSATime, c("survMean", "survLow", "survUp")][-1,] =
-    (sfit$summaries[[1]][, c("Mean", "Lower", "Upper")] * (ymax-ymin) + ymin)
+  longprof[(nrow(patientDs)+1):nrow(longprof), c("survMean", "survLow", "survUp")] =
+    (rbind(c(1,1,1),sfit$summaries[[1]][, c("Mean", "Lower", "Upper")]) * (ymax-ymin) + ymin)
   
   p=ggplot() +
-    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred)) +
-    geom_point(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=logpsa1, x=visitTimeYears), colour="red", alpha=0.4) +
-    geom_vline(xintercept = lastPSATime, linetype="dotted") +
-    geom_line(data = longprof, aes(x=visitTimeYears, y=survMean)) +
-    geom_ribbon(data = longprof, aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="grey", alpha=0.5) +
+    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred), linetype="dashed") +
+    geom_point(size=4, data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=log2psa, x=visitTimeYears)) +
+    geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
+    geom_line(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(x=visitTimeYears, y=survMean)) +
+    geom_ribbon(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="grey", alpha=0.5) +
     xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)')) +
-    scale_y_continuous(limits = c(ymin, ymax),breaks = round(seq(ymin, ymax, 0.25),2), 
-                       sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
+    theme(text = element_text(size=25), axis.text=element_text(size=25))  +
+    scale_y_continuous(limits = c(ymin, ymax),sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
   
-  print(p)
+  return(p)
 }
 
+plotEwoutMeetingPlot = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3){
+  pp = plotDynamicSurvProb(pid, fittedJointModel, maxVisitTime, futureTimeDt)
+  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  #lastBiopsyTime = 0
+  
+  patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
+  lastPSATime = max(patientDs$visitTimeYears)
+  
+  futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
+  sfit = survfitJM(fittedJointModel, patientDs, idVar="P_ID", survTimes = futureTimes, last.time = lastBiopsyTime)
+  
+  medianSurv = sfit$summaries[[1]][,"Median"]
+  survTimes = sfit$summaries[[1]][,"times"]
+  survTimeCutoff = c(survTimes[which(abs(medianSurv-0.9)==min(abs(medianSurv-0.9)))])
+  
+  #expecFailTime = expectedCondFailureTime(fittedJointModel, patientDs, 
+                                          #idVar = "P_ID", last.time = lastBiopsyTime, maxPossibleFailureTime = 20)
+  
+  #print(expecFailTime)
+  pp = pp + geom_text(aes(x=lastBiopsyTime, y=quantile(patientDs$log2psa, probs=0.25), label="Last Biopsy (Time = t)"), size=4, angle=90, nudge_x = -0.25)+
+    geom_vline(xintercept = lastPSATime, linetype="solid") +
+   geom_text(aes(x=lastPSATime, y=quantile(patientDs$log2psa, probs=0.25), label="Current Visit (Time = s)"), size=4, angle=90, nudge_x = -0.25) + 
+    geom_vline(xintercept = survTimeCutoff, linetype="solid") +
+    geom_text(aes(x=survTimeCutoff, y=quantile(patientDs$log2psa, probs=0.25), label="Survival Prob = 0.9"), size=4, angle=90, nudge_x = -0.25)
+  
+  print(pp)
+}
 
 #Chapter 5, section 5.2
 #shiny::runGitHub("Repeated_Measurements", "drizopoulos")

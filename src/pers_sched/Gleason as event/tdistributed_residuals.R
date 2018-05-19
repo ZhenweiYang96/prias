@@ -49,3 +49,11 @@ ggsave(file="report/pers_schedule/biometrics_submission/images/qqplot_norm_t3.ep
 
 ###################
 joint_psa_replaced_prias_t3$Funs$densLong = function(y, eta.y, scale, log = FALSE, data){dgt(x=y, mu=eta.y, sigma=scale, df = 3, log = log)}
+
+##################
+alphaDf = data.frame(type=c("Value", "Slope"), mean=mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3$statistics$postMeans$alphas, low=mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3$statistics$CIs$alphas[1,], up=mvJoint_psa_spline_pt1pt54_pt1_tdboth_t3$statistics$CIs$alphas[2,])
+ggplot(data=alphaDf) + geom_point(aes(type, mean), size=4) + 
+  geom_errorbar(width=.1, aes(type, ymin=low, ymax=up), size=0.9) + 
+  ylab("log Hazard Ratio") + xlab("Association Parameter") + 
+  geom_hline(yintercept = 0, linetype="dashed") +
+  theme(text = element_text(size=25), axis.text=element_text(size=25))  
