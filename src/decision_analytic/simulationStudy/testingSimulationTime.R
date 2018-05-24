@@ -28,8 +28,8 @@ invSurvival <- function (t, u, patientId) {
 }
 
 hazardFunc = function (s, patientId) {
-  weibullShape = 6
-  weibullScale = 4
+  weibullShape = 10
+  weibullScale = 6
   
   b_subject = b[patientId, ]
   Age = simDs.id$Age[patientId]  
@@ -47,23 +47,23 @@ hazardFunc = function (s, patientId) {
   df_s = data.frame(visitTimeYears = s, Age = Age)
   
   xi_s_logodds_high_dre_val = model.matrix(fixedDREFormula, df_s)
-  xi_s_log2psa_val = model.matrix(fixedPSAFormula, df_s)
-  xi_s_log2psa_slope = model.matrix(fixedPSASlopeFormula, df_s)
+  xi_s_log2psaplus1_val = model.matrix(fixedPSAFormula, df_s)
+  xi_s_log2psaplus1_slope = model.matrix(fixedPSASlopeFormula, df_s)
   
   zi_s_logodds_high_dre_val = model.matrix(randomDREFormula, df_s)
-  zi_s_log2psa_val = model.matrix(randomPSAFormula, df_s)
-  zi_s_log2psa_slope = model.matrix(randomPSASlopeFormula, df_s)
+  zi_s_log2psaplus1_val = model.matrix(randomPSAFormula, df_s)
+  zi_s_log2psaplus1_slope = model.matrix(randomPSASlopeFormula, df_s)
   
   #There are 7 random effects, 1,2 for DRE and 3,4,5,6,7 for PSA
   zib_logodds_high_dre_val = zi_s_logodds_high_dre_val %*% b_subject[1:2]
-  zib_log2psa_val = zi_s_log2psa_val %*% b_subject[3:7]
-  zib_log2psa_slope = zi_s_log2psa_slope %*% b_subject[4:7] #One less random effect to ignore intercept
+  zib_log2psaplus1_val = zi_s_log2psaplus1_val %*% b_subject[3:7]
+  zib_log2psaplus1_slope = zi_s_log2psaplus1_slope %*% b_subject[4:7] #One less random effect to ignore intercept
   
   xBetaZb_s_logodds_high_dre_value = xi_s_logodds_high_dre_val  %*% betas_dre + zib_logodds_high_dre_val
-  xBetaZb_s_log2psa_value = xi_s_log2psa_val %*% betas_psa + zib_log2psa_val
-  xBetaZb_s_log2psa_slope = xi_s_log2psa_slope %*% betas_psa[-c(1:3)] + zib_log2psa_slope #-c(1:3) to ignore intercept, age and age^2
+  xBetaZb_s_log2psaplus1_value = xi_s_log2psaplus1_val %*% betas_psa + zib_log2psaplus1_val
+  xBetaZb_s_log2psaplus1_slope = xi_s_log2psaplus1_slope %*% betas_psa[-c(1:3)] + zib_log2psaplus1_slope #-c(1:3) to ignore intercept, age and age^2
   
-  y_Alpha = cbind(xBetaZb_s_logodds_high_dre_value, xBetaZb_s_log2psa_value, xBetaZb_s_log2psa_slope) %*% alphas
+  y_Alpha = cbind(xBetaZb_s_logodds_high_dre_value, xBetaZb_s_log2psaplus1_value, xBetaZb_s_log2psaplus1_slope) %*% alphas
   #y_Alpha = cbind(xBetaZb_s_value) %*% alphas[1]
   
   baselinehazard_s * exp(wGamma + y_Alpha)
@@ -116,7 +116,7 @@ simDs = data.frame(P_ID = rep(subId, each=timesPerSubject),
  Age = rep(Age, each=timesPerSubject),
  visitTimeYears = longTimes,
  visitNumber = rep(1:timesPerSubject, nSub),
- log2psa = NA, high_dre=NA)
+ log2psaplus1 = NA, high_dre=NA)
 
 fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
 randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
@@ -141,7 +141,7 @@ Zb_dre = unlist(lapply(1:nSub,function(i){
   Z_dre[((i-1)*timesPerSubject + 1):(i*timesPerSubject),] %*% b[i, 1:2]
 }))
 
-simDs$log2psa = rnorm(nSub * timesPerSubject, X_psa %*% betas_psa + Zb_psa, sigma_psa)
+simDs$log2psaplus1 = rnorm(nSub * timesPerSubject, X_psa %*% betas_psa + Zb_psa, sigma_psa)
 simDs$high_dre = rbinom(nSub * timesPerSubject, 1, plogis(X_dre %*% betas_dre + Zb_dre))
 
 simDs$high_dre[!(simDs$visitTimeYears %in% generateDRETimeBySchedule())] = NA
@@ -202,7 +202,7 @@ startTime_mvglmer_simDs = Sys.time()
 mvglmer_dre_psa_simDs = mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + visitTimeYears  + 
                                               (visitTimeYears|P_ID),
                                             
-                                            log2psa ~ I(Age - 70) +  I((Age - 70)^2) +
+                                            log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) +
                                               ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) + 
                                               (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
                                    
@@ -211,8 +211,8 @@ mvglmer_dre_psa_simDs = mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + v
 endTime_mvglmer_simDs = Sys.time()
 
 forms_simDs = list("high_dre" = "value",
-                       "log2psa" = "value",
-                       "log2psa" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+                       "log2psaplus1" = "value",
+                       "log2psaplus1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
                                         random=~0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
                                         indFixed = 4:7, indRandom=2:5, name = "slope"))
 

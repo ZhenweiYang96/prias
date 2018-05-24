@@ -6,39 +6,59 @@ model_sqrt = mvglmer(list(
 
 save(model_sqrt, file="Rdata/Gleason as event/tdist/modelsqrt.Rdata")
 
+modelList = list(mvglm_psa_spline_pt1pt54_pt1_t3, mvglm_log2psa_pluspt1_spline_pt1pt54_pt1,
+                 mvglm_log2psa_plus1_spline_pt1pt54_pt1)
 
-model = mvglm_psa_spline_pt1pt54_pt1
+resid_psa = lapply(modelList, function(model){
+  fittedmarginal = model$components$X1 %*% model$postMeans$betas1
+  fittedSubjects = rowSums(model$components$Z1 * model$postMeans$b[as.numeric(droplevels(model$data$P_ID)),,drop=FALSE])
+  fitted_psa = fittedmarginal + fittedSubjects
+  resid_psa = model$components$y1 - fitted_psa
+  resid_psa
+})
 
-fittedmarginal = model$components$X1 %*% model$postMeans$betas1
-fittedSubjects = rowSums(model$components$Z1 * model$postMeans$b[as.numeric(droplevels(training_psa_data_set$P_ID)),,drop=FALSE])
+source("src/pers_sched/qqtdist.R")
 
-training_psa_data_set$fitted = fittedmarginal + fittedSubjects
-training_psa_data_set$resid = training_psa_data_set$log2psa - training_psa_data_set$fitted
+lapply(resid_psa, function(residual_psa){
+  qqtdist(residual_psa, df=3)
+  qqlineTdist(residual_psa, df=3)
+})
 
-training_psa_data_set$standardized_resid = (training_psa_data_set$resid - mean(training_psa_data_set$resid))/model$postMeans$sigma1  
-
-#Both qqplots give same result
-
-#QQPLOT after explicitly standardizing the residuals
-ggplot(data=training_psa_data_set) + geom_qq(aes(sample=standardized_resid), dparams = list(df=3),distribution = qt) + geom_abline(intercept = 0, slope = 1)
-
-#QQPLOT after scaling theoretical distribution
-ggplot(data=training_psa_data_set) + geom_qq(aes(sample=resid), 
-                                             dparams = list(mu=0, sigma=model$postMeans$sigma1, df=3),
-                                             distribution = JMbayes:::qgt) + 
-  xlim(c(-5,5)) + 
-  ylim(c(-5,5)) +
-  geom_abline(intercept = -0.0636430822997942, slope = 0.843009408103346) + 
-  xlab("Theoretical quantiles") + ylab("Residual quantiles")
-
-p2 = ggplot(data=training_psa_data_set) + geom_qq(aes(sample=resid), 
+p1 = ggplot() + geom_qq(aes(sample=resid_psa[[1]]), 
                                              dparams = list(df=3),
                                              distribution = qt) + 
    geom_abline(intercept = 0.00153022619620519, slope = 0.152554094219411) + 
   xlab("T-distribution (df=3) quantiles") + ylab("Residual quantiles") + 
-  ggtitle("T-distributed (df=3) errors") + 
+  ggtitle(expression('Using '*'log'[2]*' (PSA)'*' transformation')) + 
   theme(text = element_text(size=11), axis.text=element_text(size=11), 
         plot.title = element_text(hjust = 0.5, size=13)) 
+print(p1)
+
+p2 = ggplot() + geom_qq(aes(sample=resid_psa[[2]]), 
+                        dparams = list(df=3),
+                        distribution = qt) + 
+  geom_abline(intercept = 0.00131744150956975, slope = 0.149009696633965) + 
+  xlab("T-distribution (df=3) quantiles") + ylab("Residual quantiles") + 
+  ggtitle(expression('Using '*'log'[2]*' (PSA + 0.1)'*' transformation')) + 
+  theme(text = element_text(size=11), axis.text=element_text(size=11), 
+        plot.title = element_text(hjust = 0.5, size=13)) 
+print(p2)
+
+p3 = ggplot() + geom_qq(aes(sample=resid_psa[[3]]), 
+                        dparams = list(df=3),
+                        distribution = qt) + 
+  geom_abline(intercept = 0.00159500079649591, slope = 0.125110597597315) + 
+  xlab("T-distribution (df=3) quantiles") + ylab("Residual quantiles") + 
+  ggtitle(expression('Using '*'log'[2]*' (PSA + 1)'*' transformation')) + 
+  theme(text = element_text(size=11), axis.text=element_text(size=11), 
+        plot.title = element_text(hjust = 0.5, size=13)) 
+print(p3)
+
+ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/qqplot_various_log_transform_t3.eps", 
+       multiplot(p1,p3, p2, cols=2),
+       width=8.27, height=8.27)
+
+source("../JMBayes/Anirudh/dev/multiplot.R")
 
 ggsave(file="report/pers_schedule/biometrics_submission/images/qqplot_t3.eps", 
        width=8.27, height=9.69/1.25, device=cairo_ps)

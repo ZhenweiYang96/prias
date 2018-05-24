@@ -1,3 +1,4 @@
+load("Rdata/decision_analytic/cleandata.Rdata")
 source("src/decision_analytic/load_lib.R")
 
 psa_data_set = prias_long[!is.na(prias_long$psa),]
@@ -56,7 +57,7 @@ lme(fixed=log2psa ~  I(Age - 70) +  I((Age - 70)^2) +
                            method = "ML")
 
 startTime_mvglmer = Sys.time()
-mvglmer_psa = mvglmer(list(log2psa ~ I(Age - 70) +  I((Age - 70)^2) + 
+mvglmer_psa = mvglmer(list(log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) + 
                              ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) + 
                                  (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
                           data=psa_data_set, families = list(gaussian))
@@ -68,8 +69,8 @@ survModel = survreg(Surv(progression_time_start, progression_time_end, type = "i
                       I(Age - 70) +  I((Age - 70)^2), data = prias.id, model = TRUE)
 save(survModel, file="Rdata/decision_analytic/PSA_Only/survModel.Rdata")
 
-forms = list("log2psa" = "value",
-             "log2psa" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+forms = list("log2psaplus1" = "value",
+             "log2psaplus1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
                                         random=~0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
                                         indFixed = 4:7, indRandom=2:5, name = "slope"))
 

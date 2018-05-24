@@ -476,6 +476,7 @@ prias.id = prias.id[, c("P_ID", "Age",  "DiscontinuedYesNo", "Date_discontinued"
 prias.id$progression_time_start[prias.id$progression_time_start == 0] = 10e-6
 
 prias_long$log2psa = log(prias_long$psa, 2)
+prias_long$log2psaplus1 = log(prias_long$psa + 1, base = 2)
 #########################################################
 # Data type cleaning for the long version of the data set
 #########################################################
