@@ -1,155 +1,77 @@
+load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value_light.Rdata")
+load("Rdata/decision_analytic/cleandata.Rdata")
 source("src/decision_analytic/load_lib.R")
+source("src/decision_analytic/simulationStudy/simCommon.R")
+source("src/decision_analytic/simulationStudy/schedules.R")
 
-nSub <- 1000# number of subjects
+MAX_FAIL_TIME = 15
+max_cores = 8
+dataSetNums = 1:10
 
-cores = detectCores()
+ANNUAL = "Annual"
+MONTH_18 = "18 Months"
+BIENNIAL = "Biennial"
+PRIAS = "PRIAS"
+KAPPApt95 = "Dyn. Risk (5%) GR"
+KAPPApt90 = "Dyn. Risk (10%) GR"
+KAPPApt85 = "Dyn. Risk (15%) GR"
+KAPPApt80 = "Dyn. Risk (20%) GR"
+KAPPAF1Score = "Dyn. Risk (F1) GR"
+methodNames = c(ANNUAL, MONTH_18, BIENNIAL, PRIAS, KAPPApt95, KAPPApt90, KAPPApt85, KAPPApt80, KAPPAF1Score)
 
-nDataSets = 200
-getNextSeed = function(lastSeed){
-  lastSeed + 1
-}
-
-#3 types of weibull scales and shapes
-weibullScales = c(4,5,6)
-weibullShapes = c(1.5,3,4.5)
-
-methods = c("expectedFailureTime", "medianFailureTime","youden", "f1score") 
-#"accuracy", "f1score")
-
-simulatedDsList = vector("list", nDataSets)
-lastSeed = 1
-for(i in 1:nDataSets){
+lastSeed = 101
+progression_type="Mixed"
+for(i in dataSetNums){
+  #Save RAM
+  rm(jointModelData)  
   print(paste("******** Started working on Data Set: ", i, "*******"))
   
   lastSeed = getNextSeed(lastSeed)
   repeat{
-    set.seed(lastSeed)
-    simulatedDsList[[i]] = generateSimLongitudinalData(nSub)
-    indices = sample(1:length(weibullScales), size = nSub, replace = T, prob = rep(1/length(weibullScales),length(weibullScales)))
-    simulatedDsList[[i]]$weibullShape = weibullShapes[indices]
-    simulatedDsList[[i]]$weibullScale = weibullScales[indices]
-    
-    simulatedDsList[[i]] = try(generateSimJointData(i, nSub), T)
-    if(inherits(simulatedDsList[[i]], "try-error")){
-      print(simulatedDsList[[i]])
+    print(paste("Using seed:", lastSeed))
+    jointModelData = try(fitJointModelOnNewData(seed = lastSeed, 
+                                                nSub = 1500, nSubTraining = 1000, nSubTest = 250,
+                                                censStartTime = 25, censEndTime = 25, 
+                                                engine="STAN", progression_type = progression_type),T)
+    if(inherits(jointModelData, "try-error")){
+      print(jointModelData)
       lastSeed = getNextSeed(lastSeed)
+      print("Error: trying again")
     }else{
-      simulatedDsList[[i]]$seed = lastSeed
       break
     }
   }
   
-  print(paste("Nr. of training:", nrow(simulatedDsList[[i]]$trainingDs.id), 
-              "; Nr. of test:", nrow(simulatedDsList[[i]]$testDs.id)))
+  scheduleResults = data.frame(P_ID = jointModelData$testData$testDs.id$P_ID,
+                                                       progression_speed = jointModelData$testData$testDs.id$progression_speed,
+                                                       progression_time = jointModelData$testData$testDs.id$progression_time,
+                                                       Age = jointModelData$testData$testDs.id$Age,
+                                                       methodName = rep(methodNames, each=nrow(jointModelData$testData$testDs.id)),
+                                                       nb = NA, offset=NA)
   
-  print("Beginning to fit joint model")
-  simulatedDsList[[i]]$models = fitJointModelSimDs(simulatedDsList[[i]]$trainingDs.id, simulatedDsList[[i]]$trainingDs)
-  print("Joint model fitted")
+  #1st we do the annual schedule
+  print("Running Annual, 18 month and Biennial schedules")
+  scheduleResults[scheduleResults$methodName == ANNUAL, c("nb", "offset")] = runFixedSchedule(jointModelData$testData$testDs.id, biopsyTimes = seq(0, 30, 1))
+  scheduleResults[scheduleResults$methodName == MONTH_18, c("nb", "offset")] = runFixedSchedule(jointModelData$testData$testDs.id, biopsyTimes = seq(0, 30, 1.5))
+  scheduleResults[scheduleResults$methodName == BIENNIAL, c("nb", "offset")] = runFixedSchedule(jointModelData$testData$testDs.id, biopsyTimes = seq(0, 30, 2))
+  print("Done running Annual 18 month and Biennial schedules")
   
-  print(summary(simulatedDsList[[i]]$models$mvJoint_psa_tdboth_training))
+  #Then we do the PRIAS schedule
+  print("Running PRIAS schedule")
+  scheduleResults[scheduleResults$methodName == PRIAS, c("nb", "offset")] = runPRIASSchedule(jointModelData$testData$testDs.id, jointModelData$testData$testDs)
+  print("Done running PRIAS schedule")
   
-  simulatedDsList[[i]]$dynamicCutOffTimes = seq(generateLongtiudinalTimeBySchedule()[2], max(simulatedDsList[[i]]$trainingDs$progression_time)-0.0001, 0.1)
+  #Then we do the schedule with Dyn. Risk of GR
+  for(riskMethodName in c(KAPPApt95, KAPPApt90, KAPPApt85, KAPPApt80, KAPPAF1Score)){
+    print(paste("Running",riskMethodName,"schedule"))
+    scheduleResults[scheduleResults$methodName == riskMethodName, c("nb", "offset")] = runDynRiskGRSchedule(jointModelData, riskMethodName)
+    print(paste("Done running",riskMethodName,"schedule"))
+  }
   
-  print("Computing ROC")
-  simulatedDsList[[i]]$rocList = computeRoc(i, Dt = 1)
-  #simulatedDsList[[i]]$rocList = computeRocDataDrivenDt(i)
-  print("Done computing ROC, now computing cutoff values")
-  simulatedDsList[[i]]$cutoffValues = computeCutOffValues(i)
+  print(paste("********* Saving the results ******"))
   
-  
-  ct= makeCluster(cores)
-  registerDoParallel(ct)
-  
-  tStart = Sys.time()
-  lastPossibleVisit = timesPerSubject - 1
-  
-  #Combo of patientRowNum and Method
-  nTasks = length(methods) * nrow(simulatedDsList[[i]]$testDs.id)
-  simulatedDsList[[i]]$biopsyTimes = foreach(taskNumber=1:nTasks, .combine = rbind,
-                                             .packages =  c("splines", "JMbayes", "coda"),
-                                             .export = c("timesPerSubject"))%dopar%{
-                                               patientRowNum = ceiling(taskNumber/length(methods))
-                                               methodName = taskNumber%%length(methods)
-                                               if(methodName == 0){
-                                                 methodName = methods[length(methods)]
-                                               }else{
-                                                 methodName = methods[methodName]
-                                               }
-                                               
-                                               res = c(P_ID=patientRowNum, methodName=methodName, computeNbAndOffset(dsId = i, patientRowNum=patientRowNum,
-                                                                                                                     minVisits = 1,
-                                                                                                                     methodName = methodName,
-                                                                                                                     lastPossibleVisit = lastPossibleVisit))
-                                               
-                                               return(res)
-                                             }
-  
-  
-  prias_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
-                                 .combine = rbind,
-                                 .packages =  c("splines", "JMbayes", "coda"))%dopar%{
-                                   res = c(P_ID=patientRowNum,
-                                           methodName="PRIAS",
-                                           computeNbAndOffset_PRIAS(dsId = i, patientRowNum=patientRowNum))
-                                   return(res)
-                                 })
-  colnames(prias_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, prias_res)
-  
-  jh_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
-                              .combine = rbind,
-                              .packages =  c("splines", "JMbayes", "coda"))%dopar%{
-                                res = c(P_ID=patientRowNum,
-                                        methodName="JH",
-                                        computeNbAndOffset_JH(dsId = i, patientRowNum=patientRowNum))
-                                return(res)
-                              })
-  colnames(jh_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, jh_res)
-  
-  mixed_res = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
-                                 .combine = rbind,
-                                 .packages =  c("splines", "JMbayes", "coda"),
-                                 .export = c("timesPerSubject"))%dopar%{
-                                   res = c(P_ID=patientRowNum,
-                                           methodName="MixedF1Score",
-                                           computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
-                                                                    1, timesPerSubject-1,
-                                                                    alternative = "f1score"))
-                                   return(res)
-                                 })
-  
-  colnames(mixed_res) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res)
-  
-  mixed_res2 = data.frame(foreach(patientRowNum=1:nrow(simulatedDsList[[i]]$testDs.id),
-                                  .combine = rbind,
-                                  .packages =  c("splines", "JMbayes", "coda"),
-                                  .export = c("timesPerSubject"))%dopar%{
-                                    res = c(P_ID=patientRowNum,
-                                            methodName="MixedYouden",
-                                            computeNbAndOffset_Mixed(dsId = i, patientRowNum=patientRowNum,
-                                                                     1, timesPerSubject-1,
-                                                                     alternative = "youden"))
-                                    return(res)
-                                  })
-  
-  colnames(mixed_res2) = colnames(simulatedDsList[[i]]$biopsyTimes)
-  simulatedDsList[[i]]$biopsyTimes = rbind(simulatedDsList[[i]]$biopsyTimes, mixed_res2)
-  
-  tEnd = Sys.time()
-  print(tEnd-tStart)
-  
-  stopCluster(ct)
-  
-  nSchedulingMethods = nrow(simulatedDsList[[i]]$biopsyTimes) / nrow(simulatedDsList[[i]]$testDs.id)
-  simulatedDsList[[i]]$biopsyTimes$weibullScale = rep(tail(simulatedDsList[[i]]$weibullScale, nrow(simulatedDsList[[i]]$testDs.id)), nSchedulingMethods)
-  simulatedDsList[[i]]$biopsyTimes$weibullShape = rep(tail(simulatedDsList[[i]]$weibullShape, nrow(simulatedDsList[[i]]$testDs.id)), nSchedulingMethods)
-  
-  temp = list(simulatedDsList[[i]])
-  save(temp,file = paste("Rdata/Gleason as event/Sim Study/sc_mixed_sh_mixed/Dt_1/simDs",i,".Rdata", sep=""))
-  
-  #Save RAM
-  rm(temp)
-  simulatedDsList[[i]] = NA
+  jointModelData$testData$scheduleResults = scheduleResults
+  saveName = paste0("jointModelData_seed_",jointModelData$seed,"_simNr_",i,"_.Rdata")
+  save(jointModelData, file = paste0("Rdata/decision_analytic/Simulation/", progression_type, "/", saveName))
+  rm(scheduleResults)
 }

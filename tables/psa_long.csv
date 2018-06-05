@@ -1,9 +1,0 @@
-"","PostMean","StDev","StErr","2.5%","97.5%","P"
-"(Intercept)",1.867,0.006,0,1.855,1.879,0
-"I(Age - 70)",0.002,0.001,0,0.001,0.004,0
-"I((Age - 70)^2)",0,0,0,0,0,0
-"ns(visitTimeYears, knots = c(1, 2, 4), Boundary.knots = c(0, 15))1",0.073,0.007,0,0.059,0.086,0
-"ns(visitTimeYears, knots = c(1, 2, 4), Boundary.knots = c(0, 15))2",0.273,0.02,0.001,0.234,0.314,0
-"ns(visitTimeYears, knots = c(1, 2, 4), Boundary.knots = c(0, 15))3",0.11,0.073,0.002,-0.026,0.251,0.134
-"ns(visitTimeYears, knots = c(1, 2, 4), Boundary.knots = c(0, 15))4",0.033,0.139,0.004,-0.225,0.299,0.802
-"sigma",0.189,0.001,0,0.188,0.191,0

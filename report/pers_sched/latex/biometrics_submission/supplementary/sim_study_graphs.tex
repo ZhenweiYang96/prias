@@ -4,7 +4,7 @@
 In the main manuscript, for the personalized schedules based on dynamic risk of GR we chose $\kappa$ on the basis of $\mbox{F}_1$ score. However while conducting the simulation study, we also tried a fixed $\kappa$ of 0.95, which means that the next biopsy is scheduled at a time point where the dynamic risk of GR is 5\%. The results for this approach are presented in \ref{table : sim_study_pooled_estimates_extended}. In the table, the abbreviation Dyn. risk GR ($\mbox{F}_1$ score) corresponds to personalized schedules based on dynamic risk of GR based approach, with $\kappa$ chosen on the basis of $\mbox{F}_1$ score. The abbreviation Hybrid ($\mbox{F}_1$ score) corresponds to the hybrid approach between median time of GR and dynamic risk of GR ($\kappa$ chosen on the basis of $\mbox{F}_1$ score).
 
 \begin{table}[!htb]
-\caption{Estimated mean and standard deviation of the number of biopsies $N^S_j$ and offset $O^S_j$ (months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Estimated mean and standard deviation of the number of biopsies $N^S_j$ conducted until PCa is detected, and offset $O^S_j$ (difference in time at which PCa progression is detected and the true time of PCa progression, in months)for various biopsy schedules, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR) with the threshold selection mechanism in parenthesis, a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol. Patients in subgroup $G_1$ have the fastest PCa progression rate, whereas patients in subgroup $G_3$ have the slowest PCa progression rate..}
 \label{table : sim_study_pooled_estimates_extended}
 \begin{tabular}{lrrrr}
 \Hline
@@ -71,25 +71,25 @@ In this section we present figures related to the simulation study results discu
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbMeanBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated mean number of biopsies conducted by various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated mean number of biopsies conducted by various schedules until PCa is detected, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : nbMeanBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetMeanBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated mean of biopsy offset for various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated mean of biopsy offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : offsetMeanBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbSDBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated standard deviation of number of biopsies conducted by various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated standard deviation of number of biopsies conducted by various schedules until PCa is detected, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : nbSDBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetSDBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated standard deviation of biopsy offset for various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated standard deviation of biopsy offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : offsetSDBoxPlot_all}
 \end{figure}
 

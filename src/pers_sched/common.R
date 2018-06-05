@@ -319,8 +319,8 @@ plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
   
   lastPSATime = max(patientDs$visitTimeYears)
-  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
-  #lastBiopsyTime = 0
+  #lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  lastBiopsyTime = 0
   
   futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
   

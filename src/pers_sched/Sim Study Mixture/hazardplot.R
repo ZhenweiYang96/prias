@@ -6,6 +6,9 @@ library(ggplot2)
 weibullScales = c(4,5,6)
 weibullShapes = c(1.5,3,4.5)
 
+weibullScales = c(3,5,8)
+weibullShapes = c(5,8,14)
+
 times = seq(0, 10, length.out = 500)
 hazard_g1 = (weibullShapes[1]/weibullScales[1])*(times/weibullScales[1])^(weibullShapes[1]-1)
 hazard_g2 = (weibullShapes[2]/weibullScales[2])*(times/weibullScales[2])^(weibullShapes[2]-1)

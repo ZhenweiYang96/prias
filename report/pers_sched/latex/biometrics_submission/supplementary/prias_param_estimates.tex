@@ -35,9 +35,9 @@ For the error term $\varepsilon_i(t)$ in the longitudinal sub-model we assumed a
 The posterior parameter estimates for the joint model we fitted to the PRIAS dataset are shown in \ref{tab : PSA_long} (longitudinal sub-model) and \ref{tab : PSA_survival} (relative risk sub-model), and parameter estimates for the variance-covariance matrix from the longitudinal sub-model are the following:
 \begin{equation*}
 \bmath{D} = \begin{bmatrix}
-       0.469 & 0.092 & -0.099 \\[0.3em]
-       0.092 & 1.092 & 0.378 \\[0.3em]
-       -0.099 & 0.378 & 0.898
+       0.268 & 0.055 & -0.043 \\[0.3em]
+       0.055 & 0.712 & 0.257 \\[0.3em]
+       -0.043 & 0.257 & 0.591
      \end{bmatrix}
 \end{equation*} 
 For longitudinal sub-model parameter estimates, in \ref{tab : PSA_long} we can see that the age of the patient trivially affects the baseline $\log_2 \mbox{PSA}$ score. Since the longitudinal evolution of $\log_2 \mbox{PSA}$ is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Web Figure \ref{fig : fitted_trend_psa} we present the fitted marginal evolution of $\log_2 \mbox{PSA}$ over a period of 10 years for a hypothetical patient who was included in AS at the age of 70 years. In addition we present plots of observed versus fitted profiles for nine randomly selected patients (each with more than 3 observations) in Web Figure \ref{fig : subject_fittedVsObserved_psa_t3}.
@@ -61,14 +61,14 @@ For longitudinal sub-model parameter estimates, in \ref{tab : PSA_long} we can s
 \begin{tabular}{lrrrrr}
 \Hline
 Variable & Mean   & Std. Dev           & 2.5\%               & 97.5\%              & P              \\ \hline
-Intercept                            &  2.412 & 0.012 & 2.388 & 2.435               & \textless0.000 \\
-$(\mbox{Age} - 70)$                         & 0.003 & 0.001 & -3.039 $\times 10^{-4}$ & 0.005 & 0.084          \\
-$(\mbox{Age} - 70)^2$       & -0.001 & 0.001 & -0.001 & -3.696 $\times 10^{-4}$ & \textless0.000 \\
-Spline: visit time {[}0.0, 0.1{]} years   & 0.044 & 0.010 & 0.026 & 0.063 & \textless0.000 \\
-Spline: visit time {[}0.1, 0.5{]} years & 0.297 & 0.015  &0.269 & 0.328           & \textless0.000 \\
-Spline: visit time {[}0.5, 4.0{]} years & 0.316 & 0.025 &  0.270 & 0.364        & \textless0.000 \\
-Spline: visit time {[}4.0, 7.0{]} years   & 0.466 & 0.032 & 0.402 & 0.527               & \textless0.000 \\
-$\sigma$                               & 0.181 & 0.001 & 0.179 & 0.183              &  \\ \hline
+Intercept                            &  2.686 & 0.009 & 2.668 & 2.704               & \textless0.000 \\
+$(\mbox{Age} - 70)$                         & 0.003 & 0.001 & 0.001 & 0.005 & 0.002          \\
+$(\mbox{Age} - 70)^2$       & -0.001 & 1.073 $\times 10^{-4}$ & -0.001 & -2.963 $\times 10^{-4}$ & \textless0.000 \\
+Spline: visit time {[}0.0, 0.1{]} years   & 0.049 & 0.008 & 0.035 & 0.065 & \textless0.000 \\
+Spline: visit time {[}0.1, 0.5{]} years & 0.258 & 0.012  &0.235 & 0.281           & \textless0.000 \\
+Spline: visit time {[}0.5, 4.0{]} years & 0.282 & 0.018 &  0.244 & 0.320        & \textless0.000 \\
+Spline: visit time {[}4.0, 7.0{]} years   & 0.412 & 0.023 & 0.367 & 0.460               & \textless0.000 \\
+$\sigma$                               & 0.147 & 0.001 & 0.146 & 0.149              &  \\ \hline
 \end{tabular}
 \end{center}
 \end{table}
@@ -84,10 +84,10 @@ For the relative risk sub-model, the parameter estimates in \ref{tab : PSA_survi
 \begin{tabular}{lrrrrr}
 \Hline
 Variable                      & Mean   & Std. Dev & 2.5\%  & 97.5\%                 & P              \\ \hline
-$(\mbox{Age} - 70)$                    & 0.035 & 0.006 & 0.023 & 0.047                  & \textless0.000 \\
-$(\mbox{Age} - 70)^2$   & -0.001 & 0.001 & -0.003 & 1.364 $\times 10^{-4}$ & 0.084          \\
-$\log_2 \mbox{PSA}$                  & -0.004 & 0.060 & -0.119 & 0.117 & 0.934         \\
-Slope($\log_2 \mbox{PSA}$)           & 2.888 & 0.290 & 2.318 & 3.452 & \textless0.000 \\
+$(\mbox{Age} - 70)$                    & 0.035 & 0.006 & 0.024 & 0.047                  & \textless0.000 \\
+$(\mbox{Age} - 70)^2$   & -0.001 & 0.001 & -0.003 & 7.861 $\times 10^{-5}$ & 0.084          \\
+$\log_2 \mbox{PSA}$                  & -0.084 & 0.080 & -0.241 & 0.072 & 0.296         \\
+Slope($\log_2 \mbox{PSA}$)           & 3.580 & 0.403 & 2.815 & 4.373 & \textless0.000 \\
 \hline
 \end{tabular}
 \end{center}
@@ -99,11 +99,11 @@ To compare the predictive performance of a model having association between haza
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Area under the receiver operating characteristic curves (AUC), and 95\% confidence interval in brackets. AUC's are calculated for two joint models: first one having association between hazard of GR and $\log_2 \mbox{PSA}$ value as well as velocity, and second one having association with only $\log_2 \mbox{PSA}$ value.}
+\caption{Area under the receiver operating characteristic curves (AUC), and 95\% confidence interval in brackets. AUC's are calculated for two joint models: first one having association between hazard of GR and longitudinal outcome's value as well as velocity, and second one having association with only longitudinal outcome's value.}
 \label{tab : AUC}
 \begin{tabular}{rrr}
 \Hline
-Year                      & $\log_2 \mbox{PSA}$ value and velocity association & $\log_2 \mbox{PSA}$ value association\\ 
+Year                      & value and velocity association & value association\\ 
 \hline
 1 & 0.613 [0.582, 0.632] & 0.595 [0.565, 0.618]\\
 2 & 0.648 [0.608, 0.685] & 0.609 [0.568, 0.654]\\
