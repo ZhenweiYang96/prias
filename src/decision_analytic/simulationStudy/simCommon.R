@@ -26,12 +26,12 @@ getBaselineHazard = function(weibullScale, weibullShape, times){
 }
 
 mvJoint_dre_psa_dre_value_light$mcmc$b = NULL
-gammas = mvJoint_dre_psa_dre_value_light$statistics$postMeans$gammas
-alphas = mvJoint_dre_psa_dre_value_light$statistics$postMeans$alphas
-betas_dre = mvJoint_dre_psa_dre_value_light$statistics$postMeans$betas1
-betas_psa = mvJoint_dre_psa_dre_value_light$statistics$postMeans$betas2
-sigma_psa = mvJoint_dre_psa_dre_value_light$statistics$postMeans$sigma2
-D = mvJoint_dre_psa_dre_value_light$statistics$postMeans$D
+gammas = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$gammas
+alphas = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$alphas
+betas_dre = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$betas1
+betas_psa = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$betas2
+sigma_psa = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$sigma2
+D = mvJoint_dre_psa_dre_value_light$statistics$postwMeans$D
 
 fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
 randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
@@ -100,7 +100,6 @@ fitJointModelOnNewData = function(seed, nSub, nSubTraining, nSubTest,
     xBetaZb_s_log2psaplus1_slope = xi_s_log2psaplus1_slope %*% betas_psa[-c(1:3)] + zib_log2psaplus1_slope #-c(1:3) to ignore intercept, age and age^2
     
     y_Alpha = cbind(xBetaZb_s_logodds_high_dre_value, xBetaZb_s_log2psaplus1_value, xBetaZb_s_log2psaplus1_slope) %*% alphas
-    #y_Alpha = cbind(xBetaZb_s_value) %*% alphas[1]
     
     baselinehazard_s * exp(wGamma + y_Alpha)
   }
@@ -171,7 +170,9 @@ fitJointModelOnNewData = function(seed, nSub, nSubTraining, nSubTest,
   
   print("Done generating longitudinal data. Now trying to generate event times.")
   
-  u <- runif(nSub)
+  #set seed again
+  set.seed(seed)
+  simDs.id$survProbs <- runif(nSub)
   
   ct = makeCluster(max_cores)
   registerDoParallel(ct)
@@ -182,7 +183,7 @@ fitJointModelOnNewData = function(seed, nSub, nSubTraining, nSubTest,
                                                 "weibullScales","weibullShapes",
                                                 "betas_dre", "betas_psa", "alphas", "b", "simDs.id"),
                                       .packages = c("splines", "JMbayes")) %dopar%{
-                                        pSurvTime(u[i], i)
+                                        pSurvTime(simDs.id$survProbs[i], i)
                                       }
   print(simDs.id$progression_time)
   percentageRejected = sum(is.na(simDs.id$progression_time))/nSub
@@ -224,13 +225,13 @@ fitJointModelOnNewData = function(seed, nSub, nSubTraining, nSubTest,
   print("Starting to fit long model with mvglmer")
   
   startTime_mvglmer_simDs = Sys.time()
-  mvglmer_dre_psa_simDs = mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + visitTimeYears  + 
+  mvglmer_dre_psa_simDs = mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + visitTimeYears  +
                                          (visitTimeYears|P_ID),
-                                       
+
                                        log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) +
-                                         ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) + 
+                                         ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) +
                                          (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
-                                  
+
                                   data=trainingDs, families = list(binomial, gaussian), engine = engine,
                                   control = list(n.iter=mvglmer_iter, n.processors=max_cores))
   endTime_mvglmer_simDs = Sys.time()
@@ -250,7 +251,7 @@ fitJointModelOnNewData = function(seed, nSub, nSubTraining, nSubTest,
   
   print("Starting to fit joint model with mvJointModelBayes")
   startTime_mvJoint_simDs = Sys.time()
-  mvJoint_dre_psa_simDs = mvJointModelBayes(mvglmer_dre_psa_simDs, survModel_simDs, 
+  mvJoint_dre_psa_simDs = mvJointModelBayes(mvglmer_dre_psa_simDs, survModel_simDs,
                                             timeVar = "visitTimeYears", Formulas = forms_simDs,
                                             control=list(n_cores=max_cores))
   endTime_mvJoint_simDs = Sys.time()

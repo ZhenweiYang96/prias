@@ -1,5 +1,5 @@
-load("Rdata/decision_analytic/PSA_Only/mvJoint_psa_light.Rdata")
-savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postMeans_mixed_censoring_tdist/", full.names = T)
+load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value_light.Rdata")
+savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postwMeans_mixed_no_censoring_tdist_mvglmer_replaced/", full.names = T)
 
 postMeans = vector("list", length(savedFiles))
 postwMeans = vector("list", length(savedFiles))

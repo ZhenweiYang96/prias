@@ -319,8 +319,8 @@ plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
   
   lastPSATime = max(patientDs$visitTimeYears)
-  #lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
-  lastBiopsyTime = 0
+  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  #lastBiopsyTime = 0
   
   futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
   
@@ -342,13 +342,17 @@ plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt
     (rbind(c(1,1,1),sfit$summaries[[1]][, c("Mean", "Lower", "Upper")]) * (ymax-ymin) + ymin)
   
   p=ggplot() +
-    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred), linetype="dashed") +
-    geom_point(size=4, data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=log2psa, x=visitTimeYears)) +
+    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred), linetype="dashed",color="blue") +
+    geom_point(size=2, data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=log2psa, x=visitTimeYears), color="blue") +
     geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
-    geom_line(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(x=visitTimeYears, y=survMean)) +
-    geom_ribbon(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="grey", alpha=0.5) +
-    xlab("Time (years)") + ylab(expression('log'[2]*'(PSA)')) +
-    theme(text = element_text(size=25), axis.text=element_text(size=25))  +
+    geom_line(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(x=visitTimeYears, y=survMean), color="mediumvioletred") +
+    geom_ribbon(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="plum", alpha=0.5) +
+    xlab("Follow-up time (years)") + ylab(expression('log'[2]*'(PSA)')) +
+    theme(text = element_text(size=14), axis.text=element_text(size=14),
+          axis.text.y = element_text(size=14, color = "blue"),
+          axis.title.y = element_text(size=14, color = "blue"),
+          axis.title.y.right = element_text(size=14, color = "mediumvioletred"),
+          axis.text.y.right = element_text(size=14, color = "mediumvioletred"))  +
     scale_y_continuous(limits = c(ymin, ymax),sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
   
   return(p)
@@ -362,24 +366,33 @@ plotEwoutMeetingPlot = function(pid, fittedJointModel, maxVisitTime, futureTimeD
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
   lastPSATime = max(patientDs$visitTimeYears)
   
+  lastPSAValue = log(patientDs$psa[patientDs$visitTimeYears==lastPSATime],2)
+  print(paste("Last PSA value:", lastPSAValue))
+  
   futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
   sfit = survfitJM(fittedJointModel, patientDs, idVar="P_ID", survTimes = futureTimes, last.time = lastBiopsyTime)
   
   medianSurv = sfit$summaries[[1]][,"Median"]
   survTimes = sfit$summaries[[1]][,"times"]
-  survTimeCutoff = c(survTimes[which(abs(medianSurv-0.9)==min(abs(medianSurv-0.9)))])
+  survTimeCutoff = c(survTimes[which(abs(medianSurv-0.94)==min(abs(medianSurv-0.94)))])
+  
+  print(survTimeCutoff)
   
   #expecFailTime = expectedCondFailureTime(fittedJointModel, patientDs, 
                                           #idVar = "P_ID", last.time = lastBiopsyTime, maxPossibleFailureTime = 20)
   
   #print(expecFailTime)
-  pp = pp + geom_text(aes(x=lastBiopsyTime, y=quantile(patientDs$log2psa, probs=0.25), label="Last Biopsy (Time = t)"), size=4, angle=90, nudge_x = -0.25)+
-    geom_vline(xintercept = lastPSATime, linetype="solid") +
-   geom_text(aes(x=lastPSATime, y=quantile(patientDs$log2psa, probs=0.25), label="Current Visit (Time = s)"), size=4, angle=90, nudge_x = -0.25) + 
-    geom_vline(xintercept = survTimeCutoff, linetype="solid") +
-    geom_text(aes(x=survTimeCutoff, y=quantile(patientDs$log2psa, probs=0.25), label="Survival Prob = 0.9"), size=4, angle=90, nudge_x = -0.25)
+  pp = pp + 
+    #geom_text(aes(x=lastBiopsyTime, y=quantile(patientDs$log2psa, probs=0.25), label="Last Biopsy (Time = t)"), size=4.5, angle=90, nudge_x = -0.25)+
+    geom_segment(aes(x=lastPSATime, xend=lastPSATime, y=-Inf, yend=4.15)) +
+   #geom_text(aes(x=lastPSATime, y=quantile(patientDs$log2psa, probs=0.25), label="Current Visit (Time = s)"), size=4.5, angle=90, nudge_x = -0.25) + 
+    #geom_vline(xintercept = 5.55, linetype="solid") +
+    geom_segment(aes(x=5.35, xend=5.35, y=-Inf, yend=4.35)) +
+    #geom_text(aes(x=5.35, y=quantile(patientDs$log2psa, probs=0.25), label="Optimal u (Risk = 6%)"), size=4.5, angle=90, nudge_x = -0.25)
+    scale_x_continuous(breaks = c(0,1.5,2.55, 3.96, 5.35, 6.5), labels = str_wrap(c("0", "1.5", "t = 2.6 (Latest Biopsy)", "s = 4 (Current Visit)", "u = 5.4 (Optimal Biopsy Time)",  "6.5"), width=8))
   
   print(pp)
+  return(pp)
 }
 
 #Chapter 5, section 5.2

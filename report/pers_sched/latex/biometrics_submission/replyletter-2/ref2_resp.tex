@@ -1,14 +1,14 @@
     % !TEX root = reply_letter.tex
     \section*{Response to 2nd Referee's Comments}
-    We would like to thank the Referee for his/her constructive comments, which have allowed us to considerably improve our paper. The main differences of the new version of the manuscript compared to the previous one can be found in Sections~5 and 6, Web Appendix A.2, C and D. In addition, changes regarding the specific comments have been made throughout the text.
+    We would like to thank the Referee for his/her constructive comments, which have allowed us to considerably improve our paper. The main differences of the new version of the manuscript compared to the previous one can be found in Sections~5 and 6, Web Appendix A, C, D and E. In addition, changes regarding the specific comments have been made throughout the text.
 
     You may find below our responses to the specific issues raised.
 
     \subsection*{Major Concerns Shared by the 2nd Referee}
     \begin{enumerate}
-        \item [1.] \underline{Heavier tailed negative residuals in the quantile-quantile plot.}
+        \item \underline{Heavier tailed negative residuals in the quantile-quantile plot.}
 
-        We would like to thank the Referee for motivating us to check the model fit. As the Referee noted, the quantile-quantile plot for the residuals from the original model (left panel of Figure ) shows heavy tailed negative residuals. Following the suggestion of the Referee we transformed the longitudinal outcome using a $\log_2 (\mbox{PSA}+0.1)$ transformation instead of the original $\log_2 (\mbox{PSA})$ transformation. In addition, we also tried $\log_2 (\mbox{PSA}+1)$ transformation \citep{lin2000latent,pearson1994mixed}. The resulting quantile-quantile plots of the residuals in shown in Figure \ref{fig : qqplot_various_log_transform_t3}. Since the residuals from the model with $\log_2(\mbox{PSA} + 1)$ transformation met the assumptions best, we use it in the revised version of the manuscript. The corresponding longitudinal sub-model of the joint model we fit is given by:
+        We would like to thank the Referee for motivating us to check the model fit. As the Referee noted, the quantile-quantile plot for the residuals from the original model (top-left panel of Figure \ref{fig : qqplot_various_log_transform_t3}) shows heavy tailed negative residuals. Following the suggestion of the Referee we transformed the longitudinal outcome using a $\log_2 (\mbox{PSA}+0.1)$ transformation instead of the original $\log_2 (\mbox{PSA})$ transformation. In addition, we also tried $\log_2 (\mbox{PSA}+1)$ transformation \citep{lin2000latent,pearson1994mixed}. The resulting quantile-quantile plots of the residuals are in shown in Figure \ref{fig : qqplot_various_log_transform_t3}. Since the residuals from the model with $\log_2(\mbox{PSA} + 1)$ transformation met the assumptions best, we use it in the revised version of the manuscript. The corresponding longitudinal sub-model of the joint model we fit is given by:
         \begin{equation}
         \label{eq : long_model_prias_ref2}
         \begin{aligned}
@@ -19,15 +19,44 @@
     \end{equation}
         where the error $\varepsilon_i(t)$ is assumed to be t-distributed with three degrees of freedom and scale $\sigma$.
 
+        \clearpage
         \begin{figure}[!htb]
         \centerline{\includegraphics[width=\columnwidth]{../images/model_fit/qqplot_various_log_transform_t3.eps}}
-        \caption{Quantile-quantile plots of subject specific residuals obtained from joint models with $\log_2 (\mbox{PSA})$, $\log_2(\mbox{PSA}+0.1)$, and $\log_2(\mbox{PSA}+1)$ transformed longitudinal outcome, and an assumption of t-distributed (df=3) errors, fitted to the PRIAS data set.}
+        \caption{Quantile-quantile plots of subject-specific residuals obtained from joint models with $\log_2 (\mbox{PSA})$, $\log_2(\mbox{PSA}+0.1)$, and $\log_2(\mbox{PSA}+1)$ transformed longitudinal outcome, and an assumption of t-distributed (df=3) errors, fitted to the PRIAS data set.}
         \label{fig : qqplot_various_log_transform_t3}
         \end{figure}
+        \clearpage
 
+        \item \underline{Explanation regarding fitted PSA profiles}
+
+        We thank the Referee for motivating us to check the per patient fit of PSA profiles. The Referee expressed concern for the ``fitted mean PSA values and velocities over the time" of the three demonstration patients. The original figure (Figure 10 of the previous response letter) mentioned by the Referee is shown as Figure \ref{fig : fitted_demo_patients_norm_t3} below. As we can see the mean fitted values are not as close to the observed values when the model with t-distributed errors is used in comparison to the model with normal distributed errors. The first reason for this behavior is that the t-distribution is more robust to sudden changes in the trend of the profiles, since the error distribution has longer tails \citep{lange1989robust}. Secondly, as in the case of Demo patient 1 (top panel of Figure \ref{fig : fitted_demo_patients_norm_t3}) the actual trend may only become evident after enough observations show a consistent decrease in PSA levels. This is also the explanation for relatively better fits when number of measurements are more. To further mitigate concerns regarding the model fit, we present fitted profiles of eighteen randomly chosen PRIAS patients in Figure \ref{fig : fitted_log2psaplus1_9random_patients} and Figure \ref{fig : fitted_log2psaplus1_10to18random_patients}. It can be seen that the model fit for all patients is reasonable.
+
+        \clearpage
+        \begin{figure}[!htb]
+        \centerline{\includegraphics[width=\columnwidth]{../images/model_fit/fitted_demo_patients_norm_t3.eps}}
+        \caption{This is Figure 10 from the previous response letter. It shows fitted versus observed $\log_2 \mbox{PSA}$ profiles for the three demonstration patients, at three different time points. The fitted profiles are dynamic in nature, and utilize information from both the observed PSA levels and time of latest biopsy.}
+        \label{fig : fitted_demo_patients_norm_t3}
+        \end{figure}
+        \clearpage
+
+        \clearpage
+        \begin{figure}[!htb]
+        \centerline{\includegraphics[width=\columnwidth]{../images/model_fit/fitted_log2psaplus1_9random_patients.eps}}
+        \caption{Fitted versus observed $\log_2(\mbox{PSA}+1)$ profiles of nine randomly selected PRIAS patients. The fitted profiles utilize information from both the observed PSA levels and time of latest biopsy.}
+        \label{fig : fitted_log2psaplus1_9random_patients}
+        \end{figure}
+        
+         \clearpage
+        \begin{figure}[!htb]
+        \centerline{\includegraphics[width=\columnwidth]{../images/model_fit/fitted_log2psaplus1_10to18random_patients.eps}}
+        \caption{Fitted versus observed $\log_2(\mbox{PSA}+1)$ profiles of nine randomly selected PRIAS patients different than the ones shown in Figure \ref{fig : fitted_log2psaplus1_9random_patients}. The fitted profiles utilize information from both the observed PSA levels and time
+of latest biopsy.}
+        \label{fig : fitted_log2psaplus1_10to18random_patients}
+        \end{figure}
         
     \end{enumerate}
 
+    \clearpage
     \subsection*{Minor Concerns Shared by the 2nd Referee}
 
     \begin{enumerate}
@@ -42,19 +71,19 @@
     \end{enumerate}
 
 
-        \clearpage
+    \clearpage
     \begin{figure}
     \centerline{\includegraphics[width=\columnwidth]{../images/sim_study/meanNbVsOffset_all.eps}}
-    \caption{Estimated mean number of biopsies conducted until PCa is detected, and mean offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various biopsy schedules, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR), a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
+    \caption{Estimated mean number of biopsies conducted until Gleason reclassification (GR) is detected, and mean offset (difference in time at which GR is detected and the true time of GR, in months) for the simulated (500 datasets) test patients, across different schedules. Types of personalized schedules (full names in brackets): Exp. GR Time (expected time of GR), Med. GR Time (median time of GR), Dyn. risk GR (schedules based on dynamic risk of GR), Hybrid (a hybrid approach between median time of GR and dynamic risk of GR). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
     \label{fig : meanNbVsOffset}
     \end{figure}
 
-\clearpage
+    \clearpage
     %124781 = 41484 + 41423 + 41874
     \begin{table}
     \centering
     \captionsetup{font=scriptsize}
-    \caption{Estimated mean and standard deviation of the number of biopsies $N^S_j$ conducted until PCa is detected, and offset $O^S_j$ (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various biopsy schedules, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR), a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol. Patients in subgroup $G_1$ have the fastest PCa progression rate, whereas patients in subgroup $G_3$ have the slowest PCa progression rate.}
+    \caption{Estimated mean and standard deviation, of the number of biopsies $N^S_j$ conducted until Gleason reclassification (GR) is detected, and of the offset $O^S_j$ (difference in time at which GR is detected and the true time of GR, in months), for the simulated (500 datasets) test patients, across different schedules and subgroups. Patients in subgroup $G_1$ have the fastest prostate cancer progression rate, whereas patients in subgroup $G_3$ have the slowest progression rate. Types of personalized schedules (full names in brackets): Exp. GR Time (expected time of GR), Med. GR Time (median time of GR), Dyn. risk GR (schedules based on dynamic risk of GR), Hybrid (a hybrid approach between median time of GR and dynamic risk of GR). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
     \label{table : sim_study_pooled_estimates}
     \begin{tabular}{lrrrr}
     \Hline
@@ -108,14 +137,14 @@
 \clearpage
     \begin{figure}[!htb]
     \centerline{\includegraphics[width=\columnwidth]{../images/sim_study/nbBoxPlot_all.eps}}
-    \caption{Boxplot showing variation in number of biopsies conducted by various biopsy schedules until PCa progression is detected, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR), a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
+    \caption{Boxplot showing variation in number of biopsies conducted by various biopsy schedules for the simulated (500 datasets) test patients. Biopsies are conducted until Gleason reclassification (GR) is detected. Types of personalized schedules (full names in brackets): Exp. GR Time (expected time of GR), Med. GR Time (median time of GR), Dyn. risk GR (schedules based on dynamic risk of GR), Hybrid (a hybrid approach between median time of GR and dynamic risk of GR). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
     \label{fig : nbBoxPlot_all}
     \end{figure}
 
 \clearpage
     \begin{figure}[!htb]
     \centerline{\includegraphics[width=\columnwidth]{../images/sim_study/offsetBoxPlot_all.eps}}
-    \caption{Boxplot showing variation in biopsy offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various schedules, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR), a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
+    \caption{Boxplot showing variation in biopsy offset (difference in time at which Gleason reclassification, also known as GR, is detected and the true time of GR, in months) for the simulated (500 datasets) test patients, across different schedules. Types of personalized schedules (full names in brackets): Exp. GR Time (expected time of GR), Med. GR Time (median time of GR), Dyn. risk GR (schedules based on dynamic risk of GR), Hybrid (a hybrid approach between median time of GR and dynamic risk of GR). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
     \label{fig : offsetBoxPlot_all}
     \end{figure}
         

@@ -427,8 +427,7 @@ fitJointModelSimDs = function(trainingDs.id, trainingDs){
   #other way
   mvJoint_psa_tdval_training = NULL
   mvJoint_psa_tdboth_training <- mvJointModelBayes(mvglmer_psa_training, cox_Model_training, timeVar = "visitTimeYears",
-                                                   Formulas = forms_psa_training,
-                                                   priors = list(shrink_gammas = TRUE, shrink_alphas = TRUE))
+                                                   Formulas = forms_psa_training)
   
   ###########################################
   #Also fit joint model using the jointModelAPI

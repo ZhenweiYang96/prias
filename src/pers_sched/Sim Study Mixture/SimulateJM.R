@@ -3,12 +3,12 @@ library(splines)
 
 nSub <- 1000# number of subjects
 
-source("src/R/common.R")
-source("src/R/Sim Study Mixture/simCommon.R")
-source("src/R/Sim Study Mixture/rocAndCutoff.R")
-source("src/R/Sim Study Mixture/nbAndOffset.R")
-source("src/R/Sim Study Mixture/produceResults.R")
-source("src/R/rocJM_mod.R")
+source("src/pers_sched//common.R")
+source("src/pers_sched/Sim Study Mixture/simCommon.R")
+source("src/pers_sched/Sim Study Mixture/rocAndCutoff.R")
+source("src/pers_sched/Sim Study Mixture/nbAndOffset.R")
+source("src/pers_sched/Sim Study Mixture/produceResults.R")
+source("src/pers_sched/rocJM_mod.R")
 
 cores = detectCores()
 
@@ -25,7 +25,7 @@ methods = c("expectedFailureTime", "medianFailureTime","youden", "f1score")
             #"accuracy", "f1score")
 
 simulatedDsList = vector("list", nDataSets)
-lastSeed = 171219
+lastSeed = 2018
 for(i in 101:nDataSets){
   print(paste("******** Started working on Data Set: ", i, "*******"))
   

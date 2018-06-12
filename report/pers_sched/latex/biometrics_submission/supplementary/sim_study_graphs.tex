@@ -4,7 +4,7 @@
 In the main manuscript, for the personalized schedules based on dynamic risk of GR we chose $\kappa$ on the basis of $\mbox{F}_1$ score. However while conducting the simulation study, we also tried a fixed $\kappa$ of 0.95, which means that the next biopsy is scheduled at a time point where the dynamic risk of GR is 5\%. The results for this approach are presented in \ref{table : sim_study_pooled_estimates_extended}. In the table, the abbreviation Dyn. risk GR ($\mbox{F}_1$ score) corresponds to personalized schedules based on dynamic risk of GR based approach, with $\kappa$ chosen on the basis of $\mbox{F}_1$ score. The abbreviation Hybrid ($\mbox{F}_1$ score) corresponds to the hybrid approach between median time of GR and dynamic risk of GR ($\kappa$ chosen on the basis of $\mbox{F}_1$ score).
 
 \begin{table}[!htb]
-\caption{Estimated mean and standard deviation of the number of biopsies $N^S_j$ conducted until PCa is detected, and offset $O^S_j$ (difference in time at which PCa progression is detected and the true time of PCa progression, in months)for various biopsy schedules, obtained from the simulation study with 500 simulated datasets. Types of personalized schedules: expected time of GR (Exp. GR time), median time of GR (Med. GR time), schedules based on dynamic risk of GR (Dyn. risk GR) with the threshold selection mechanism in parenthesis, a hybrid approach between median time of GR and dynamic risk of GR (Hybrid). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol. Patients in subgroup $G_1$ have the fastest PCa progression rate, whereas patients in subgroup $G_3$ have the slowest PCa progression rate..}
+\caption{Estimated mean and standard deviation, of the number of biopsies $N^S_j$ conducted until Gleason reclassification (GR) is detected, and of the offset $O^S_j$ (difference in time at which GR is detected and the true time of GR, in months), for the simulated (500 datasets) test patients, across different schedules and subgroups. Patients in subgroup $G_1$ have the fastest prostate cancer progression rate, whereas patients in subgroup $G_3$ have the slowest progression rate. Types of personalized schedules (full names in brackets): Exp. GR Time (expected time of GR), Med. GR Time (median time of GR), Dyn. risk GR (schedules based on dynamic risk of GR), Hybrid (a hybrid approach between median time of GR and dynamic risk of GR). Annual corresponds to a schedule of yearly biopsies and PRIAS corresponds to biopsies as per PRIAS protocol.}
 \label{table : sim_study_pooled_estimates_extended}
 \begin{tabular}{lrrrr}
 \Hline
@@ -65,31 +65,31 @@ Exp. GR time & 2.27            & 10.09               & 0.99          & 7.47     
 In this section we present figures related to the simulation study results discussed in Section \ref{sec: simulation_study} of main manuscript. The figures we present next are population specific, i.e. subgroup level differentiation is not done.
 
 \begin{itemize}
-  \item Variation in estimated mean across the 500 simulations, for number of biopsies and offset (months) for different methods is shown in Web Figure \ref{fig : nbMeanBoxPlot_all} and Web Figure \ref{fig : offsetMeanBoxPlot_all}.
-  \item Variation in estimated standard deviation across the 500 simulations, for number of biopsies and offset (months) for different methods is shown in Web Figure \ref{fig : nbSDBoxPlot_all} and Web Figure \ref{fig : offsetSDBoxPlot_all}.
+  \item Variation in estimated mean across the 500 simulations, for number of biopsies and offset (difference in time at which Gleason reclassification or GR is detected and the true time of GR, in months) for different methods is shown in Web Figure \ref{fig : nbMeanBoxPlot_all} and Web Figure \ref{fig : offsetMeanBoxPlot_all}.
+  \item Variation in estimated standard deviation across the 500 simulations, for number of biopsies and offset (difference in time at which Gleason reclassification or GR is detected and the true time of GR, in months) for different methods is shown in Web Figure \ref{fig : nbSDBoxPlot_all} and Web Figure \ref{fig : offsetSDBoxPlot_all}.
 \end{itemize}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbMeanBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated mean number of biopsies conducted by various schedules until PCa is detected, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated mean number of biopsies conducted by various schedules until Gleason reclassification is detected, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : nbMeanBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetMeanBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated mean of biopsy offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated mean of biopsy offset (difference in time at which Gleason reclassification or GR is detected and the true time of GR, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : offsetMeanBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/nbSDBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated standard deviation of number of biopsies conducted by various schedules until PCa is detected, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated standard deviation of number of biopsies conducted by various schedules until Gleason reclassification is detected, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : nbSDBoxPlot_all}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/sim_study/offsetSDBoxPlot_all.eps}}
-\caption{Boxplot showing variation in estimated standard deviation of biopsy offset (difference in time at which PCa progression is detected and the true time of PCa progression, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
+\caption{Boxplot showing variation in estimated standard deviation of biopsy offset (difference in time at which Gleason reclassification or GR is detected and the true time of GR, in months) for various schedules, obtained from the simulation study with 500 simulated datasets.}
 \label{fig : offsetSDBoxPlot_all}
 \end{figure}
 

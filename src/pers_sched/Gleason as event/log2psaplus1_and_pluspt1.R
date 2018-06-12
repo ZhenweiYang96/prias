@@ -2,7 +2,7 @@ training_psa_data_set$log2psa_plus1 = log(training_psa_data_set$psa + 1, base = 
 training_psa_data_set$log2psa_pluspt1 = log(training_psa_data_set$psa + 0.1, base = 2)
 
 mvglm_log2psa_plus1_spline_pt1pt54_pt1 = mvglmer(list(
-  log2psa_plus1 ~  I(Age - 70) +  I((Age - 70)^2) + 
+  log2psa_plus1 ~ I(Age - 70) +  I((Age - 70)^2) + 
     ns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)) + 
     (ns(visitTimeYears, knots=c(0.1), Boundary.knots=c(0, 7))|P_ID)), 
   data=training_psa_data_set, families = list(gaussian))

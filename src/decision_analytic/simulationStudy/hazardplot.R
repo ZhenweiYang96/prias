@@ -2,38 +2,6 @@ library(JMbayes)
 library(splines)
 library(ggplot2)
 
-source("src/decision_analytic/simulationStudy/semiParamBH.R")
-
-getTheoreticalHazard = function(jointModelData, timePoint){
-  
-  getBaselineHazard = function(weibullScale, weibullShape, times){
-    return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
-  }
-  
-  totalUnderLyingHazards = length(unique(jointModelData$trainingData$trainingDs.id$progression_speed))
-  
-  theoreticalHazard = sapply(1:totalUnderLyingHazards, function(index){
-    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
-    getBaselineHazard(weibullScale = jointModelData$weibullScales[progression_speed], 
-                      weibullShape = jointModelData$weibullShapes[progression_speed], times = timePoint)
-  })
-  
-  unscaledWeights = sapply(1:totalUnderLyingHazards, function(index){
-    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
-      weibullScale = jointModelData$weibullScales[progression_speed]
-      weibullShape = jointModelData$weibullShapes[progression_speed]
-      return(exp(-(timePoint/weibullScale)^weibullShape))
-  })
-  weights = unscaledWeights/sum(unscaledWeights)
-  
-  return(sum(theoreticalHazard * weights))
-}
-
-getSplineLogBaselineHazard = function(jointModelData, timePoint){
-  splineDesign(jointModelData$mvJoint_psa_simDs$control$knots, timePoint, 
-          ord = jointModelData$mvJoint_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_psa_simDs$statistics$postwMeans$Bs_gammas
-}
-
 semiParamBH = function (coxObject, knots = NULL, length.knots = 6) {
   Time <- coxObject$y[, 1]
   d <- coxObject$y[, 2]
@@ -58,7 +26,37 @@ semiParamBH = function (coxObject, knots = NULL, length.knots = 6) {
   ND <- suppressWarnings(data.frame(Time = T, D = D, X, xi = gl(Q, 
                                                                 n), check.names = FALSE)[T > 0, ])
   return(list(glm(D ~ . + offset(log(Time)) - Time - 1, family = poisson, 
-      data = ND), knots))
+                  data = ND), knots))
+}
+
+getTheoreticalHazard = function(jointModelData, timePoint){
+  
+  getBaselineHazard = function(weibullScale, weibullShape, times){
+    return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
+  }
+  
+  totalUnderLyingHazards = length(unique(jointModelData$trainingData$trainingDs.id$progression_speed))
+  
+  theoreticalHazard = sapply(1:totalUnderLyingHazards, function(index){
+    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
+    getBaselineHazard(weibullScale = jointModelData$weibullScales[progression_speed], 
+                      weibullShape = jointModelData$weibullShapes[progression_speed], times = timePoint)
+  })
+  
+  unscaledWeights = sapply(1:totalUnderLyingHazards, function(index){
+    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
+    weibullScale = jointModelData$weibullScales[progression_speed]
+    weibullShape = jointModelData$weibullShapes[progression_speed]
+    return(exp(-(timePoint/weibullScale)^weibullShape))
+  })
+  weights = unscaledWeights/sum(unscaledWeights)
+  
+  return(sum(theoreticalHazard * weights))
+}
+
+getSplineLogBaselineHazard = function(jointModelData, timePoint){
+  splineDesign(jointModelData$mvJoint_dre_psa_simDs$control$knots, timePoint, 
+               ord = jointModelData$mvJoint_dre_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_dre_psa_simDs$statistics$postwMeans$Bs_gammas
 }
 
 getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, knots, timePoint){
@@ -67,7 +65,7 @@ getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, k
 
 times = seq(0, 10, length.out = 500)
 
-savedFiles = list.files(path = "Rdata/decision_analytic/Simulation/Mixed/", full.names = T)
+savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postMeans_Slow_no_censoring_tdist/", full.names = T)
 logHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
 
 for(i in 1:length(savedFiles)){
@@ -79,7 +77,7 @@ for(i in 1:length(savedFiles)){
   #knots = semiParamBH(jointModelData$survModel_simDs, length.knots = 20)[[2]]  
   #logHazardMatrix[i, ] = sapply(times, getSemiParametricLogBaselineHazard, jointModelData=jointModelData, semiParamCoeffs=semiParamCoeffs, knots=knots)
   logHazardMatrix[i, ] = sapply(times, getSplineLogBaselineHazard, jointModelData=jointModelData)
-    
+  
   print(paste("******** End working on Data Set: ", i, "*******"))
 }
 
@@ -106,5 +104,5 @@ ggplot(data=df[df$time > 2 & df$time<=10,]) +
         legend.text = element_text(size=11)) + 
   xlab("Time (years)") + ylab("log (baseline hazard)")
 
-ggsave(file="report/pers_schedule/biometrics_submission/images/sim_study/baseline_hazard.eps", 
-       width=8.27*0.75, height=8.27*0.75, device=cairo_ps)
+# ggsave(file="report/pers_schedule/biometrics_submission/images/sim_study/baseline_hazard.eps", 
+#        width=8.27*0.75, height=8.27*0.75, device=cairo_ps)
