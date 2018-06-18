@@ -29,24 +29,24 @@ semiParamBH = function (coxObject, knots = NULL, length.knots = 6) {
                   data = ND), knots))
 }
 
-getTheoreticalHazard = function(jointModelData, timePoint){
+getTheoreticalHazard = function(timePoint, jointModelData){
+  
+  weibullScales = jointModelData$weibullScales
+  weibullShapes = jointModelData$weibullShapes
+  progression_speeds = jointModelData$progression_speeds
   
   getBaselineHazard = function(weibullScale, weibullShape, times){
     return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
   }
   
-  totalUnderLyingHazards = length(unique(jointModelData$trainingData$trainingDs.id$progression_speed))
-  
-  theoreticalHazard = sapply(1:totalUnderLyingHazards, function(index){
-    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
-    getBaselineHazard(weibullScale = jointModelData$weibullScales[progression_speed], 
-                      weibullShape = jointModelData$weibullShapes[progression_speed], times = timePoint)
+  theoreticalHazard = sapply(progression_speeds, function(progression_speed){
+    getBaselineHazard(weibullScale = weibullScales[progression_speed], 
+                      weibullShape = weibullShapes[progression_speed], times = timePoint)
   })
   
-  unscaledWeights = sapply(1:totalUnderLyingHazards, function(index){
-    progression_speed = unique(jointModelData$trainingData$trainingDs.id$progression_speed)[index]
-    weibullScale = jointModelData$weibullScales[progression_speed]
-    weibullShape = jointModelData$weibullShapes[progression_speed]
+  unscaledWeights = sapply(progression_speeds, function(progression_speed){
+    weibullScale = weibullScales[progression_speed]
+    weibullShape = weibullShapes[progression_speed]
     return(exp(-(timePoint/weibullScale)^weibullShape))
   })
   weights = unscaledWeights/sum(unscaledWeights)
@@ -65,20 +65,20 @@ getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, k
 
 times = seq(0, 10, length.out = 500)
 
-savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postMeans_Slow_no_censoring_tdist/", full.names = T)
+savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postwMeans_mixedtheoretical_no_censoring_tdist/", full.names = T)
 logHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
 
 for(i in 1:length(savedFiles)){
   rm(jointModelData)
+  print(paste("Loading the file number:", i))
   load(savedFiles[i])
-  print(paste("Reading the file number:", i))
   
-  #semiParamCoeffs = c(semiParamBH(jointModelData$survModel_simDs, length.knots = 20)[[1]]$coefficients[-c(1,2)], 0)
+  #semiParamCoeffs = c(semiParamBH(jointModelData$survModel_simDs, length.knots = 20)[[1]]$coefficients[-c(1:length(jointModelData$survModel_simDs$coefficients))], 0)
   #knots = semiParamBH(jointModelData$survModel_simDs, length.knots = 20)[[2]]  
   #logHazardMatrix[i, ] = sapply(times, getSemiParametricLogBaselineHazard, jointModelData=jointModelData, semiParamCoeffs=semiParamCoeffs, knots=knots)
   logHazardMatrix[i, ] = sapply(times, getSplineLogBaselineHazard, jointModelData=jointModelData)
   
-  print(paste("******** End working on Data Set: ", i, "*******"))
+  print(paste("******** End working on file number: ", i, "*******"))
 }
 
 mixtureTheoreticalLogHazard = log(sapply(times, getTheoreticalHazard, jointModelData=jointModelData))

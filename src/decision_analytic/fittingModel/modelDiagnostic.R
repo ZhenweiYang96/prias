@@ -1,8 +1,10 @@
 source("src/decision_analytic/fittingModel/weighted_fitted.R")
 
 plotFittedDRE = function(modelObject, weighted = T, pid=NA){
+  data.id = modelObject$model_info$coxph_components$data
+  
   if(is.na(pid)){
-    pid = sample(prias.id$P_ID, size = 1)
+    pid = sample(data.id$P_ID, size = 1)
     print(paste("Choosing patient", pid, "randomly because pid not provided"))
   }
   
@@ -15,7 +17,7 @@ plotFittedDRE = function(modelObject, weighted = T, pid=NA){
   }else{
     fitted_weighted(modelObject)[[1]]
   }
-  dreFit = dreFit[rowNums==which(prias.id$P_ID==pid)]
+  dreFit = dreFit[rowNums==which(data.id$P_ID==pid)]
   dreFit = 1/(1 + exp(-(dreFit)))
   
   dreObserved = data$high_dre[data$P_ID==pid]
@@ -27,8 +29,10 @@ plotFittedDRE = function(modelObject, weighted = T, pid=NA){
 }
 
 plotFittedPSA = function(modelObject, weighted=T, pid=NA){
+  data.id = modelObject$model_info$coxph_components$data
+  
   if(is.na(pid)){
-    pid = sample(prias.id$P_ID, size = 1)
+    pid = sample(data.id$P_ID, size = 1)
     print(paste("Choosing patient", pid, "randomly because pid not provided"))
   }
   
@@ -41,7 +45,7 @@ plotFittedPSA = function(modelObject, weighted=T, pid=NA){
   }else{
     fitted_weighted(modelObject)[[2]]
   }
-  psaFit = psaFit[rowNums==which(prias.id$P_ID==pid)]
+  psaFit = psaFit[rowNums==which(data.id$P_ID==pid)]
   
   log2psaplus1Observed = data$log2psaplus1[data$P_ID==pid]
   

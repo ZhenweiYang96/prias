@@ -1,12 +1,26 @@
-load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value_light.Rdata")
-load("Rdata/decision_analytic/cleandata.Rdata")
+load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value_superlight.Rdata")
 source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/simulationStudy/simCommon.R")
 source("src/decision_analytic/simulationStudy/schedules.R")
 
-MAX_FAIL_TIME = 15
+## Weibull shape for constant has to be 1, scale can be any value > 0
+# weibullScales = c("Fast"=3, "Medium"=5, "Slow"=8)
+# weibullShapes = c("Fast"=5, "Medium"=8, "Slow"=14)
+
+weibullScales = c("Fast"=3, "Medium"=5, "Slow"=8, "Constant"=20)
+weibullShapes = c("Fast"=5, "Medium"=8, "Slow"=14, "Constant"=1)
+
+progression_speeds=c("Fast", "Medium", "Slow")
+#progression_speeds = "Constant"
+subFolderName = "Constant"
+
+psaErrorDist = "normal"
+fail_time_search_upper_limit = 15
+MAX_FAIL_TIME = max(seq(0,fail_time_search_upper_limit,0.1)[which(!is.nan(sapply(seq(0,fail_time_search_upper_limit,0.1), getTheoreticalHazard, progression_speeds=progression_speeds)))])
 max_cores = 8
 dataSetNums = 1:10
+
+bNames = c("b_Int_DRE", "b_Slope_DRE", "b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA", "b_Slope3_PSA", "b_Slope4_PSA")
 
 ANNUAL = "Annual"
 MONTH_18 = "18 Months"
@@ -19,8 +33,7 @@ KAPPApt80 = "Dyn. Risk (20%) GR"
 KAPPAF1Score = "Dyn. Risk (F1) GR"
 methodNames = c(ANNUAL, MONTH_18, BIENNIAL, PRIAS, KAPPApt95, KAPPApt90, KAPPApt85, KAPPApt80, KAPPAF1Score)
 
-lastSeed = 101
-progression_type="Mixed"
+lastSeed = 100
 for(i in dataSetNums){
   #Save RAM
   rm(jointModelData)  
@@ -29,15 +42,16 @@ for(i in dataSetNums){
   lastSeed = getNextSeed(lastSeed)
   repeat{
     print(paste("Using seed:", lastSeed))
-    jointModelData = try(fitJointModelOnNewData(seed = lastSeed, 
-                                                nSub = 1500, nSubTraining = 1000, nSubTest = 250,
-                                                censStartTime = 25, censEndTime = 25, 
-                                                engine="STAN", progression_type = progression_type),T)
+    newData = try(generateSimulationData(seed=lastSeed, nSub = nSub, psaErrorDist = psaErrorDist, 
+                                         progression_speeds = progression_speeds, bNames=bNames),T)
     if(inherits(jointModelData, "try-error")){
-      print(jointModelData)
+      print(newData)
       lastSeed = getNextSeed(lastSeed)
-      print("Error: trying again")
+      print("Error generating simulation data: trying again")
     }else{
+      jointModelData = fitJointModelOnNewData(seed = lastSeed, simDs = newData$simDs, simDs.id=newData$simDs.id,
+                                              nSubTraining = 1000, nSubTest = 250, mvglmer_iter = 1000, censStartTime = 25,
+                                              censEndTime = 25,engine = "STAN")
       break
     }
   }
@@ -71,7 +85,7 @@ for(i in dataSetNums){
   print(paste("********* Saving the results ******"))
   
   jointModelData$testData$scheduleResults = scheduleResults
-  saveName = paste0("jointModelData_seed_",jointModelData$seed,"_simNr_",i,"_.Rdata")
-  save(jointModelData, file = paste0("Rdata/decision_analytic/Simulation/", progression_type, "/", saveName))
+  saveName = paste0("jointModelData_seed_",jointModelData$seed,"_simNr_",i,"_",psaErrorDist, ".Rdata")
+  save(jointModelData, file = paste0("Rdata/decision_analytic/Simulation/", subFolderName, "/", saveName))
   rm(scheduleResults)
 }
