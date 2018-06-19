@@ -1,20 +1,5 @@
-getTheoreticalHazard = function(timePoint, progression_speeds){
-  
-  getBaselineHazard = function(weibullScale, weibullShape, times){
-    return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
-  }
-  
-  theoreticalHazard = sapply(progression_speeds, function(progression_speed){
-    getBaselineHazard(weibullScale = weibullScales[progression_speed], 
-                      weibullShape = weibullShapes[progression_speed], times = timePoint)
-  })
-  
-  unscaledWeights = sapply(progression_speeds, function(progression_speed){
-    weibullScale = weibullScales[progression_speed]
-    weibullShape = weibullShapes[progression_speed]
-    return(exp(-(timePoint/weibullScale)^weibullShape))
-  })
-  weights = unscaledWeights/sum(unscaledWeights)
-  
-  return(sum(theoreticalHazard * weights))
-}
+jointModel_debug(lmeFit, jointModelData$survModel_simDs, timeVar = "visitTimeYears", 
+           method = "spline-PH-aGH", parameterization = "both",
+           derivForm = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.5, 4), Boundary.knots=c(0, 7)),
+                            random=~0 + dns(visitTimeYears, knots=c(0.1), Boundary.knots=c(0, 7)),
+                            indFixed = 4:7, indRandom=2:3))

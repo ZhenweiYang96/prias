@@ -40,7 +40,39 @@ fitTimeDepCoxModelTrainingDs = function(simDs.id){
 
 load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value_superlight.Rdata")
 
-savedFiles = list.files(path = "D:/", full.names = T)
+generateTruePSAProfile = function(Age, visitTimeYears, randomEff_psa){
+  betas_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas2
+  
+  fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+  randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+  
+  df = data.frame(Age, visitTimeYears)
+  model.matrix(fixedPSAFormula, df) %*% betas_psa + model.matrix(randomPSAFormula, df) %*% as.numeric(randomEff_psa)
+}
+
+generateTruePSASlope = function(visitTimeYears, randomEff_psa_slope){
+  betas_psa_time = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas2[4:7]
+  
+  fixedPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+  randomPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+  
+  df = data.frame(visitTimeYears)
+  model.matrix(fixedPSASlopeFormula, df) %*% betas_psa_time + model.matrix(randomPSASlopeFormula, df) %*% as.numeric(randomEff_psa_slope)
+}
+
+generateTrueDRELogOdds = function(Age, visitTimeYears, randomEff_dre){
+  betas_dre = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas1
+  
+  fixedDREFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + visitTimeYears
+  randomDREFormula = ~ 1 + visitTimeYears
+  
+  df = data.frame(Age, visitTimeYears)
+  
+  model.matrix(fixedDREFormula, df) %*% betas_dre + model.matrix(randomDREFormula, df) %*% as.numeric(randomEff_dre)
+}
+
+bNames = c("b_Int_DRE", "b_Slope_DRE", "b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA", "b_Slope3_PSA", "b_Slope4_PSA")
+savedFiles = list.files(path = "/home/a_tomer/Results/Constant/", full.names = T)
 
 timeDepCoxModels = vector("list", length(savedFiles))
 for(i in 1:length(savedFiles)){

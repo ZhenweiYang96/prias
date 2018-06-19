@@ -33,6 +33,7 @@ KAPPApt80 = "Dyn. Risk (20%) GR"
 KAPPAF1Score = "Dyn. Risk (F1) GR"
 methodNames = c(ANNUAL, MONTH_18, BIENNIAL, PRIAS, KAPPApt95, KAPPApt90, KAPPApt85, KAPPApt80, KAPPAF1Score)
 
+nSub = 1500
 lastSeed = 100
 for(i in dataSetNums){
   #Save RAM
