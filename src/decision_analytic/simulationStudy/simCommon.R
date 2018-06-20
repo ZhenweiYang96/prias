@@ -12,19 +12,22 @@ getNextSeed = function(lastSeed){
 
 getTheoreticalHazard = function(timePoint, progression_speeds){
   
-  getBaselineHazard = function(weibullScale, weibullShape, times){
-    return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
+  getBaselineHazard = function(weibullScale, weibullShape, weibullLocation, times){
+    return((weibullShape/weibullScale)*((times-weibullLocation)/weibullScale)^(weibullShape-1))
   }
   
   theoreticalHazard = sapply(progression_speeds, function(progression_speed){
     getBaselineHazard(weibullScale = weibullScales[progression_speed], 
-                      weibullShape = weibullShapes[progression_speed], times = timePoint)
+                      weibullShape = weibullShapes[progression_speed], 
+                      weibullLocation = weibullLocations[progression_speed],
+                      times = timePoint)
   })
   
   unscaledWeights = sapply(progression_speeds, function(progression_speed){
     weibullScale = weibullScales[progression_speed]
     weibullShape = weibullShapes[progression_speed]
-    return(exp(-(timePoint/weibullScale)^weibullShape))
+    weibullLocation = weibullLocations[progression_speed]
+    return(exp(-((timePoint-weibullLocation)/weibullScale)^weibullShape))
   })
   weights = unscaledWeights/sum(unscaledWeights)
   
@@ -208,7 +211,7 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
   registerDoParallel(ct)
   simDs.id$progression_time = foreach(i=1:nSub,.combine='c', 
                                       .export=c("pSurvTime", "invSurvival", "hazardFunc", "MAX_FAIL_TIME","getBaselineHazard",
-                                                "simDs.id", "weibullScales","weibullShapes", "getTheoreticalHazard",
+                                                "simDs.id", "weibullScales","weibullShapes", "weibullLocations", "getTheoreticalHazard",
                                                 "mvJoint_dre_psa_dre_value_superlight",
                                                 "generateTruePSASlope", "generateTrueDRELogOdds", "generateTruePSAProfile"),
                                       .packages = c("splines", "JMbayes")) %dopar%{
@@ -234,10 +237,10 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
   # simDs.id$P_ID = 1:nrow(simDs.id)
   # simDs$P_ID = rep(simDs.id$P_ID, each=timesPerSubject)
   
-  return(list(simDs=simDs, simDs.id=simDs.id))
+  return(list(simDs=simDs, simDs.id=simDs.id, timesPerSubject=timesPerSubject))
 }
 
-fitJointModelOnNewData = function(seed, simDs, simDs.id, nSubTraining, nSubTest, 
+fitJointModelOnNewData = function(seed, simDs, simDs.id, timesPerSubject, nSubTraining, nSubTest, 
                                   mvglmer_iter=1000, 
                                   censStartTime=MAX_FAIL_TIME, censEndTime=MAX_FAIL_TIME,
                                   engine="STAN"){

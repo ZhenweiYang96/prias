@@ -2,7 +2,7 @@ load("Rdata/decision_analytic/PSA_Only/mvJoint_psa_easyrand_superlight.Rdata")
 source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/simulationStudy/timeDepSimDs_onlypsa.R")
 
-savedFiles = list.files(path = "Rdata/decision_analytic/Simulation/Mixed/", full.names = T, pattern = "Rdata")
+savedFiles = list.files(path = "/home/a_tomer/Results/only_psa_easyrand_postwMeans_mixed_no_censoring_normaldist_mvglmer_replaced", full.names = T, pattern = "Rdata")
 totalSavedFiles = length(savedFiles)
 
 postMeans = vector("list", totalSavedFiles)
@@ -30,44 +30,44 @@ for(i in 1:totalSavedFiles){
   postwMeans[[i]] = jointModelData$mvJoint_psa_simDs$statistics$postwMeans
   postwMeans[[i]]$b = NULL
   
-  jmFitCoefficients[[i]] = jointModelData$jmFit$coefficients
+  #jmFitCoefficients[[i]] = jointModelData$jmFit$coefficients
   
   mvglmerFitCoefficients[[i]] = jointModelData$mvglmer_psa_simDs$postMeans
   mvglmerFitCoefficients[[i]]$b = NULL
   
-  lmeFitCoefficients[[i]] = list(fixed=jointModelData$lmeFit$coefficients$fixed, 
-                                 sigma=jointModelData$lmeFit$sigma,
-                                 D = getVarCov(jointModelData$lmeFit))
+  #lmeFitCoefficients[[i]] = list(fixed=jointModelData$lmeFit$coefficients$fixed, 
+  #                               sigma=jointModelData$lmeFit$sigma,
+  #                               D = getVarCov(jointModelData$lmeFit))
   
   print("extracting time dependent ds results")
   #make time depDS
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  trueTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, mvJoint_psa_easyrand_superlight$statistics$postwMeans$betas1)
-  
-  jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvJoint_psa_simDs$statistics$postMeans$b
-  rm(timeDepDs)
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  postMeanTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvJoint_psa_simDs$statistics$postMeans$betas1)
-  
-  jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvJoint_psa_simDs$statistics$postwMeans$b
-  rm(timeDepDs)
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  postwMeanTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvJoint_psa_simDs$statistics$postwMeans$betas1)
-
-  jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvglmer_psa_simDs$postMeans$b
-  rm(timeDepDs)
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  mvglmerTimeDepCoeff[,i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvglmer_psa_simDs$postMeans$betas1)
-    
-  jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$jmFit$EB$post.b
-  rm(timeDepDs)
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  jmTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$jmFit$coefficients$betas)
-  
-  jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  random.effects(jointModelData$lmeFit)
-  rm(timeDepDs)
-  timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
-  lmeTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$lmeFit$coefficients$fixed)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # trueTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, mvJoint_psa_easyrand_superlight$statistics$postwMeans$betas1)
+  # 
+  # jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvJoint_psa_simDs$statistics$postMeans$b
+  # rm(timeDepDs)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # postMeanTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvJoint_psa_simDs$statistics$postMeans$betas1)
+  # 
+  # jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvJoint_psa_simDs$statistics$postwMeans$b
+  # rm(timeDepDs)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # postwMeanTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvJoint_psa_simDs$statistics$postwMeans$betas1)
+  # 
+  # jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$mvglmer_psa_simDs$postMeans$b
+  # rm(timeDepDs)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # mvglmerTimeDepCoeff[,i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$mvglmer_psa_simDs$postMeans$betas1)
+  #   
+  # jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  jointModelData$jmFit$EB$post.b
+  # rm(timeDepDs)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # jmTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$jmFit$coefficients$betas)
+  # 
+  # jointModelData$trainingData$trainingDs.id[,c("b_Int_PSA", "b_Slope1_PSA", "b_Slope2_PSA")] =  random.effects(jointModelData$lmeFit)
+  # rm(timeDepDs)
+  # timeDepDs = makeTimeDepDs(jointModelData$trainingData$trainingDs.id)
+  # lmeTimeDepCoeff[, i] = getTimeDepDsCoefficients(timeDepDs, jointModelData$lmeFit$coefficients$fixed)
 }
 
 dev.off()
@@ -100,10 +100,10 @@ for(j in 1:length(postMeans[[1]]$alphas)){
   postwAlpha = sapply(postwMeans, function(x){x$alphas})[j, ]
   jmFitAlpha = sapply(jmFitCoefficients, function(x){c(x$alpha, x$Dalpha)})[j, ]
   
-  trueTimeDepDsAlpha = trueTimeDepCoeff[j+2,]
-  postMeanTimeDepDsAlpha = postMeanTimeDepCoeff[j+2,]
-  postwMeanTimeDepDsAlpha = postwMeanTimeDepCoeff[j+2,]
-  mvglmerTimeDepDsAlpha = mvglmerTimeDepCoeff[j+2,]
+  trueTimeDepDsAlpha = trueTimeDepCoeff[j+2, ]
+  postMeanTimeDepDsAlpha = postMeanTimeDepCoeff[j+2, ]
+  postwMeanTimeDepDsAlpha = postwMeanTimeDepCoeff[j+2, ]
+  mvglmerTimeDepDsAlpha = mvglmerTimeDepCoeff[j+2, ]
   jmTimeDepDsAlpha = jmTimeDepCoeff[j+2, ]
   lmeTimeDepDsAlpha = lmeTimeDepCoeff[j+2, ]
   

@@ -4,15 +4,18 @@ source("src/decision_analytic/simulationStudy/simCommon.R")
 source("src/decision_analytic/simulationStudy/schedules.R")
 
 ## Weibull shape for constant has to be 1, scale can be any value > 0
+# The weibull location tells the minimum failure time.
 # weibullScales = c("Fast"=3, "Medium"=5, "Slow"=8)
 # weibullShapes = c("Fast"=5, "Medium"=8, "Slow"=14)
+# weibullLocations = c("Fast"=0, "Medium"=0, "Slow"=0, "Constant"=0)
 
-weibullScales = c("Fast"=3, "Medium"=5, "Slow"=8, "Constant"=20)
-weibullShapes = c("Fast"=5, "Medium"=8, "Slow"=14, "Constant"=1)
+weibullScales = c("Fast"=2.25, "Medium"=7.25, "Slow"=10, "Constant"=20)
+weibullShapes = c("Fast"=2, "Medium"=6.0, "Slow"=14, "Constant"=1)
+weibullLocations = c("Fast"=0, "Medium"=0, "Slow"=0, "Constant"=0)
 
 progression_speeds=c("Fast", "Medium", "Slow")
-#progression_speeds = "Constant"
-subFolderName = "Constant"
+#progression_speeds = "Slow"
+subFolderName = "Mixed"
 
 psaErrorDist = "normal"
 fail_time_search_upper_limit = 15
@@ -45,15 +48,22 @@ for(i in dataSetNums){
     print(paste("Using seed:", lastSeed))
     newData = try(generateSimulationData(seed=lastSeed, nSub = nSub, psaErrorDist = psaErrorDist, 
                                          progression_speeds = progression_speeds, bNames=bNames),T)
-    if(inherits(jointModelData, "try-error")){
+    if(inherits(newData, "try-error")){
       print(newData)
       lastSeed = getNextSeed(lastSeed)
       print("Error generating simulation data: trying again")
     }else{
-      jointModelData = fitJointModelOnNewData(seed = lastSeed, simDs = newData$simDs, simDs.id=newData$simDs.id,
+      jointModelData = try(fitJointModelOnNewData(seed = lastSeed, simDs = newData$simDs, simDs.id=newData$simDs.id,
+                                                  timesPerSubject = newData$timesPerSubject,
                                               nSubTraining = 1000, nSubTest = 250, mvglmer_iter = 1000, censStartTime = 25,
-                                              censEndTime = 25,engine = "STAN")
-      break
+                                              censEndTime = 25,engine = "STAN"),T)
+      if(inherits(jointModelData, "try-error")){
+        print(jointModelData)
+        lastSeed = getNextSeed(lastSeed)
+        print("Error fitting JM: trying again")
+      }else{
+        break
+      }
     }
   }
   

@@ -55,8 +55,8 @@ getTheoreticalHazard = function(timePoint, jointModelData){
 }
 
 getSplineLogBaselineHazard = function(jointModelData, timePoint){
-  splineDesign(jointModelData$mvJoint_dre_psa_simDs$control$knots, timePoint, 
-               ord = jointModelData$mvJoint_dre_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_dre_psa_simDs$statistics$postwMeans$Bs_gammas
+  splineDesign(jointModelData$mvJoint_psa_simDs$control$knots, timePoint, 
+               ord = jointModelData$mvJoint_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_psa_simDs$statistics$postwMeans$Bs_gammas
 }
 
 getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, knots, timePoint){
@@ -65,10 +65,11 @@ getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, k
 
 times = seq(0, 10, length.out = 500)
 
-savedFiles = list.files(path = "/home/a_tomer/Results/both_psa_dre_postwMeans_mixedtheoretical_no_censoring_tdist/", full.names = T)
+savedFiles = list.files(path = "Rdata/decision_analytic/Simulation/Slow/", full.names = T, pattern = "Rdata")
 logHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
+jmFitLogHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
 
-for(i in 1:length(savedFiles)){
+for(i in 1:4){
   rm(jointModelData)
   print(paste("Loading the file number:", i))
   load(savedFiles[i])
