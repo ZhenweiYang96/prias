@@ -55,21 +55,21 @@ getTheoreticalHazard = function(timePoint, jointModelData){
 }
 
 getSplineLogBaselineHazard = function(jointModelData, timePoint){
-  splineDesign(jointModelData$mvJoint_psa_simDs$control$knots, timePoint, 
-               ord = jointModelData$mvJoint_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_psa_simDs$statistics$postwMeans$Bs_gammas
+  splineDesign(jointModelData$mvJoint_dre_psa_simDs$control$knots, timePoint, 
+               ord = jointModelData$mvJoint_dre_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_dre_psa_simDs$statistics$postMeans$Bs_gammas
 }
 
 getSemiParametricLogBaselineHazard = function(jointModelData, semiParamCoeffs, knots, timePoint){
   semiParamHazard = semiParamCoeffs[max(which(knots<=timePoint))]
 }
 
-times = seq(0, 10, length.out = 500)
+times = seq(0.05, 10, length.out = 500)
 
-savedFiles = list.files(path = "Rdata/decision_analytic/Simulation/Slow/", full.names = T, pattern = "Rdata")
+savedFiles = list.files(path = "C:/Users/838035/Google Drive/PhD/src/prias/Rdata/decision_analytic/Simulation/Mixed/", full.names = T, pattern = "normal.Rdata")
 logHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
 jmFitLogHazardMatrix = matrix(ncol=length(times), nrow=length(savedFiles))
 
-for(i in 1:4){
+for(i in 1:length(savedFiles)){
   rm(jointModelData)
   print(paste("Loading the file number:", i))
   load(savedFiles[i])
@@ -82,7 +82,9 @@ for(i in 1:4){
   print(paste("******** End working on file number: ", i, "*******"))
 }
 
-mixtureTheoreticalLogHazard = log(sapply(times, getTheoreticalHazard, jointModelData=jointModelData))
+#mixtureTheoreticalLogHazard = log(sapply(times, getTheoreticalHazard, jointModelData=jointModelData))
+mixtureTheoreticalLogHazard = splineDesign(mvJoint_dre_psa_dre_value_superlight$control$knots, times, 
+                 ord = mvJoint_dre_psa_dre_value_superlight$control$ordSpline, outer.ok = T) %*% mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$Bs_gammas
 
 fittedLogHazardMean = (apply((logHazardMatrix), 2, mean, na.rm=T))
 fittedLogHazardLower = (apply((logHazardMatrix), 2, quantile, probs=c(0.025), na.rm=T))
@@ -95,7 +97,7 @@ df = data.frame(logHazard = c(mixtureTheoreticalLogHazard, fittedLogHazardMean),
                 confIntHigh=rep(fittedLogHazardUpper,2),
                 time = rep(times,2))
 
-ggplot(data=df[df$time > 2 & df$time<=10,]) + 
+ggplot(data=df[df$time > 0 & df$time<=10,]) + 
   geom_line(aes(x=time, y=logHazard, linetype=Baseline.Hazard)) + 
   geom_ribbon(aes(x=time, ymin=(confIntLow), ymax=(confIntHigh)), fill = "grey", alpha=0.4) + 
   scale_x_continuous(breaks = c(0.1, seq(1, 10, 1))) + 

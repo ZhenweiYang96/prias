@@ -34,6 +34,18 @@ getTheoreticalHazard = function(timePoint, progression_speeds){
   return(sum(theoreticalHazard * weights))
 }
 
+#getTheoreticalHazard = function(timePoint, progression_speeds){
+  
+#  if(timePoint>=10){
+#    return(0.9)
+#  }else if(timePoint <4){
+#    return(0.1)
+#  }else{
+#   return(5/100)
+#  }
+#}
+
+
 generatePSATimeBySchedule = function(){
   months = c(seq(0, 24, 3), seq(30, MAX_FAIL_TIME*12, 6))
   
@@ -46,17 +58,17 @@ generateDRETimeBySchedule = function(){
 }
 
 generateTDistError = function(n){
-  sigma_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$sigma2
+  sigma_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$sigma2
   JMbayes:::rgt(n = n, mu = 0, sigma = sigma_psa, df = 3)
 }
 
 generateNormDistError = function(n){
-  sigma_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$sigma2
+  sigma_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$sigma2
   rnorm(n=n, mean = 0, sd = sigma_psa)
 }
 
 generateTruePSAProfile = function(Age, visitTimeYears, randomEff_psa){
-  betas_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$betas2
+  betas_psa = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas2
   
   fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
   randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
@@ -66,7 +78,7 @@ generateTruePSAProfile = function(Age, visitTimeYears, randomEff_psa){
 }
 
 generateTruePSASlope = function(visitTimeYears, randomEff_psa_slope){
-  betas_psa_time = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$betas2[4:7]
+  betas_psa_time = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas2[4:7]
   
   fixedPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
   randomPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
@@ -76,7 +88,7 @@ generateTruePSASlope = function(visitTimeYears, randomEff_psa_slope){
 }
 
 generateTrueDRELogOdds = function(Age, visitTimeYears, randomEff_dre){
-  betas_dre = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$betas1
+  betas_dre = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$betas1
   
   fixedDREFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + visitTimeYears
   randomDREFormula = ~ 1 + visitTimeYears
@@ -94,8 +106,7 @@ getBaselineHazard = function(weibullScale, weibullShape, times){
   return((weibullShape/weibullScale)*(times/weibullScale)^(weibullShape-1))
 }
 
-generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
-                           progression_speeds, bNames){
+generateSimulationData = function(seed, nSub, psaErrorDist = "t3", bNames){
   
   survivalFunc <- function (t, patientId) {
     exp(-integrate(hazardFunc, lower = 0, upper = t, patientId)$value)
@@ -106,7 +117,7 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
   }
   
   hazardFunc = function (visitTimeYears, patientId) {
-    alphas = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$alphas
+    alphas = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$alphas
     
     b_subject = simDs.id[patientId, bNames]
     Age = simDs.id$Age[patientId]  
@@ -116,7 +127,10 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
     # baselinehazard = getBaselineHazard(weibullScale = weibullScales[progression_speed], 
     #                                      weibullShape = weibullShapes[progression_speed], s)
     
-    baselinehazard = sapply(visitTimeYears, getTheoreticalHazard, progression_speeds=progression_speeds)
+    #baselinehazard = sapply(visitTimeYears, getTheoreticalHazard, progression_speeds=progression_speeds)
+    
+    baselinehazard = exp(splineDesign(mvJoint_dre_psa_dre_value_superlight$control$knots, visitTimeYears, 
+                                  ord = mvJoint_dre_psa_dre_value_superlight$control$ordSpline, outer.ok = T) %*% mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$Bs_gammas)
     
     truePSA = generateTruePSAProfile(Age, visitTimeYears, b_subject[3:7])
     truePSASlope = generateTruePSASlope(visitTimeYears, b_subject[4:7])
@@ -149,18 +163,19 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
   ###########################
   subId <- 1:nSub
   
-  D = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$D
+  D = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$D
   b <- mvrnorm(nSub, mu = rep(0, nrow(D)), D)
   colnames(b) = bNames
   
   Age <- rnorm(n = nSub, mean=70, sd=7)
-  progression_speed = sample(progression_speeds, nSub, replace = T)
+  #progression_speed = sample(progression_speeds, nSub, replace = T)
   
   #ID dataset
-  simDs.id = data.frame(P_ID = subId, Age = Age, progression_speed=progression_speed, progression_time = NA)
-  simDs.id$progression_speed = as.character(progression_speed)
+  #simDs.id = data.frame(P_ID = subId, Age = Age, progression_speed=progression_speed, progression_time = NA)
+  #simDs.id$progression_speed = as.character(progression_speed)
+  simDs.id = data.frame(P_ID = subId, Age = Age, progression_time = NA)
   
-  gammas = mvJoint_dre_psa_dre_value_superlight$statistics$postwMeans$gammas
+  gammas = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$gammas
   survivalFormula = ~ 0 + I(Age - 70) + I((Age - 70)^2)
   simDs.id$wGamma <- as.numeric(model.matrix(survivalFormula, data = simDs.id) %*% gammas)
   
@@ -170,11 +185,11 @@ generateSimulationData = function(seed, nSub, psaErrorDist = "t3",
   #Longitudinal dataset
   simDs = data.frame(P_ID = rep(subId, each=timesPerSubject), 
                      Age = rep(Age, each=timesPerSubject),
-                     progression_speed = rep(progression_speed, each=timesPerSubject),
+                     #progression_speed = rep(progression_speed, each=timesPerSubject),
                      visitTimeYears = longTimes,
                      visitNumber = rep(1:timesPerSubject, nSub),
                      log2psaplus1 = NA, high_dre=NA)
-  simDs$progression_speed = as.character(simDs$progression_speed)
+  #simDs$progression_speed = as.character(simDs$progression_speed)
   
   simDs$trueLogOddsHighDRE = unlist(by(data=simDs, simDs$P_ID, function(data){
     pid = data$P_ID[1]
@@ -257,15 +272,18 @@ fitJointModelOnNewData = function(seed, simDs, simDs.id, timesPerSubject, nSubTr
   
   #Divide into training and test
   trainingDs.id = simDs.id[1:nSubTraining, ]
-  testDs.id = simDs.id[(nSubTraining+1):nrow(simDs.id),]
+  testDs.id = simDs.id[(nSubTraining+1):(nSubTraining + nSubTest),]
   trainingDs = simDs[simDs$P_ID %in% trainingDs.id$P_ID, ]
   testDs = simDs[simDs$P_ID %in% testDs.id$P_ID, ]
   
   #Dropout censoring for training patients
   Ctimes<-runif(nSubTraining, censStartTime, censEndTime)
   
-  trainingDs.id$progressed = trainingDs.id$progression_time <= Ctimes
+  trainingDs.id$progressed = trainingDs.id$progressed==1 & trainingDs.id$progression_time <= Ctimes
   trainingDs.id$progression_time = pmin(trainingDs.id$progression_time, Ctimes)
+  trainingDs.id$Ctime = Ctimes
+  
+  trainingDs$Ctime = rep(trainingDs.id$Ctime, each=timesPerSubject)
   trainingDs$progression_time = rep(trainingDs.id$progression_time, each=timesPerSubject)
   trainingDs$progressed = rep(trainingDs.id$progressed, each=timesPerSubject)
   testDs$progression_time = rep(testDs.id$progression_time, each=timesPerSubject)
@@ -278,11 +296,11 @@ fitJointModelOnNewData = function(seed, simDs, simDs.id, timesPerSubject, nSubTr
   startTime_mvglmer_simDs = Sys.time()
   mvglmer_dre_psa_simDs = mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + visitTimeYears  +
                                          (visitTimeYears|P_ID),
-
+                                       
                                        log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) +
                                          ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) +
                                          (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
-
+                                  
                                   data=trainingDs, families = list(binomial, gaussian), engine = engine,
                                   control = list(n.iter=mvglmer_iter, n.processors=max_cores))
   endTime_mvglmer_simDs = Sys.time()
@@ -315,15 +333,8 @@ fitJointModelOnNewData = function(seed, simDs, simDs.id, timesPerSubject, nSubTr
              "testData"=list(testDs=testDs, testDs.id=testDs.id),
              "censStartTime"=censStartTime, "censEndTime"=censEndTime, "mvglmer_iter"=mvglmer_iter,
              "seed"=seed, "weibullScales" = weibullScales, "weibullShapes"=weibullShapes,
-             "survModel_simDs"=survModel_simDs, "progression_speeds"=progression_speeds,
-             "mvglmer_dre_psa_simDs"=mvglmer_dre_psa_simDs, "mvglmer_fitting_time"=mvglmer_fitting_time,
+             "survModel_simDs"=survModel_simDs, "mvglmer_dre_psa_simDs"=mvglmer_dre_psa_simDs, "mvglmer_fitting_time"=mvglmer_fitting_time,
              "mvJoint_dre_psa_simDs"=mvJoint_dre_psa_simDs, "mvjoint_fitting_time"=mvjoint_fitting_time)
   
   return(out)
 }
-#########################
-#run younden, f1 calculation
-#startTimeThresholds = Sys.time()
-#mvJoint_dre_psa_simDs$mcmc$b = NULL
-#thresholdsDt1= find_thresholds(mvJoint_dre_psa_simDs, trainingDs, idVar = "P_ID", Dt = 1, n_cores = 4)
-#endTimeThresholds = Sys.time()

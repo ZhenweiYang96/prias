@@ -4,7 +4,45 @@
 #load("~/Google Drive/PhD/src/prias/Rdata/Gleason as event/cleandata.Rdata")
 
 
-source("../JMBayes/Anirudh/dev/grid_arrange_shared_legend.R")
+
+calculateHazard = function(mvJointModelObject, patientId, maxRowNum=NA){
+  
+  fittedObjIndex = which(training.prias.id$P_ID==patientId)
+  fittedRandEff = apply(mvJointModelObject$mcmc$b, c(1,2), mean)[fittedObjIndex, ]
+  
+  ds = training_psa_data_set[training_psa_data_set$P_ID == patientId, ] 
+  Age = ds$Age[1]
+  
+  lastVisitTime = max(ds$visitTimeYears)
+  lastBiopsyTime = tail(ds$visitTimeYears[!is.na(ds$gleason)],1)
+  
+  baselinehazard = exp(splineDesign(mvJointModelObject$control$knots, ds$visitTimeYears, 
+                                ord = mvJointModelObject$control$ordSpline, 
+                                outer.ok = T) %*% mvJointModelObject$statistics$postMeans$Bs_gammas)
+  
+  fixedValueFormula = ~ 1 + I(Age - 70) + I((Age - 70)^2) + ns(visitTimeYears, knots = c(0.1, 0.5, 4), Boundary.knots = c(0, 7))
+  randomValueFormula = ~ 1 + ns(visitTimeYears, knots = c(0.1), Boundary.knots = c(0, 7))
+  
+  fixedSlopeFormula = ~ 0 + dns(visitTimeYears, knots = c(0.1, 0.5, 4), Boundary.knots = c(0, 7))
+  randomSlopeFormula = ~ 0 + dns(visitTimeYears, knots = c(0.1), Boundary.knots = c(0, 7))
+  
+  survivalFormula = ~ 0 + I(Age - 70) + I((Age - 70)^2)
+  
+  fittedValue = model.matrix(fixedValueFormula, data=ds) %*% mvJointModelObject$statistics$postMeans$betas1 +
+    model.matrix(randomValueFormula, data=ds) %*% fittedRandEff
+    
+  fittedVelocity = model.matrix(fixedSlopeFormula, data=ds) %*% mvJointModelObject$statistics$postMeans$betas1[4:7] +
+    model.matrix(randomSlopeFormula, data=ds) %*% fittedRandEff[-1]
+  
+  fittedBaselineCov_in_hazard = model.matrix(survivalFormula, data=ds) %*% mvJointModelObject$statistics$postMeans$gammas
+  
+  nonBaseLinehazard = exp(fittedBaselineCov_in_hazard + 
+                            mvJointModelObject$statistics$postMeans$alphas[1] * fittedValue +
+                            mvJointModelObject$statistics$postMeans$alphas[2] * fittedVelocity)
+  
+  totalHazard = baselinehazard * nonBaseLinehazard
+}
+
 
 plotLog2PSAPlus1JMFit = function(mvJointModelObject, patientId, maxRowNum=NA){
   
@@ -96,17 +134,17 @@ getFittedVelocities = function(mvJointModelObject){
 }
 
 #fitted profiles for 911
-profilesfit911 = lapply(12:17, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=911)
-ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_911_log2psaplus1.eps", 
-       grid_arrange_shared_legend(plotlist = profilesfit911, ncol=2, nrow=3),
-       width=8.27, height=8.27)
-
-profilesfit2340 = lapply(12:17, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=2340)
-ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_2340_log2psaplus1.eps", 
-       grid_arrange_shared_legend(plotlist = profilesfit2340, ncol=2, nrow=3),
-       width=8.27, height=8.27)
-
-profilesfit3174 = lapply(4:9, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=3174)
-ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_3174_log2psaplus1.eps", 
-       grid_arrange_shared_legend(plotlist = profilesfit3174, ncol=2, nrow=3),
-       width=8.27, height=8.27)
+# profilesfit911 = lapply(12:17, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=911)
+# ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_911_log2psaplus1.eps", 
+#        grid_arrange_shared_legend(plotlist = profilesfit911, ncol=2, nrow=3),
+#        width=8.27, height=8.27)
+# 
+# profilesfit2340 = lapply(12:17, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=2340)
+# ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_2340_log2psaplus1.eps", 
+#        grid_arrange_shared_legend(plotlist = profilesfit2340, ncol=2, nrow=3),
+#        width=8.27, height=8.27)
+# 
+# profilesfit3174 = lapply(4:9, plotLog2PSAPlus1JMFit, mvJointModelObject=mvjoint_log2psa_plus1_spline_pt1pt54_pt1, patientId=3174)
+# ggsave(file="report/pers_sched/latex/biometrics_submission/images/model_fit/fitted_3174_log2psaplus1.eps", 
+#        grid_arrange_shared_legend(plotlist = profilesfit3174, ncol=2, nrow=3),
+#        width=8.27, height=8.27)

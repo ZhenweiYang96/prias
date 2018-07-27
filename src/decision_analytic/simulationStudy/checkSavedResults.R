@@ -2,7 +2,7 @@ load("Rdata/decision_analytic/PSA_Only/mvJoint_psa_easyrand_superlight.Rdata")
 source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/simulationStudy/timeDepSimDs_onlypsa.R")
 
-savedFiles = list.files(path = "/home/a_tomer/Results/only_psa_easyrand_postwMeans_mixed_no_censoring_normaldist_mvglmer_replaced", full.names = T, pattern = "Rdata")
+savedFiles = list.files(path = "/home/a_tomer/Results/postMeans_Censoring_0_30_mvglmer_replaced_Ctimes_normaldist_knots_Paul/", full.names = T, pattern = "Rdata")
 totalSavedFiles = length(savedFiles)
 
 postMeans = vector("list", totalSavedFiles)
@@ -24,16 +24,16 @@ for(i in 1:totalSavedFiles){
   load(savedFiles[i])
   print(paste("Reading the file number:", i))
   
-  postMeans[[i]] = jointModelData$mvJoint_psa_simDs$statistics$postMeans
+  postMeans[[i]] = jointModelData$mvJoint_dre_psa_simDs$statistics$postMeans
   postMeans[[i]]$b = NULL
   
-  postwMeans[[i]] = jointModelData$mvJoint_psa_simDs$statistics$postwMeans
+  postwMeans[[i]] = jointModelData$mvJoint_dre_psa_simDs$statistics$postwMeans
   postwMeans[[i]]$b = NULL
   
   #jmFitCoefficients[[i]] = jointModelData$jmFit$coefficients
   
-  mvglmerFitCoefficients[[i]] = jointModelData$mvglmer_psa_simDs$postMeans
-  mvglmerFitCoefficients[[i]]$b = NULL
+  # mvglmerFitCoefficients[[i]] = jointModelData$mvglmer_psa_simDs$postMeans
+  # mvglmerFitCoefficients[[i]]$b = NULL
   
   #lmeFitCoefficients[[i]] = list(fixed=jointModelData$lmeFit$coefficients$fixed, 
   #                               sigma=jointModelData$lmeFit$sigma,
@@ -74,19 +74,21 @@ dev.off()
 par(ask=T)
 
 #Checking fixed effects
-for(j in 1:length(postMeans[[1]]$betas1)){
-  trueValue = mvJoint_psa_easyrand_superlight$statistics$postwMeans$betas1[j]
+for(j in 1:length(postMeans[[1]]$alphas)){
+  trueValue = mvJoint_dre_psa_dre_value_superlight$statistics$postMeans$alphas[j]
   
-  postBeta = sapply(postMeans, function(x){x$betas1})[j, ]
-  postwBeta = sapply(postwMeans, function(x){x$betas1})[j, ]
-  postmvGlmerBeta = sapply(mvglmerFitCoefficients, function(x){x$betas1})[j, ]
-  lmeBeta = sapply(lmeFitCoefficients, function(x){x$fixed})[j, ]
-  jmFitBeta = sapply(jmFitCoefficients, function(x){x$betas})[j, ]
+  
+  # postwBeta = sapply(postwMeans, function(x){x$betas1})[j, ]
+  # postmvGlmerBeta = sapply(mvglmerFitCoefficients, function(x){x$betas1})[j, ]
+  # lmeBeta = sapply(lmeFitCoefficients, function(x){x$fixed})[j, ]
+  # jmFitBeta = sapply(jmFitCoefficients, function(x){x$betas})[j, ]
+  
+  postBeta = postwBeta = postmvGlmerBeta = lmeBeta = jmFitBeta =sapply(postMeans, function(x){x$alphas})[j, ]
   
   plotDf = data.frame(beta = c(postBeta, postwBeta, postmvGlmerBeta, lmeBeta, jmFitBeta),
              Method = rep(c("postMean", "postwMean", "mvglmer_postMean", "lme", "JM"), each=totalSavedFiles))
   
-  graph = ggplot(data=plotDf) + geom_boxplot(aes(x = Method, y=beta)) + ylab(attributes(postMeans[[1]]$betas1[j])$names[1]) +
+  graph = ggplot(data=plotDf) + geom_boxplot(aes(x = Method, y=beta)) + ylab(attributes(postMeans[[1]]$alphas[j])$names[1]) +
     geom_hline(yintercept = trueValue, color="red")
   
   print(graph)

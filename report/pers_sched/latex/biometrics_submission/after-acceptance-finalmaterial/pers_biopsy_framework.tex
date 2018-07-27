@@ -1,11 +1,11 @@
-% !TEX root =  ../main_manuscript.tex 
+% !TEX root =  main_manuscript.tex 
 \section{Personalized Schedules for Repeat Biopsies}
 \label{sec : pers_sched_approaches}
 We intend to use the joint model fitted to $\mathcal{D}_n$, to create personalized schedules of biopsies. To this end, let us assume that a schedule is to be created for a new patient $j$, who is not present in $\mathcal{D}_n$. Let $t$ be the time of his latest biopsy, and $\mathcal{Y}_j(s)$ denote his historical PSA measurements up to time $s$. The goal is to find the optimal time $u > \mbox{max}(t,s)$ of the next biopsy.
 
-\input{mainmatter/pers_sched_framework/ppd_time_to_GR}
-\input{mainmatter/pers_sched_framework/loss_functions}
-\input{mainmatter/pers_sched_framework/estimation}
+\input{ppd_time_to_GR}
+\input{loss_functions}
+\input{estimation}
 
 \subsection{Algorithm}
 \label{subsec : pers_sched_algorithm}
@@ -14,14 +14,14 @@ When a biopsy gets scheduled at a time $u < T^*_j$, then GR is not detected at $
 %When submitting replace figure with figure* to make it span an entire column
 %With referee option it gives an error
 
-\begin{figure}
-\centerline{\input{mainmatter/pers_sched_framework/algorithm}}
-\caption{Algorithm for creating a personalized schedule for patient $j$. The time of the latest biopsy is denoted by $t$. The time of the latest available PSA measurement is denoted by $s$. The proposed personalized time of biopsy is denoted by $u$.  The time at which a repeat biopsy was proposed on the last visit to the hospital is denoted by $u^{pv}$. The time of the next visit for the measurement of PSA is denoted by $s^{nv}$. This figure appears in color in the electronic version of this article.} 
-\label{fig : sched_algorithm}
-\end{figure}
-
-%\begin{figure*}
-%\centerline{\input{mainmatter/pers_sched_framework/algorithm_two_col}}
+%\begin{figure}
+%\centerline{\input{algorithm}}
 %\caption{Algorithm for creating a personalized schedule for patient $j$. The time of the latest biopsy is denoted by $t$. The time of the latest available PSA measurement is denoted by $s$. The proposed personalized time of biopsy is denoted by $u$.  The time at which a repeat biopsy was proposed on the last visit to the hospital is denoted by $u^{pv}$. The time of the next visit for the measurement of PSA is denoted by $s^{nv}$. This figure appears in color in the electronic version of this article.} 
 %\label{fig : sched_algorithm}
-%\end{figure*}
+%\end{figure}
+
+\begin{figure*}
+\centerline{\input{algorithm_two_col}}
+\caption{Algorithm for creating a personalized schedule for patient $j$. The time of the latest biopsy is denoted by $t$. The time of the latest available PSA measurement is denoted by $s$. The proposed personalized time of biopsy is denoted by $u$.  The time at which a repeat biopsy was proposed on the last visit to the hospital is denoted by $u^{pv}$. The time of the next visit for the measurement of PSA is denoted by $s^{nv}$. This figure appears in color in the electronic version of this article.} 
+\label{fig : sched_algorithm}
+\end{figure*}

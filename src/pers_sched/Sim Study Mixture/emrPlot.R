@@ -10,6 +10,30 @@ biopsyResultsAll$Schedule.Type = ifelse(biopsyResultsAll$methodName %in% c("PRIA
 
 source("../JMBayes/Anirudh/dev/multiplot.R")
 
+#This method can also be used to first make a summary
+methodNames = levels(biopsyResultsAll$methodName)
+boxplotDf = data.frame(methodName = methodNames, type=c("Personalized", "Personalized", "Personalized", "Fixed", "Fixed", "Personalized"),
+                       nb.all.ymin=NA, nb.all.lower=NA, nb.all.middle=NA, nb.all.upper=NA, nb.all.ymax=NA,
+                       nb.slow.ymin=NA, nb.slow.lower=NA, nb.slow.middle=NA, nb.slow.upper=NA, nb.slow.ymax=NA,
+                       nb.fast.ymin=NA, nb.fast.lower=NA, nb.fast.middle=NA, nb.fast.upper=NA, nb.fast.ymax=NA,
+                       offset.all.ymin=NA, offset.all.lower=NA, offset.all.middle=NA, offset.all.upper=NA, offset.all.ymax=NA,
+                       offset.slow.ymin=NA, offset.slow.lower=NA, offset.slow.middle=NA, offset.slow.upper=NA, offset.slow.ymax=NA,
+                       offset.fast.ymin=NA, offset.fast.lower=NA, offset.fast.middle=NA, offset.fast.upper=NA, offset.fast.ymax=NA)
+for(rowNum in 1:length(methodNames)){
+  nb.all = biopsyResultsAll$nb[biopsyResultsAll$methodName==methodNames[rowNum]]
+  nb.slow = biopsyResultsAll$nb[biopsyResultsAll$methodName==methodNames[rowNum] & biopsyResultsAll$weibullScale==6]
+  nb.fast = biopsyResultsAll$nb[biopsyResultsAll$methodName==methodNames[rowNum] & biopsyResultsAll$weibullScale==4]
+  
+  offset.all = biopsyResultsAll$offset[biopsyResultsAll$methodName==methodNames[rowNum]]*12
+  offset.slow = biopsyResultsAll$offset[biopsyResultsAll$methodName==methodNames[rowNum] & biopsyResultsAll$weibullScale==6]*12
+  offset.fast = biopsyResultsAll$offset[biopsyResultsAll$methodName==methodNames[rowNum] & biopsyResultsAll$weibullScale==4]*12
+  
+  boxplotDf[rowNum,-c(1,2)] = c(boxplot.stats(nb.all)$stats, boxplot.stats(nb.slow)$stats, boxplot.stats(nb.fast)$stats,
+                           boxplot.stats(offset.all)$stats, boxplot.stats(offset.slow)$stats, boxplot.stats(offset.fast)$stats)
+}
+
+
+
 gnb_all = ggplot(data = biopsyResultsAll) +
   geom_boxplot(aes(reorder(methodName, nb, FUN=median), nb, color=Schedule.Type), outlier.shape = NA) +
   coord_flip(ylim = c(1, 14)) + scale_y_continuous(breaks=seq(1, 14, 3)) +

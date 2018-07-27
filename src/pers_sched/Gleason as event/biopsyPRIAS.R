@@ -93,8 +93,8 @@ demoPatient = prias_long[prias_long$P_ID == demoPatientPID,]
 minVisits = 1
 plotList = vector("list", nrow(demoPatient) - minVisits)
 #for(j in minVisits:nrow(demoPatient)){
-for(j in c(12,18)){ # for 2340
-#for(j in c(12,15)){ # for 911
+#for(j in c(12,18)){ # for 2340
+for(j in c(12,15)){ # for 911
 #for(j in c(3,8)){ # for 3174
   subDataSet = demoPatient[1:j, ]
   

@@ -313,16 +313,17 @@ getLastBiopsyTime = function(pid, lastnumber=1, upperLimitTime = Inf){
   return(lastBiopsyTime)
 }
 
-plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3){
+plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3, lastBiopsyTime=NA){
   #Do not use psa_data_set here. That was only created to have a data set of non NA PSA's
   
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
   
   lastPSATime = max(patientDs$visitTimeYears)
-  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
-  #lastBiopsyTime = 0
+  if(is.na(lastBiopsyTime)){
+    lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  }
   
-  futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
+  futureTimes = seq(lastBiopsyTime, maxVisitTime + futureTimeDt, 0.1)
   
   sfit = survfitJM(fittedJointModel, patientDs, idVar="P_ID", survTimes = futureTimes, last.time = lastBiopsyTime)
   
@@ -342,26 +343,28 @@ plotDynamicSurvProb = function(pid, fittedJointModel, maxVisitTime, futureTimeDt
     (rbind(c(1,1,1),sfit$summaries[[1]][, c("Mean", "Lower", "Upper")]) * (ymax-ymin) + ymin)
   
   p=ggplot() +
-    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred), linetype="dashed",color="blue") +
-    geom_point(size=2, data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=log2psa, x=visitTimeYears), color="blue") +
+    geom_line(data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(x = visitTimeYears, y=pred), linetype="dashed",color="dodgerblue4") +
+    geom_point(size=3, data = longprof[longprof$visitTimeYears<=lastPSATime,], aes(y=log2psa, x=visitTimeYears), color="dodgerblue4") +
     geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
-    geom_line(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(x=visitTimeYears, y=survMean), color="mediumvioletred") +
-    geom_ribbon(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="plum", alpha=0.5) +
+    geom_line(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(x=visitTimeYears, y=survMean), color="firebrick2") +
+    geom_ribbon(data = longprof[(nrow(patientDs)+1):nrow(longprof),], aes(ymin=survLow, ymax=survUp, x= visitTimeYears), fill="firebrick4", alpha=0.3) +
     xlab("Follow-up time (years)") + ylab(expression('log'[2]*'(PSA)')) +
-    theme(text = element_text(size=14), axis.text=element_text(size=14),
-          axis.text.y = element_text(size=14, color = "blue"),
-          axis.title.y = element_text(size=14, color = "blue"),
-          axis.title.y.right = element_text(size=14, color = "mediumvioletred"),
-          axis.text.y.right = element_text(size=14, color = "mediumvioletred"))  +
+    theme(text = element_text(size=15), axis.text=element_text(size=15),
+          axis.text.y = element_text(size=15, color = "dodgerblue4"),
+          axis.title.y = element_text(size=15, color = "dodgerblue4"),
+          axis.title.y.right = element_text(size=15, color = "firebrick2"),
+          axis.text.y.right = element_text(size=15, color = "firebrick2"))  +
     scale_y_continuous(limits = c(ymin, ymax),sec.axis = sec_axis(~(.-ymin)/(ymax-ymin), name = "Dynamic survival probability"))
   
   return(p)
 }
 
-plotEwoutMeetingPlot = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3){
-  pp = plotDynamicSurvProb(pid, fittedJointModel, maxVisitTime, futureTimeDt)
-  lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
-  #lastBiopsyTime = 0
+plotEwoutMeetingPlot = function(pid, fittedJointModel, maxVisitTime, futureTimeDt = 3, lastBiopsyTime=NA){
+  pp = plotDynamicSurvProb(pid, fittedJointModel, maxVisitTime, futureTimeDt, lastBiopsyTime)
+  
+  if(is.na(lastBiopsyTime)){
+    lastBiopsyTime = getLastBiopsyTime(pid, upperLimitTime = maxVisitTime)
+  }
   
   patientDs = psa_data_set[psa_data_set$P_ID %in% pid & psa_data_set$visitTimeYears<=maxVisitTime,]
   lastPSATime = max(patientDs$visitTimeYears)
@@ -369,7 +372,7 @@ plotEwoutMeetingPlot = function(pid, fittedJointModel, maxVisitTime, futureTimeD
   lastPSAValue = log(patientDs$psa[patientDs$visitTimeYears==lastPSATime],2)
   print(paste("Last PSA value:", lastPSAValue))
   
-  futureTimes = seq(lastBiopsyTime, lastBiopsyTime + futureTimeDt, 0.1)
+  futureTimes = seq(lastBiopsyTime, maxVisitTime + futureTimeDt, 0.1)
   sfit = survfitJM(fittedJointModel, patientDs, idVar="P_ID", survTimes = futureTimes, last.time = lastBiopsyTime)
   
   medianSurv = sfit$summaries[[1]][,"Median"]
