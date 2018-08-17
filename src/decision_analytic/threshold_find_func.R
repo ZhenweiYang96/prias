@@ -107,7 +107,8 @@ find_thresholds.mvJMbayes_mod <- function (object, newdata, Dt, idVar = "id", M 
     F1score <- median(thrs[f1score == max(f1score)])
     youden <- TP - FP
     Youden <- median(thrs[youden == max(youden)])
-    out <- list(TP = TP, FP = FP, nTP = nTP, nFN = nFN, nFP = nFP, nTN = nTN,
+    out <- list(TP = TP, FP = FP, nTP = nTP, nFN = nFN, 
+                nFP = nFP, nTN = nTN,
                 qSN = k.1.0, qSP = k.0.0, qOverall = k.05.0, 
                 thrs = thrs, maxF1 = max(f1score), F1score = F1score, 
                 maxYouden = max(youden), Youden = Youden,
@@ -131,25 +132,27 @@ find_thresholds.mvJMbayes_mod <- function (object, newdata, Dt, idVar = "id", M 
   do_roc <- function (i, object, newdata, times, Dt, idVar, M) {
     roc <- rocJM.mvJMbayes_mod(object, newdata = newdata, Tstart = times[i], Dt = Dt, 
                  idVar = idVar, M = M)
-    c("F1score" = roc$F1score, "maxF1" = roc$maxF1, "Youden" = roc$Youden, "maxYouden" = roc$maxYouden)
+    # c("F1score" = roc$F1score, "maxF1" = roc$maxF1, "Youden" = roc$Youden, "maxYouden" = roc$maxYouden,
+    #   nTP = roc$nTP, nFN = roc$nFN, nFP = roc$nFP, nTN = roc$nTN)
+    roc
   }
   block <- seq_along(times)
   registerDoParallel(n_cores)
-  out <- foreach(i = block, .packages = c("JMbayes", "splines"), .combine = rbind) %dopar% {
+  out <- foreach(i = block, .packages = c("JMbayes", "splines")) %dopar% {
     do_roc(i, object, newdata, times, Dt, idVar, M)
   }
   stopImplicitCluster()
-  out <- cbind(times, out)
-  colnames(out) <- c("times", "F1score", "maxF1", "Youden", "maxYouden")
-  rownames(out) <- NULL
-  if (is.null(variability_threshold))
-    variability_threshold <- quantile(Time, 0.25)
-  out <- list(cut_points = out, variability_threshold = variability_threshold)
-  class(out) <- "ROC_cutoff"
-  out
+  return(list(times=times, out=out))
 }
 
 environment(find_thresholds.mvJMbayes_mod) <- asNamespace('JMbayes')
 
-find_thresholds.mvJMbayes_mod(jointModelData$mvJoint_dre_psa_simDs, jointModelData$trainingData$trainingDs, 
-                              Dt=0.5, idVar = "P_ID", n_cores = 4)
+for(Dt in DtList){
+  print(paste("Starting for Dt =", Dt))
+  thresholdsList[[as.character(Dt)]] = find_thresholds.mvJMbayes_mod(jointModelData$mvJoint_dre_psa_simDs, 
+                                                                     jointModelData$trainingData$trainingDs, 
+                                                                     Dt=Dt, idVar = "P_ID", n_cores = 4)
+  print(paste("Done for Dt =", Dt))
+  save(thresholdsList, file="thresholdsListtemp_rev.Rdata")
+  print(paste("Saved for Dt =", Dt))
+}

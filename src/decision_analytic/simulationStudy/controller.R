@@ -42,8 +42,9 @@ KAPPAF1Score = "Risk (F1)"
 KAPPAYouden = "Risk (J1)"
 
 methodNames = c(ANNUAL, MONTH_18, BIENNIAL, PRIAS, names(DYN_RISK_GR), 
-                KAPPAF1Score, EXP_FAIL_TIME, MEDIAN_FAIL_TIME, HYBRID, KAPPAYouden,
-                "Try1", "Try2", "Try3", "Try4", "Try5", "Try6","Try7", "Try8", "Try9", "Try10")
+                KAPPAF1Score, EXP_FAIL_TIME, MEDIAN_FAIL_TIME, HYBRID)
+                #KAPPAYouden)
+                #"Try1", "Try2", "Try3", "Try4", "Try5", "Try6","Try7", "Try8", "Try9", "Try10")
 
 nSub = 1500
 lastSeed = 200

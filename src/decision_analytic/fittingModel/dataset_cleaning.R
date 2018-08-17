@@ -376,6 +376,14 @@ prias_long$firstVisitDom = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FU
 prias_long$visitTimeDays = unlist(by(prias_long$dom, INDICES=prias_long$P_ID, FUN=function(x){(x-x[1])/(24*60*60)}))
 prias_long$visitTimeYears = prias_long$visitTimeDays/365
 
+
+#The following lines are currently commented out, but in future they should be opened and we should then see
+#how many incorrect dates are present. Our snapshot of the PRIAS dataset is from Dec 2016 (24 Dec 2016 after cleaning)
+
+#prias_long$dom_human = as.POSIXct(prias_long$dom, origin="1582-10-14", tz="GMT")
+#prias_long$firstVisitDom_human = as.POSIXct(prias_long$firstVisitDom, origin="1582-10-14", tz="GMT")
+#prias.id$firstVisitDom_human = as.POSIXct(prias.id$firstVisitDom, origin="1582-10-14", tz="GMT")
+
 #Cases where first two measurements have same DOM but different PSA scores. There are two such people
 p_id_dom1dom2same = unique(prias_long$P_ID)[unlist(tapply(prias_long$visitTimeDays, prias_long$P_ID, function(x){sum(x==0, na.rm = T)>1}))]
 View(prias_long[prias_long$P_ID %in% p_id_dom1dom2same,])

@@ -1,6 +1,6 @@
 mvJoint_dre_psa_dre_value$mcmc$b = NULL
 
-DtList = seq(0.5, 6, 0.5)
+DtList = seq(0.25, 10, 0.25)
 thresholdsList = vector("list", length(DtList))
 names(thresholdsList) = DtList
 

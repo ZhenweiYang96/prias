@@ -1,221 +1,176 @@
-runHybridSchedule_mod = function(jointModelData){
+auc1 = aucJM(mvJoint_dre_psa_dre_value, dre_psa_data_set, Tstart = 1, Thoriz=1 + 1.0101, idVar="P_ID")
+save(auc1, file = "auc1.Rdata")
+auc2 = aucJM(mvJoint_dre_psa_dre_value, dre_psa_data_set, Tstart = 2, Thoriz=2 + 1.0101, idVar="P_ID")
+save(auc2, file = "auc2.Rdata")
+auc3 = aucJM(mvJoint_dre_psa_dre_value, dre_psa_data_set, Tstart = 3, Thoriz=3 + 1.0101, idVar="P_ID")
+save(auc3, file = "auc3.Rdata")
+
+
+auc1 = aucJM(mvJoint_psa, psa_data_set, Tstart = 1, Thoriz=1 + 1.0101, idVar="P_ID")
+save(auc1, file = "auc1_psa.Rdata")
+auc2 = aucJM(mvJoint_psa, psa_data_set, Tstart = 2, Thoriz=2 + 1.0101, idVar="P_ID")
+save(auc2, file = "auc2_psa.Rdata")
+auc3 = aucJM(mvJoint_psa, psa_data_set, Tstart = 3, Thoriz=3 + 1.0101, idVar="P_ID")
+save(auc3, file = "auc3_psa.Rdata")
+
+
+
+
+library(doParallel)
+
+resFiles = list.files("/home/a_tomer/Results/res20/", full.names = T)
+
+ct = makeCluster(4)
+registerDoParallel(ct)
+prias_real_bokhorst = foreach(i=1:length(resFiles), .combine="rbind") %dopar%{
   
-  max_surv_time = max(jointModelData$trainingData$trainingDs$progression_time)
+  load(resFiles[i])
   
-  ## Expected failure time:
-  #Since we dont have the entire PPD of the patient, we only know the "at least" estimate
-  # of the mean failure time.
-  expectedCondFailureTime = function(newdata, lastBiopsyTime){
+  seed = jointModelData$seed
+  set.seed(seed)
+  
+  runPRIAS_RealSchedule = function(testDs.id, testDs){
+    fixedSchedule = c(1, 4, 7, 10)
     
-    dynamicPredProb = function(futureTimes, newdata, lastBiopsyTime){
-      return(survfitJM(jointModelData$mvJoint_dre_psa_simDs, newdata, last.time = lastBiopsyTime,
-                       idVar="P_ID", survTimes = futureTimes)$summaries[[1]][, "Mean"])
-    }
+    psa = 2^testDs$log2psaplus1 - 1
+    psa[psa<=0] = 0.01
+    testDs$log2psa = log(psa, base = 2)
     
-    upper = max_surv_time
-    #Change rel.tol = 0.05 to make it faster
-    repeat{
-      integration_result = try(integrate(dynamicPredProb, lower=lastBiopsyTime, 
-                                         upper=upper, newdata=newdata, lastBiopsyTime = lastBiopsyTime, rel.tol = 0.05)$value, silent = T)
-      
-      if(!inherits(integration_result, "try-error")){
-        break
+    getComplianceRate = function(isAnnualBiopsy, biopsyTime){
+      if(abs(biopsyTime - 1)<=0.5){
+        return(0.8132875)
+      }else if(abs(biopsyTime - 4)<=0.5){
+        return(0.5787037)
+      }else if(abs(biopsyTime - 7)<=0.5){
+        return(0.5)
+      }else if(abs(biopsyTime - 10)<=0.5){
+        return(0.2727273)
+      }else if(isAnnualBiopsy & biopsyTime > 1.5 & biopsyTime<=2.5){
+        return(0.3755102)
+      }else if(isAnnualBiopsy & biopsyTime > 2.5 & biopsyTime<=3.5){
+        return(0.4911591)
+      }else if(isAnnualBiopsy & biopsyTime > 4.5 & biopsyTime<=5.5){
+        return(0.2989691)
+      }else if(isAnnualBiopsy & biopsyTime > 5.5 & biopsyTime<=6.5){
+        return(0.364486)
+      }else if(isAnnualBiopsy & biopsyTime > 7.5 & biopsyTime<=8.5){
+        return(0.06666667)
+      }else if(isAnnualBiopsy & biopsyTime > 8.5 & biopsyTime<=9.5){
+        return(0.25)
       }else{
-        upper = upper - 0.1
-        if(upper < max(9, lastBiopsyTime)){
-          #Just a large number
-          integration_result = 20
-          break
-        }
+        return(1)
       }
     }
     
-    lastBiopsyTime + integration_result
-  }
-  
-  pMedianTimeOptimal = function(newdata, lastBiopsyTime){
-    lastVisitTime = max(newdata$visitTimeYears)
-    
-    round1SurvTimes = c(seq(lastBiopsyTime + 0.0001, max_surv_time, 1), max_surv_time)
-    
-    round1 = survfitJM(jointModelData$mvJoint_dre_psa_simDs, newdata, idVar = "P_ID", last.time=lastBiopsyTime,
-                       survTimes = round1SurvTimes)
-    
-    times = round1$summaries[[1]][, "times"]
-    probs = round1$summaries[[1]][, "Mean"]
-    
-    #adjusted median prob for max_surv_time year follow up
-    #min(probs) corresponds to prob at year max_surv_time
-    survProb = 1 - ((1-min(probs))*0.5)  
-    
-    nearest_time = times[which.min(abs(probs-survProb))[1]]
-    upper = min(max_surv_time, nearest_time + 1)
-    lower = max(lastBiopsyTime + 1e-4, nearest_time - 1)
-    
-    round2SurvTimes = seq(lower, upper, 0.05)
-    
-    round2 = survfitJM(jointModelData$mvJoint_dre_psa_simDs, newdata, idVar = "P_ID", last.time=lastBiopsyTime,
-                       survTimes = round2SurvTimes)
-    
-    times = round2$summaries[[1]][, "times"]
-    probs = round2$summaries[[1]][, "Mean"]
-    
-    times[which.min(abs(probs-survProb))[1]]
-  }
-  
-  #Default is survTime = 0.5, median
-  pDynSurvTimeOptimal = function(newdata, lastBiopsyTime, survProb = NA){
-    lastVisitTime = max(newdata$visitTimeYears)
-    
-    round1SurvTimes = c(seq(lastBiopsyTime + 0.0001, max_surv_time, 1), max_surv_time)
-    
-    round1 = survfitJM(jointModelData$mvJoint_dre_psa_simDs, newdata, idVar = "P_ID", last.time=lastBiopsyTime,
-                       survTimes = round1SurvTimes)
-    
-    times = round1$summaries[[1]][, "times"]
-    probs = round1$summaries[[1]][, "Mean"]
-    
-    nearest_time = times[which.min(abs(probs-survProb))[1]]
-    upper = min(max_surv_time, nearest_time + 1)
-    lower = max(lastBiopsyTime + 1e-4, nearest_time - 1)
-    
-    round2SurvTimes = seq(lower, upper, 0.05)
-    
-    round2 = survfitJM(jointModelData$mvJoint_dre_psa_simDs, newdata, idVar = "P_ID", last.time=lastBiopsyTime,
-                       survTimes = round2SurvTimes)
-    
-    times = round2$summaries[[1]][, "times"]
-    probs = round2$summaries[[1]][, "Mean"]
-    
-    times[which.min(abs(probs-survProb))[1]]
-  }
-  
-  getSurvThreshold = function(lastBiopsyTime, Dt){
-    availableDt = as.numeric(names(thresholdsList))
-    Dt = availableDt[which.min(abs(Dt-availableDt))]
-    
-    cutpoints = thresholdsList[[as.character(Dt)]]$cut_points
-    
-    lastBiopsyTime = min(max(lastBiopsyTime, cutpoints[1,1]), cutpoints[nrow(cutpoints),1])
-    
-    #1st column in cutpoints is the column of times
-    upperTimeIndex = which(lastBiopsyTime <= cutpoints[,1])[1]
-    lowerTimeIndex = tail(which(lastBiopsyTime >= cutpoints[,1]),1)
-    
-    probDiffPerUnitTimeDiff = (cutpoints[upperTimeIndex, 2] - cutpoints[lowerTimeIndex, 2]) / (cutpoints[upperTimeIndex, 1] - cutpoints[lowerTimeIndex,1])
-    
-    diffProb = probDiffPerUnitTimeDiff * (lastBiopsyTime - cutpoints[lowerTimeIndex,1])
-    
-    if(is.nan(diffProb)){
-      diffProb = 0
+    getComplianceRate_PRIAS = function(isAnnualBiopsy, biopsyTime){
+      if(biopsyTime>0 & biopsyTime<=1){
+        return(0.81)
+      }else if(biopsyTime>1 & biopsyTime<=2){
+        return(0.24)
+      }else if(biopsyTime>2 & biopsyTime<=3){
+        return(0.29)
+      }else if(biopsyTime>3 & biopsyTime<=4){
+        return(0.60)
+      }else if(biopsyTime>4 & biopsyTime<=5){
+        return(0.18)
+      }else if(biopsyTime>5 & biopsyTime<=6){
+        return(0.21)
+      }else if(biopsyTime>6 & biopsyTime<=7){
+        return(0.53)
+      }else if(biopsyTime>7 & biopsyTime<=8){
+        return(0.09)
+      }else if(biopsyTime>8 & biopsyTime<=9){
+        return(0.0)
+      }else{
+        return(0.33)
+      }
     }
     
-    #2nd column in cutpoints is the column for F1 score thresholds
-    return(cutpoints[lowerTimeIndex, 2] + diffProb)
+    switchToAnnual = function(ds){
+      psaDt = 1/(lm(log2psa~visitTimeYears, data = ds)$coefficients[2])
+      return(psaDt>=0 & psaDt<=10)
+    }
+    
+    getNbOffset = function(pid){
+      patientDs = testDs[testDs$P_ID == pid,]
+      progressionTime = testDs.id$progression_time[testDs.id$P_ID == pid]
+      
+      nb = 0
+      offset = NA
+      
+      #4 is the minimum number of measurements before which PSA-DT can't be used
+      #The biopsy at year 1 will be able to detect the prostate cancer
+      if(nrow(patientDs)<4){
+        nb = 1
+        offset = 1 - progressionTime
+      }else{
+        lastBiopsyTime = 0
+        proposedBiopsyTime = Inf
+        
+        isAnnualSchedule = F
+        
+        #Min number of measurements before which PSA-DT can't be used
+        for(j in 4:nrow(patientDs)){
+          curVisitTime = patientDs$visitTimeYears[j]
+          
+          if(curVisitTime >= proposedBiopsyTime){
+            complianceRate = getComplianceRate_PRIAS(isAnnualSchedule, proposedBiopsyTime)
+            comply = rbinom(1,1,complianceRate)
+            #print(comply)
+            if(comply==T){
+              nb = nb + 1
+              offset = proposedBiopsyTime - progressionTime
+              lastBiopsyTime = proposedBiopsyTime
+              proposedBiopsyTime = Inf
+            }
+          }
+          
+          if(!is.na(offset) & offset > 0){
+            break
+          }
+          
+          if(switchToAnnual(patientDs[1:j, ])){
+            if((curVisitTime - lastBiopsyTime) >= 1){
+              proposedBiopsyTime = curVisitTime
+            }else{
+              proposedBiopsyTime = lastBiopsyTime + 1
+            }
+            
+            isAnnualSchedule = T
+          }else{
+            proposedBiopsyTime = fixedSchedule[which(fixedSchedule >= curVisitTime)[1]]
+            
+            if(proposedBiopsyTime - lastBiopsyTime < 1){
+              proposedBiopsyTime = lastBiopsyTime + 1
+            }
+            
+            isAnnualSchedule = F
+          }
+        }
+        
+        #If we iterated through the entire vector of visit times
+        if(proposedBiopsyTime < Inf){
+          complianceRate = getComplianceRate(isAnnualSchedule, proposedBiopsyTime)
+          comply = rbinom(1,1,complianceRate)
+          #print(comply)
+          if(comply==T){
+            nb = nb + 1
+            offset = proposedBiopsyTime - progressionTime
+          }
+        }
+      }
+      
+      return(c(progressionTime, nb, offset))
+    }
+    
+    return(t(sapply(testDs.id$P_ID, getNbOffset)))
   }
   
-  testDs.id = jointModelData$testData$testDs.id
-  testDs = jointModelData$testData$testDs[jointModelData$testData$testDs$visitTimeYears <= max_surv_time,]
+  prias_real_schedule =runPRIAS_RealSchedule(jointModelData$testData$testDs.id, jointModelData$testData$testDs)
   
-  cl = makeCluster(max_cores)
-  registerDoParallel(cl)
-  
-  #testDs.id$P_ID
-  results = foreach(pid = testDs.id$P_ID, .combine = "rbind", .packages = c("splines", "JMbayes"),
-                    .export=c("MIN_FIXED_ROWS", "MAX_FAIL_TIME", "thresholdsList")) %dopar%{
-                      progressionTime = testDs.id$progression_time[testDs.id$P_ID == pid]
-                      
-                      # print("#######################")
-                      print(paste(pid, ":", progressionTime))
-                      # print("#######################")
-                      
-                      lastBiopsyTime = 0
-                      nb = 0
-                      offset = lastBiopsyTime - progressionTime
-                      
-                      testDs_j = testDs[testDs$P_ID == pid,]
-                      
-                      #the first row is time 0
-                      for(j in MIN_FIXED_ROWS:nrow(testDs_j)){
-                        curVisitTime = testDs_j$visitTimeYears[j]
-                        
-                        if((curVisitTime - lastBiopsyTime) >= 1){
-                          
-                          if(curVisitTime<=3.5){
-                            sfit2 = survfitJM(object=jointModelData$mvJoint_dre_psa_simDs, 
-                                              newdata = testDs_j[1:j,], idVar = "P_ID",
-                                              survTimes = curVisitTime, last.time = lastBiopsyTime)
-                            
-                            meanSurv2 = round(sfit2$summaries[[1]][, "Mean"], 2)
-                            proposedBiopsyTime = ifelse(meanSurv2>0.85, Inf, curVisitTime)
-                          }else{
-                            if(lastBiopsyTime < 9){
-                              if(lastBiopsyTime < 3.5){
-                                survFit_j = survfitJM(object=jointModelData$mvJoint_dre_psa_simDs, 
-                                                      newdata = testDs_j[1:j,], idVar = "P_ID",
-                                                      survTimes = 3.5, last.time = lastBiopsyTime)
-                                
-                                meanSurvProb = round(survFit_j$summaries[[1]][, "Mean"], 2)
-                                
-                                Dt = 3.5 - lastBiopsyTime
-                                if(meanSurvProb <= getSurvThreshold(lastBiopsyTime, Dt)){
-                                  sfit2 = survfitJM(object=jointModelData$mvJoint_dre_psa_simDs, 
-                                                    newdata = testDs_j[1:j,], idVar = "P_ID",
-                                                    survTimes = curVisitTime, last.time = lastBiopsyTime)
-                                  
-                                  meanSurv2 = round(sfit2$summaries[[1]][, "Mean"], 2)
-                                  proposedBiopsyTime = ifelse(meanSurv2>0.85, Inf, curVisitTime)
-                                }else{
-                                  survFit_j = survfitJM(object=jointModelData$mvJoint_dre_psa_simDs, 
-                                                        newdata = testDs_j[1:j,], idVar = "P_ID",
-                                                        survTimes = 9, last.time = lastBiopsyTime)
-                                  
-                                  meanSurvProb = round(survFit_j$summaries[[1]][, "Mean"], 2)
-                                  
-                                  Dt = 9 - lastBiopsyTime
-                                  if(meanSurvProb <= getSurvThreshold(lastBiopsyTime, Dt)){
-                                    proposedBiopsyTime = pMedianTimeOptimal(testDs_j[1:j,], lastBiopsyTime)
-                                  }else{
-                                    proposedBiopsyTime = expectedCondFailureTime(newdata = testDs_j[1:j,], lastBiopsyTime = lastBiopsyTime)
-                                  }
-                                }
-                              }else{
-                                survFit_j = survfitJM(object=jointModelData$mvJoint_dre_psa_simDs, 
-                                                      newdata = testDs_j[1:j,], idVar = "P_ID",
-                                                      survTimes = , last.time = lastBiopsyTime)
-                                
-                                meanSurvProb = round(survFit_j$summaries[[1]][, "Mean"], 2)
-                                
-                                Dt = 9 - lastBiopsyTime
-                                if(meanSurvProb <= getSurvThreshold(lastBiopsyTime, Dt)){
-                                  proposedBiopsyTime = pMedianTimeOptimal(testDs_j[1:j,], lastBiopsyTime)
-                                }else{
-                                  proposedBiopsyTime = expectedCondFailureTime(newdata = testDs_j[1:j,], lastBiopsyTime = lastBiopsyTime)
-                                }
-                              }
-                            }else{
-                              proposedBiopsyTime = expectedCondFailureTime(newdata = testDs_j[1:j,], lastBiopsyTime = lastBiopsyTime)
-                            }
-                          }
-                          
-                          #nearest 0.25 years is 3 months
-                          if(curVisitTime >= proposedBiopsyTime){
-                            lastBiopsyTime = curVisitTime
-                            nb = nb + 1
-                            offset = curVisitTime - progressionTime
-                            
-                            if(!is.na(offset) & offset > 0){
-                              break
-                            }
-                          }
-                        }
-                      }
-                      
-                      return(c("nb"=nb, "offset"=offset, "lastBiopsyTime"=lastBiopsyTime))
-                    }
-  stopCluster(cl)
-  
-  rownames(results) = NULL
-  
-  return(results)
+  rm(jointModelData)
+  #save(prias_real_schedule, file=paste("/home/a_tomer/Results/prias_real/prias_real_schedule_", seed, ".Rdata", sep = ""))
+  return(prias_real_schedule)
 }
+
+stopCluster(ct)

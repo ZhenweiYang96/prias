@@ -1,0 +1,17 @@
+\begin{thebibliography}{1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{DOI:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{DOI:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem{bokhorst2015compliance}
+Bokhorst LP, Alberts AR, Rannikko A et~al.
+\newblock Compliance rates with the {Prostate Cancer Research International
+  Active Surveillance (PRIAS)} protocol and disease reclassification in
+  noncompliers.
+\newblock \emph{European Urology} 2015; 68(5): 814--821.
+
+\end{thebibliography}

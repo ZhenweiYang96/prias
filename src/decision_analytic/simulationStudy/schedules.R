@@ -142,8 +142,8 @@ runDynRiskGRSchedule = function(jointModelData, riskMethodName="F1score"){
   max_surv_time = max(jointModelData$trainingData$trainingDs$progression_time) - 10e-2
   
   getSurvThreshold = function(lastBiopsyTime, curVisitTime){
-    #Dt = curVisitTime - lastBiopsyTime
-    Dt = 0.5
+    Dt = curVisitTime - lastBiopsyTime
+    #Dt = 0.5
     
     availableDt = as.numeric(names(thresholdsList))
     Dt = availableDt[which.min(abs(Dt-availableDt))]
