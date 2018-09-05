@@ -99,3 +99,23 @@ qqplotPSA = function(modelObject, df = 3, weighted=T, probs=c(0.25, 0.75)){
           plot.title = element_text(hjust = 0.5, size=13)) 
 }
 
+getFittedPSAVelocities = function(fittedJointModel){
+  generateTruePSASlope = function(visitTimeYears, randomEff_psa_slope){
+    betas_psa_time = fittedJointModel$statistics$postMeans$betas2[4:7]
+    
+    fixedPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+    randomPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+    
+    df = data.frame(visitTimeYears)
+    model.matrix(fixedPSASlopeFormula, df) %*% betas_psa_time + model.matrix(randomPSASlopeFormula, df) %*% as.numeric(randomEff_psa_slope)
+  }
+  
+  b_subjects = fittedJointModel$statistics$postMeans$b
+  
+  data=fittedJointModel$model_info$mvglmer_components$data
+  sapply(1:length(unique(data$P_ID)), function(patientRow){
+    randomEff_psa_slope = b_subjects[patientRow,4:7]
+    uniquePIDs = unique(data$P_ID)
+    generateTruePSASlope(data$visitTimeYears[data$P_ID==uniquePIDs[patientRow]], randomEff_psa_slope)
+  })
+}

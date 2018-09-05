@@ -147,12 +147,12 @@ find_thresholds.mvJMbayes_mod <- function (object, newdata, Dt, idVar = "id", M 
 
 environment(find_thresholds.mvJMbayes_mod) <- asNamespace('JMbayes')
 
-for(Dt in DtList){
-  print(paste("Starting for Dt =", Dt))
-  thresholdsList[[as.character(Dt)]] = find_thresholds.mvJMbayes_mod(jointModelData$mvJoint_dre_psa_simDs, 
-                                                                     jointModelData$trainingData$trainingDs, 
-                                                                     Dt=Dt, idVar = "P_ID", n_cores = 4)
-  print(paste("Done for Dt =", Dt))
-  save(thresholdsList, file="thresholdsListtemp_rev.Rdata")
-  print(paste("Saved for Dt =", Dt))
-}
+# for(Dt in DtList){
+#   print(paste("Starting for Dt =", Dt))
+#   thresholdsList[[as.character(Dt)]] = find_thresholds.mvJMbayes_mod(jointModelData$mvJoint_dre_psa_simDs, 
+#                                                                      jointModelData$trainingData$trainingDs, 
+#                                                                      Dt=Dt, idVar = "P_ID", n_cores = 4)
+#   print(paste("Done for Dt =", Dt))
+#   save(thresholdsList, file="thresholdsListtemp_rev.Rdata")
+#   print(paste("Saved for Dt =", Dt))
+# }

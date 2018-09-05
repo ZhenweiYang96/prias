@@ -1,0 +1,127 @@
+% $ biblatex auxiliary file $
+% $ biblatex version 2.6 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\entry{eilers1996flexible}{article}{}
+  \name{author}{2}{}{%
+    {{}%
+     {Eilers}{E.}%
+     {Paul~HC}{P.~H.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Marx}{M.}%
+     {Brian~D}{B.~D.}%
+     {}{}%
+     {}{}}%
+  }
+  \list{publisher}{1}{%
+    {Institute of Mathematical Statistics}%
+  }
+  \strng{namehash}{EPHMBD1}
+  \strng{fullhash}{EPHMBD1}
+  \field{labelyear}{1996}
+  \field{sortinit}{E}
+  \field{number}{2}
+  \field{pages}{89\bibrangedash 121}
+  \field{title}{Flexible smoothing with {B-splines} and penalties}
+  \field{volume}{11}
+  \field{journaltitle}{Statistical Science}
+  \field{year}{1996}
+\endentry
+
+\entry{schroder1992tnm}{article}{}
+  \name{author}{6}{}{%
+    {{}%
+     {Schr{\"o}der}{S.}%
+     {FH}{F.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Hermanek}{H.}%
+     {P}{P}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Denis}{D.}%
+     {L}{L}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Fair}{F.}%
+     {WR}{W.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Gospodarowicz}{G.}%
+     {MK}{M.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Pavone-Macaluso}{P.-M.}%
+     {M}{M}%
+     {}{}%
+     {}{}}%
+  }
+  \list{publisher}{1}{%
+    {Wiley Online Library}%
+  }
+  \strng{namehash}{SF+1}
+  \strng{fullhash}{SFHPDLFWGMPMM1}
+  \field{labelyear}{1992}
+  \field{sortinit}{S}
+  \field{number}{S4}
+  \field{pages}{129\bibrangedash 138}
+  \field{title}{The TNM classification of prostate cancer}
+  \field{volume}{21}
+  \field{journaltitle}{The Prostate}
+  \field{year}{1992}
+\endentry
+
+\entry{tsiatis2004joint}{article}{}
+  \name{author}{2}{}{%
+    {{}%
+     {Tsiatis}{T.}%
+     {Anastasios~A}{A.~A.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Davidian}{D.}%
+     {Marie}{M.}%
+     {}{}%
+     {}{}}%
+  }
+  \list{publisher}{1}{%
+    {Institute of Statistical Science, Academia Sinica}%
+  }
+  \strng{namehash}{TAADM1}
+  \strng{fullhash}{TAADM1}
+  \field{labelyear}{2004}
+  \field{sortinit}{T}
+  \field{number}{3}
+  \field{pages}{809\bibrangedash 834}
+  \field{title}{Joint modeling of longitudinal and time-to-event data: an
+  overview}
+  \field{volume}{14}
+  \field{journaltitle}{Statistica Sinica}
+  \field{year}{2004}
+\endentry
+
+\lossort
+\endlossort
+
+\endinput

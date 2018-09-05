@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\urlprefix}{URL }
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -7,11 +7,122 @@
   \urlstyle{rm}\Url}\fi
 \providecommand{\eprint}[2][]{\url{#2}}
 
+\bibitem{GlobalCancerStats2012}
+Torre LA, Bray F, Siegel RL et~al.
+\newblock Global cancer statistics, 2012.
+\newblock \emph{CA: A Cancer Journal for Clinicians} 2015; 65(2): 87--108.
+
+\bibitem{potoskyPSAcancer}
+Potosky AL, Miller BA, Albertsen PC et~al.
+\newblock The role of increasing detection in the rising incidence of prostate
+  cancer.
+\newblock \emph{JAMA} 1995; 273(7): 548--552.
+
 \bibitem{bokhorst2015compliance}
 Bokhorst LP, Alberts AR, Rannikko A et~al.
 \newblock Compliance rates with the {Prostate Cancer Research International
   Active Surveillance (PRIAS)} protocol and disease reclassification in
   noncompliers.
 \newblock \emph{European Urology} 2015; 68(5): 814--821.
+
+\bibitem{ehdaie2014impact}
+Ehdaie B, Vertosick E, Spaliviero M et~al.
+\newblock The impact of repeat biopsies on infectious complications in men with
+  prostate cancer on active surveillance.
+\newblock \emph{The Journal of urology} 2014; 191(3): 660--664.
+
+\bibitem{loeb2014heterogeneity}
+Loeb S, Carter HB, Schwartz M et~al.
+\newblock Heterogeneity in active surveillance protocols worldwide.
+\newblock \emph{Reviews in urology} 2014; 16(4): 202.
+
+\bibitem{welty2015extended}
+Welty CJ, Cowan JE, Nguyen H et~al.
+\newblock Extended followup and risk factors for disease reclassification in a
+  large active surveillance cohort for localized prostate cancer.
+\newblock \emph{The Journal of Urology} 2015; 193(3): 807--811.
+
+\bibitem{bul2013active}
+Bul M, Zhu X, Valdagni R et~al.
+\newblock Active surveillance for low-risk prostate cancer worldwide: the prias
+  study.
+\newblock \emph{European urology} 2013; 63(4): 597--603.
+
+\bibitem{ayer2012or}
+Ayer T, Alagoz O and Stout NK.
+\newblock A {POMDP} approach to personalize mammography screening decisions.
+\newblock \emph{Operations Research} 2012; 60(5): 1019--1034.
+
+\bibitem{akhavan2017markov}
+Akhavan-Tabatabaei R, S{\'a}nchez DM and Yeung TG.
+\newblock A {Markov} decision process model for cervical cancer screening
+  policies in {Colombia}.
+\newblock \emph{Medical Decision Making} 2017; 37(2): 196--211.
+
+\bibitem{erenay2014optimizing}
+Erenay FS, Alagoz O and Said A.
+\newblock Optimizing colonoscopy screening for colorectal cancer prevention and
+  surveillance.
+\newblock \emph{Manufacturing \& Service Operations Management} 2014; 16(3):
+  381--400.
+
+\bibitem{zhang2012optimization}
+Zhang J, Denton BT, Balasubramanian H et~al.
+\newblock Optimization of prostate biopsy referral decisions.
+\newblock \emph{Manufacturing \& Service Operations Management} 2012; 14(4):
+  529--547.
+
+\bibitem{tsiatis2004joint}
+Tsiatis AA and Davidian M.
+\newblock Joint modeling of longitudinal and time-to-event data: an overview.
+\newblock \emph{Statistica Sinica} 2004; 14(3): 809--834.
+
+\bibitem{rizopoulos2012joint}
+Rizopoulos D.
+\newblock \emph{Joint Models for Longitudinal and Time-to-Event Data: With
+  Applications in R}.
+\newblock CRC Press, 2012.
+\newblock ISBN 9781439872864.
+
+\bibitem{laird1982random}
+Laird NM and Ware JH.
+\newblock Random-effects models for longitudinal data.
+\newblock \emph{Biometrics} 1982; : 963--974.
+
+\bibitem{schroder1992tnm}
+Schr{\"o}der F, Hermanek P, Denis L et~al.
+\newblock The tnm classification of prostate cancer.
+\newblock \emph{The Prostate} 1992; 21(S4): 129--138.
+
+\bibitem{rizopoulos2011dynamic}
+Rizopoulos D.
+\newblock Dynamic predictions and prospective accuracy in joint models for
+  longitudinal and time-to-event data.
+\newblock \emph{Biometrics} 2011; 67(3): 819--829.
+
+\bibitem{lopez2014optimalcutpoints}
+L{\'o}pez-Rat{\'o}n M, Rodr{\'\i}guez-{\'A}lvarez MX, Cadarso-Su{\'a}rez C
+  et~al.
+\newblock {OptimalCutpoints: an R package for selecting optimal cutpoints in
+  diagnostic tests}.
+\newblock \emph{Journal of Statistical Software} 2014; 61(8): 1--36.
+
+\bibitem{rizopoulosJMbayes}
+Rizopoulos D.
+\newblock The {R} package {JMbayes} for fitting joint models for longitudinal
+  and time-to-event data using {MCMC}.
+\newblock \emph{Journal of Statistical Software} 2016; 72(7): 1--46.
+
+\bibitem{landmarking2017}
+Rizopoulos D, Molenberghs G and Lesaffre EM.
+\newblock Dynamic predictions with time-dependent covariates in survival
+  analysis using joint modeling and landmarking.
+\newblock \emph{Biometrical Journal} 2017; 59(6): 1261--1276.
+
+\bibitem{cooperberg2011outcomes}
+Cooperberg MR, Cowan JE, Hilton JF et~al.
+\newblock Outcomes of active surveillance for men with intermediate-risk
+  prostate cancer.
+\newblock \emph{Journal of Clinical Oncology} 2011; 29(2): 228.
 
 \end{thebibliography}

@@ -1,13 +1,17 @@
 % sage_latex_guidelines.tex V1.20, 14 January 2017
 
-\documentclass[Afour,sagev,times]{sagej}
+\documentclass[Review,sagev,times]{sagej}
+%\documentclass[Afour,sagev,times]{sagej}
 
 \usepackage{moreverb,url}
 
 \usepackage[colorlinks,bookmarksopen,bookmarksnumbered,citecolor=red,urlcolor=red]{hyperref}
+\usepackage{caption}
 
 \newcommand\BibTeX{{\rmfamily B\kern-.05em \textsc{i\kern-.025em b}\kern-.08em
 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\DeclareMathOperator{\argmax}{arg\,max}
 
 \def\volumeyear{2016}
 
@@ -31,9 +35,7 @@ the Netherlands.}
 
 \email{a.tomer@erasmusmc.nl}
 
-\begin{abstract}
-\textbf{Background.} Low-risk prostate cancer patients enrolled in active surveillance (AS) programs commonly undergo biopsies for examination of cancer progression. AS programs employ a fixed schedule of biopsies (e.g. annual biopsies) for all patients. Such fixed and frequent schedules may schedule unnecessary biopsies. Since biopsies are burdensome, patients do not always comply with the schedule, which increases the risk of delayed detection of cancer progression. \textbf{Objective.} Motivated by the world's largest AS program, Prostate Cancer Research International Active Surveillance (PRIAS), our aim is to counter the aforementioned problems by personalizing the decision of conducting biopsies during follow-up visits. \textbf{Methods.} Using joint models for time-to-event and longitudinal data, during each follow-up visit we first jointly model the historical prostate-specific antigen levels, digital rectal examination, and repeat biopsy results of a patient. This results in a patient-specific posterior predictive distribution of the time of cancer progression. We then use the latter under the general framework of Bayesian decision theory to personalize the decision of conducting biopsy at the follow-up visit. Lastly, we conduct a simulation study to compare the fixed schedules (annual and PRIAS schedules) with the proposed personalized approach. \textbf{Results.} In comparison to the fixed schedules, the personalized approach saves seven biopsies per patient on average among the slowly progressing patients. For faster progressing patients, the personalized approach saves one biopsy. Despite this reduction in the number of biopsies, the delay in the detection of cancer progression for the personalized approach is still comparable with that of the PRIAS schedule. \textbf{Conclusions.} We conclude that personalized schedules better balance the number of biopsies per detected cancer progression.
-\end{abstract}
+\input{mainmatter/abstract}
 
 \keywords{Active surveillance, biopsy, joint models, personalized medicine, prostate cancer}
 
@@ -42,40 +44,16 @@ the Netherlands.}
 \footnote{Financial support for this study was provided Netherlands Organization for Scientific Research's VIDI grant nr. 016.146.301, and Erasmus MC funding. The funding agreement ensured the authors’ independence in designing the study, interpreting the data, writing, and publishing the report.}
 \thefootnote
 
-\section{Introduction}
-Prostate cancer \cite{bokhorst2015compliance}.
-describe the decision making problem...to do or not to do biopsy.
+\input{mainmatter/introduction}
+\input{mainmatter/methods}
+\input{mainmatter/results}
+\input{mainmatter/discussion}
 
-
-\section{Methods}
-\subsection{Joint Model for Time-to-Event and Longitudinal Data}
-dont leave model definition with splines for later....put it here
-
-\subsection{Personalized Decisions for Biopsy During Follow-up Visit}
-define posterior predictive
-define loss function and motivation
-place a figure with dynamic prediction and last biopsy etc....to show how it works
-
-\subsection{Simulation Study}
-describe setting of simulation study, describe the schedules, describe the de
-
-\section{Results}
-
-\subsection{Model Fit}
-discuss results for effect sizes etc.
-
-\subsection{Simulation Study}
-\section{Discussion}
-
-\begin{acks}
-The first and last authors would like to acknowledge support by the Netherlands Organization for Scientific Research's VIDI grant nr. 016.146.301, and Erasmus MC funding. The authors also thank the Erasmus MC Cancer Computational Biology Center for giving access to their IT-infrastructure and software that was used for the computations and data analysis in this study. Lastly, we thank Frank-Jan H. Drost from the Department of Urology, Erasmus University Medical Center, for helping us in accessing the PRIAS data set.
-\end{acks}
+\input{mainmatter/acknowledgement}
 
 \begin{sm}
 Supplementary material for this article are available in the document supplementary\_material.pdf.
 \end{sm}
-
-
 
 \bibliographystyle{SageV}
 \bibliography{bibliography.bib}

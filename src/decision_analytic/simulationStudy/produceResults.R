@@ -3,69 +3,142 @@ library(doParallel)
 
 resFiles = list.files("/home/a_tomer/Results/final_res_2nd_paper/", full.names = T)
 
-prias_real_bokhorst = foreach(i=2:length(resFiles), .combine="rbind") %do%{
+cl = makeCluster(4)
+registerDoParallel(cl)
+
+sim_study_res = foreach(i=1:length(resFiles), .combine="rbind") %dopar%{
   load(resFiles[i])
   
-  print(resFiles[i])
+  #print(resFiles[i])
   
-  seed = jointModelData$seed
-  set.seed(seed)
+  #seed = jointModelData$seed
+  #set.seed(seed)
   
-  real_f1 = jointModelData$testData$scheduleResults[jointModelData$testData$scheduleResults$methodName==KAPPAF1Score,]
-  real_f1$methodName = "Risk (F1) Real"
+  #real_f1 = jointModelData$testData$scheduleResults[jointModelData$testData$scheduleResults$methodName==KAPPAF1Score,]
+  #real_f1$methodName = "Risk (F1) Real"
   
-  real_f1[,c("nb", "offset")] = runDynRiskGRSchedule(jointModelData, "F1score")
-  jointModelData$testData$scheduleResults = rbind(jointModelData$testData$scheduleResults, real_f1)
+  #real_f1[,c("nb", "offset")] = runDynRiskGRSchedule(jointModelData, "F1score")
+  #jointModelData$testData$scheduleResults = rbind(jointModelData$testData$scheduleResults, real_f1)
   
-  save(jointModelData, file=resFiles[i])
+  #save(jointModelData, file=resFiles[i])
   ret = jointModelData$testData$scheduleResults
   rm(jointModelData)
   return(ret)
 }
+stopCluster(cl)
 
-scheduleResCombined = prias_real_bokhorst[prias_real_bokhorst$methodName %in% c(ANNUAL, PRIAS, KAPPApt85, KAPPApt95, KAPPAF1Score, "Risk (F1) Real"),]
+FONT_SIZE = 11
+
+scheduleResCombined = sim_study_res[sim_study_res$methodName %in% c(ANNUAL, PRIAS, KAPPApt85, KAPPApt95, KAPPAF1Score, "Risk (F1) Real"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
 scheduleResCombined$offset[scheduleResCombined$offset < 0] = 10 - scheduleResCombined$progression_time[scheduleResCombined$offset<0]
 
-levels(scheduleResCombined$methodName)[5] = "Risk (F1): Dt=0.5"
-levels(scheduleResCombined$methodName)[6] = "Risk (F1): Dt=s-t"
+levels(scheduleResCombined$methodName)[3] = "Risk: 15%"
+levels(scheduleResCombined$methodName)[4] = "Risk: 5%"
+levels(scheduleResCombined$methodName)[5] = "Risk: F1 (Dt=0.5)"
+levels(scheduleResCombined$methodName)[6] = "Risk: F1 (Dt=s-t)"
 
-ggplot(data=scheduleResCombined[scheduleResCombined$progression_time==10,]) + 
-  geom_boxplot(aes(x=methodName, y=nb), outlier.shape = NA) + coord_flip(ylim = c(0,10)) +
-  theme(text = element_text(size=17.5)) + xlab("Schedule") + ylab("Number of Biopsies") +
-  geom_hline(yintercept = 3, linetype="dashed", color='red') + 
-  geom_hline(yintercept = 0, linetype="dashed", color='black')
+getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribute){
+  temp = scheduleResCombined[scheduleResCombined$progression_time>=progression_time_low & scheduleResCombined$progression_time<=progression_time_high,]
+  res = unlist(by(temp$methodName, data = temp[, attribute], FUN = function(x){
+    boxplot.stats(x)$stats
+  }))
+  
+  resDf = data.frame(matrix(res, ncol=5, byrow = T))
+  resDf$methodName = levels(scheduleResCombined$methodName)
+  return(resDf)
+}
 
-ggsave(.Last.value, filename = "biopsycens.eps", width = 8.27)
+gSlowNb = ggplot(data=getBoxplotStatsDf(10,10, "nb")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=1:10) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3))  +
+  xlab("Schedule") + ylab("Number of Biopsies")
 
-gfastNb = ggplot(data=scheduleResCombined[scheduleResCombined$progression_time>0 & scheduleResCombined$progression_time<=3.5,]) + 
-  geom_boxplot(aes(x=methodName, y=nb), outlier.shape = NA) + coord_flip(ylim = c(0, 3)) +
-  theme(text = element_text(size=17.5)) + xlab("Schedule") + ylab("Number of Biopsies") +
-  geom_hline(yintercept = 3, linetype="dashed", color='red')
+ggsave(filename = "report/decision_analytic/mdm/latex/images/sim_res_slow.eps",
+       plot=gSlowNb, device=cairo_ps, height=3, width=6.1, dpi = 500)
 
-gfastOffset = ggplot(data=scheduleResCombined[scheduleResCombined$progression_time>0 & scheduleResCombined$progression_time<=3.5,]) + 
-  geom_boxplot(aes(x=methodName, y=offset), outlier.shape = NA) + coord_flip(ylim = c(0,4.5)) +
-  theme(text = element_text(size=17.5)) + xlab("Schedule") + ylab("Undetected time in years (last biopsy time - true GR time)") +
-  geom_hline(yintercept = 2, linetype="dashed", color='red') + geom_hline(yintercept = 0, linetype="dashed", color='black')
+gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=1:3) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3))  +
+  xlab("Schedule") + ylab("Number of Biopsies")
 
-ggpubr::ggarrange(gfastNb, gfastOffset, nrow=2, labels = "AUTO")
-ggsave(.Last.value, file="biopsy3pt5.eps", height = 9, width = 8.27)
+gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=0:4, limits = c(0,4.5)) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        #axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.text.y = element_blank(),
+        #axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3)) + 
+  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
+  geom_hline(yintercept = 2, linetype="dashed")
 
-gslowNb = ggplot(data=scheduleResCombined[scheduleResCombined$progression_time>3.5 & scheduleResCombined$progression_time<10,]) + 
-  geom_boxplot(aes(x=methodName, y=nb), outlier.shape = NA) + coord_flip(ylim = c(0, 10)) +
-  theme(text = element_text(size=17.5)) + xlab("Schedule") + ylab("Number of Biopsies") +
-  geom_hline(yintercept = 3, linetype="dashed", color='red')
+ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align="h")
+ggsave(.Last.value, filename = "report/decision_analytic/mdm/latex/images/sim_res_fast.eps", 
+       height=3, width=6.1, dpi = 500)
 
-gslowOffset = ggplot(data=scheduleResCombined[scheduleResCombined$progression_time>3.5 & scheduleResCombined$progression_time<10,]) + 
-  geom_boxplot(aes(x=methodName, y=offset), outlier.shape = NA) + coord_flip(ylim = c(0,6)) +
-  theme(text = element_text(size=17.5), axis.title = element_text(size=17.5)) + xlab("Schedule") + ylab("Undetected time in years (last biopsy time - true GR time)") +
-  geom_hline(yintercept = 2, linetype="dashed", color='red') + geom_hline(yintercept = 0, linetype="dashed", color='black')
+gIntermediateNb = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "nb")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=seq(1,10, length.out = 4)) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3))  +
+  xlab("Schedule") + ylab("Number of Biopsies")
 
-ggpubr::ggarrange(gslowNb, gslowOffset, nrow=2, labels = "AUTO")
-ggsave(ggpubr::ggarrange(gslowNb, gslowOffset, nrow=2, labels = "AUTO"), 
-       file="biopsymedium.eps", height = 9, width = 8.27)
+gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=0:5, limits = c(0,5.5)) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        #axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.text.y = element_blank(),
+        #axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.title.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3)) + 
+  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
+  geom_hline(yintercept = 2, linetype="dashed")
+
+ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, widths = c(1.4,1), align = "h")
+ggsave(.Last.value, filename = "report/decision_analytic/mdm/latex/images/sim_res_intermediate.eps",
+       height=3, width=6.1, dpi = 500)
 
 
 #How F1 score works
