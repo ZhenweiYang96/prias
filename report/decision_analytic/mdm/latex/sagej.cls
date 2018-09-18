@@ -107,7 +107,9 @@
 
 \RequirePackage{graphicx}
 \RequirePackage{latexsym,ifthen,rotating,calc,textcase,booktabs,color,endnotes}
-\RequirePackage{amsfonts,amssymb,amsbsy,amsmath,amsthm}
+%I have modified this line to make sure the equation numbers appear on the last line in my latex pdf
+%\RequirePackage{amsfonts,amssymb,amsbsy,amsmath,amsthm}
+\RequirePackage{amsfonts,amssymb,amsbsy,amsthm}
 %\RequirePackage{bm}
 \RequirePackage[errorshow]{tracefnt}
 

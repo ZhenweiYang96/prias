@@ -1,4 +1,4 @@
-\documentclass[a4paper]{article}
+\documentclass[a4paper, 12pt]{article}
 
 %% Language and font encodings
 \usepackage[english]{babel}
@@ -6,7 +6,7 @@
 \usepackage[T1]{fontenc}
 
 %% Sets page size and margins
-\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
 %% Useful packages
 \usepackage[tbtags]{amsmath}
@@ -20,6 +20,7 @@
 \usepackage{authblk}
 \usepackage{xr}
 \usepackage{floatrow}
+\usepackage{colortbl}
 
 \floatstyle{plaintop}
 \restylefloat{table}
@@ -55,9 +56,9 @@
 
 
 \begin{document}
-\title{\textbf{Supplementary Materials for ``Should a Biopsy be Conducted on Follow-up Visits in Prostate Cancer Active Surveillance?: A Personalized Biopsy Scheduling Approach''}}
+\title{\textbf{Supplementary Materials for ``Personalized Decision Making for Prostate Cancer Biopsies in Active Surveillance Programs''}}
 
-\author[1,*]{Auth or}
+\author[1,*]{\normalsize Auth or}
 \author[2]{Aut hor}
 \author[3]{A uthor}
 \author[2,4]{Au thor}
@@ -74,17 +75,9 @@
 
 \input{supplementary/jm_param_estimation}
 \clearpage
-%\input{supplementary/derivation_estimation_mean_var}
+\input{supplementary/prias_param_estimates}
 \clearpage
-%\input{supplementary/prias_ds}
-%\clearpage
-%\input{supplementary/prias_param_estimates}
-\clearpage
-%\input{supplementary/demonstration_911_2340}
-\clearpage
-%\input{supplementary/sim_study_graphs}
-\clearpage
-%\input{supplementary/source_code}
+\input{supplementary/source_code}
 \clearpage
 \printbibliography
 

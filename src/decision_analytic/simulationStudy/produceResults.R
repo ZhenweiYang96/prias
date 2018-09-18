@@ -51,23 +51,6 @@ getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribut
   return(resDf)
 }
 
-gSlowNb = ggplot(data=getBoxplotStatsDf(10,10, "nb")) + 
-  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
-  scale_y_continuous(breaks=1:10) +
-  theme_bw() + 
-  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line(),
-        axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
-        axis.title.y = element_text(size=FONT_SIZE, color = "black"),
-        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
-        legend.background = element_blank(), legend.position = "top",
-        legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies")
-
-ggsave(filename = "report/decision_analytic/mdm/latex/images/sim_res_slow.eps",
-       plot=gSlowNb, device=cairo_ps, height=3, width=6.1, dpi = 500)
-
 gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
                stat = "identity") + coord_flip() + 
@@ -80,7 +63,7 @@ gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) +
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies")
+  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Fast")
 
 gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
@@ -100,9 +83,7 @@ gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) +
   xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
   geom_hline(yintercept = 2, linetype="dashed")
 
-ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align="h")
-ggsave(.Last.value, filename = "report/decision_analytic/mdm/latex/images/sim_res_fast.eps", 
-       height=3, width=6.1, dpi = 500)
+gFast = ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align="h")
 
 gIntermediateNb = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
@@ -116,7 +97,7 @@ gIntermediateNb = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "nb")) +
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies")
+  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Intermediate")
 
 gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
@@ -136,9 +117,34 @@ gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset"))
   xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
   geom_hline(yintercept = 2, linetype="dashed")
 
-ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, widths = c(1.4,1), align = "h")
-ggsave(.Last.value, filename = "report/decision_analytic/mdm/latex/images/sim_res_intermediate.eps",
-       height=3, width=6.1, dpi = 500)
+gIntermediate = ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, widths = c(1.4,1), align = "h")
+
+gSlowNb = ggplot(data=getBoxplotStatsDf(10,10, "nb")) + 
+  geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
+               stat = "identity") + coord_flip() + 
+  scale_y_continuous(breaks=c(1,4,7,10)) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line(),
+        axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
+        axis.title.y = element_text(size=FONT_SIZE, color = "black"),
+        axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
+        legend.background = element_blank(), legend.position = "top",
+        legend.text = element_text(size=FONT_SIZE-3))  +
+  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Slow")
+
+gSlowOffset = ggplot() + geom_text(aes(x=1, y=2, 
+                                       label="No cancer progression\nobserved in 10 year follow-up period\nfor patients with slow speed of cancer\nprogression. Hence, no boxplot for\ndelay in detection of cancer\nprogression.")) + theme_bw() + 
+  theme(axis.ticks = element_blank(), 
+        axis.title = element_blank(), 
+        axis.text = element_blank())
+
+gSlow = ggpubr::ggarrange(gSlowNb, gSlowOffset, ncol=2, widths = c(1.4,1), align="h")
+
+combinedPlot = ggpubr::ggarrange(gFast, gIntermediate,gSlow, nrow=3, ncol=1, 
+                  labels = "AUTO")
+ggsave(combinedPlot, filename = "report/decision_analytic/mdm/latex/images/sim_res_combined.eps",
+       height=8, width=7, dpi = 500)
 
 
 #How F1 score works
