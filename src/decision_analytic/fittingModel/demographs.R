@@ -12,7 +12,7 @@ plotDynamicRiskProbProfile = function(pid, fittedJointModel, maxVisitTime,
                                       maxPredictionTime=NA, lastBiopsyTime=NA, 
                                       usecolor=F, threshold=0.15,
                                       FONT_SIZE=12, POINT_SIZE = 2, DRE_PSA_Y_GAP=0.1,
-                                      LABEL_SIZE = 1){
+                                      LABEL_SIZE = 1, xlim=NA){
   dataset = fittedJointModel$model_info$mvglmer_components$data
   
   patientDs = dataset[dataset$P_ID == pid & dataset$visitTimeYears<=maxVisitTime,]
@@ -78,7 +78,7 @@ plotDynamicRiskProbProfile = function(pid, fittedJointModel, maxVisitTime,
       geom_point(data = patientDs, size=POINT_SIZE, aes(x = visitTimeYears, y=high_dre, shape="Observed DRE"), color="gray30") +
       geom_line(data = riskDf, aes(x=times, y=Mean), color="black") +
       geom_ribbon(data = riskDf, aes(x=times, ymin=Lower, ymax=Upper), 
-                  fill="grey", alpha=0.5) +
+                  fill="grey", alpha=0.4) +
       geom_label(aes(x=lastBiomarkerTime, y=maxMeanRisk, 
                      label=maxMeanRiskLabel, vjust = -0.25,hjust=0.75),
                  size = LABEL_SIZE) + 
@@ -126,7 +126,7 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
                                   meanRiskProb = NA,
                                   threshold=0.15,
                                   FONT_SIZE=12, POINT_SIZE = 2, DRE_PSA_Y_GAP=0.1,
-                                  LABEL_SIZE = 1, specialXticks = NA){
+                                  LABEL_SIZE = 1, specialXticks = NA, xUpperlim = NA){
   dataset = fittedJointModel$model_info$mvglmer_components$data
   
   patientDs = dataset[dataset$P_ID == pid & dataset$visitTimeYears<=maxVisitTime,]
@@ -163,7 +163,12 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
   maxMeanRiskScaled = meanRiskProb * (maxYleft - minYLeft) + minYLeft
   thresholdScaled = threshold *  (maxYleft - minYLeft) + minYLeft
   
-  col_width = 0.1 * maxPredictionTime
+  
+  if(is.na(xUpperlim)){
+    xUpperlim = 1.1 * maxPredictionTime
+  }
+  
+  col_width = 0.1 * xUpperlim
   
   if(is.na(specialXticks)){
     specialXticks = 0
@@ -175,12 +180,6 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
   xLabels = c(specialXticks, paste0("t = ", round(lastBiopsyTime,1), "\n(Latest\nbiopsy)"),
               paste0("s = ", round(maxPredictionTime,1), "\n(Current\nvisit)"))
   
-  riskAxisBreaks = c(0, 0.5, 1)
-  riskAxisBreaks = c(0,riskAxisBreaks[abs(riskAxisBreaks - threshold) >= 0.15], threshold)
-  riskAxisLabels = str_wrap(c(paste0(riskAxisBreaks[-length(riskAxisBreaks)] * 100, "%"), 
-                              paste0("k = ",threshold*100, "% (Biopsy threshold)")), width=8)
-  riskAxisLabelColors = c(rep("grey30", length(riskAxisBreaks)-1), "firebrick1")
-  
   riskFillColor = if(meanRiskProb < threshold){
     "forestgreen"
   }else{
@@ -188,6 +187,8 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
   }
   
   p=ggplot() +
+    geom_segment(aes(x=-Inf, xend=maxPredictionTime, y=maxYleft/2, yend=maxYleft/2), 
+                 linetype="solid", color="gray", size=1, alpha=0.4) + 
     geom_col(aes(x=c(maxPredictionTime,maxPredictionTime), y=c(maxMeanRiskScaled, maxYleft-maxMeanRiskScaled)), 
              fill=c(riskFillColor, "white"),  color=riskFillColor, width = col_width) + 
     geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
@@ -195,11 +196,14 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
     geom_point(data = psaDs, size=POINT_SIZE, aes(x = visitTimeYears, y=log2psaplus1, shape="Observed PSA")) +
     geom_line(data = patientDs, aes(x = visitTimeYears, y=fitted_high_dre_prob, linetype="Fitted DRE")) +
     geom_point(data = patientDs, size=POINT_SIZE, aes(x = visitTimeYears, y=high_dre, shape="Observed DRE")) +
-    geom_segment(aes(x=maxPredictionTime-col_width/2, xend=Inf, y=thresholdScaled, yend=thresholdScaled), 
+    geom_segment(aes(x=maxPredictionTime-col_width/2, xend=maxPredictionTime + col_width, y=thresholdScaled, yend=thresholdScaled), 
                  linetype="dashed", color="firebrick1", size=0.5) +
-    geom_label(aes(x=maxPredictionTime, y=0.75, 
-                  label=paste0("Current risk\n", round(meanRiskProb * 100,2), "%")),
+    geom_label(aes(x=maxPredictionTime, y=1.6, 
+                  label=paste0("Cancer progression\nrisk at current visit:\n", round(meanRiskProb * 100,2), "%")),
               color = riskFillColor, size=LABEL_SIZE)+
+    geom_text(aes(x=maxPredictionTime + col_width*1.5, y=thresholdScaled, 
+                   label=paste0("k = ",threshold*100, "%\n(Biopsy threshold)")),
+               color = "firebrick1", size=LABEL_SIZE)+
     xlab("Follow-up time (years)") + 
     ylab(expression('Pr (DRE > T1c)            '*'log'[2]*'(PSA + 1)')) +
     scale_linetype_manual(name="",
@@ -211,21 +215,17 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
     theme_bw() + 
     theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
           axis.line = element_line(),
+          
           panel.grid.minor.x = element_blank(),
           panel.grid.minor.y = element_blank(),
-          axis.text.y.right = element_text(size=FONT_SIZE, color = riskAxisLabelColors),
           legend.background = element_blank(), legend.position = "bottom",
           legend.direction = "horizontal",
           legend.text = element_text(size=FONT_SIZE-3)) +
-    scale_x_continuous(breaks=xTicks, labels = xLabels, limits = c(0, maxPredictionTime + col_width)) +
+    scale_x_continuous(breaks=xTicks, labels = xLabels, limits = c(0, xUpperlim)) +
     scale_y_continuous(limits = c(minYLeft, maxYleft), 
-                       breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 3), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 3)),
+                       breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 3), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 5)),
                        labels = c(paste0(round(seq(0, 1, length.out = 3),2) * 100, "%"), 
-                                  round(seq(0, maxPSA, length.out = 3),2)), 
-                       sec.axis = sec_axis(~(.-minYLeft)/(maxYleft-minYLeft),
-                                           breaks = riskAxisBreaks,
-                                           labels = riskAxisLabels,
-                                           name = "Risk of cancer progression"))
+                                  round(seq(0, maxPSA, length.out = 5),2)))
   
   return(p)
 }
@@ -273,9 +273,9 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
     geom_vline(xintercept = lastBiomarkerTime, linetype="twodash") + 
     geom_ribbon(aes(x=seq(lastBiopsyTime, fakeProgressionTime, length.out = 10), 
                     ymin=-Inf, ymax=Inf), fill="red2", alpha=0.4) + 
-    #geom_segment(aes(x=-Inf, xend=lastBiopsyTime, y=maxYleft/2, yend=maxYleft/2), 
-    #             linetype="solid", color="gray", size=1, alpha=0.3) + 
-    geom_label(aes(x=lastBiomarkerTime, y=maxYleft/2, label="Biopsy now?")) + 
+    geom_segment(aes(x=-Inf, xend=lastBiomarkerTime, y=maxYleft/2, yend=maxYleft/2), 
+                 linetype="solid", color="gray", size=1, alpha=0.4) + 
+    geom_label(aes(x=lastBiomarkerTime, y=maxYleft/2, label="Biopsy\nnow?")) + 
     xlab("Follow-up time (years)") + 
     ylab("DRE (binary)               PSA (ng/mL)") +
     scale_shape_manual(name="",
@@ -292,8 +292,8 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
           plot.margin = margin(0, 0, 0, 0, "pt")) +
     scale_x_continuous(breaks=xTicks, labels = xLabels, limits = c(0, max(xTicks))) +
     scale_y_continuous(limits = c(minYLeft, maxYleft), 
-                       breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 2), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 3)), 
-                       labels = str_wrap(c("T1c", "above T1c", round(seq(0, maxPSA, length.out = 3),1)), width=5))
+                       breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 2), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 5)), 
+                       labels = str_wrap(c("T1c", "above T1c", round(seq(0, maxPSA, length.out = 5),1)), width=5))
   
   return(p)
 }
@@ -498,18 +498,17 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
   dataset = fittedJointModel$model_info$mvglmer_components$data
   patientDs = dataset[dataset$P_ID == pid & dataset$visitTimeYears<=maxVisitTime,]
   
-  b_subject = mvJoint_dre_psa_dre_value$statistics$postMeans$b[which(unique(dataset$P_ID) == pid),]
+  b_subject = fittedJointModel$statistics$postMeans$b[which(unique(dataset$P_ID) == pid),]
   Age = patientDs$Age[1]
   
-  dre_fixed_eff = mvJoint_dre_psa_dre_value$statistics$postMeans$betas1
-  psa_fixed_eff = mvJoint_dre_psa_dre_value$statistics$postMeans$betas2
+  dre_fixed_eff = fittedJointModel$statistics$postMeans$betas1
+  psa_fixed_eff = fittedJointModel$statistics$postMeans$betas2
   
   times = seq(0, maxVisitTime, length.out = 20)
   truePSA = generateTruePSAProfile(times, b_subject[3:7])
   truePSASlope = generateTruePSASlope(times, b_subject[4:7])
   trueDREProbHighDRE = plogis(generateTrueDRELogOdds(times, b_subject[1:2]))
   trueHazard = hazardFunc(times)
-  
   
   hazardPlotYbreaks = seq(min(trueHazard), 
                                max(trueHazard), length.out = 3)
@@ -589,28 +588,29 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
 }
 
 obsDataPlot = plotObservedData(2340, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11, 
-                               POINT_SIZE = 2,
-                               DRE_PSA_Y_GAP = 0.25)
+                                POINT_SIZE = 2, DRE_PSA_Y_GAP = 0.3)
 ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340.eps",
-       plot=obsDataPlot, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
-# 
-# dynRiskPlot = plotDynamicRiskProb(2340, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3)
-# ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340_max4years.eps",
-#        plot=dynRiskPlot, device=cairo_ps, height=4.5, width=6.1, dpi = 500)
-# 
-dynRiskPlot1 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 4, lastBiopsyTime = 2.56, meanRiskProb = 0.102, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3)
+        plot=obsDataPlot, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
+# # 
+# # dynRiskPlot = plotDynamicRiskProb(2340, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3)
+# # ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340_max4years.eps",
+# #        plot=dynRiskPlot, device=cairo_ps, height=4.5, width=6.1, dpi = 500)
+# # 
+dynRiskPlot1 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 4, lastBiopsyTime = 2.56, meanRiskProb = 0.102, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, 
+                                      xUpperlim = 6.5)
 dynRiskPlot1 = dynRiskPlot1 + ggtitle("Biopsy not recommended for patient j at year 4") + 
-  theme(plot.title = element_text(hjust = 0.5, color = "forestgreen"))
+   theme(plot.title = element_text(hjust = 0.5, color = "forestgreen"))
 #plot.margin = margin(t=5,b=30))
-dynRiskPlot2 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 8, lastBiopsyTime = 2.56, meanRiskProb = 0.178, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, specialXticks = 4) 
+dynRiskPlot2 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 8, lastBiopsyTime = 2.56, meanRiskProb = 0.178, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, specialXticks = 4,
+                                      xUpperlim = 6.5) 
 dynRiskPlot2 = dynRiskPlot2  + ggtitle("Biopsy recommended for patient j at year 5.3") + 
-  theme(plot.title = element_text(hjust = 0.5, color="red3"), legend.position = "none")
+ theme(plot.title = element_text(hjust = 0.5, color="red3"), legend.position = "none")
 ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
-                         ncol = 1, nrow=2, labels = "AUTO"), filename = "report/decision_analytic/mdm/latex/images/dynRiskPlot_2340.eps", 
-       width=7, height=9, device = cairo_ps, dpi=500)
- 
-# jmExplanationPlot = plotJMExplanationPlot(1757, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11)
-jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4, 
-                                                  POINT_SIZE = 2, FONT_SIZE = 12)
-ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
-       plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)
+                        ncol = 1, nrow=2, labels = "AUTO", align = "v", heights = c(1.15,1)), filename = "report/decision_analytic/mdm/latex/images/dynRiskPlot_2340.eps", 
+        width=7, height=9, device = cairo_ps, dpi=500)
+#  
+# # jmExplanationPlot = plotJMExplanationPlot(1757, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11)
+# jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4, 
+#                                                   POINT_SIZE = 2, FONT_SIZE = 12)
+# ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
+#        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)

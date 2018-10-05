@@ -1,6 +1,6 @@
 source("src/decision_analytic/fittingModel/weighted_fitted.R")
 
-ggsave(plotFittedDREMarginal(mvJoint_dre_psa_dre_value, FONT_SIZE = 9), file="report/decision_analytic/mdm/latex/images/marginal_dre.eps", device = cairo_ps, dpi = 500, height=4.5/1.3333, width=4.5)
+#ggsave(plotFittedDREMarginal(mvJoint_dre_psa_dre_value, FONT_SIZE = 9), file="report/decision_analytic/mdm/latex/images/marginal_dre.eps", device = cairo_ps, dpi = 500, height=4.5/1.3333, width=4.5)
 #plots marginal prob by default, otherwise if logOdds = T, then plots marginal log odds
 plotFittedDREMarginal = function(modelObject, logOdds = F, FONT_SIZE=10){
   visitTimeYears = seq(0, 10, 0.5)
@@ -53,11 +53,14 @@ plotFittedDREMarginal = function(modelObject, logOdds = F, FONT_SIZE=10){
   }
 }
 
-#set.seed(2018)
-#temp = lapply(1:9, plotFittedDRESubject, modelObject=mvJoint_dre_psa_dre_value, FONT_SIZE=13, showTitle=F)
-#subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend = T, legend = "bottom")
-#ggsave(subjectplot, file="report/decision_analytic/mdm/latex/images/fitted_9subject_dre.eps", device = cairo_ps, dpi = 500, width = 9, height = 8)
-plotFittedDRESubject = function(modelObject, weighted = F, pid=NA,
+set.seed(2018)
+temp = list()
+for(m in 1:9){
+  temp[[m]] = plotFittedDRESubject(modelObject=mvJoint_dre_psa_dre_value, pid=NA, FONT_SIZE=13, showTitle=F)
+}
+subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend = T, legend = "bottom")
+ggsave(subjectplot, file="report/decision_analytic/mdm/latex/images/fitted_9subject_dre.eps", device = cairo_ps, dpi = 500, width = 9, height = 8)
+plotFittedDRESubject = function(modelObject, pid=NA,
                          FONT_SIZE=10, showTitle=T){
   data.id = modelObject$model_info$coxph_components$data
   
@@ -72,11 +75,7 @@ plotFittedDRESubject = function(modelObject, weighted = F, pid=NA,
   data = data[!is.na(data$high_dre),] 
   
   rowNums = modelObject$model_info$mvglmer_components$id1
-  dreFit = if(weighted==F){
-    fitted(modelObject, process = "Longitudinal", type="Subject")[[1]]
-  }else{
-    fitted_weighted(modelObject)[[1]]
-  }
+  dreFit = fitted(modelObject, process = "Longitudinal", type="Subject")[[1]]
   dreFit = dreFit[rowNums==which(data.id$P_ID==pid)]
   dreFit = plogis(dreFit)
   
@@ -89,7 +88,7 @@ plotFittedDRESubject = function(modelObject, weighted = F, pid=NA,
     geom_line(aes(x=time, y=dreFit, linetype="Fitted Pr (DRE > T1c)")) +
     geom_vline(aes(xintercept=lastBiopsyTime, linetype="Latest biopsy"), show.legend =  F) + 
     xlab("Follow-up time (years)") + ylab("Pr (DRE > T1c)") +
-    scale_shape_manual(name="", values=18, labels="Observed DRE") +
+    scale_shape_manual(name="", values=17, labels="Observed DRE") +
     scale_linetype_manual(name="", values=c("dashed","solid"), 
                           labels=c("Fitted Pr (DRE > T1c)", "Latest biopsy")) +
     theme_bw() + 
@@ -106,14 +105,16 @@ plotFittedDRESubject = function(modelObject, weighted = F, pid=NA,
   }
 }
 
-#set.seed(2018)
-#temp = lapply(1:9, plotFittedPSASubject, modelObject=mvJoint_dre_psa_dre_value, FONT_SIZE=13, showTitle=F)
-#subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend = T, legend = "bottom")
-#ggsave(subjectplot, file="report/decision_analytic/mdm/latex/images/fitted_9subject_psa.eps", device = cairo_ps, dpi = 500, width = 9, height = 8)
-plotFittedPSASubject = function(modelObject, weighted=F, pid=NA,
+set.seed(2018)
+temp = list()
+for(m in 1:9){
+  temp[[m]] = plotFittedPSASubject(modelObject=mvJoint_dre_psa_dre_value, pid=NA, FONT_SIZE=13, showTitle=F)
+}
+subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend = T, legend = "bottom")
+ggsave(subjectplot, file="report/decision_analytic/mdm/latex/images/fitted_9subject_psa.eps", device = cairo_ps, dpi = 500, width = 9, height = 8)
+plotFittedPSASubject = function(modelObject, pid=NA,
                                 FONT_SIZE=10, showTitle=T){
   data.id = modelObject$model_info$coxph_components$data
-  
   if(is.na(pid)){
     pid = sample(data.id$P_ID, size = 1)
     print(paste("Choosing patient", pid, "randomly because pid not provided"))
@@ -125,11 +126,7 @@ plotFittedPSASubject = function(modelObject, weighted=F, pid=NA,
   data = data[!is.na(data$log2psaplus1),] 
   
   rowNums = modelObject$model_info$mvglmer_components$id2
-  psaFit = if(weighted==F){
-    fitted(modelObject, process = "Longitudinal", type="Subject")[[2]]
-  }else{
-    fitted_weighted(modelObject)[[2]]
-  }
+  psaFit = fitted(modelObject, process = "Longitudinal", type="Subject")[[2]]
   psaFit = psaFit[rowNums==which(data.id$P_ID==pid)]
   
   log2psaplus1Observed = data$log2psaplus1[data$P_ID==pid]

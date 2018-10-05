@@ -1,7 +1,7 @@
 #First load all the results and extract the actual schedule results
 library(doParallel)
 
-resFiles = list.files("/home/a_tomer/Results/final_res_2nd_paper/", full.names = T)
+resFiles = list.files("/home/a_tomer/Data/final_res_2nd_paper", full.names = T)
 
 cl = makeCluster(4)
 registerDoParallel(cl)
@@ -27,9 +27,7 @@ sim_study_res = foreach(i=1:length(resFiles), .combine="rbind") %dopar%{
 }
 stopCluster(cl)
 
-FONT_SIZE = 11
-
-scheduleResCombined = sim_study_res[sim_study_res$methodName %in% c(ANNUAL, PRIAS, KAPPApt85, KAPPApt95, KAPPAF1Score, "Risk (F1) Real"),]
+scheduleResCombined = sim_study_res[sim_study_res$methodName %in% c(ANNUAL, PRIAS, KAPPApt85, KAPPApt95, "Risk (F1) Real"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
@@ -37,8 +35,9 @@ scheduleResCombined$offset[scheduleResCombined$offset < 0] = 10 - scheduleResCom
 
 levels(scheduleResCombined$methodName)[3] = "Risk: 15%"
 levels(scheduleResCombined$methodName)[4] = "Risk: 5%"
-levels(scheduleResCombined$methodName)[5] = "Risk: F1 (Dt=0.5)"
-levels(scheduleResCombined$methodName)[6] = "Risk: F1 (Dt=s-t)"
+levels(scheduleResCombined$methodName)[5] = "Risk: Automatic"
+
+FONT_SIZE = 11
 
 getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribute){
   temp = scheduleResCombined[scheduleResCombined$progression_time>=progression_time_low & scheduleResCombined$progression_time<=progression_time_high,]
@@ -50,6 +49,23 @@ getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribut
   resDf$methodName = levels(scheduleResCombined$methodName)
   return(resDf)
 }
+
+meanOffset = by(scheduleResCombined, INDICES = scheduleResCombined$methodName, function(x){
+  mean(x$offset[x$progression_time!=10])
+})
+meanNb = by(scheduleResCombined$nb, INDICES = scheduleResCombined$methodName, mean)
+methodName = levels(scheduleResCombined$methodName)
+
+mean_nb_offset = ggplot() + geom_label(aes(x=meanNb, y=meanOffset, label=methodName)) +
+  xlab("Mean Number of biopsies") + ylab("Mean delay in detection of cancer progression (years)") +
+  ylim(0, 2) +
+  scale_x_continuous(breaks=1:7, limits = c(1,7)) +
+  theme_bw() + 
+  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+        axis.line = element_line())
+
+ggsave(filename = "report/decision_analytic/mdm/latex/images/mean_nb_offset.eps",
+       plot=mean_nb_offset, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
 
 gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
@@ -80,8 +96,8 @@ gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) +
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3)) + 
-  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
-  geom_hline(yintercept = 2, linetype="dashed")
+  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) 
+#  geom_hline(yintercept = 2, linetype="dashed")
 
 gFast = ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align="h")
 
@@ -114,8 +130,8 @@ gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset"))
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3)) + 
-  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) +
-  geom_hline(yintercept = 2, linetype="dashed")
+  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) 
+#  geom_hline(yintercept = 2, linetype="dashed")
 
 gIntermediate = ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, widths = c(1.4,1), align = "h")
 

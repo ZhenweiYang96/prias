@@ -1,5 +1,7 @@
 load("Rdata/decision_analytic/cleandata.Rdata")
 source("src/decision_analytic/load_lib.R")
+source("src/decision_analytic/fittingModel/AUC_Brier/auc_mod_prias.R")
+source("src/decision_analytic/fittingModel/AUC_Brier/prederr_mod_prias.R")
 
 maxCores = 6
 
@@ -8,7 +10,8 @@ totalSizeBootstrap = 20
 list.prias.id = vector("list", totalSizeBootstrap)
 list.prias_long = vector("list", totalSizeBootstrap)
 
-aucAll = vector("list", totalSizeBootstrap)
+auc_no_dre = vector("list", totalSizeBootstrap)
+prederr_no_dre = vector("list", totalSizeBootstrap)
 
 getNextSeed = function(lastSeed){
   lastSeed + 1
@@ -39,25 +42,19 @@ for(i in 1:totalSizeBootstrap){
     
     print(paste("Dataset generated", i))
     
-    new.survModel_all = survreg(Surv(progression_time_start, progression_time_end, type = "interval2") ~ 
-                              I(Age - 70) +  I((Age - 70)^2), data = list.prias.id[[i]], model = TRUE)
-      
+    new.survModel_no_dre = survreg(Surv(progression_time_start, progression_time_end, type = "interval2") ~ 
+                                  I(Age - 70) +  I((Age - 70)^2), data = list.prias.id[[i]], model = TRUE)
+    
     print(paste("survival model fitted", i))
     
-    dre_psa_data_set_i =  list.prias_long[[i]][!(is.na(list.prias_long[[i]]$dre) & is.na(list.prias_long[[i]]$psa)),]
-    dre_psa_data_set_i$high_dre = ifelse(dre_psa_data_set_i$dre=="T1c", 0, 1)
+    psa_data_set_i =  list.prias_long[[i]][!is.na(list.prias_long[[i]]$psa),]
     
-    new.mvglm_all = try(mvglmer(list(high_dre~I(Age - 70) +  I((Age - 70)^2) + visitTimeYears  + 
-                   (visitTimeYears|P_ID),
-                 
-                 log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) +
-                   ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) + 
-                   (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
-            
-            data=dre_psa_data_set_i, families = list(binomial, gaussian), engine = "STAN",
-            control = list(n.iter=1000)))
+    new.mvglm_no_dre = try(mvglmer(list(log2psaplus1 ~ I(Age - 70) +  I((Age - 70)^2) +
+                                       ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)) + 
+                                       (ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))|P_ID)),
+                                data=psa_data_set_i, families = list(gaussian)))
     
-    if(inherits(new.mvglm, "try-error")==FALSE){
+    if(inherits(new.mvglm_no_dre, "try-error")==FALSE){
       break
     }else{
       print("Trying again after mvglmer error")
@@ -69,35 +66,38 @@ for(i in 1:totalSizeBootstrap){
   
   seeds = c(seeds, lastSeed)
   
-  forms_dre_value = list("high_dre" = "value",
-                         "log2psaplus1" = "value",
-                         "log2psaplus1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
-                                               random=~0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
-                                               indFixed = 4:7, indRandom=2:5, name = "slope"))
+  new.mvJoint_no_dre = mvJointModelBayes(new.mvglm_no_dre, new.survModel_no_dre, 
+                                      timeVar = "visitTimeYears", Formulas = list("log2psaplus1" = "value",
+                                                                                  "log2psaplus1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+                                                                                                        random=~0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+                                                                                                        indFixed = 4:7, indRandom=2:5, name = "slope")),
+                                      control=list(n_cores = maxCores))
   
-  new.mvJoint_all = mvJointModelBayes(new.mvglm_all, new.survModel_all, 
-                                  timeVar = "visitTimeYears", Formulas = forms_dre_value,
-                                  control=list(n_cores = maxCores))
+  print(paste("JM fitted PSA, PSA velocity", i))
   
-  print(paste("JM fitted DRE, PSA, PSA velocity", i))
-  
-  aucAll[[i]] = vector("list", 3)
   times = 1:9 + 0.0001
   deltaT = 1.0101
   
+  auc_no_dre[[i]] = vector("list", length(times))
+  prederr_no_dre[[i]] = vector("list", length(times))
+  
   j=1
   for(Tstart in times){
-    aucAll[[i]][[j]] = aucJM(new.mvJoint_all, dre_psa_data_set_i,
-                                    Tstart = Tstart, Thoriz=Tstart + deltaT, 
-                                 idVar="P_ID", n_cores = maxCores)
+    auc_no_dre[[i]][[j]] = aucJM.mvJMbayes_mod(new.mvJoint_no_dre, list.prias_long[[i]],
+                             Tstart = Tstart, Thoriz=Tstart + deltaT, 
+                             idVar="P_ID", n_cores = maxCores)
     
-    print(paste("AUC All, time=", Tstart, i))
+    prederr_no_dre[[i]][[j]] = prederrJM.mvJMbayes_mod(new.mvJoint_no_dre, list.prias_long[[i]],
+                                                       Tstart = Tstart, Thoriz=Tstart + deltaT, 
+                                                       idVar="P_ID")
+    
+    print(paste("AUC no_dre, time=", Tstart, i))
     
     j = j + 1
+    
+    auc_prederr_no_dre = list("auc_no_dre" = auc_no_dre, "prederr_no_dre"=prederr_no_dre)
+    save(auc_prederr_no_dre, file="Rdata/decision_analytic/AUC_Brier/auc_prederr_no_dre.Rdata")
   }
-  
-  aucBootStrapped = list("all" = aucAll)
-  save(aucBootStrapped, file="Rdata/decision_analytic/AUC_Brier/aucBootstrapped.Rdata")
 }
 
 # aucTdBoth = t(sapply(aucBootStrapped$both, function(x){
