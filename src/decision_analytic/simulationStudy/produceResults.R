@@ -1,14 +1,26 @@
 #First load all the results and extract the actual schedule results
+resFiles = list.files("/home/a_tomer/Data/final_res_2nd_paper/", full.names = T)
+
+runFixedSchedule = function(testDs.id, biopsyTimes){
+  #progressionTimes = pmin(max(biopsyTimes), testDs.id$progression_time)
+  progressionTimes = testDs.id$progression_time
+  
+  if(!10 %in% biopsyTimes){
+    biopsyTimes = c(biopsyTimes, 10)
+  }
+  
+  nb = sapply(progressionTimes, function(x){which(biopsyTimes>=x)[1]})
+  detectionTimes = biopsyTimes[nb]
+  offset = detectionTimes - progressionTimes
+  
+  return(cbind(nb, offset))
+}
+
 library(doParallel)
-
-resFiles = list.files("/home/a_tomer/Data/final_res_2nd_paper", full.names = T)
-
-cl = makeCluster(4)
-registerDoParallel(cl)
-
-sim_study_res = foreach(i=1:length(resFiles), .combine="rbind") %dopar%{
+simResults_n500_method_all = foreach(i=1:50, .combine="rbind") %do%{
   load(resFiles[i])
   
+  print(i)
   #print(resFiles[i])
   
   #seed = jointModelData$seed
@@ -21,13 +33,47 @@ sim_study_res = foreach(i=1:length(resFiles), .combine="rbind") %dopar%{
   #jointModelData$testData$scheduleResults = rbind(jointModelData$testData$scheduleResults, real_f1)
   
   #save(jointModelData, file=resFiles[i])
-  ret = jointModelData$testData$scheduleResults
+  
+  #month_12=runFixedSchedule(jointModelData$testData$testDs.id, seq(1, 10, 1))
+  month_18=runFixedSchedule(jointModelData$testData$testDs.id, seq(1.5, 10, 1.5))
+  month_24=runFixedSchedule(jointModelData$testData$testDs.id, seq(2, 10, 2))
+  month_24s=runFixedSchedule(jointModelData$testData$testDs.id, c(1, 10, 2))
+  #month_30=runFixedSchedule(jointModelData$testData$testDs.id, seq(2.5, 10, 2.5))
+  month_36=runFixedSchedule(jointModelData$testData$testDs.id, seq(3, 10, 3))
+  #month_42=runFixedSchedule(jointModelData$testData$testDs.id, seq(3.5, 10, 3.5))
+  month_48=runFixedSchedule(jointModelData$testData$testDs.id, seq(4, 10, 4))
+  
+  res = jointModelData$testData$scheduleResults
+  res$nb[res$methodName=="Biennial"] = month_24[,1]
+  res$offset[res$methodName=="Biennial"] = month_24[,2]
+  
+  res$nb[res$methodName=="18 Months"] = month_18[,1]
+  res$offset[res$methodName=="18 Months"] = month_18[,2]
+  
+  res_24s = res[res$methodName=="Biennial",]
+  res_24s$methodName = "Biennial_S"
+  res_24s$nb = month_24s[,1]
+  res_24s$offset = month_24s[,2]
+  
+  res_36 = res[res$methodName=="Biennial",]
+  res_36$methodName = "Triennial"
+  res_36$nb = month_36[,1]
+  res_36$offset = month_36[,2]
+  
+  res_48 = res[res$methodName=="Biennial",]
+  res_48$methodName = "Quadriennial"
+  res_48$nb = month_48[,1]
+  res_48$offset = month_48[,2]
+  
+  res = rbind(res, res_24s, res_36, res_48)
+
+  ret = res
   rm(jointModelData)
   return(ret)
 }
-stopCluster(cl)
 
-scheduleResCombined = sim_study_res[sim_study_res$methodName %in% c(ANNUAL, PRIAS, KAPPApt85, KAPPApt95, "Risk (F1) Real"),]
+scheduleResCombined = simResults_n500_method_all
+scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "Risk: 15%", "PRIAS"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
@@ -49,23 +95,6 @@ getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribut
   resDf$methodName = levels(scheduleResCombined$methodName)
   return(resDf)
 }
-
-meanOffset = by(scheduleResCombined, INDICES = scheduleResCombined$methodName, function(x){
-  mean(x$offset[x$progression_time!=10])
-})
-meanNb = by(scheduleResCombined$nb, INDICES = scheduleResCombined$methodName, mean)
-methodName = levels(scheduleResCombined$methodName)
-
-mean_nb_offset = ggplot() + geom_label(aes(x=meanNb, y=meanOffset, label=methodName)) +
-  xlab("Mean Number of biopsies") + ylab("Mean delay in detection of cancer progression (years)") +
-  ylim(0, 2) +
-  scale_x_continuous(breaks=1:7, limits = c(1,7)) +
-  theme_bw() + 
-  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line())
-
-ggsave(filename = "report/decision_analytic/mdm/latex/images/mean_nb_offset.eps",
-       plot=mean_nb_offset, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
 
 gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
@@ -96,7 +125,7 @@ gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) +
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3)) + 
-  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) 
+  xlab("Schedule") + ylab("Delay in detection of\ncancer progression (years)")
 #  geom_hline(yintercept = 2, linetype="dashed")
 
 gFast = ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align="h")
@@ -130,7 +159,7 @@ gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset"))
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
         legend.text = element_text(size=FONT_SIZE-3)) + 
-  xlab("Schedule") + ylab(str_wrap("Delay in detection of cancer progression (years)", width = 30)) 
+  xlab("Schedule") + ylab("Delay in detection of\ncancer progression (years)")
 #  geom_hline(yintercept = 2, linetype="dashed")
 
 gIntermediate = ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, widths = c(1.4,1), align = "h")
@@ -159,7 +188,7 @@ gSlow = ggpubr::ggarrange(gSlowNb, gSlowOffset, ncol=2, widths = c(1.4,1), align
 
 combinedPlot = ggpubr::ggarrange(gFast, gIntermediate,gSlow, nrow=3, ncol=1, 
                   labels = "AUTO")
-ggsave(combinedPlot, filename = "report/decision_analytic/mdm/latex/images/sim_res_combined.eps",
+ggsave(combinedPlot, filename = "report/decision_analytic/mdm/latex/images/sim_res_10perc_prias.eps",
        height=8, width=7, dpi = 500)
 
 

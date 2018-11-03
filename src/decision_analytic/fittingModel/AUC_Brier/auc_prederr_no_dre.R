@@ -5,6 +5,35 @@ source("src/decision_analytic/fittingModel/AUC_Brier/prederr_mod_prias.R")
 
 maxCores = 6
 
+#Step 1: AUC and Prederr on Real prias data with real prias fitted model object
+auc_0_1 = aucJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                              Tstart = 0.0001, Thoriz = 1.0001, idVar = "P_ID")
+auc_1_2 = aucJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                              Tstart = 1.0001, Thoriz = 2.0001, idVar = "P_ID")
+auc_2_3 = aucJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                              Tstart = 2.0001, Thoriz = 3.0001, idVar = "P_ID")
+auc_3_4 = aucJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                              Tstart = 3.0001, Thoriz = 4.0001, idVar = "P_ID")
+auc_4_5 = aucJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                              Tstart = 4.0001, Thoriz = 5.0001, idVar = "P_ID")
+
+save.image(file="Rdata/decision_analytic/AUC_Brier/auc_prederr_nodre_t_1.Rdata")
+
+prederr_0_1 = prederrJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                                      Tstart = 0.0001, Thoriz = 1.0001, idVar = "P_ID")
+prederr_1_2 = prederrJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                                      Tstart = 1.0001, Thoriz = 2.0001, idVar = "P_ID")
+prederr_2_3 = prederrJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                                      Tstart = 2.0001, Thoriz = 3.0001, idVar = "P_ID")
+prederr_3_4 = prederrJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                                      Tstart = 3.0001, Thoriz = 4.0001, idVar = "P_ID")
+prederr_4_5 = prederrJM.mvJMbayes_mod(mvJoint_psa, newdata = prias_long, 
+                                      Tstart = 4.0001, Thoriz = 5.0001, idVar = "P_ID")
+
+save.image(file="Rdata/decision_analytic/AUC_Brier/auc_prederr_nodre_t_1.Rdata")
+
+
+
 totalSizeBootstrap = 20
 
 list.prias.id = vector("list", totalSizeBootstrap)

@@ -272,14 +272,15 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
     geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
     geom_vline(xintercept = lastBiomarkerTime, linetype="twodash") + 
     geom_ribbon(aes(x=seq(lastBiopsyTime, fakeProgressionTime, length.out = 10), 
-                    ymin=-Inf, ymax=Inf), fill="red2", alpha=0.4) + 
+                    ymin=-Inf, ymax=Inf, fill="Region with risk of\n cancer progression"), alpha=0.2) + 
     geom_segment(aes(x=-Inf, xend=lastBiomarkerTime, y=maxYleft/2, yend=maxYleft/2), 
                  linetype="solid", color="gray", size=1, alpha=0.4) + 
-    geom_label(aes(x=lastBiomarkerTime, y=maxYleft/2, label="Biopsy\nnow?")) + 
+    geom_label(aes(x=lastBiomarkerTime, y=maxYleft/2, label="Biopsy\nnow?"), color="firebrick1") + 
     xlab("Follow-up time (years)") + 
     ylab("DRE (binary)               PSA (ng/mL)") +
+    scale_fill_manual(name="", values="red2")+
     scale_shape_manual(name="",
-                       labels=c("Observed DRE (T1c / above T1c)", "Observed PSA (ng/mL)"),
+                       labels=c("Observed DRE\n(T1c / above T1c)", "Observed PSA\n(ng/mL)"),
                        values = c(17,16)) + 
     theme_bw() + 
     theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -293,7 +294,7 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
     scale_x_continuous(breaks=xTicks, labels = xLabels, limits = c(0, max(xTicks))) +
     scale_y_continuous(limits = c(minYLeft, maxYleft), 
                        breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 2), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 5)), 
-                       labels = str_wrap(c("T1c", "above T1c", round(seq(0, maxPSA, length.out = 5),1)), width=5))
+                       labels = c("T1c", "above\nT1c", round(seq(0, maxPSA, length.out = 5),1)))
   
   return(p)
 }
@@ -529,7 +530,7 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
     geom_line(aes(x = times, y=trueDREProbHighDRE, linetype="Fitted DRE")) +
     geom_line(aes(x = 0, y=10, linetype="Fitted PSA")) +
     scale_shape_manual(name="",
-                       labels=c("Observed DRE", expression('Observed log'[2]*'(PSA + 1)')),
+                       labels=c("Observed DRE\n(T1c / above T1c)", expression('Observed log'[2]*'(PSA + 1)')),
                        values = c(17, 16)) + 
     scale_linetype_manual(name="",
                           labels= c("Fitted Pr (DRE > T1c)", expression('Fitted log'[2]*'(PSA + 1)')),
@@ -610,7 +611,7 @@ ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
         width=7, height=9, device = cairo_ps, dpi=500)
 #  
 # # jmExplanationPlot = plotJMExplanationPlot(1757, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11)
-# jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4, 
-#                                                   POINT_SIZE = 2, FONT_SIZE = 12)
-# ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
-#        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)
+ # jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4, 
+ #                                                   POINT_SIZE = 2, FONT_SIZE = 12)
+ # ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
+ #        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)

@@ -1,5 +1,10 @@
 runFixedSchedule = function(testDs.id, biopsyTimes){
-  progressionTimes = pmin(max(biopsyTimes), testDs.id$progression_time)
+  #progressionTimes = pmin(max(biopsyTimes), testDs.id$progression_time)
+  progressionTimes = testDs.id$progression_time
+  
+  if(!10 %in% biopsyTimes){
+    biopsyTimes = c(biopsyTimes, 10)
+  }
   
   nb = sapply(progressionTimes, function(x){which(biopsyTimes>=x)[1]})
   detectionTimes = biopsyTimes[nb]

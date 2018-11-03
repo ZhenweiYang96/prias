@@ -128,19 +128,40 @@ With regards to the choice of the distribution for the error term $\varepsilon_{
 
 \clearpage
 \subsection{Predictive Performance of the Joint Model Fitted to the PRIAS dataset}
-To compare the predictive performance of a models having association between hazard of GR and value of longitudinal outcome values, versus a model having the association with both value and velocity, we calculate the area under the receiver operating characteristic curves, also called AUC \citep*{landmarking2017}, for these models (with the only change that $\log_2 \mbox{PSA}$ levels are used as the outcome). Since in a joint model time dependent AUC is more relevant, we calculate the AUC at year one, year two and year three of follow-up in AS. The time window for which the AUC is calculated is one year. The resulting AUC are presented in \ref{tab : AUC}.
+In order to compare the predictive performance of a model utilizing information from both DRE and PSA versus a model using information only from PSA, we calculate the area under the receiver operating characteristic curves, also called AUC, and the prediction error for these models \citep*{landmarking2017}. Given the longitudinal nature of the data at hand, in a joint model time dependent AUC and prediction errors are more relevant. Thus, we calculate the AUC and prediction error at year one, year two, year three, year four, and year five (95-percentile of observed cancer progression time) of follow-up in AS. The time window for which the AUC and prediction error are calculated is one year. The resulting AUC are presented in Table \ref{tab : AUC}, and the prediction error are presented in Table \ref{tab : PE}.
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Area under the receiver operating characteristic curves (AUC), and 95\% confidence interval in brackets. AUC's are calculated for two joint models: first one having association between hazard of GR and longitudinal outcome's value as well as velocity, and second one having association with only longitudinal outcome's value (with the only change that $\log_2 \mbox{PSA}$ levels are used as the outcome).}
+\caption{Area under the receiver operating characteristic curves (AUC), and 95\% confidence interval in brackets. AUC's are calculated for two joint models: first one utilizing information from both DRE and PSA measurements, and second one utilizing information from only PSA measurements.}
 \label{tab : AUC}
 \begin{tabular}{rrr}
 \Hline
-Year                      & value and velocity association & value association\\ 
+Year                      & both DRE and PSA & only PSA\\ 
 \hline
-1 & 0.613 [0.582, 0.632] & 0.595 [0.565, 0.618]\\
-2 & 0.648 [0.608, 0.685] & 0.609 [0.568, 0.654]\\
-3 & 0.593 [0.560, 0.638] & 0.590 [0.536, 0.628]\\
+1 & 0.651 [0.633, 0.663] & 0.636 [0.626, 0.648]\\
+2 & 0.621 [0.610, 0.640] & 0.593 [0.584, 0.606]\\
+3 & 0.748 [0.728, 0.770] & 0.716 [0.699, 0.733]\\
+4 & 0.710 [0.691, 0.736] & 0.643 [0.623, 0.660]\\
+5 & 0.592 [0.577, 0.614] & 0.536 [0.517, 0.553]\\
+\hline
+\end{tabular}	
+\end{center}
+\end{table}
+
+
+\begin{table}[!htb]
+\begin{center}
+\caption{Prediction error, and 95\% confidence interval in brackets. Prediction errors are calculated for two joint models: first one utilizing information from both DRE and PSA measurements, and second one utilizing information from only PSA measurements.}
+\label{tab : PE}
+\begin{tabular}{rrr}
+\Hline
+Year                      & both DRE and PSA & only PSA\\ 
+\hline
+1 & 0.055 [0.052, 0.059] & 0.056 [0.052, 0.059]\\
+2 & 0.144 [0.140, 0.148] & 0.148 [0.145, 0.153]\\
+3 & 0.076 [0.075, 0.078] & 0.077 [0.075, 0.080]\\
+4 & 0.076 [0.072, 0.079] & 0.077 [0.073, 0.080]\\
+5 & 0.107 [0.103, 0.112] & 0.116 [0.112, 0.122]\\
 \hline
 \end{tabular}	
 \end{center}
