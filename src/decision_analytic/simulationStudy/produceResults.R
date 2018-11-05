@@ -73,15 +73,15 @@ simResults_n500_method_all = foreach(i=1:50, .combine="rbind") %do%{
 }
 
 scheduleResCombined = simResults_n500_method_all
-scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "Risk: 15%", "PRIAS"),]
+scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "Risk (10%)", "Risk (5%)", "Risk (F1) Real", "PRIAS"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
 scheduleResCombined$offset[scheduleResCombined$offset < 0] = 10 - scheduleResCombined$progression_time[scheduleResCombined$offset<0]
 
-levels(scheduleResCombined$methodName)[3] = "Risk: 15%"
+levels(scheduleResCombined$methodName)[3] = "Risk: 10%"
 levels(scheduleResCombined$methodName)[4] = "Risk: 5%"
-levels(scheduleResCombined$methodName)[5] = "Risk: Automatic"
+levels(scheduleResCombined$methodName)[5] = "Risk: F1"
 
 FONT_SIZE = 11
 
@@ -96,10 +96,12 @@ getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribut
   return(resDf)
 }
 
+MEDIAN_WIDTH_BOXPLOT = 2
+
 gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
-  scale_y_continuous(breaks=1:3) +
+               stat = "identity", fatten=3) + coord_flip() + 
+  scale_y_continuous(breaks=seq(1,10, length.out = 4), limits = c(1,10)) +
   theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
         axis.line = element_line(),
@@ -107,13 +109,14 @@ gfastNb = ggplot(data=getBoxplotStatsDf(0,3.5, "nb")) +
         axis.title.y = element_text(size=FONT_SIZE, color = "black"),
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
-        legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Fast")
+        legend.text = element_text(size=FONT_SIZE-3), title = element_text(size=FONT_SIZE-1))  +
+  xlab("Schedule") + ylab("Number of Biopsies") + 
+  ggtitle("Fast progressing (30% patients)")
 
 gfastOffset = ggplot(data=getBoxplotStatsDf(0,3.5, "offset")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
-  scale_y_continuous(breaks=0:4, limits = c(0,4.5)) +
+               stat = "identity", fatten=MEDIAN_WIDTH_BOXPLOT) + coord_flip() + 
+  scale_y_continuous(breaks=0:5, limits = c(0,5.5)) +
   theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
         axis.line = element_line(),
@@ -132,7 +135,7 @@ gFast = ggpubr::ggarrange(gfastNb, gfastOffset, ncol=2, widths = c(1.4,1), align
 
 gIntermediateNb = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
+               stat = "identity", fatten=MEDIAN_WIDTH_BOXPLOT) + coord_flip() + 
   scale_y_continuous(breaks=seq(1,10, length.out = 4)) +
   theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -141,12 +144,13 @@ gIntermediateNb = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "nb")) +
         axis.title.y = element_text(size=FONT_SIZE, color = "black"),
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
-        legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Intermediate")
+        legend.text = element_text(size=FONT_SIZE-3), title = element_text(size=FONT_SIZE-1))  +
+  xlab("Schedule") + ylab("Number of Biopsies") + 
+  ggtitle("Intermediate progressing (20% patients)")
 
 gIntermediateOffset = ggplot(data=getBoxplotStatsDf(3.50001,9.999999, "offset")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
+               stat = "identity", fatten=MEDIAN_WIDTH_BOXPLOT) + coord_flip() + 
   scale_y_continuous(breaks=0:5, limits = c(0,5.5)) +
   theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -166,7 +170,7 @@ gIntermediate = ggpubr::ggarrange(gIntermediateNb, gIntermediateOffset, ncol=2, 
 
 gSlowNb = ggplot(data=getBoxplotStatsDf(10,10, "nb")) + 
   geom_boxplot(aes(ymin = X1, lower = X2, middle = X3, upper = X4, ymax = X5, x=methodName),
-               stat = "identity") + coord_flip() + 
+               stat = "identity", fatten=MEDIAN_WIDTH_BOXPLOT) + coord_flip() + 
   scale_y_continuous(breaks=c(1,4,7,10)) +
   theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -175,8 +179,9 @@ gSlowNb = ggplot(data=getBoxplotStatsDf(10,10, "nb")) +
         axis.title.y = element_text(size=FONT_SIZE, color = "black"),
         axis.text.x = element_text(size=FONT_SIZE, color="gray40"),
         legend.background = element_blank(), legend.position = "top",
-        legend.text = element_text(size=FONT_SIZE-3))  +
-  xlab("Schedule") + ylab("Number of Biopsies") + ggtitle("Progression speed: Slow")
+        legend.text = element_text(size=FONT_SIZE-3),title = element_text(size=FONT_SIZE-1))  +
+  xlab("Schedule") + ylab("Number of Biopsies") + 
+  ggtitle("Slow progressing (50% patients)")
 
 gSlowOffset = ggplot() + geom_text(aes(x=1, y=2, 
                                        label="No cancer progression\nobserved in 10 year follow-up period\nfor patients with slow speed of cancer\nprogression. Hence, no boxplot for\ndelay in detection of cancer\nprogression.")) + theme_bw() + 
@@ -188,7 +193,7 @@ gSlow = ggpubr::ggarrange(gSlowNb, gSlowOffset, ncol=2, widths = c(1.4,1), align
 
 combinedPlot = ggpubr::ggarrange(gFast, gIntermediate,gSlow, nrow=3, ncol=1, 
                   labels = "AUTO")
-ggsave(combinedPlot, filename = "report/decision_analytic/mdm/latex/images/sim_res_10perc_prias.eps",
+ggsave(combinedPlot, filename = "report/decision_analytic/mdm/latex/images/sim_res_combined.eps",
        height=8, width=7, dpi = 500)
 
 

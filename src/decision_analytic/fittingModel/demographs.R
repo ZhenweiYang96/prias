@@ -589,7 +589,7 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
 }
 
 obsDataPlot = plotObservedData(2340, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11, 
-                                POINT_SIZE = 2, DRE_PSA_Y_GAP = 0.3)
+                                POINT_SIZE = 3, DRE_PSA_Y_GAP = 0.3)
 ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340.eps",
         plot=obsDataPlot, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
 # # 
@@ -597,13 +597,14 @@ ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340.ep
 # # ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340_max4years.eps",
 # #        plot=dynRiskPlot, device=cairo_ps, height=4.5, width=6.1, dpi = 500)
 # # 
-dynRiskPlot1 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 4, lastBiopsyTime = 2.56, meanRiskProb = 0.102, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, 
-                                      xUpperlim = 6.5)
+dynRiskPlot1 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 4, lastBiopsyTime = 2.56, 
+                                      meanRiskProb = 0.102, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, 
+                                      xUpperlim = 6.5, POINT_SIZE = 3)
 dynRiskPlot1 = dynRiskPlot1 + ggtitle("Biopsy not recommended for patient j at year 4") + 
    theme(plot.title = element_text(hjust = 0.5, color = "forestgreen"))
 #plot.margin = margin(t=5,b=30))
 dynRiskPlot2 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 8, lastBiopsyTime = 2.56, meanRiskProb = 0.178, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, specialXticks = 4,
-                                      xUpperlim = 6.5) 
+                                      xUpperlim = 6.5, POINT_SIZE = 3) 
 dynRiskPlot2 = dynRiskPlot2  + ggtitle("Biopsy recommended for patient j at year 5.3") + 
  theme(plot.title = element_text(hjust = 0.5, color="red3"), legend.position = "none")
 ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
@@ -611,7 +612,7 @@ ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
         width=7, height=9, device = cairo_ps, dpi=500)
 #  
 # # jmExplanationPlot = plotJMExplanationPlot(1757, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11)
- # jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4, 
- #                                                   POINT_SIZE = 2, FONT_SIZE = 12)
+ # jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4,
+ #                                                   POINT_SIZE = 3, FONT_SIZE = 12)
  # ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
  #        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)

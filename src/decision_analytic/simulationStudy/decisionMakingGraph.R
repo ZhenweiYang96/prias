@@ -34,7 +34,7 @@ fixedScheduleLabels = c("Biopsy every\n1.5 years", "Annual\nbiopsies",
                         "Biopsy every\n2 years", "Biopsy every\n3 years", "Biopsy every\n4 years")
 
 FONT_SIZE=11
-POINT_SIZE = 2
+POINT_SIZE = 3
 better_balance_intro = ggplot() + geom_label(aes(x=medianNb[fixedScheduleIndices], 
                                                    y=medianOffset[fixedScheduleIndices], 
                                                    label=fixedScheduleLabels),
@@ -43,9 +43,10 @@ better_balance_intro = ggplot() + geom_label(aes(x=medianNb[fixedScheduleIndices
                                                nudge_y = c(0.175, 0.2, 0.125,0.125,0.125)) +
   geom_ribbon(aes(x=c(1:3,medianNb[fixedScheduleIndices]), ymin=0,
                   ymax=c(Inf,Inf,Inf,medianOffset[fixedScheduleIndices]), 
-                  fill="Region of better balance in median number of biopsies and delay than fixed schedules"),alpha=0.2)+
+                  fill="Region of better balance in median number of biopsies and delay, than fixed schedules"),alpha=0.2)+
   geom_point(aes(x=medianNb[fixedScheduleIndices], 
-                 y=medianOffset[fixedScheduleIndices]), color="red2", size=POINT_SIZE) +
+                 y=medianOffset[fixedScheduleIndices]), 
+             color="red2", size=POINT_SIZE, shape=15) +
   geom_point(aes(x=1, y=0), color="dodgerblue4", size=POINT_SIZE) +
   geom_label(aes(x=1, y=0), label="Ideal\nschedule", 
              color="dodgerblue4", size=2.75, nudge_x = 0.65, nudge_y = 0.175) +
@@ -65,91 +66,66 @@ ggsave(filename = "report/decision_analytic/mdm/latex/images/better_balance_intr
        plot=better_balance_intro, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
 
 
+########################
+fixedScheduleIndices = c(1:3,14,15)
+fixedScheduleLabels = c("Biopsy every\n1.5 years", "Annual\nbiopsies", 
+                        "Biopsy every\n2 years", "Biopsy every\n3 years", "Biopsy every\n4 years")
 
-mean_nb_offset = ggplot() + geom_label(aes(x=meanNb, y=meanOffset, label=methodNames)) +
-  xlab("Mean Number of biopsies") + ylab("Mean delay in detection of cancer progression (years)") +
-  ylim(0, 2) +
-  scale_x_continuous(breaks=1:7, limits = c(1,7)) +
-  theme_bw() + 
-  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line())
+priasIndex = 7
+priasLabel = "PRIAS"
 
-ggsave(filename = "report/decision_analytic/mdm/latex/images/mean_nb_offset.eps",
-       plot=mean_nb_offset, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
+persScheduleIndices = c(8,9,11,13)
+persScheduleLabels = c("Risk: 10%", "Risk: 15%", "Risk: 5%", "Risk: F1") 
 
-#This plot the advantage of personalized over fixed schedules
-fixedIndices = c(1,2,3,16)
-persIndices = c(8,9,10,11)
+FONT_SIZE=11
+POINT_SIZE = 3
 
-fixedIndices=7
-persIndices=8
-
-ggplot() + 
-  #geom_line(aes(x=medianNb[fixedIndices], y=medianOffset[fixedIndices], color='Fixed'), linetype="dotted") +
-  geom_point(aes(x=medianNb[fixedIndices], y=medianOffset[fixedIndices], 
-                 label=methodNames[fixedIndices], color='Fixed')) +
-  geom_errorbarh(aes(y=medianOffset[fixedIndices], xmin=QRpt25Nb[fixedIndices], 
-                    xmax=QRpt75Nb[fixedIndices], color='Fixed'), width=0.1) +
-  geom_line(aes(x=medianNb[persIndices], y=medianOffset[persIndices], color='Personalized'), linetype="dotted") +
-  geom_point(aes(x=medianNb[persIndices], y=medianOffset[persIndices],
-                 label=methodNames[persIndices], color='Personalized')) +
-  geom_errorbarh(aes(y=medianOffset[persIndices], xmin=QRpt25Nb[persIndices], 
-                    xmax=QRpt75Nb[persIndices], color='Personalized'), width=0.1) +
-  xlab("Median Number of biopsies") + ylab("Median delay in detection of cancer progression (years)") +
-  ylim(0, 2.5) +
-  scale_x_continuous(breaks=1:11, limits = c(1,11)) +
-  theme_bw() + 
-  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line()) + coord_flip()
-
-ggplot() + geom_line(aes(x=medianNb[fixedIndices], y=medianOffset[fixedIndices], color='Fixed'), linetype="dotted") +
-  geom_point(aes(x=medianNb[fixedIndices], y=medianOffset[fixedIndices], 
-                 label=methodNames[fixedIndices], color='Fixed')) +
-  geom_errorbar(aes(x=medianNb[fixedIndices], ymin=QRpt25Offset[fixedIndices], 
-                    ymax=QRpt75Offset[fixedIndices], color='Fixed'), width=0.25) +
-  geom_line(aes(x=medianNb[persIndices], y=medianOffset[persIndices], color='Personalized'), linetype="dotted") +
-  geom_point(aes(x=medianNb[persIndices], y=medianOffset[persIndices],
-                 label=methodNames[persIndices], color='Personalized')) +
-  geom_errorbar(aes(x=medianNb[persIndices], ymin=QRpt25Offset[persIndices], 
-                    ymax=QRpt75Offset[persIndices], color='Personalized'), width=0.25) +
-  xlab("Median Number of biopsies") + ylab("Median delay in detection of cancer progression (years)") +
-  ylim(0, 2.5) +
-  scale_x_continuous(breaks=1:11, limits = c(1,11)) +
-  theme_bw() + 
-  theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line())
-
-#Make a plot with year of progression on X axis, color for schedule, mean delay on Y axis, 
-#and size for number of biopsies
-scheduleResCombined$yearProgression = ceiling(scheduleResCombined$progression_time)
-scheduleResCombined$yearProgression = sapply(scheduleResCombined$progression_time, function(x){
-  if(x<=3.5){
-    "Fast"
-  }else if(x==10){
-    "Slow"
-  }else{
-    "Intermediate"
-  }
-})
-
-yearlyRes = by(scheduleResCombined, INDICES = scheduleResCombined$yearProgression, FUN = function(yearResCombined){
-  res = by(yearResCombined, INDICES = yearResCombined$methodName, FUN = function(methodRes){
-    c(median(methodRes$nb), median(methodRes$offset[methodRes$progression_time!=10]), nrow(methodRes))
-  })
+better_balance_results= ggplot() + geom_label(aes(x=medianNb[fixedScheduleIndices], 
+                                                 y=medianOffset[fixedScheduleIndices], 
+                                                 label=fixedScheduleLabels),
+                                             color='red2', size=2.75,
+                                             nudge_x = c(0.6,-0.4,0.85,0.85,0.0), 
+                                             nudge_y = c(0.175, 0.2, 0.125,0.125,0.125)) +
+  geom_ribbon(aes(x=c(1:3,medianNb[fixedScheduleIndices]), ymin=0,
+                  ymax=c(Inf,Inf,Inf,medianOffset[fixedScheduleIndices]), 
+                  fill="Region of better balance in median\n number of biopsies and delay,\n than fixed schedules"),alpha=0.2)+
+  geom_line(aes(x=medianNb[fixedScheduleIndices], 
+                y=medianOffset[fixedScheduleIndices]), linetype="dashed", color="red2") +
   
-  resMatrix = do.call(rbind,res)
-  resDf= data.frame(resMatrix)
-  colnames(resDf) = c("nb", "offset", "nPatients")
-  resDf$methodName = rownames(resMatrix)
-  resDf$yearProgression  = yearResCombined$yearProgression[1]
-  return(resDf)
-})
-
-yearlyResDf = do.call(rbind, yearlyRes)
-yearlyResDf$offset[is.na(yearlyResDf$offset)] = runif(n = sum(is.na(yearlyResDf$offset)),-1, 0)
-ggplot(data=yearlyResDf[yearlyResDf$methodName %in% c("Annual", "PRIAS", "Risk (10%)"),]) + 
-  geom_point(aes(x=yearProgression, y=offset, color=methodName, size=nb)) +
-  #scale_x_continuous(breaks = 1:10, limits = c(1,10)) + theme_bw() + 
+  geom_point(aes(x=medianNb[fixedScheduleIndices], 
+                 y=medianOffset[fixedScheduleIndices], shape="Fixed", color="Fixed"),
+             size=POINT_SIZE) +
+  
+  geom_point(aes(x=medianNb[persScheduleIndices], 
+                 y=medianOffset[persScheduleIndices], shape="Personalized", color="Personalized"), 
+            size=POINT_SIZE) +
+  geom_label(aes(x=medianNb[persScheduleIndices], 
+                 y=medianOffset[persScheduleIndices], 
+                 label=persScheduleLabels),
+             color='forestgreen', size=2.75,
+             nudge_y = c(-0.15, 0.15, -0.15, -0.15)) +
+  geom_line(aes(x=medianNb[persScheduleIndices], 
+                y=medianOffset[persScheduleIndices]), linetype="dashed", color="forestgreen") +
+  
+  geom_point(aes(x=medianNb[priasIndex], y=medianOffset[priasIndex], shape="PRIAS", color="PRIAS"), 
+             size=POINT_SIZE, alpha=0.8) +
+  geom_label(aes(x=medianNb[priasIndex],
+                 y=medianOffset[priasIndex]), label=priasLabel, 
+             color="dodgerblue4", size=2.75, nudge_x = 0.3, nudge_y = 0.15) +
+  
+  scale_shape_manual(name="", values=c(15,17,18)) + 
+  scale_color_manual(name="", values=c("red2", "forestgreen", "dodgerblue4")) + 
+  
+  scale_fill_manual(name="", values="forestgreen") + 
+  xlab("Median Number of biopsies") + ylab("Median delay in detection of\ncancer progression (years)") +
+  coord_cartesian(ylim=c(0,2)) +
+  scale_x_continuous(breaks=1:10, limits = c(1,10)) +
+  theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-        axis.line = element_line()) + ylab("Delay (years)")
+        axis.line = element_line(), legend.background = element_blank(), legend.position = "bottom",
+        legend.text = element_text(size=FONT_SIZE-3),
+        plot.margin = margin(0, 0, 0, 0, "pt"))
+
+ggsave(filename = "report/decision_analytic/mdm/latex/images/better_balance_results.eps",
+       plot=better_balance_results, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)
 
