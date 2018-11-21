@@ -155,7 +155,12 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
   
   psaDs = patientDs[, c("visitTimeYears", "log2psaplus1", "fitted_log2psaplus1")]
   maxPSA = max(psaDs[,-1], na.rm=T)
-  psaDs[,-1] = psaDs[,-1] / maxPSA + maxYleft/2 + DRE_PSA_Y_GAP
+  minPSA = min(psaDs[,-1], na.rm = T)
+  
+  newMinPSA = (maxYleft/2 + DRE_PSA_Y_GAP)
+  newMaxPSA = maxYleft
+  
+  psaDs[,-1] = ((psaDs[,-1] - minPSA) * (newMaxPSA - newMinPSA))/ (maxPSA - minPSA) + newMinPSA
   
   if(is.na(meanRiskProb)){
     meanRiskProb = 1 - sfit$summaries[[1]][, "Mean"]
@@ -188,7 +193,7 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
   
   p=ggplot() +
     geom_segment(aes(x=-Inf, xend=maxPredictionTime, y=maxYleft/2, yend=maxYleft/2), 
-                 linetype="solid", color="gray", size=1, alpha=0.4) + 
+                 linetype="solid") + 
     geom_col(aes(x=c(maxPredictionTime,maxPredictionTime), y=c(maxMeanRiskScaled, maxYleft-maxMeanRiskScaled)), 
              fill=c(riskFillColor, "white"),  color=riskFillColor, width = col_width) + 
     geom_vline(xintercept = lastBiopsyTime, linetype="solid") +
@@ -199,18 +204,18 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
     geom_segment(aes(x=maxPredictionTime-col_width/2, xend=maxPredictionTime + col_width, y=thresholdScaled, yend=thresholdScaled), 
                  linetype="dashed", color="firebrick1", size=0.5) +
     geom_label(aes(x=maxPredictionTime, y=1.6, 
-                  label=paste0("Cancer progression\nrisk at current visit:\n", round(meanRiskProb * 100,2), "%")),
-              color = riskFillColor, size=LABEL_SIZE)+
+                   label=paste0("Cancer progression\nrisk at current visit:\n", round(meanRiskProb * 100,2), "%")),
+               color = riskFillColor, size=LABEL_SIZE)+
     geom_text(aes(x=maxPredictionTime + col_width*1.5, y=thresholdScaled, 
-                   label=paste0("k = ",threshold*100, "%\n(Biopsy threshold)")),
-               color = "firebrick1", size=LABEL_SIZE)+
+                  label=paste0("k = ",threshold*100, "%\n(Biopsy threshold)")),
+              color = "firebrick1", size=LABEL_SIZE)+
     xlab("Follow-up time (years)") + 
     ylab(expression('Pr (DRE > T1c)            '*'log'[2]*'(PSA + 1)')) +
     scale_linetype_manual(name="",
                           labels= c("Fitted Pr (DRE > T1c)", expression('Fitted log'[2]*'(PSA + 1)')),
                           values = c("dotted", "dashed")) +       
     scale_shape_manual(name="",
-                       labels=c("Observed DRE (T1c / above T1c)", expression('Observed log'[2]*'(PSA + 1)')),
+                       labels=c("Observed DRE\n(T1c / above T1c)", expression('Observed log'[2]*'(PSA + 1)')),
                        values = c(17,16)) + 
     theme_bw() + 
     theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -225,11 +230,10 @@ plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime,
     scale_y_continuous(limits = c(minYLeft, maxYleft), 
                        breaks = c(seq(0, maxYleft/2 - DRE_PSA_Y_GAP, length.out = 3), seq(maxYleft/2 + DRE_PSA_Y_GAP, maxYleft, length.out = 5)),
                        labels = c(paste0(round(seq(0, 1, length.out = 3),2) * 100, "%"), 
-                                  round(seq(0, maxPSA, length.out = 5),2)))
+                                  round(seq(minPSA, maxPSA, length.out = 5),2)))
   
   return(p)
 }
-
 
 plotObservedData = function(pid, fittedJointModel, maxVisitTime, 
                             lastBiopsyTime=NA, 
@@ -274,7 +278,7 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
     geom_ribbon(aes(x=seq(lastBiopsyTime, fakeProgressionTime, length.out = 10), 
                     ymin=-Inf, ymax=Inf, fill="Region with risk of\n cancer progression"), alpha=0.2) + 
     geom_segment(aes(x=-Inf, xend=lastBiomarkerTime, y=maxYleft/2, yend=maxYleft/2), 
-                 linetype="solid", color="gray", size=1, alpha=0.4) + 
+                 linetype="solid") + 
     geom_label(aes(x=lastBiomarkerTime, y=maxYleft/2, label="Biopsy\nnow?"), color="firebrick1") + 
     xlab("Follow-up time (years)") + 
     ylab("DRE (binary)               PSA (ng/mL)") +
@@ -298,150 +302,6 @@ plotObservedData = function(pid, fittedJointModel, maxVisitTime,
   
   return(p)
 }
-
-# plotJMExplanationPlot = function(pid, fittedJointModel, maxVisitTime, 
-#                                  usecolor=F, FONT_SIZE=12, POINT_SIZE = 2, 
-#                                  DRE_PSA_Y_GAP=0.1, HAZARD_GAP = 1){
-#   
-#   generateTruePSAProfile = function(visitTimeYears, randomEff_psa){
-#     betas_psa = fittedJointModel$statistics$postMeans$betas2
-#     
-#     fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-#     randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-#     
-#     df = data.frame(Age, visitTimeYears)
-#     model.matrix(fixedPSAFormula, df) %*% betas_psa + model.matrix(randomPSAFormula, df) %*% as.numeric(randomEff_psa)
-#   }
-#   
-#   generateTruePSASlope = function(visitTimeYears, randomEff_psa_slope){
-#     betas_psa_time = fittedJointModel$statistics$postMeans$betas2[4:7]
-#     
-#     fixedPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-#     randomPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-#     
-#     df = data.frame(visitTimeYears)
-#     model.matrix(fixedPSASlopeFormula, df) %*% betas_psa_time + model.matrix(randomPSASlopeFormula, df) %*% as.numeric(randomEff_psa_slope)
-#   }
-#   
-#   generateTrueDRELogOdds = function(visitTimeYears, randomEff_dre){
-#     betas_dre = fittedJointModel$statistics$postMeans$betas1
-#     
-#     fixedDREFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + visitTimeYears
-#     randomDREFormula = ~ 1 + visitTimeYears
-#     
-#     df = data.frame(Age, visitTimeYears)
-#     
-#     model.matrix(fixedDREFormula, df) %*% betas_dre + model.matrix(randomDREFormula, df) %*% as.numeric(randomEff_dre)
-#   }
-#   
-#   hazardFunc = function(visitTimeYears) {
-#     alphas = fittedJointModel$statistics$postMeans$alphas
-#     
-#     gammas = fittedJointModel$statistics$postMeans$gammas
-#     survivalFormula = ~ 0 + I(Age - 70) + I((Age - 70)^2)
-#     wGamma = as.numeric(model.matrix(survivalFormula, data = data.frame(Age=Age)) %*% gammas)
-#     
-#     baselinehazard = exp(splineDesign(fittedJointModel$control$knots, visitTimeYears, 
-#                                       ord = fittedJointModel$control$ordSpline, outer.ok = T) %*% fittedJointModel$statistics$postMeans$Bs_gammas)
-#     
-#     truePSA = generateTruePSAProfile(visitTimeYears, b_subject[3:7])
-#     truePSASlope = generateTruePSASlope(visitTimeYears, b_subject[4:7])
-#     trueDRELogOdds = generateTrueDRELogOdds(visitTimeYears, b_subject[1:2])
-#     
-#     y_Alpha = cbind(trueDRELogOdds, truePSA, truePSASlope) %*% alphas
-#     
-#     exp(wGamma + y_Alpha)
-#   }
-#   
-#   transformRange = function(data, newMin, newMax){
-#     oldMin = min(data, na.rm = T)
-#     oldMax = max(data, na.rm = T)
-#     
-#     (data - oldMin) * (newMax - newMin)/(oldMax-oldMin) + newMin
-#   }
-#   
-#   dataset = fittedJointModel$model_info$mvglmer_components$data
-#   patientDs = dataset[dataset$P_ID == pid & dataset$visitTimeYears<=maxVisitTime,]
-#   
-#   b_subject = mvJoint_dre_psa_dre_value$statistics$postMeans$b[which(unique(dataset$P_ID) == pid),]
-#   Age = patientDs$Age[1]
-#   
-#   dre_fixed_eff = mvJoint_dre_psa_dre_value$statistics$postMeans$betas1
-#   psa_fixed_eff = mvJoint_dre_psa_dre_value$statistics$postMeans$betas2
-#   
-#   times = seq(0, maxVisitTime, length.out = 20)
-#   truePSA = generateTruePSAProfile(times, b_subject[3:7])
-#   truePSASlope = generateTruePSASlope(times, b_subject[4:7])
-#   trueDREProbHighDRE = plogis(generateTrueDRELogOdds(times, b_subject[1:2]))
-#   trueHazard = hazardFunc(times)
-#   
-#   newMinDRE = 0
-#   newMaxDRE = 1/3 - DRE_PSA_Y_GAP/2
-#   newMinPSAVal = 1/3 + DRE_PSA_Y_GAP/2
-#   newMaxPSAVal = 2/3
-#   newMinPSASlope = 2/3 + DRE_PSA_Y_GAP
-#   newMaxPSASlope = 1 + DRE_PSA_Y_GAP/2
-#   
-#   transformedPSAVal = transformRange(c(truePSA, patientDs$log2psaplus1), newMinPSAVal, newMaxPSAVal)
-#   transformedTruePSASlope = transformRange(truePSASlope, newMinPSASlope, newMaxPSASlope)
-#   #I add a single 1 and remove it to make sure the range is taken correctly in DRE
-#   transformedHighDRE = transformRange(c(1, trueDREProbHighDRE, patientDs$high_dre), newMinDRE, newMaxDRE)[-1]
-#   transformedHazard = transformRange(trueHazard, 0, 1)
-#   
-#   patientDs$transformedLog2PSAPlus1 = transformedPSAVal[-c(1:length(truePSA))]
-#   patientDs$transformedHighDRE = transformedHighDRE[-c(1:length(trueDREProbHighDRE))]
-#   
-#   ggplot() + 
-#     geom_point(data = patientDs, size=POINT_SIZE, aes(x = visitTimeYears, y=transformedHighDRE, shape="Observed DRE"), color="gray30") +
-#     geom_point(data = patientDs, size=POINT_SIZE, aes(x = visitTimeYears, y=transformedLog2PSAPlus1, shape="Observed PSA"), color="gray30") +
-#     geom_line(aes(x = times, y=transformedPSAVal[1:length(truePSA)], linetype="Fitted PSA")) + 
-#     geom_line(aes(x = times, y=transformedTruePSASlope), linetype="solid") + 
-#     geom_line(aes(x = times, y=transformedHighDRE[1:length(trueDREProbHighDRE)], linetype="Fitted DRE")) + 
-#     geom_line(aes(x = times + maxVisitTime + HAZARD_GAP, y=transformedHazard)) +
-#     geom_text(aes(x = 4, y= newMinPSASlope, label="A")) + 
-#     geom_text(aes(x = 4, y= newMinPSAVal, label="B")) + 
-#     geom_text(aes(x = 4, y= newMinDRE + 0.1, label="C")) + 
-#     geom_text(aes(x = 9, y= newMinDRE, label="D")) + 
-#     
-#     geom_segment(aes(x=maxVisitTime+HAZARD_GAP/2, xend=maxVisitTime+HAZARD_GAP/2, y=-Inf, yend=Inf), 
-#                  linetype="solid", color="gray", size=1) + 
-#     geom_segment(aes(x=-Inf, xend=maxVisitTime+HAZARD_GAP/2, y=1/3, yend=1/3), 
-#                  linetype="solid", color="gray", size=1) +
-#     geom_segment(aes(x=-Inf, xend=maxVisitTime+HAZARD_GAP/2, y=2/3 + DRE_PSA_Y_GAP/2, yend=2/3+ DRE_PSA_Y_GAP/2), 
-#                  linetype="solid", color="gray", size=1) + 
-#     xlab("Follow-up time (years)                     Follow-up time (years)") + 
-#     ylab(expression('Pr (DRE > T1c)      '*'log'[2]*'(PSA + 1)'*'      Velocity: '*'log'[2]*'(PSA + 1)')) +
-#     scale_shape_manual(name="",
-#                        labels=c("Observed DRE (binary)", "Observed PSA (ng/mL)"),
-#                        values = c(17,16)) + 
-#     scale_linetype_manual(name="",
-#                           labels= c("Fitted Pr (DRE > T1c)", expression('Fitted log'[2]*'(PSA + 1)')),
-#                           values = c("dotted", "dashed")) +       
-#     theme_bw() + 
-#     theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-#           axis.line = element_line(),
-#           panel.grid.minor = element_blank(),
-#           axis.text.y = element_text(size=FONT_SIZE, color = "gray30"),
-#           axis.title.y = element_text(size=FONT_SIZE, color = "black"),
-#           axis.text.y.right = element_text(size=FONT_SIZE, color = "black"),
-#           axis.text.x = element_text(size=FONT_SIZE, color=rep(c("gray40", "black"), each=4)),
-#           legend.background = element_blank(), legend.position = "top",
-#           legend.text = element_text(size=FONT_SIZE-3))  +
-#     scale_y_continuous(limits = c(0, newMaxPSASlope), 
-#                        breaks = c(seq(newMinDRE, newMaxDRE, length.out = 3),
-#                                   seq(newMinPSAVal, newMaxPSAVal, length.out = 3),
-#                                   seq(newMinPSASlope, newMaxPSASlope, length.out = 3)),
-#                        labels = c(c("0%", "50%", "100%"),
-#                                   round(seq(min(c(truePSA, patientDs$log2psaplus1), na.rm = T), max(c(truePSA, patientDs$log2psaplus1), na.rm = T), length.out = 3),2),
-#                                   round(seq(min(truePSASlope), max(truePSASlope), length.out = 3),2)),
-#                        sec.axis = sec_axis(~((.-min(trueHazard))*diff(range(trueHazard))/newMaxPSASlope + min(trueHazard)), 
-#                                            breaks= seq(min(trueHazard), max(trueHazard), length.out = 5),
-#                                            labels = round(seq(min(trueHazard), max(trueHazard), length.out = 5),2),
-#                                            name = "Hazard of cancer progression"))+
-#     scale_x_continuous(breaks = c(seq(0,maxVisitTime, length.out = 4),
-#                                   seq(maxVisitTime + HAZARD_GAP, maxVisitTime*2 + HAZARD_GAP, length.out = 4)),
-#                        labels = round(c(seq(0,maxVisitTime, length.out = 4), seq(0,maxVisitTime, length.out = 4)),2)) 
-# }
 
 plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime, 
                                          usecolor=F, FONT_SIZE=12, POINT_SIZE = 2){
@@ -512,15 +372,18 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
   trueHazard = hazardFunc(times)
   
   hazardPlotYbreaks = seq(min(trueHazard), 
-                               max(trueHazard), length.out = 3)
-  hazardPlot = ggplot() + geom_line(aes(x=times, y=trueHazard)) + theme_bw() + 
+                          max(trueHazard), length.out = 3)
+  hazardPlot = ggplot() + geom_line(aes(x=times, y=trueHazard), color='red3') + 
+    theme_bw() + 
     ylab("Estimated Hazard of\ncancer progression") + xlab("Follow-up time (years)") +
     theme(text = element_text(size=FONT_SIZE), 
+          axis.title.y = element_text(colour = 'red3'),
+          axis.text.y = element_text(colour = 'red3'),
           axis.line = element_line(),
           axis.text=element_text(size=FONT_SIZE),
           plot.margin = margin(0, 5.5, 0, 5.5, "pt")) +
     scale_y_continuous(breaks = hazardPlotYbreaks, labels = round(hazardPlotYbreaks,1))
-    
+  
   
   #also added fake points and lines in the DRE plot to add legend for points in ggpubr
   drePlot = ggplot() + 
@@ -612,7 +475,7 @@ ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
         width=7, height=9, device = cairo_ps, dpi=500)
 #  
 # # jmExplanationPlot = plotJMExplanationPlot(1757, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11)
- # jmExplanationPlot = plotJMExplanationPlot_Stacked(1757, mvJoint_dre_psa_dre_value, 4,
- #                                                   POINT_SIZE = 3, FONT_SIZE = 12)
- # ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
- #        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)
+jmExplanationPlot = plotJMExplanationPlot_Stacked(113, mvJoint_dre_psa_dre_value, 4,
+                                                   POINT_SIZE = 3, FONT_SIZE = 12)
+ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
+        plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)

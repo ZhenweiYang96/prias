@@ -46,8 +46,8 @@ plotFittedDREMarginal = function(modelObject, logOdds = F, FONT_SIZE=10){
     xlab("Follow-up time (years)")
   
   if(logOdds==F){
-   plot = plot + scale_y_continuous(breaks = seq(0,1, by = 0.25), labels=paste0(seq(0,1,by=0.25)*100, "%"),limits = c(0,1)) +
-    ylab(expression('Probability (DRE > T1c)'))
+    plot = plot + scale_y_continuous(breaks = seq(0,1, by = 0.25), labels=paste0(seq(0,1,by=0.25)*100, "%"),limits = c(0,1)) +
+      ylab(expression('Probability (DRE > T1c)'))
   }else{
     plot = plot + ylab(expression('log odds (DRE > T1c)'))
   }
@@ -61,7 +61,7 @@ for(m in 1:9){
 subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend = T, legend = "bottom")
 ggsave(subjectplot, file="report/decision_analytic/mdm/latex/images/fitted_9subject_dre.eps", device = cairo_ps, dpi = 500, width = 9, height = 8)
 plotFittedDRESubject = function(modelObject, pid=NA,
-                         FONT_SIZE=10, showTitle=T){
+                                FONT_SIZE=10, showTitle=T){
   data.id = modelObject$model_info$coxph_components$data
   
   if(is.na(pid)){
@@ -195,35 +195,70 @@ plotPSAResidualVsFitted = function(modelObject, weighted=T){
 }
 
 #change df=100 when trying with a model which uses normality assumption on error distribution
-#ggsave(qqplotPSA(mvJoint_dre_psa_dre_value, FONT_SIZE = 9), file="report/decision_analytic/mdm/latex/images/qqplot.eps", device = cairo_ps, dpi = 500, height=4.5/1.3333, width=4.5)
+#ggsave(ggpubr::ggarrange(qqplotPSA(mvglmer_dre_psa, FONT_SIZE = 11) + 
+#ggtitle("Error distribution: t (df=3)"), 
+#qqplotPSA(mvglmer_dre_psa_normal, FONT_SIZE = 11, normalDist = T) + 
+#ggtitle("Error distribution: normal"), labels = "AUTO"), 
+#file="report/decision_analytic/mdm/latex/images/qqplot.eps", 
+#device = cairo_ps, dpi = 500)
+
 qqplotPSA = function(modelObject, df = 3, weighted=F, probs=c(0.25, 0.75),
-                     FONT_SIZE=15){
+                     FONT_SIZE=15, normalDist = F){
   
-  data = modelObject$model_info$mvglmer_components$data
-  data = data[!is.na(data$log2psaplus1),] 
-  
-  psaFit = if(weighted==F){
-    fitted(modelObject, process = "Longitudinal", type="Subject")[[2]]
+  if(class(modelObject)=="mvglmer"){
+    data = modelObject$data
+    data = data[!is.na(data$log2psaplus1),] 
+    
+    fittedmarginal = modelObject$components$X2 %*% modelObject$postMeans$betas2
+    randEff = modelObject$postMeans$b[as.numeric(droplevels(data$P_ID)),3:7,drop=FALSE]
+    fittedSubjects = rowSums(modelObject$components$Z2 * randEff)
+    psaFit = fittedmarginal + fittedSubjects
+    
   }else{
-    fitted_weighted(modelObject)[[2]]
+    data = modelObject$model_info$mvglmer_components$data
+    data = data[!is.na(data$log2psaplus1),] 
+    
+    psaFit = if(weighted==F){
+      fitted(modelObject, process = "Longitudinal", type="Subject")[[2]]
+    }else{
+      fitted_weighted(modelObject)[[2]]
+    }
   }
+  
   log2psaplus1Observed = data$log2psaplus1
   residualPSA = log2psaplus1Observed - psaFit
   
   residualPSA_quantiles <- quantile(residualPSA, probs, names = FALSE, type = 7, na.rm = TRUE)
-  theoretical_quantiles = qt(probs, df=df)
+  if(normalDist==T){
+    theoretical_quantiles = qnorm(probs)
+  }else{
+    theoretical_quantiles = qt(probs, df=df)  
+  }
+  
   slope <- diff(residualPSA_quantiles)/diff(theoretical_quantiles)
   intercept = residualPSA_quantiles[1L] - slope * theoretical_quantiles[1L]
   
-  ggplot() + geom_qq(aes(sample=residualPSA), 
-                     dparams = list(df=df),
-                     distribution = qt) + 
-    geom_abline(intercept = intercept, slope = slope) + 
-    theme_bw() + 
-    theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
-          axis.line = element_line(),
-          panel.grid.minor = element_blank()) +  
-    xlab("T-distribution (df=3) quantiles") + ylab("Residual quantiles")
+  if(normalDist==T){
+    plot = ggplot() + geom_qq(aes(sample=residualPSA), 
+                       distribution = qnorm) + 
+      geom_abline(intercept = intercept, slope = slope) + 
+      theme_bw() + 
+      theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+            axis.line = element_line(),
+            panel.grid.minor = element_blank()) +  
+      xlab("Normal distribution quantiles") + ylab("Residual quantiles")
+  }else{
+    plot = ggplot() + geom_qq(aes(sample=residualPSA), 
+                       dparams = list(df=df),
+                       distribution = qt) + 
+      geom_abline(intercept = intercept, slope = slope) + 
+      theme_bw() + 
+      theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+            axis.line = element_line(),
+            panel.grid.minor = element_blank()) +  
+      xlab("t-distribution (df=3) quantiles") + ylab("Residual quantiles")
+  }
+  return(plot)
 }
 
 getFittedPSAVelocities = function(fittedJointModel){

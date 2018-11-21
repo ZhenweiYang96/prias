@@ -1,10 +1,7 @@
 #First load all the results and extract the actual schedule results
 resFiles = list.files("/home/a_tomer/Data/final_res_2nd_paper/", full.names = T)
 
-runFixedSchedule = function(testDs.id, biopsyTimes){
-  #progressionTimes = pmin(max(biopsyTimes), testDs.id$progression_time)
-  progressionTimes = testDs.id$progression_time
-  
+runFixedSchedule = function(progressionTimes, biopsyTimes){
   if(!10 %in% biopsyTimes){
     biopsyTimes = c(biopsyTimes, 10)
   }
@@ -34,14 +31,14 @@ simResults_n500_method_all = foreach(i=1:50, .combine="rbind") %do%{
   
   #save(jointModelData, file=resFiles[i])
   
-  #month_12=runFixedSchedule(jointModelData$testData$testDs.id, seq(1, 10, 1))
-  month_18=runFixedSchedule(jointModelData$testData$testDs.id, seq(1.5, 10, 1.5))
-  month_24=runFixedSchedule(jointModelData$testData$testDs.id, seq(2, 10, 2))
-  month_24s=runFixedSchedule(jointModelData$testData$testDs.id, c(1, 10, 2))
-  #month_30=runFixedSchedule(jointModelData$testData$testDs.id, seq(2.5, 10, 2.5))
-  month_36=runFixedSchedule(jointModelData$testData$testDs.id, seq(3, 10, 3))
-  #month_42=runFixedSchedule(jointModelData$testData$testDs.id, seq(3.5, 10, 3.5))
-  month_48=runFixedSchedule(jointModelData$testData$testDs.id, seq(4, 10, 4))
+  #month_12=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(1, 10, 1))
+  month_18=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(1.5, 10, 1.5))
+  month_24=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(2, 10, 2))
+  month_24s=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, c(1, 10, 2))
+  #month_30=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(2.5, 10, 2.5))
+  month_36=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(3, 10, 3))
+  #month_42=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(3.5, 10, 3.5))
+  month_48=runFixedSchedule(jointModelData$testData$testDs.id$progression_time, seq(4, 10, 4))
   
   res = jointModelData$testData$scheduleResults
   res$nb[res$methodName=="Biennial"] = month_24[,1]
@@ -74,6 +71,7 @@ simResults_n500_method_all = foreach(i=1:50, .combine="rbind") %do%{
 
 scheduleResCombined = simResults_n500_method_all
 scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "Risk (10%)", "Risk (5%)", "Risk (F1) Real", "PRIAS"),]
+scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "18 Months", "Biennial", "Triennial", "PRIAS", "Risk (5%)", "Risk (10%)", "Risk (15%)", "Risk (F1) Real"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
@@ -95,6 +93,22 @@ getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribut
   resDf$methodName = levels(scheduleResCombined$methodName)
   return(resDf)
 }
+
+temp = getBoxplotStatsDf(0,10, "nb")[,c(6,2,3,4)]
+temp = cbind(temp, round(getBoxplotStatsDf(0, 9.999999, "offset")[, 2:4], 1))
+write.csv(temp, file="all.csv", row.names = F)
+
+temp = getBoxplotStatsDf(0,3.5, "nb")[,c(6,2,3,4)]
+temp = cbind(temp, round(getBoxplotStatsDf(0, 3.5, "offset")[, 2:4], 1))
+write.csv(temp, file="fast.csv", row.names = F)
+
+temp = getBoxplotStatsDf(3.50001,9.999999, "nb")[,c(6,2,3,4)]
+temp = cbind(temp, round(getBoxplotStatsDf(3.50001,9.999999, "offset")[, 2:4], 1))
+write.csv(temp, file="intermediate.csv", row.names = F)
+
+temp = getBoxplotStatsDf(10,10, "nb")[,c(6,2,3,4)]
+temp = cbind(temp, round(getBoxplotStatsDf(10,10, "offset")[, 2:4], 1))
+write.csv(temp, file="slow.csv", row.names = F)
 
 MEDIAN_WIDTH_BOXPLOT = 2
 

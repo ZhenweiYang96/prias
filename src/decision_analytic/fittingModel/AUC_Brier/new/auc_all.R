@@ -3,7 +3,7 @@ source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/auc_mod_prias.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/prederr_mod_prias.R")
 
-maxCores = 6
+maxCores = 4
 
 fileNames = list.files("Rdata/decision_analytic/AUC_Brier/all/", full.names = T)
 

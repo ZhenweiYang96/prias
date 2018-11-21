@@ -3,7 +3,7 @@ source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/auc_mod_prias.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/prederr_mod_prias.R")
 
-maxCores = 6
+maxCores = 4
 
 #Step 1: AUC and Prederr on Real prias data with real prias fitted model object
 auc_0_1 = aucJM.mvJMbayes_mod(mvJoint_dre_psa_dre_value, newdata = prias_long, 
