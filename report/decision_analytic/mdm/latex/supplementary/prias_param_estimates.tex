@@ -25,7 +25,7 @@ $b_{4p}$ & -0.019 & 0.219  & 0.014  & 0.088 & 0.238 & 0.312 & \cellcolor{black}\
 \end{center}
 \end{table}
 
-For the DRE mixed effects sub-model (see Equation \ref{eq:long_model_dre}) parameter estimates, in Table~\ref{tab:DRE_long} we can see that the age of the patient trivially affects the baseline log odds of obtaining a DRE score larger than T1c. In Figure~\ref{fig:fitted_marginal_dre} we present the marginal evolution of log odds of obtaining a DRE larger than T1c, and the corresponding marginal probability, over a period of 10 years for a hypothetical AS patient who is included in AS at the age of 70 years. In addition, we present plots of observed DRE versus fitted probabilities of obtaining a DRE score larger than T1c, for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_dre}.
+For the DRE mixed effects sub-model (see Equation \ref{eq:long_model_dre}) parameter estimates, in Table~\ref{tab:DRE_long} we can see that the age of the patient trivially affects the baseline log odds of obtaining a DRE measurement larger than T1c. In Figure~\ref{fig:fitted_marginal_dre} we present the marginal evolution of log odds of obtaining a DRE larger than T1c, and the corresponding marginal probability, over a period of 10 years for a hypothetical AS patient who is included in AS at the age of 70 years. In addition, we present plots of observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_dre}.
 
 \begin{table}[!htb]
 \begin{center}
@@ -52,13 +52,13 @@ visitTimeYears                   & -0.604   & 0.095 & -0.794 & -0.437 & \textles
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/fitted_9subject_dre.eps}}
-\caption{Observed DRE versus fitted probabilities of obtaining a DRE score larger than T1c, for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed DRE scores, PSA levels, and time of the latest biopsy. Observed DRE scores plotted against 0\% probability are equal to T1c. Observed DRE scores plotted against 100\% probability are larger than T1c.}
+\caption{Observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed DRE measurements, PSA measurements, and time of the latest biopsy. Observed DRE measurements plotted against 0\% probability are equal to T1c. Observed DRE measurements plotted against 100\% probability are larger than T1c.}
 \label{fig:fitted_9subject_dre}
 \end{figure}
 
 \clearpage
 
-For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:long_model_psa}), in Table~\ref{tab:PSA_long} we can see that the age of the patient trivially affects the baseline ${\log_2(\mbox{PSA} + 1)}$ level. Since the longitudinal evolution of ${\log_2 (\mbox{PSA} + 1)}$ levels is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Figure~\ref{fig:fitted_marginal_psa} we present the fitted marginal evolution of ${\log_2 (\mbox{PSA} + 1)}$ over a period of 10 years for a hypothetical patient who is included in AS at the age of 70 years. In addition, we present plots of observed versus fitted PSA profiles for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_psa}. 
+For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:long_model_psa}), in Table~\ref{tab:PSA_long} we can see that the age of the patient trivially affects the baseline ${\log_2(\mbox{PSA} + 1)}$ measurement. Since the longitudinal evolution of ${\log_2 (\mbox{PSA} + 1)}$ measurements is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Figure~\ref{fig:fitted_marginal_psa} we present the fitted marginal evolution of ${\log_2 (\mbox{PSA} + 1)}$ over a period of 10 years for a hypothetical patient who is included in AS at the age of 70 years. In addition, we present plots of observed versus fitted PSA profiles for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_psa}. 
 
 \begin{table}[!htb]
 \begin{center}
@@ -83,13 +83,13 @@ $\sigma$ & 0.137 & 0.001 & 0.135  & 0.138  & \\
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=0.7\columnwidth]{images/marginal_psa.eps}}
-\caption{Fitted marginal evolution of $\log_2 (\mbox{PSA} + 1)$ levels over a period of 10 years with 95\% credible interval, for a hypothetical patient who is included in AS at the age of 70 years.}
+\caption{Fitted marginal evolution of $\log_2 (\mbox{PSA} + 1)$ measurements over a period of 10 years with 95\% credible interval, for a hypothetical patient who is included in AS at the age of 70 years.}
 \label{fig:fitted_marginal_psa}
 \end{figure}
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/fitted_9subject_psa.eps}}
-\caption{Fitted versus observed ${\log_2 (\mbox{PSA} + 1)}$ profiles for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed PSA levels, DRE scores, and time of the latest biopsy.}
+\caption{Fitted versus observed ${\log_2 (\mbox{PSA} + 1)}$ profiles for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed PSA measurements, DRE measurements, and time of the latest biopsy.}
 \label{fig:fitted_9subject_psa}
 \end{figure}
 

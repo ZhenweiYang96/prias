@@ -19,7 +19,7 @@ timePoints = as.numeric(survIntervals)[1:69]
 survProbs = c(1,as.numeric(rep(survProb, each=2)))[1:69]
 
 FONT_SIZE=11
-npmle_plot = ggplot() + geom_line(aes(x=timePoints, y=survProbs)) +  
+npmle_plot = ggplot() + geom_line(aes(x=timePoints, y=1-survProbs)) +  
   coord_cartesian(xlim=c(0,10)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
@@ -27,7 +27,7 @@ npmle_plot = ggplot() + geom_line(aes(x=timePoints, y=survProbs)) +
         plot.margin = margin(0, 0, 0, 0, "pt")) + 
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                     limits = c(0,1)) + 
-  ylab("Survival probability (cancer progression) %") +
+  ylab("Cumulative risk of cancer progression (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/decision_analytic/mdm/latex/images/npmle_plot.eps",

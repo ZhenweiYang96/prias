@@ -1,13 +1,15 @@
 % !TEX root =  ../main_manuscript.tex 
 
 \begin{abstract}
-\textbf{Background.} Low-risk prostate cancer patients enrolled in active surveillance (AS) programs commonly undergo biopsies for examination of cancer progression. Biopsies are conducted as per a fixed and frequent schedule (e.g. annual biopsies), common for all patients. Such schedules may schedule unnecessary biopsies. Since biopsies are burdensome, patients do not always comply with the schedule, which increases the risk of delayed detection of cancer progression.
+\textbf{Background.} Low-risk prostate cancer patients enrolled in active surveillance (AS) programs commonly undergo biopsies for examination of cancer progression. Biopsies are conducted as per a fixed and frequent schedule (e.g. annual biopsies), same for all patients. Since biopsies are burdensome, patients do not always comply with the schedule, which increases the risk of delayed detection of cancer progression.
 
-\textbf{Objective.} Motivated by the world's largest AS program, Prostate Cancer Research International Active Surveillance (PRIAS), our aim is to better balance the number of biopsies (burden) and the delay in detection of cancer progression (benefit). We intend to achieve this by personalizing the decision of conducting biopsies.
+\textbf{Objective.} Our aim is to better balance the number of biopsies (burden) and the delay in detection of cancer progression (less is beneficial), by personalizing the decision of conducting biopsies.
 
-\textbf{Methods.} Using joint models for time-to-event and longitudinal data, we jointly model the observed prostate-specific antigen levels, digital rectal examination scores, and the latest biopsy results of a patient at each follow-up visit. This results in a follow-up visit-specific and patient-specific, cumulative risk of cancer progression. When this risk at a visit is above a certain threshold, we schedule a biopsy at that visit. We compare this personalized approach with the currently practiced biopsy schedules via an extensive and realistic simulation study, based on a replica of the patients from the PRIAS program.
+\textbf{Data Sources.} We use patient data of the world's largest AS program called PRIAS. It has 5270 patients, 866 cancer progressions, and an average of 9 prostate-specific antigen (PSA) and 5 digital rectal examination (DRE) measurements per patient.
 
-\textbf{Results.} In comparison to the currently practiced schedules, the personalized approach saves one to seven burdensome biopsies per patient, depending upon the time of cancer progression of the patient. Despite this reduction in the number of biopsies, the delay in the detection of cancer progression for the personalized approach remains comparable with that of the biopsy schedule of the PRIAS program.
+\textbf{Methods.} Using joint models for time-to-event and longitudinal data, we jointly model the historical DRE and PSA measurements, and biopsy results of a patient at each follow-up visit. This results in a visit and patient-specific, cumulative risk of cancer progression. If this risk is above a certain threshold, we schedule a biopsy. We compare this personalized approach with the currently practiced biopsy schedules via an extensive and realistic simulation study, based on a replica of the patients from the PRIAS program.
+
+\textbf{Results.} Compared to the currently practiced schedules, the personalized approach saves one to seven biopsies per patient, depending upon their time of cancer progression. However, the corresponding delay in the detection of cancer progression due to the personalized approach remains comparable with that of the biopsy schedule of the PRIAS program.
 
 \textbf{Conclusions.} We conclude that the personalized schedules better balance the number of biopsies per detected cancer progression.
 \end{abstract}

@@ -1,6 +1,6 @@
-predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id", 
-                           last.time = NULL, M = 200L, scale = 1.6, log = FALSE, 
-                           CI.levels = c(0.025, 0.975), seed = 1L, ...) {
+survfit_temp <- function (object, newdata, survTimes = NULL, idVar = "id", 
+                          last.time = NULL, M = 200L, scale = 1.6, log = FALSE, 
+                          CI.levels = c(0.025, 0.975), seed = 2019, ...) {
   if (!inherits(object, "mvJMbayes"))
     stop("Use only with 'mvJMbayes' objects.\n")
   if (!is.data.frame(newdata) || nrow(newdata) == 0L)
@@ -296,10 +296,15 @@ predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id",
       Data$gammas <- numeric(0)
     ff <- function (b, Data) -log_post_RE_svft(b, Data = Data)
     gg <- function (b, Data) cd(b, ff, Data = Data, eps = 1e-03)
+    
+    t_start = Sys.time()
     start <- rep(0, ncol(D[[1]]))
     opt <- optim(start, ff, gg, Data = Data, method = "BFGS", hessian = TRUE, 
                  control = list(maxit = 200, parscale = rep(0.1, ncol(D[[1]]))))
+    t_end = Sys.time()
+    
     modes.b[i, ] <- opt$par
+    
     invVars.b[[i]] <- opt$hessian / scale
     Vars.b[[i]] <- scale * solve(opt$hessian)
   }
@@ -333,12 +338,8 @@ predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id",
   dmvt.proposed <- mapply(dmvt, x = proposed.b, mu = split(modes.b, row(modes.b)), 
                           Sigma = Vars.b, MoreArgs = list(df = 4, log = TRUE), 
                           SIMPLIFY = FALSE)
-  b_post = vector("list", n.NewL)
-  beta_post = vector("list", n.NewL)
-  
+  SS <- vector("list", n.NewL)
   for (i in 1:n.NewL) {
-    b_post[[i]] = matrix(NA, nrow = M, ncol=ncol(proposed.b[[i]]))
-    beta_post[[i]] = vector("list", M)
     for (m in 1:M) {
       betas.new <- lapply(mcmc[grep("betas", names(mcmc))], function (x) x[m, ])
       XXsbetas.new <- Xbetas_calc(survMats.last[[i]][["XXs"]], betas.new, indFixed, outcome)
@@ -376,59 +377,91 @@ predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id",
       if (!is.na(ind) && ind) {
         b.new[i, ] <- p.b
       }
-      
+      logS.pred <- numeric(length(times.to.pred_upper[[i]]))
+      for (l in seq_along(logS.pred)) {
+        XXsbetas.newl <- Xbetas_calc(survMats[[i]][[l]][["XXs"]], betas.new, indFixed, outcome)
+        Datal <- list("idGK" = which(survMats[[i]][[l]][["idGK_fast"]]) - 1, "idTs" = survMats[[i]][[l]][["idTs"]], 
+                      "Us" = survMats[[i]][[l]][["Us"]], "RE_inds2" = survMats[[i]][[l]][["RE_inds2"]], 
+                      "W1s" = survMats[[i]][[l]][["W1s"]], "W2s" = survMats[[i]][[l]][["W2s"]], 
+                      "XXsbetas" = XXsbetas.newl, "ZZs" = survMats[[i]][[l]][["ZZs"]], 
+                      "col_inds" = survMats[[i]][[l]][["col_inds"]], 
+                      "row_inds_Us" = survMats[[i]][[l]][["row_inds_Us"]], 
+                      "Bs_gammas" = Bs_gammas.new, 
+                      "gammas" = gammas.new, "alphas" = alphas.new, 
+                      "Pw" = survMats[[i]][[l]][["Pw"]], "trans_Funs" = trans_Funs, 
+                      "wk" = wk)
+        if (is.null(Datal$gammas))
+          Datal$gammas <- numeric(0)
+        logS.pred[l] <- survPred_svft_2(b.new[i, ], Data = Datal)
+      }
+      SS[[i]] <- if (log) logS.pred else exp(cumsum(logS.pred))
       b.old <- b.new
-      b_post[[i]][m,] = b.new
-      beta_post[[i]][[m]] = betas.new
+      out[[m]][[i]] <- SS[[i]]
     }
   }
-  
-  Age = newdata$Age[1]
-  
-  generateTruePSAProfile = function(visitTimeYears, betas_psa, randomEff_psa){
-    fixedPSAFormula = ~ 1 +I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-    randomPSAFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-    
-    df = data.frame(Age, visitTimeYears)
-    model.matrix(fixedPSAFormula, df) %*% betas_psa + model.matrix(randomPSAFormula, df) %*% as.numeric(randomEff_psa)
+  res <- vector("list", n.NewL)
+  for (i in seq_len(n.NewL)) {
+    rr <- sapply(out, "[[", i)
+    if (!is.matrix(rr)) {
+      rr <- rbind(rr)
+    }
+    res[[i]] <- cbind(
+      times = times.to.pred_upper[[i]], 
+      "Mean" = rowMeans(rr, na.rm = TRUE), 
+      "Median" = apply(rr, 1L, median, na.rm = TRUE), 
+      "Lower" = apply(rr, 1L, quantile, probs = CI.levels[1], na.rm = TRUE),
+      "Upper" = apply(rr, 1L, quantile, probs = CI.levels[2], na.rm = TRUE)
+    )
+    rownames(res[[i]]) <- as.character(seq_len(NROW(res[[i]])))
   }
-  
-  generateTruePSASlope = function(visitTimeYears, betas_psa, randomEff_psa_slope){
-    betas_psa_time = betas_psa[4:7]
-    
-    fixedPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-    randomPSASlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
-    
-    df = data.frame(visitTimeYears)
-    model.matrix(fixedPSASlopeFormula, df) %*% betas_psa_time + model.matrix(randomPSASlopeFormula, df) %*% as.numeric(randomEff_psa_slope)
+  y. <- lapply(y, split, id)
+  y <- vector("list", n.NewL)
+  for (i in seq_len(n.NewL)) {
+    y[[i]] <- lapply(y., "[[", i)
   }
-  
-  generateTrueDRELogOdds = function(visitTimeYears, betas_dre, randomEff_dre){
-    fixedDREFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + visitTimeYears
-    randomDREFormula = ~ 1 + visitTimeYears
-    
-    df = data.frame(Age, visitTimeYears)
-    
-    model.matrix(fixedDREFormula, df) %*% betas_dre + model.matrix(randomDREFormula, df) %*% as.numeric(randomEff_dre)
+  newdata. <- do.call(rbind, mapply(function (d, t) {
+    if (d[[timeVar]][nrow(d)] < t) {
+      d. <- rbind(d, d[nrow(d), ])
+      d.[[timeVar]][nrow(d.)] <- t
+      d.
+    } else d
+  }, split(newdata, id.), last.time, SIMPLIFY = FALSE))
+  id. <- newdata.[[idVar]]
+  id. <- match(id., unique(id.))
+  mfX. <- lapply(TermsL[grep("TermsX", names(TermsL))], 
+                 FUN = function (x) model.frame.default(delete.response(x), data = newdata.))
+  mfZ. <- lapply(TermsL[grep("TermsZ", names(TermsL))], 
+                 FUN = function (x) model.frame.default(x, data = newdata.))
+  X. <- mapply(FUN = function (x, y) model.matrix.default(x, y), 
+               formulasL2[grep("TermsX", names(formulasL2))], mfX., SIMPLIFY = FALSE)
+  Z. <- mapply(FUN = function (x, y) model.matrix.default(x, y), 
+               formulasL2[grep("TermsZ", names(formulasL2))], mfZ., SIMPLIFY = FALSE)
+  fitted.y <- vector("list", length(X.))
+  for (i in seq_len(n.NewL)) {
+    fits <- vector("list", length(X.))
+    for (j in seq_along(X.)) {
+      id_i <- id. == i
+      fits[[j]] <- c(X.[[j]][id_i, , drop = FALSE] %*% betas[[j]]) + 
+        rowSums(Z.[[j]][id_i, , drop = FALSE] * modes.b[rep(i, sum(id_i)), RE_inds[[j]], drop = FALSE])
+    }
+    fitted.y[[i]] <- fits
   }
+  fitted.y <- fitted.y[!sapply(fitted.y, is.null)]
+  fitted.times <- split(newdata.[[timeVar]], factor(newdata.[[idVar]]))
+  names(res) <- names(last.time) <- names(obs.times) <- names(fitted.times) <- names(y) <- names(fitted.y) <- levels(idNewL)
+  y[] <- lapply(y, function (x, nam) {names(x) <- nam; x}, nam = respVars)
+  fitted.y[] <- lapply(fitted.y, function (x, nam) {names(x) <- nam; x}, nam = respVars)
+  names(families) <- respVars
+  res <- list(summaries = res, full.results = out, survTimes = survTimes, last.time = last.time, 
+              obs.times = obs.times, y = y, M = M, families = families, respVars = respVars,
+              fitted.times = fitted.times, 
+              fitted.y = fitted.y, ry = lapply(componentsL[grep("y", names(componentsL))], FUN = range, na.rm = TRUE), 
+              nameYs = unname(lapply(formulasL[grep("TermsX", names(formulasL))], FUN = function(x) paste(x)[2L])))
+  rm(list = ".Random.seed", envir = globalenv())
+  class(res) <- "survfit.mvJMbayes"
+  res
   
-  trueDRELogOdds = sapply(1:M, FUN = function(m){
-    generateTrueDRELogOdds(survTimes, beta_post[[1]][[m]]$betas1, b_post[[1]][m, 1:2])
-  })
-  rownames(trueDRELogOdds) = survTimes
-  
-  trueLog2psaplus1 = sapply(1:M, FUN = function(m){
-    generateTruePSAProfile(survTimes, beta_post[[1]][[m]]$betas2, b_post[[1]][m, 3:7])
-  })
-  rownames(trueLog2psaplus1) = survTimes
-  
-  trueLog2psaplus1_velocity = sapply(1:M, FUN = function(m){
-    generateTruePSASlope(survTimes, beta_post[[1]][[m]]$betas2, b_post[[1]][m, 4:7])
-  })
-  rownames(trueLog2psaplus1_velocity) = survTimes
-  
-  return(list(visitTimeYears = survTimes, trueDRELogOdds=trueDRELogOdds, trueLog2psaplus1=trueLog2psaplus1,
-         trueLog2psaplus1_velocity=trueLog2psaplus1_velocity, b_post=b_post, beta_post=beta_post))
+  return(opt$par)
 }
 
-environment(predictPSADRE) <- asNamespace('JMbayes')
+environment(survfit_temp) <- asNamespace('JMbayes')

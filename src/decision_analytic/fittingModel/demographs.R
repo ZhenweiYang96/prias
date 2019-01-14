@@ -124,7 +124,7 @@ plotDynamicRiskProbProfile = function(pid, fittedJointModel, maxVisitTime,
 plotDynamicRiskProbNow = function(pid, fittedJointModel, maxVisitTime, 
                                   maxPredictionTime=NA, lastBiopsyTime=NA, 
                                   meanRiskProb = NA,
-                                  threshold=0.15,
+                                  threshold=0.10,
                                   FONT_SIZE=12, POINT_SIZE = 2, DRE_PSA_Y_GAP=0.1,
                                   LABEL_SIZE = 1, specialXticks = NA, xUpperlim = NA){
   dataset = fittedJointModel$model_info$mvglmer_components$data
@@ -447,8 +447,42 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
                        labels = round(psaVelocityPlotYbreaks,1))
   
   ggpubr::ggarrange(drePlot, psaPlot, psaVelocityPlot, hazardPlot, labels = "AUTO", 
-                    hjust = -10, common.legend = T, legend = "bottom", 
+                    hjust = -10, common.legend = T, legend = "bottom", heights = c(1,1,1,1.20),
                     nrow=4,ncol=1, align = "v")
+}
+
+threshold_choice_plot = function(f1threshold="7.5%",lastBiopsyTime=1, currentVisitTime=2,
+                                 intermediateXMarker = 3,
+                                 maxTime=4, FONT_SIZE=12){
+  
+  yfixed = 3
+  yf1 = 2
+  
+  ggplot() + geom_ribbon(aes(x=c(lastBiopsyTime, maxTime),ymin=-Inf, ymax=Inf, 
+                             fill="Region with risk of cancer progression"), alpha=0.2) +
+    geom_vline(xintercept = lastBiopsyTime) + 
+    geom_vline(xintercept = currentVisitTime, linetype="twodash") +
+    geom_segment(aes(x=-Inf, xend=currentVisitTime, y=0.5*(yf1+yfixed), yend=0.5*(yf1+yfixed)))+
+    geom_segment(aes(x=lastBiopsyTime, xend=currentVisitTime, y=0.25, yend=0.25), 
+                 arrow = arrow(length = unit(0.2, "cm"), ends="both", type="closed")) +
+    geom_label(aes(x=currentVisitTime, y=yfixed, label="Fixed\nthreshold = 10%"),color='red3') + 
+    geom_label(aes(x=currentVisitTime, y=yf1, 
+                   label=paste0("Dynamic\nthreshold = ", f1threshold)), color='red3') + 
+    geom_text(aes(x=0.5*(currentVisitTime+lastBiopsyTime),y=3, 
+                  label="Common threshold\n at all visits.")) + 
+    geom_text(aes(x=0.5*(currentVisitTime+lastBiopsyTime),y=1, 
+                  label="Threshold is chosen\nfor a combination of\nlatest biopsy time 't' and\ntime gap since last biopsy 's-t',\nby maximizing\n F1 score."))+
+    scale_fill_manual(name="", values="red2")+
+    scale_x_continuous(breaks=c(0,lastBiopsyTime,currentVisitTime,intermediateXMarker, maxTime), 
+                       labels=c("0", paste0("t=", lastBiopsyTime, "\n(Latest\nBiopsy)"), 
+                                paste0("s=",currentVisitTime, "\n(Current\nvisit)"), 
+                                paste(intermediateXMarker), "\u221E"), limits = c(0,maxTime)) + 
+    scale_y_continuous(breaks=c(yf1,yfixed), 
+                       labels=c("Threshold based \non F1 score", 
+                                "Fixed threshold\non all visits"),limits = c(0,yfixed+0.25)) + 
+    theme_bw() + theme(text = element_text(size=FONT_SIZE), 
+                       axis.line = element_line(), legend.position = "bottom")+
+    xlab("Follow-up time (years)") + ylab("Choice of risk threshold") 
 }
 
 obsDataPlot = plotObservedData(2340, mvJoint_dre_psa_dre_value, 4, FONT_SIZE = 11, 
@@ -461,15 +495,15 @@ ggsave(filename = "report/decision_analytic/mdm/latex/images/obsDataPlot_2340.ep
 # #        plot=dynRiskPlot, device=cairo_ps, height=4.5, width=6.1, dpi = 500)
 # # 
 dynRiskPlot1 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 4, lastBiopsyTime = 2.56, 
-                                      meanRiskProb = 0.102, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, 
+                                      meanRiskProb = 0.078, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, 
                                       xUpperlim = 6.5, POINT_SIZE = 3)
 dynRiskPlot1 = dynRiskPlot1 + ggtitle("Biopsy not recommended for patient j at year 4") + 
-   theme(plot.title = element_text(hjust = 0.5, color = "forestgreen"))
+   theme(plot.title = element_text(color = "forestgreen"))
 #plot.margin = margin(t=5,b=30))
-dynRiskPlot2 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 8, lastBiopsyTime = 2.56, meanRiskProb = 0.178, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, specialXticks = 4,
+dynRiskPlot2 = plotDynamicRiskProbNow(2340, mvJoint_dre_psa_dre_value, 8, lastBiopsyTime = 2.56, meanRiskProb = 0.135, FONT_SIZE = 11, DRE_PSA_Y_GAP = 0.25, LABEL_SIZE = 3, specialXticks = 4,
                                       xUpperlim = 6.5, POINT_SIZE = 3) 
 dynRiskPlot2 = dynRiskPlot2  + ggtitle("Biopsy recommended for patient j at year 5.3") + 
- theme(plot.title = element_text(hjust = 0.5, color="red3"), legend.position = "none")
+ theme(plot.title = element_text(color="red3"), legend.position = "none")
 ggsave(ggpubr::ggarrange(dynRiskPlot1, dynRiskPlot2,
                         ncol = 1, nrow=2, labels = "AUTO", align = "v", heights = c(1.15,1)), filename = "report/decision_analytic/mdm/latex/images/dynRiskPlot_2340.eps", 
         width=7, height=9, device = cairo_ps, dpi=500)
@@ -479,3 +513,13 @@ jmExplanationPlot = plotJMExplanationPlot_Stacked(113, mvJoint_dre_psa_dre_value
                                                    POINT_SIZE = 3, FONT_SIZE = 12)
 ggsave(filename = "report/decision_analytic/mdm/latex/images/jmExplanationPlot_1757.eps",
         plot=jmExplanationPlot, device=cairo_ps, height=8.5, width=7, dpi = 500)
+
+###Threshold choice plot
+threshold_choice_plot1 = threshold_choice_plot(f1threshold = "8.7%", currentVisitTime = 3, intermediateXMarker = 3.5, maxTime = 4) + 
+  ggtitle("Latest biopsy time t=1 year, and current visit time s=3 years")
+threshold_choice_plot2 = threshold_choice_plot(f1threshold = "5.9%",currentVisitTime = 3.5, intermediateXMarker = NA, maxTime = 4) + 
+  ggtitle("Latest biopsy time t=1 year, and current visit time s=3.5 years") + theme(legend.position = "none")
+ggsave(ggpubr::ggarrange(threshold_choice_plot1, threshold_choice_plot2,
+                         ncol = 1, nrow=2, labels = "AUTO", align = "v", heights = c(1.15,1)),
+       filename = "report/decision_analytic/mdm/latex/images/threshold_choice_plot.eps", 
+       width=7, height=9, device = cairo_ps, dpi=500)
