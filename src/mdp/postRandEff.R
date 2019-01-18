@@ -288,5 +288,5 @@ predictLongitudinalOutcome = function(object, patient_data, timeLowerLimit, time
                mcmc_betas_dre[posterior_theta_mcmc_indices[m],], posterior_b[m,1:2])
   })
   
-  return(list(predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope, predicted_dreLogOdds=predicted_dreLogOdds))
+  return(list(predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope, predicted_dre_log_odds=predicted_dreLogOdds))
 }
