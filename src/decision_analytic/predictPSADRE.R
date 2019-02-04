@@ -303,7 +303,6 @@ predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id",
     invVars.b[[i]] <- opt$hessian / scale
     Vars.b[[i]] <- scale * solve(opt$hessian)
   }
-  set.seed(seed)
   out <- vector("list", M)
   success.rate <- matrix(FALSE, M, n.NewL)
   b.old <- b.new <- modes.b
@@ -372,14 +371,16 @@ predictPSADRE <- function (object, newdata, survTimes = NULL, idVar = "id",
         Data$gammas <- numeric(0)
       a <- min(exp(log_post_RE_svft(p.b, Data = Data) + dmvt.old - 
                      log_post_RE_svft(b.old[i, ], Data = Data) - dmvt.prop), 1)
+      
       ind <- runif(1) <= a
-      if (!is.na(ind) && ind) {
+      if (!is.nan(ind) && ind) {
         b.new[i, ] <- p.b
       }
       
       b.old <- b.new
       b_post[[i]][m,] = b.new
       beta_post[[i]][[m]] = betas.new
+      
     }
   }
   

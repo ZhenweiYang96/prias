@@ -95,7 +95,7 @@ $\sigma$ & 0.137 & 0.001 & 0.135  & 0.138  & \\
 
 \clearpage
 
-For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in Table~\ref{tab:DRE_PSA_survival} show that both ${\log_2 \{\mbox{PSA} + 1\}}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of cancer progression.  
+For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in Table~\ref{tab:DRE_PSA_survival} show that both ${\log_2 (\mbox{PSA} + 1)}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of cancer progression.  
 
 \begin{table}[!htb]
 \begin{center}
@@ -115,7 +115,7 @@ Fitted $\log_2 (\mbox{PSA} + 1)$ velocity             & 3.396    & 0.564 & 2.376
 \end{center}
 \end{table}
 
-It is important to note that since age, ${\log_2 \{\mbox{PSA} + 1\}}$ value and velocity, and log odds of ${\mbox{DRE} > \mbox{T1c}}$ are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:DRE_PSA_survival_easy}, we present the hazard (of cancer progression) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in log odds of DRE > T1c, from -6.650 to -4.356 (fitted first and third quartiles) corresponds to a hazard ratio of 1.402. The interpretation for the rest is similar.
+It is important to note that since age, ${\log_2 (\mbox{PSA} + 1)}$ value and velocity, and log odds of ${\mbox{DRE} > \mbox{T1c}}$ are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:DRE_PSA_survival_easy}, we present the hazard (of cancer progression) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in log odds of DRE > T1c, from -6.650 to -4.356 (fitted first and third quartiles) corresponds to a hazard ratio of 1.402. The interpretation for the rest is similar.
 
 \begin{table}[!htb]
 \begin{center}
@@ -150,7 +150,7 @@ With regards to the choice of the distribution for the error term $\varepsilon_p
 
 \clearpage
 \subsection{Predictive Performance of the Joint Model Fitted to the PRIAS dataset}
-We evaluate the predictive performance of our model using two measures: the area under the receiver operating characteristic curve (AUC), and the prediction error. Given the longitudinal nature of the data at hand, in a joint model time dependent AUC and prediction errors are more relevant. More specifically, given the time of latest biopsy $t$, and history of DRE and PSA measurements up to time $s$, we are interested in a medically relevant time frame $(t, s]$, within which the occurrence of cancer progression is of interest. In the case of prostate cancer, at any point in time it is of interest to identify patients who may have obtained cancer progression in the last one year ($s-t = 1$). Using data of the patients from the PRIAS study, we calculate the AUC and prediction error (see \citet{landmarking2017} for estimation) at the following $s$: year one, year two, year three, year four, and year five (95-percentile of observed cancer progression times) of follow-up in AS. The resulting AUC, and prediction are presented in Table \ref{tab:AUC_PE}.
+We evaluate the predictive performance of our model using two measures: the area under the receiver operating characteristic curve (AUC), and the prediction error. Given the longitudinal nature of the data at hand, in a joint model time dependent AUC and prediction errors are more relevant. More specifically, given the time of latest biopsy $t$, and history of DRE and PSA measurements up to time $s$, we are interested in a medically relevant time frame $(t, s]$, within which the occurrence of cancer progression is of interest. In the case of prostate cancer, at any point in time it is of interest to identify patients who may have obtained cancer progression in the last one year ($s-t = 1$). Using data of the patients from the PRIAS study, we calculate the AUC and prediction error (see \citet{landmarking2017} for estimation) at the following time points ($s$): year one, year two, year three, year four, and year five (95-percentile of observed cancer progression times) of follow-up in AS. The resulting AUC, and prediction error are presented in Table \ref{tab:AUC_PE}.
 
 \begin{table}[!htb]
 \begin{center}

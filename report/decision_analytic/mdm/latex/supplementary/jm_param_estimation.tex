@@ -2,19 +2,48 @@
 \section{A Bivariate Joint Model for the Longitudinal PSA, and DRE Measurements, and Time to Cancer Progression}
 \label{sec:jm_framework}
 
-In this appendix section, we first provide an introduction to the world's largest active surveillance (AS) program called Prostate Cancer Research International Active Surveillance, abbreviated as PRIAS \citep{bokhorst2016decade}, that we use to develop our methodology. We then present an introduction to the joint models for time-to-event and longitudinal data \citep{tsiatis2004joint,rizopoulos2012joint}, that we fit to the PRIAS dataset. Lastly, we present the parameter estimation for our model using the Bayesian approach. 
+In this appendix section, we first provide an introduction to the world's largest active surveillance (AS) program called Prostate Cancer Research International Active Surveillance, abbreviated as PRIAS \citep{bokhorst2016decade}, that we use to develop our methodology. We then present an introduction to the joint models for time-to-event and bivariate longitudinal data \citep{tsiatis2004joint,rizopoulos2012joint}, that we fit to the PRIAS dataset. Lastly, we present the parameter estimation for our model using the Bayesian approach. 
 
 \subsection{PRIAS Dataset}
-To develop our methodology we use the data of prostate cancer patients from the world's largest AS study called PRIAS \cite{bokhorst2016decade}. More than 100 medical centers from 17 countries worldwide contribute to the collection of data, utilizing a common study protocol and a web-based tool, both available at \url{www.prias-project.org}. We use data collected over a period of ten years, between December 2006 (beginning of PRIAS study) and December 2016. It consists of 5270 patients. The primary event of interest in this work is cancer progression detected upon a positive biopsy. It is observed in 866 patients, although the time of cancer progression is interval censored because biopsies are scheduled periodically. Biopsies are scheduled at the  following fixed follow-up times (measured since inclusion in AS): year 1, 4, 7, and 10, and every 5 years thereafter. An annual schedule of biopsies is prescribed to those patients who have a PSA doubling time between 0 and 10 years. The PSA doubling time at any point during follow-up is measured as the inverse of the slope of the regression line through the base two logarithm of the observed PSA values. There are three types of competing events, namely death of 63 patients, of which 61 died from non prostate cancer related reasons; removal of 464 patients from AS on the basis of their observed DRE and PSA measurements; and loss to follow-up of 685 patients because of patient anxiety or unknown reasons. In this work, we assume these three types of events to be censoring (see \ref{subsec:ascertainment_bias} for details). However, our model allows removal of patients to depend on observed longitudinal data and baseline covariates of the patient. Under the aforementioned assumption of censoring, Figure~\ref{fig:npmle_plot} shows the cumulative risk of cancer progression over the study follow-up period. Prostate cancer is a slowly progressing disease, which is evident by the large proportion of patients not having a cancer progression by the end of the ten year follow-up period.
+To develop our methodology we use the data of prostate cancer patients (see~Table~\ref{table:prias_summary}) from the world's largest AS study called PRIAS \citep{bokhorst2016decade}. More than 100 medical centers from 17 countries worldwide contribute to the collection of data, utilizing a common study protocol and a web-based tool, both available at \url{www.prias-project.org}. We use data collected over a period of ten years, between December 2006 (beginning of PRIAS study) and December 2016. The primary event of interest is cancer progression detected upon a positive biopsy. Biopsies are scheduled at the following fixed follow-up times (measured since inclusion in AS): year 1, 4, 7, and 10, and every 5 years thereafter. An annual schedule of biopsies is prescribed to those patients who have a PSA (prostate-specific antigen) doubling time between 0 and 10 years. The PSA doubling time at any point during follow-up is measured as the inverse of the slope of the regression line through the base two logarithm of the observed PSA values. The time of cancer progression is interval censored because biopsies are scheduled periodically. There are three types of competing events, namely death, removal of patients from AS on the basis of their observed DRE and PSA measurements, and loss to follow-up. We assume these three types of events to be censored observations (see \ref{subsec:ascertainment_bias} for details). However, our model allows removal of patients to depend on observed longitudinal data and baseline covariates of the patient. Under the aforementioned assumption of censoring, Figure~\ref{fig:npmle_plot} shows the cumulative risk of cancer progression over the study follow-up period.
+
+\begin{table}
+\begin{center}
+\caption{\textbf{Summary statistics for the PRIAS dataset}. The primary event of interest is cancer progression. A DRE measurement equal to T1c \citep{schroder1992tnm} indicates a clinically inapparent tumor which is not palpable or visible by imaging, while tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable. The abbreviation IQR means interquartile range.}
+\label{table:prias_summary}
+\begin{tabular}{lr}
+\Hline
+Data & Value\\
+\hline
+Total patients & 5270\\
+Cancer progression (primary event) & 866\\
+Loss to follow-up (anxiety or unknown) & 685\\
+Patient removal on the basis of PSA and DRE & 464\\
+Death (unrelated to prostate cancer) & 61\\
+Death (related to prostate cancer) & 2\\
+\hline
+Median Age (years) & 70 (IQR: 65--75)\\
+Total PSA measurements & 46015\\
+Median number of PSA measurements per patient &  7 (IQR: 7--12)\\
+Median PSA value (ng/mL) & 5.6 (IQR: 4.0--7.5)\\
+Total DRE measurements & 25606\\
+Median number of DRE measurements per patient & 4 (IQR: 3--7)\\
+$\mbox{DRE} = \mbox{T1c}$ (\%) & 23538/25606 (92\%) \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 \begin{figure}[!htb]
 \captionsetup{justification=justified}
 \centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
-\caption{\textbf{Estimated cumulative risk of cancer progression in AS} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit{slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep{turnbull1976empirical}, to account for interval censored cancer progression times observed in PRIAS program. Censoring includes death, removal from AS on the basis of observed longitudinal data, and patient dropout.}
+\caption{\textbf{Estimated cumulative risk of cancer progression in AS} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit{slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep{turnbull1976empirical}, to account for interval censored cancer progression times observed in the PRIAS dataset. Censoring includes death, removal from AS on the basis of observed longitudinal data, and patient dropout.}
 \label{fig:npmle_plot}
 \end{figure}
 
-For all patients, PSA measurements (ng/mL) are scheduled every 3 months for the first 2 years and every 6 months thereafter. The DRE measurements (ordinal scale) are scheduled every 6 months. We use the DRE measurements after converting them to a binary scale, namely $\mbox{DRE} > \mbox{T1c}$ and $\mbox{DRE} = \mbox{T1c}$. A DRE measurement equal to T1c \citep{schroder1992tnm} indicates a clinically inapparent tumor which is not palpable or visible by imaging. Tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable. On average 5 DRE and 9 PSA measurements have been recorded per patient. 
+For all patients, PSA measurements (ng/mL) are scheduled every 3 months for the first 2 years and every 6 months thereafter. The DRE measurements are scheduled every 6 months. We use the DRE measurements as $\mbox{DRE} = \mbox{T1c}$ versus $\mbox{DRE} > \mbox{T1c}$. A DRE measurement equal to T1c \citep{schroder1992tnm} indicates a clinically inapparent tumor which is not palpable or visible by imaging, while tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable.
+
+\textbf{Data Accessibility:} The PRIAS database is not openly accessible. However, access to the database on the basis of a by the PRIAS steering committee approved study proposal can be requested via the contact links on the website of the PRIAS program \url{www.prias-project.org}.
 
 \subsection{Model Definition}
 \label{subsec:model_def}
