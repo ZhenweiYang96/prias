@@ -253,10 +253,12 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
   return(list(posterior_b=accepted_b, posterior_theta_mcmc_indices=postMCMC_theta_indices))
 }
 
-predictJointOutcome = function(object, patient_data, 
+#the parameter ignoreErrorTerm is for adding error term to the mean effect to 
+#get a prediction interval
+getExpectedFutureOutcomes = function(object, patient_data, 
                                latest_survival_time=0, earliest_failure_time=Inf, 
                                survival_predict_times=NULL, dre_predict_times=NULL,
-                               psa_predict_times=NULL, psaDist = "normal", 
+                               psa_predict_times=NULL, ignoreErrorTerm=T, psaDist = "normal", 
                                TdistDf=3, M=200){
   
   post_b_beta = get_b_fullBayes(object, patient_data, 
@@ -268,6 +270,7 @@ predictJointOutcome = function(object, patient_data,
     posterior_b = matrix(post_b_beta$par)
     mcmc_betas_dre = matrix(object$statistics$postMeans$betas1)
     mcmc_betas_psa = matrix(object$statistics$postMeans$betas2)
+    mcmc_sigma_psa = object$statistics$postMeans$sigma2
     
     if(!is.null(survival_predict_times)){
       mcmc_alphas = matrix(object$statistics$postMeans$alphas)
@@ -279,6 +282,7 @@ predictJointOutcome = function(object, patient_data,
     posterior_b = t(post_b_beta$posterior_b)
     mcmc_betas_dre = t(object$mcmc$betas1[post_b_beta$posterior_theta_mcmc_indices,])
     mcmc_betas_psa = t(object$mcmc$betas2[post_b_beta$posterior_theta_mcmc_indices,])
+    mcmc_sigma_psa = object$mcmc$sigma2[post_b_beta$posterior_theta_mcmc_indices,]
     
     if(!is.null(survival_predict_times)){
       mcmc_alphas = t(object$mcmc$alphas[post_b_beta$posterior_theta_mcmc_indices,])
@@ -287,18 +291,22 @@ predictJointOutcome = function(object, patient_data,
     }
   }
   
-  predicted_psa = predicted_psa_slope = predicted_dreLogOdds = predicted_surv_prob = NULL
+  predicted_psa = predicted_psa_slope = predicted_dre_prob = predicted_surv_prob = NULL
   
   if(!is.null(psa_predict_times)){
     predicted_psa = psaXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
     predicted_psa_slope = psaSlopeXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
     
+    if(ignoreErrorTerm==F){
+      predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
+    }
+    
     rownames(predicted_psa) = rownames(predicted_psa_slope) = psa_predict_times
   }
   
   if(!is.null(dre_predict_times)){
-    predicted_dreLogOdds = dreLogOddsXbetaZb(patient_data$Age[1], dre_predict_times, mcmc_betas_dre, posterior_b[1:2,])
-    rownames(predicted_dreLogOdds) = dre_predict_times
+    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$Age[1], dre_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
+    rownames(predicted_dre_prob) = dre_predict_times
   }
   
   if(!is.null(survival_predict_times)){
@@ -363,7 +371,7 @@ predictJointOutcome = function(object, patient_data,
   
   return(list(predicted_surv_prob=predicted_surv_prob,
               predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope, 
-              predicted_dre_log_odds=predicted_dreLogOdds))
+              predicted_dre_prob=predicted_dre_prob))
 }
 environment(get_b_fullBayes) = asNamespace("JMbayes")
-environment(predictJointOutcome) = asNamespace("JMbayes")
+environment(getExpectedFutureOutcomes) = asNamespace("JMbayes")

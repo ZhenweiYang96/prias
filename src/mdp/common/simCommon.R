@@ -2,6 +2,8 @@
 NR_DISCRETIZED_OBS = 100
 MIN_BIOPSY_GAP = 1
 
+N_MCMC_ITER = 200
+
 #Constants
 MAX_FOLLOW_UP_TIME = 10
 #Decision Epochs in years
@@ -24,27 +26,23 @@ DISCOUNT_FACTOR = 1
 DISCOUNT_FACTORS = DISCOUNT_FACTOR^(1:length(PSA_CHECK_UP_TIME))
 names(DISCOUNT_FACTORS) = PSA_CHECK_UP_TIME
 
-source("src/mdp/postRandEff.R")
+source("src/mdp/common/prediction.R")
 
 #########################################
 # We define various functions from here onwards
 #########################################
-getNextDecisionEpoch = function(current_decision_epoch, current_action) {
-  if (current_action == BIOPSY & !is.na(MIN_BIOPSY_GAP)) {
-    return(current_decision_epoch + MIN_BIOPSY_GAP)
-  } else{
-    return(
-      ifelse(
-        current_decision_epoch < 2,
-        yes = current_decision_epoch + 0.25,
-        no = current_decision_epoch + 0.5
-      )
+getNextDecisionEpoch = function(current_decision_epoch) {
+  return(
+    ifelse(
+      current_decision_epoch < 2,
+      yes = current_decision_epoch + 0.25,
+      no = current_decision_epoch + 0.5
     )
-  }
+  )
 }
 
 #This definition leads to 10% risk threshold as MDP
-generateReward = function(action, current_state) {
+generateReward = function(current_state, action) {
   if(current_state==AT){
     return(0)
   }else if(current_state==G7){
@@ -59,7 +57,7 @@ generateReward = function(action, current_state) {
 generateObservation = function(obs_generation_start_time, 
                                obs_generation_end_time, patient_df, 
                                latest_survival_time, earliest_failure_time) {
-
+  
   visitTimeYears_psa = PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > obs_generation_start_time & PSA_CHECK_UP_TIME<=obs_generation_end_time]
   visitTimeYears_dre = DRE_CHECK_UP_TIME[DRE_CHECK_UP_TIME > obs_generation_start_time & DRE_CHECK_UP_TIME<=obs_generation_end_time]
   #In the first 2 years this may happen. e.g. generate DRE between 1 and 1.25
