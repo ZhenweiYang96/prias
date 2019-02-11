@@ -3,6 +3,8 @@ NR_DISCRETIZED_OBS = 100
 MIN_BIOPSY_GAP = 1
 
 N_MCMC_ITER = 200
+N_DESPOT_SCENARIOS = 100
+DESPOT_TREE = list()
 
 #Constants
 MAX_FOLLOW_UP_TIME = 10
@@ -42,11 +44,25 @@ getNextDecisionEpoch = function(current_decision_epoch) {
 }
 
 #This definition leads to 10% risk threshold as MDP
-generateReward = function(current_state, action) {
+getReward = function(current_state, action) {
   if(current_state==AT){
     return(0)
   }else if(current_state==G7){
     return(ifelse(action==BIOPSY, yes = 10, no = -0.2))
+  }else{
+    return(ifelse(action==BIOPSY, yes = 1, no = 2.1335))
+  }
+}
+
+#This definition leads to 10% risk threshold as MDP
+getReward = function(current_state, action, current_decision_epoch,
+                     latest_survival_time, earliest_failure_time) {
+  if(current_state==AT){
+    return(0)
+  }else if(current_state==G7){
+    return(ifelse(action==BIOPSY, 
+                  yes = 1/(0.5 * (earliest_failure_time - latest_survival_time)), 
+                  no = -0.2))
   }else{
     return(ifelse(action==BIOPSY, yes = 1, no = 2.1335))
   }

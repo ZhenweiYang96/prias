@@ -19,7 +19,14 @@ source("src/mdp/common/simCommon.R")
 #Source the method you want to use
 source("src/mdp/tree_search/forward_search.R")
 
+#For DESPOT set these two
+#N_DESPOT_SCENARIOS = 100
+#DESPOT_TREE = list()
+
+set.seed(1000)
+t1 = Sys.time()
 selectAction(patient_df=patient_df, current_decision_epoch = 1, 
              latest_survival_time = 0, earliest_failure_time = Inf,
-             nr_discretized_obs = 50, max_decision_epoch = 1.5)
-
+             nr_discretized_obs = 50, max_decision_epoch = 1.25)
+t2 = Sys.time()
+t2 - t1

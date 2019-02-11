@@ -253,12 +253,12 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
   return(list(posterior_b=accepted_b, posterior_theta_mcmc_indices=postMCMC_theta_indices))
 }
 
-#the parameter ignoreErrorTerm is for adding error term to the mean effect to 
+#the parameter addRandomError is for adding error term to the mean effect to 
 #get a prediction interval
 getExpectedFutureOutcomes = function(object, patient_data, 
                                latest_survival_time=0, earliest_failure_time=Inf, 
                                survival_predict_times=NULL, dre_predict_times=NULL,
-                               psa_predict_times=NULL, ignoreErrorTerm=T, psaDist = "normal", 
+                               psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
                                TdistDf=3, M=200){
   
   post_b_beta = get_b_fullBayes(object, patient_data, 
@@ -297,7 +297,7 @@ getExpectedFutureOutcomes = function(object, patient_data,
     predicted_psa = psaXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
     predicted_psa_slope = psaSlopeXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
     
-    if(ignoreErrorTerm==F){
+    if(addRandomError==T){
       predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
     }
     
