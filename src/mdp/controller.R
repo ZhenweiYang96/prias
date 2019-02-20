@@ -17,16 +17,13 @@ patient_df = patient_df[patient_df$visitTimeYears <=1,]
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
 #Source the method you want to use
-source("src/mdp/tree_search/forward_search.R")
+source("src/mdp/tree_search/forward_search_no_Y.R")
 
 #For DESPOT set these two
 #N_DESPOT_SCENARIOS = 100
 #DESPOT_TREE = list()
 
-set.seed(1000)
-t1 = Sys.time()
-selectAction(patient_df=patient_df, current_decision_epoch = 1, 
-             latest_survival_time = 0, earliest_failure_time = Inf,
-             nr_discretized_obs = 50, max_decision_epoch = 1.25)
-t2 = Sys.time()
-t2 - t1
+#We want to check how well we do with this approach. So we take a time point,
+#and check how single threshold and forward search do for various patients
+
+

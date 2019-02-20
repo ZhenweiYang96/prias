@@ -362,7 +362,7 @@ getExpectedFutureOutcomes = function(object, patient_data,
     
     denominator = denominator_left - denominator_right
     if(M==1){
-      predicted_surv_prob = matrix(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}), nrow = 10)
+      predicted_surv_prob = matrix(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}), byrow = F)
     }else{
       predicted_surv_prob = t(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}))
     }
