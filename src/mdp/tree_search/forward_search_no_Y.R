@@ -27,8 +27,8 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
   for(current_action in available_actions){
-    current_reward = G6_prob * getReward(G6, current_action) +
-        (1-G6_prob) * getReward(G7, current_action)
+    current_reward = G6_prob * getReward(G6, current_action, current_decision_epoch, latest_survival_time) +
+      (1-G6_prob) * getReward(G7, current_action, current_decision_epoch, latest_survival_time)
     # if(current_action==BIOPSY){
     #    current_reward = intercept_b + (1-G6_prob) * slope_b
     # }else{

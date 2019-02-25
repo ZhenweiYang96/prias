@@ -47,29 +47,42 @@ getNextDecisionEpoch = function(current_decision_epoch) {
   return(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME>current_decision_epoch][1])
 }
 
-getReward = function(current_state, action) {
-  if(current_state==AT){
-    return(0)
-  }else if(current_state==G7){
-    return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
-  }else{
-    return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
-  }
-}
-
-#This definition leads to 10% risk threshold as MDP
-# getReward = function(current_state, action, current_decision_epoch,
-#                      latest_survival_time, earliest_failure_time) {
+# getReward = function(current_state, action) {
 #   if(current_state==AT){
 #     return(0)
 #   }else if(current_state==G7){
-#     return(ifelse(action==BIOPSY, 
-#                   yes = 1/(0.5 * (earliest_failure_time - latest_survival_time)), 
-#                   no = -0.2))
+#     return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
 #   }else{
-#     return(ifelse(action==BIOPSY, yes = 1, no = 2.1335))
+#     return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
 #   }
 # }
+
+# getReward = function(current_state, action, current_decision_epoch,
+#                       latest_survival_time) {
+#    if(current_state==AT){
+#      return(0)
+#    }else if(current_state==G7){
+#      return(ifelse(action == BIOPSY, 
+#                    yes = inv_time_to_biopsy_scale / (0.5 * (current_decision_epoch - latest_survival_time)),
+#                    no = inv_time_to_biopsy_scale / (current_decision_epoch - getNextDecisionEpoch(current_decision_epoch))))
+#    }else{
+#      return(ifelse(action==BIOPSY, yes = -1, no = 1))
+#    }
+# }
+
+
+getReward = function(current_state, action, current_decision_epoch,
+                     latest_survival_time) {
+  if(current_state==AT){
+    return(0)
+  }else if(current_state==G7){
+    return(ifelse(action==BIOPSY,
+                  yes = 0.5 * (current_decision_epoch - latest_survival_time) * time_to_biopsy_scale,
+                  no = time_to_biopsy_scale * (current_decision_epoch - getNextDecisionEpoch(current_decision_epoch))))
+  }else{
+    return(ifelse(action==BIOPSY, yes = -1, no = 1))
+  }
+}
 
 #We have to generate data between obs_generation_start_time(not included) 
 #and obs_generation_end_time(included)

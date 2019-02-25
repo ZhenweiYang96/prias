@@ -20,3 +20,12 @@ finalRes = do.call(rbind, lapply(res, FUN = function(filePath){
                     nBW=resMatrix[,4]))
   
 }))
+
+lapply(sim_res[[1]]$`2`, function(x){
+  action_taken = sapply(x, function(y){y$optimal_action})
+  optimal_action = ifelse(jointModelData$testData$testDs.id$progression_time<=1, "B", "W")
+  return(c("nTB"=sum(action_taken=="B" & optimal_action=="B"),
+           "nFB"=sum(action_taken=="B" & optimal_action=="W"),
+           "nTW"=sum(action_taken=="W" & optimal_action=="W"),
+           "nFW"=sum(action_taken=="W" & optimal_action=="B")))
+})

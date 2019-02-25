@@ -3,17 +3,6 @@ library(survival)
 library(splines)
 library(ggplot2)
 
-#Load a simulation
-load("/home/a_tomer/Data/final_res_2nd_paper/jointModelData_seed_101_simNr_1_normal.Rdata")
-
-fitted_JM = jointModelData$mvJoint_dre_psa_simDs
-jointModelData$mvJoint_dre_psa_simDs = NULL
-
-#choose a patient
-patient_id = jointModelData$testData$testDs.id$P_ID[1]
-patient_df = jointModelData$testData$testDs[jointModelData$testData$testDs$P_ID == patient_id,]
-patient_df = patient_df[patient_df$visitTimeYears <=1,]
-
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
 #Source the method you want to use
@@ -23,7 +12,78 @@ source("src/mdp/tree_search/forward_search_no_Y.R")
 #N_DESPOT_SCENARIOS = 100
 #DESPOT_TREE = list()
 
-#We want to check how well we do with this approach. So we take a time point,
-#and check how single threshold and forward search do for various patients
+max_cores = 10
 
+max_depths = 0:4
+time_to_biopsy_scales = unique(c(10/0.5, 7/0.7, 5/1.1, 4/1.8, 4/0.7, 3/0.8))
+names(time_to_biopsy_scales) = c("Annual", "1pt5years", "Biennial", "Triennial",
+                                 "PRIAS_risk10pc", "risk15pc")
 
+ct = makeCluster(max_cores)
+registerDoParallel(ct)
+
+nDs = 10
+files = list.files(path='/home/a_tomer/Data/final_res_2nd_paper/', full.names = T)[1:nDs]
+for(file in files){
+  #Load a simulation
+  load(file)
+  
+  fitted_JM = jointModelData$mvJoint_dre_psa_simDs
+  jointModelData$mvJoint_dre_psa_simDs = NULL
+  
+  sim_res = vector("list", length(time_to_biopsy_scales))
+  names(sim_res) = names(time_to_biopsy_scales)
+  for(i in 1:length(time_to_biopsy_scales)){
+    sim_res[[i]] = vector("list", length(max_depths))
+    
+    for(max_depth in max_depths){
+      sim_res[[i]][[max_depth + 1]] = jointModelData$testData$testDs.id[,1:3]
+      
+      sim_res[[i]][[max_depth + 1]][,c('nb', 'offset')] = 
+        foreach(pid=jointModelData$testData$testDs.id$P_ID, 
+                .export=c("fitted_JM"),
+                .packages = c("splines", "JMbayes")) %dopar%{
+                  source("src/mdp/common/simCommon.R")
+                  source("src/mdp/tree_search/forward_search_no_Y.R")
+                  
+                  patient_df = jointModelData$testData$testDs[jointModelData$testData$testDs$P_ID==pid,]
+                  progression_time = patient_df$progression_time[1]
+                  time_to_biopsy_scale = time_to_biopsy_scales[i]
+                  
+                  set.seed(patient_df$P_ID[1])
+                  
+                  nb = 0
+                  delay = -Inf
+                  latest_biopsy_time = 0
+                  decision_epoch = 1
+                  while(decision_epoch<10 & delay<0){
+                    pat_data = patient_df[patient_df$visitTimeYears <= decision_epoch,]
+                    
+                    DISCOUNT_FACTORS = DISCOUNT_FACTOR^((1:length(PSA_CHECK_UP_TIME))-nrow(pat_data))
+                    names(DISCOUNT_FACTORS) = PSA_CHECK_UP_TIME
+                    
+                    act = selectAction(pat_data, current_decision_epoch = decision_epoch,
+                                       latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
+                                       max_decision_epoch = decision_epoch + max_depth)
+                    
+                    if(act$optimal_action==BIOPSY){
+                      latest_biopsy_time = decision_epoch
+                      delay = decision_epoch - progression_time
+                      decision_epoch = PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= (decision_epoch + 1)][1]
+                      nb = nb + 1
+                    }else{
+                      decision_epoch = getNextDecisionEpoch(decision_epoch)
+                    }
+                  }
+                  
+                  return(c('nb'=nb, 'offset'=delay))
+                }
+      
+      save(sim_res, file = paste0("Rdata/mdp/schedule_by_time/sim_res_", 
+                                  names(time_to_biopsy_scales)[i], ".Rdata"))
+    }
+  }
+  rm(fitted_JM)
+}
+
+stopCluster(ct)
