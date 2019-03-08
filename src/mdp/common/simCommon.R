@@ -1,29 +1,24 @@
 #Select parameters common for all types of algorithms
 MIN_BIOPSY_GAP = 1
 
-N_MCMC_ITER = 200
 N_DESPOT_SCENARIOS = 100
 DESPOT_TREE = list()
 
 #Constants
 MAX_FOLLOW_UP_TIME = 10
 #Decision Epochs in years
-PSA_CHECK_UP_TIME = c(seq(0, 2, 0.5), seq(2.5, MAX_FOLLOW_UP_TIME, 0.5), 15)
+PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, MAX_FOLLOW_UP_TIME, 0.5), 15)
 #DRE check up time years
-DRE_CHECK_UP_TIME = c(seq(0, MAX_FOLLOW_UP_TIME, 0.5))
+DRE_CHECK_UP_TIME = c(seq(0, MAX_FOLLOW_UP_TIME, 0.5), 15)
 
-NR_DISCRETIZED_PSA = 3
+BIOPSY_TEST_TIMES = DRE_CHECK_UP_TIME
 
-LOWPSA_LOWDRE = "LP_LD"
-MEDPSA_LOWDRE = "MP_LD"
-HIGHPSA_LOWDRE = "HP_LD"
-LOWPSA_HIGHDRE = "LP_HD"
-MEDPSA_HIGHDRE = "MP_HD"
-HIGHPSA_HIGHDRE = "HP_HD"
+NR_DISCRETIZED_PSA = 5
 
-OUTCOME_CAT_NAMES = c(LOWPSA_LOWDRE, MEDPSA_LOWDRE, HIGHPSA_LOWDRE,
-                      LOWPSA_HIGHDRE, MEDPSA_HIGHDRE, HIGHPSA_HIGHDRE)
-OUTCOME_PSA_DRE_CAT = as.matrix(expand.grid(1:3, 0:1))
+OUTCOME_CAT_NAMES = c(sapply(c("LD", "HD"), function(x){
+  paste0(paste0("P", 1:NR_DISCRETIZED_PSA), "_", x)
+}))
+OUTCOME_PSA_DRE_CAT = as.matrix(expand.grid(1:NR_DISCRETIZED_PSA, 0:1))
 rownames(OUTCOME_PSA_DRE_CAT) = OUTCOME_CAT_NAMES
 
 #Actions
@@ -37,10 +32,6 @@ G7 = "G7"
 AT = "AT"
 STATE_VECTOR = c(G6, G7, AT)
 
-DISCOUNT_FACTOR = 1
-DISCOUNT_FACTORS = DISCOUNT_FACTOR^((1:length(PSA_CHECK_UP_TIME)))
-names(DISCOUNT_FACTORS) = PSA_CHECK_UP_TIME
-
 TRUE_BIOPSY = "TB"
 FALSE_BIOPSY = "FB"
 TRUE_WAIT = "TW"
@@ -48,16 +39,11 @@ FALSE_WAIT = "FW"
 
 reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
 
-REWARDS = c(5, -1, 1, -15)
-names(REWARDS) = reward_names
-
-source("src/mdp/common/prediction_psa_cat.R")
-
 #########################################
 # We define various functions from here onwards
 #########################################
 getNextDecisionEpoch = function(current_decision_epoch) {
-  return(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME>current_decision_epoch][1])
+  return(BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>current_decision_epoch][1])
 }
 
 # getReward = function(current_state, action) {

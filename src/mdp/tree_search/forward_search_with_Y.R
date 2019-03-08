@@ -12,7 +12,7 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
   
   if(is.null(expected_future_ifwait)){
-    survival_predict_times = PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME>=current_decision_epoch & PSA_CHECK_UP_TIME<=max_decision_epoch]
+    survival_predict_times = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>=current_decision_epoch & BIOPSY_TEST_TIMES<=max_decision_epoch]
     Y_predict_times = survival_predict_times
     
     expected_future_ifwait = getExpectedFuture_Cat(fitted_JM, patient_df,

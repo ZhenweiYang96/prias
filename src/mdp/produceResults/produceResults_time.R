@@ -29,14 +29,15 @@ colnames(final_res)[6] = "methodName"
 for(i in 1:length(sim_res)){
 #for(i in 1:1){
   #compare max depth 0 and 1 for this one
-  for(max_depth in 1){
-  #for(max_depth in 0){
+  #for(max_depth in 1){
+  for(max_depth in 0:2){
     new_data = sim_res[[i]][[max_depth + 1]]
     new_data$methodName = paste0("Rwd", "_", names(sim_res)[i], "_", max_depth)
     final_res = rbind(final_res, new_data)
   }
 }
 
-a=ggplot(data=final_res) + geom_boxplot(aes(y=nb, x=methodName))
-b=ggplot(data=final_res) + geom_boxplot(aes(y=offset, x=methodName))
-ggpubr::ggarrange(a,b)
+a=ggplot(data=final_res[final_res$progression_time==10,]) + geom_boxplot(aes(y=nb, x=methodName)) + ggtitle(paste("NB-NP", i))
+b = ggplot(data=final_res[final_res$progression_time<10,]) + geom_boxplot(aes(y=nb, x=methodName)) + ggtitle(paste("NB", i))
+c=ggplot(data=final_res[final_res$progression_time<10,]) + geom_boxplot(aes(y=offset, x=methodName)) + ggtitle(paste("Offset", i))
+print(ggpubr::ggarrange(a,b,c, ncol = 3, nrow=1))

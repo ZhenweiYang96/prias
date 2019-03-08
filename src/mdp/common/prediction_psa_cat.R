@@ -476,43 +476,39 @@ getExpectedFuture_Cat = function(object, patient_data, lower_upper_psa_limits=li
   if(!is.null(Y_predict_times) & length(Y_predict_times)>0){
     predicted_psa_means = psaXbetaZb(patient_data$Age[1], Y_predict_times, mcmc_betas_psa, posterior_b[3:7,])
     
-    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$Age[1], Y_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
-    predicted_psa_prob_low = t(sapply(1:length(Y_predict_times), FUN = function(Ypt_index){
-      psa_predict_time = Y_predict_times[Ypt_index]
-      limits_at_time = lower_upper_psa_limits[[as.character(psa_predict_time)]]
-      pnorm(q = limits_at_time[[1]][2], mean = predicted_psa_means[Ypt_index,], sd = mcmc_sigma_psa, lower.tail = T)
-    }))
-    predicted_psa_prob_high = t(sapply(1:length(Y_predict_times), FUN = function(Ypt_index){
-      psa_predict_time = Y_predict_times[Ypt_index]
-      limits_at_time = lower_upper_psa_limits[[as.character(psa_predict_time)]]
-      pnorm(q = limits_at_time[[3]][1], mean = predicted_psa_means[Ypt_index,], sd = mcmc_sigma_psa, lower.tail = F)
-    }))
+    predicted_highdre_prob = plogis(dreLogOddsXbetaZb(patient_data$Age[1], Y_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
+    predicted_lowdre_prob = 1 - predicted_highdre_prob
     
-    predicted_psalow_drehigh_prob = predicted_psa_prob_low * predicted_dre_prob
-    predicted_psahigh_drehigh_prob = predicted_psa_prob_high * predicted_dre_prob
-    predicted_psamed_drehigh_prob = (1-predicted_psa_prob_low-predicted_psa_prob_high) * predicted_dre_prob
+    #Calculate PSA pnorm
+    predicted_psacat_pnorm = lapply(1:NR_DISCRETIZED_PSA, function(psa_cat){
+      ret = t(sapply(1:length(Y_predict_times), FUN = function(Ypt_index){
+        psa_predict_time = Y_predict_times[Ypt_index]
+        limits_at_time = lower_upper_psa_limits[[as.character(psa_predict_time)]]
+        pnorm(q = limits_at_time[[psa_cat]][2], mean = predicted_psa_means[Ypt_index,], sd = mcmc_sigma_psa, lower.tail = T)
+      }))
+      if(M==1){
+        ret = t(ret)
+      }
+    })
     
-    predicted_psalow_drelow_prob = predicted_psa_prob_low * (1-predicted_dre_prob)
-    predicted_psahigh_drelow_prob = predicted_psa_prob_high * (1-predicted_dre_prob)
-    predicted_psamed_drelow_prob = 1 - predicted_psalow_drehigh_prob - 
-      predicted_psamed_drehigh_prob - predicted_psahigh_drehigh_prob - 
-      predicted_psalow_drelow_prob - predicted_psahigh_drelow_prob
+    predicted_psacat_prob = vector("list", length = NR_DISCRETIZED_PSA)
+    predicted_psacat_prob[[1]] = predicted_psacat_pnorm[[1]]
+    predicted_psacat_prob[2:NR_DISCRETIZED_PSA] = lapply(2:NR_DISCRETIZED_PSA, function(x){
+      predicted_psacat_pnorm[[x]] - predicted_psacat_pnorm[[x-1]]
+    })
+    
+    predicted_Y_prob = vector("list", NR_DISCRETIZED_PSA * 2)
+    predicted_Y_prob[1:NR_DISCRETIZED_PSA] = lapply(predicted_psacat_prob, function(psa_cat_prob){
+      psa_cat_prob * predicted_lowdre_prob
+    })
+    predicted_Y_prob[(NR_DISCRETIZED_PSA+1):(2*NR_DISCRETIZED_PSA)] = lapply(predicted_psacat_prob, function(psa_cat_prob){
+      psa_cat_prob * predicted_highdre_prob
+    })
     
     if(length(Y_predict_times)>1){
-      predicted_Y_prob = t(sapply(list(predicted_psalow_drelow_prob, 
-                                       predicted_psamed_drelow_prob, 
-                                       predicted_psahigh_drelow_prob,
-                                       predicted_psalow_drehigh_prob,
-                                       predicted_psamed_drehigh_prob,
-                                       predicted_psahigh_drehigh_prob), FUN = rowMeans))
-      
+      predicted_Y_prob = t(sapply(predicted_Y_prob, FUN = rowMeans))
     }else{
-      predicted_Y_prob = matrix(sapply(list(predicted_psalow_drelow_prob, 
-                                       predicted_psamed_drelow_prob, 
-                                       predicted_psahigh_drelow_prob,
-                                       predicted_psalow_drehigh_prob,
-                                       predicted_psamed_drehigh_prob,
-                                       predicted_psahigh_drehigh_prob), FUN = rowMeans),
+      predicted_Y_prob = matrix(sapply(predicted_Y_prob, FUN = rowMeans),
                                 nrow=length(OUTCOME_CAT_NAMES), ncol = 1)
     }
     predicted_Y_prob = round(predicted_Y_prob, digits=rounding)
