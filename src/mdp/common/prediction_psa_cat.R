@@ -439,7 +439,7 @@ getExpectedFuture_Cat = function(object, patient_data, lower_upper_psa_limits=li
                                  latest_survival_time=0, earliest_failure_time=Inf, 
                                  survival_predict_times=NULL, Y_predict_times=NULL,
                                  psaDist = "normal", 
-                                 TdistDf=3, M=200, rounding = 1){
+                                 TdistDf=3, M=200, rounding = 5){
   
   post_b_beta = get_b_fullBayes(object, patient_data, lower_upper_psa_limits,
                                 latest_survival_time, earliest_failure_time,

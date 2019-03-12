@@ -5,7 +5,7 @@ library(ggplot2)
 
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
-#Source the method you want to use
+source("src/mdp/common/prediction.R")
 source("src/mdp/tree_search/forward_search_no_Y.R")
 
 #For DESPOT set these two
@@ -42,10 +42,7 @@ for(file_num in nDs:1){
       
       sim_res[[i]][[max_depth + 1]][,c('nb', 'offset')] = 
         foreach(pid=jointModelData$testData$testDs.id$P_ID, 
-                .export=c("fitted_JM"),
                 .packages = c("splines", "JMbayes"), .combine = 'rbind') %dopar%{
-                  source("src/mdp/common/simCommon.R")
-                  source("src/mdp/tree_search/forward_search_no_Y.R")
                   
                   patient_df = jointModelData$testData$testDs[jointModelData$testData$testDs$P_ID==pid,]
                   progression_time = patient_df$progression_time[1]
@@ -57,20 +54,20 @@ for(file_num in nDs:1){
                   delay = -Inf
                   latest_biopsy_time = 0
                   decision_epoch = 1
-                  while(decision_epoch<10 & delay<0){
+                  while(decision_epoch<MAX_FOLLOW_UP_TIME & delay<0){
                     pat_data = patient_df[patient_df$visitTimeYears <= decision_epoch,]
                     
-                    DISCOUNT_FACTORS = DISCOUNT_FACTOR^((1:length(PSA_CHECK_UP_TIME))-nrow(pat_data))
-                    names(DISCOUNT_FACTORS) = PSA_CHECK_UP_TIME
+                    DISCOUNT_FACTORS = DISCOUNT_FACTOR^((1:length(BIOPSY_TEST_TIMES))-nrow(pat_data))
+                    names(DISCOUNT_FACTORS) = BIOPSY_TEST_TIMES
                     
                     act = selectAction(pat_data, current_decision_epoch = decision_epoch,
                                        latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
-                                       max_decision_epoch = min(10, decision_epoch + max_depth))
+                                       max_decision_epoch = min(MAX_FOLLOW_UP_TIME, decision_epoch + max_depth))
                     
                     if(act$optimal_action==BIOPSY){
                       latest_biopsy_time = decision_epoch
                       delay = decision_epoch - progression_time
-                      decision_epoch = PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= (decision_epoch + 1)][1]
+                      decision_epoch = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES >= (decision_epoch + MIN_BIOPSY_GAP)][1]
                       nb = nb + 1
                     }else{
                       decision_epoch = getNextDecisionEpoch(decision_epoch)

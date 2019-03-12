@@ -13,7 +13,7 @@ N_MCMC_ITER = 0
 
 #For loop parameters
 nDs = 10
-max_depths = 0:4
+max_depths = c(0,1, 4,3,2)
 discount_factors = 1
 time_to_biopsy_scales = unique(c(10/0.5, 7/0.7, 5/1.1, 4/1.8, 4/0.7, 3/0.8))
 names(time_to_biopsy_scales) = c("Annual", "1pt5years", "Biennial", "Triennial",
@@ -54,12 +54,12 @@ for(file_num in nDs:1){
       
       sim_res[[i]] = vector("list", length(max_depths))
       
-      for(max_depth in 3){
+      for(max_depth in max_depths){
         print(paste("Max depth:", max_depth))
         sim_res[[i]][[max_depth + 1]] = testData$testDs.id[, c("P_ID", "Age", "progression_time")]
         
         sim_res[[i]][[max_depth + 1]][, c('nb', 'offset')] = 
-          foreach(pid=testData$testDs.id$P_ID[1], 
+          foreach(pid=testData$testDs.id$P_ID, 
                   .packages = c("splines", "JMbayes"), .combine = 'rbind') %do%{
                     
                     patient_df = testData$testDs[testData$testDs$P_ID==pid,]
