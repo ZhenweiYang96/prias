@@ -1,6 +1,9 @@
+source("src/decision_analytic/fittingModel/d2ns.R")
+
 fixed_psaFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
 random_psaFormula = ~ 1 + ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
 fixed_random_psaSlopeFormula = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
+fixed_random_psaAccelFormula = ~ 0 + d2ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42))
 
 fixed_dreFormula = ~ 1 + I(Age - 70) +  I((Age - 70)^2) + visitTimeYears
 random_dreFormula = ~ 1 + visitTimeYears
@@ -22,6 +25,11 @@ psaXbetaZb = function(Age, visitTimeYears, betas_psa, b_psa){
 #b_psa_slope dimension should be #b x 1, or #b x #MCMC
 psaSlopeXbetaZb = function(Age, visitTimeYears, betas_psa_slope, b_psa_slope){
   X_Z_matrix = model.matrix(fixed_random_psaSlopeFormula, data.frame(Age, visitTimeYears))
+  X_Z_matrix %*% betas_psa_slope + X_Z_matrix %*% b_psa_slope
+}
+
+psaAccelerationXbetaZb = function(Age, visitTimeYears, betas_psa_slope, b_psa_slope){
+  X_Z_matrix = model.matrix(fixed_random_psaAccelFormula, data.frame(Age, visitTimeYears))
   X_Z_matrix %*% betas_psa_slope + X_Z_matrix %*% b_psa_slope
 }
 
@@ -291,17 +299,20 @@ getExpectedFutureOutcomes = function(object, patient_data,
     }
   }
   
-  predicted_psa = predicted_psa_slope = predicted_dre_prob = predicted_surv_prob = NULL
+  predicted_psa = predicted_psa_slope = predicted_psa_acceleration= NULL
+  predicted_dre_prob = predicted_surv_prob = NULL
   
   if(!is.null(psa_predict_times)){
     predicted_psa = psaXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
     predicted_psa_slope = psaSlopeXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
+    predicted_psa_acceleration = psaAccelerationXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
     
     if(addRandomError==T){
       predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
     }
     
-    rownames(predicted_psa) = rownames(predicted_psa_slope) = psa_predict_times
+    rownames(predicted_psa) = rownames(predicted_psa_slope) = 
+      rownames(predicted_psa_acceleration) = psa_predict_times
   }
   
   if(!is.null(dre_predict_times)){
@@ -370,7 +381,8 @@ getExpectedFutureOutcomes = function(object, patient_data,
   }
   
   return(list(predicted_surv_prob=predicted_surv_prob,
-              predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope, 
+              predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope,
+              predicted_psa_acceleration = predicted_psa_acceleration,
               predicted_dre_prob=predicted_dre_prob))
 }
 environment(get_b_fullBayes) = asNamespace("JMbayes")

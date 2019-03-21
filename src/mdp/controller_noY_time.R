@@ -13,8 +13,10 @@ source("src/mdp/tree_search/forward_search_no_Y.R")
 #DESPOT_TREE = list()
 
 max_cores = 3
-
+N_MCMC_ITER = 0
+DISCOUNT_FACTOR = 1
 max_depths = 0:4
+
 time_to_biopsy_scales = unique(c(10/0.5, 7/0.7, 5/1.1, 4/1.8, 4/0.7, 3/0.8))
 names(time_to_biopsy_scales) = c("Annual", "1pt5years", "Biennial", "Triennial",
                                  "PRIAS_risk10pc", "risk15pc")
@@ -23,7 +25,7 @@ ct = makeCluster(max_cores, type = "FORK")
 registerDoParallel(ct)
 
 nDs = 10
-for(file_num in nDs:1){
+for(file_num in c(25:75, 24:1, 76:100)){
   
   file = list.files(path='/home/a_tomer/Data/final_res_2nd_paper/', full.names = T)[file_num]
   #Load a simulation
@@ -38,7 +40,7 @@ for(file_num in nDs:1){
     sim_res[[i]] = vector("list", length(max_depths))
     
     for(max_depth in max_depths){
-      sim_res[[i]][[max_depth + 1]] = jointModelData$testData$testDs.id[,1:3]
+      sim_res[[i]][[max_depth + 1]] = jointModelData$testData$testDs.id[, c("P_ID", "Age", "progression_time")]
       
       sim_res[[i]][[max_depth + 1]][,c('nb', 'offset')] = 
         foreach(pid=jointModelData$testData$testDs.id$P_ID, 
@@ -77,7 +79,7 @@ for(file_num in nDs:1){
                   return(c('nb'=nb, 'offset'=delay))
                 }
       
-      save(sim_res, file = paste0("Rdata/mdp/schedule_by_time/sim_res_",file_num,"_", 
+      save(sim_res, file = paste0("Rdata/mdp/decision_by_reward/sim_res_",file_num,"_", 
                                   names(time_to_biopsy_scales)[i], ".Rdata"))
     }
   }

@@ -72,9 +72,12 @@ save(survModel, file="Rdata/decision_analytic/PSA_Only/survModel.Rdata")
 forms = list("log2psaplus1" = "value",
              "log2psaplus1" = list(fixed = ~ 0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
                                         random=~0 + dns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
-                                        indFixed = 4:7, indRandom=2:5, name = "slope"))
+                                        indFixed = 4:7, indRandom=2:5, name = "slope"),
+             "log2psaplus1" = list(fixed = ~ 0 + d2ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+                                   random=~0 + d2ns(visitTimeYears, knots=c(0.1, 0.7, 4), Boundary.knots=c(0, 5.42)),
+                                   indFixed = 4:7, indRandom=2:5, name = "acceleration"))
 
 startTime_mvJoint_psa = Sys.time()
 mvJoint_psa = mvJointModelBayes(mvglmer_psa, survModel, timeVar = "visitTimeYears", Formulas = forms)
 endTime_mvJoint_psa = Sys.time()
-save(mvJoint_psa, file="Rdata/decision_analytic/PSA_Only/mvJoint_psa.Rdata")
+save(mvJoint_psa, file="Rdata/decision_analytic/PSA_Only/mvJoint_psa_accel.Rdata")

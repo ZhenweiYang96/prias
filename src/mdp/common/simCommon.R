@@ -46,15 +46,15 @@ getNextDecisionEpoch = function(current_decision_epoch) {
   return(BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>current_decision_epoch][1])
 }
 
-# getReward = function(current_state, action) {
-#   if(current_state==AT){
-#     return(0)
-#   }else if(current_state==G7){
-#     return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
-#   }else{
-#     return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
-#   }
-# }
+getReward = function(current_state, action) {
+  if(current_state==AT){
+    return(0)
+  }else if(current_state==G7){
+    return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
+  }else{
+    return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
+  }
+}
 
 # getReward = function(current_state, action, current_decision_epoch,
 #                       latest_survival_time) {
@@ -69,15 +69,15 @@ getNextDecisionEpoch = function(current_decision_epoch) {
 #    }
 # }
 
-getReward = function(current_state, action, current_decision_epoch,
-                     latest_survival_time) {
-  if(current_state==AT){
-    return(0)
-  }else if(current_state==G7){
-    return(ifelse(action==BIOPSY,
-                  yes = 0.5 * (current_decision_epoch - latest_survival_time) * time_to_biopsy_scale,
-                  no = time_to_biopsy_scale * (current_decision_epoch - getNextDecisionEpoch(current_decision_epoch))))
-  }else{
-    return(ifelse(action==BIOPSY, yes = -1, no = 1))
-  }
-}
+# getReward = function(current_state, action, current_decision_epoch,
+#                      latest_survival_time) {
+#   if(current_state==AT){
+#     return(0)
+#   }else if(current_state==G7){
+#     return(ifelse(action==BIOPSY,
+#                   yes = 0.5 * (current_decision_epoch - latest_survival_time) * time_to_biopsy_scale,
+#                   no = time_to_biopsy_scale * (current_decision_epoch - getNextDecisionEpoch(current_decision_epoch))))
+#   }else{
+#     return(ifelse(action==BIOPSY, yes = -1, no = 1))
+#   }
+# }

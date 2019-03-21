@@ -2,6 +2,7 @@ load("Rdata/decision_analytic/cleandata.Rdata")
 source("src/decision_analytic/load_lib.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/auc_mod_prias.R")
 source("src/decision_analytic/fittingModel/AUC_Brier/prederr_mod_prias.R")
+source("src/decision_analytic/fittingModel/d2ns.R")
 
 maxCores = 6
 

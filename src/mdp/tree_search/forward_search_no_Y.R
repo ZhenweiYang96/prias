@@ -1,8 +1,7 @@
 selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
                         latest_survival_time, earliest_failure_time,
-                        max_decision_epoch) {
-  
-  available_actions = if((current_decision_epoch - latest_survival_time)>=MIN_BIOPSY_GAP){
+                        max_decision_epoch, cur_biopsies=0, max_biopsies=Inf) {
+  available_actions = if((current_decision_epoch - latest_survival_time)>=MIN_BIOPSY_GAP & cur_biopsies<max_biopsies){
     ACTION_VECTOR
   }else{
     WAIT
@@ -25,9 +24,10 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
   for(current_action in available_actions){
-    current_reward = G6_prob * getReward(G6, current_action, current_decision_epoch, latest_survival_time) +
-      (1-G6_prob) * getReward(G7, current_action, current_decision_epoch, latest_survival_time)
+    current_reward = G6_prob * getReward(G6, current_action) +
+      (1-G6_prob) * getReward(G7, current_action)
     
+    fut_optimal_action_chain = ""
     if(next_decision_epoch <= max_decision_epoch){
       #probability of not transitioning to AT, given the current action
       non_transition_prob = ifelse(current_action==BIOPSY, G6_prob, 1)
@@ -40,11 +40,15 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
       }else{
         G6_probs[-1]
       }
+      
+      future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
       #This is a conditional one. if action is biopsy, the following is conditional upon not detecting anything currently
       #becuase in the other case, you reach a state AT and future reward is 0
       future_action_reward = selectAction(patient_df, next_decision_epoch, future_G6_probs,
                                           future_latest_survival_time, earliest_failure_time,
-                                          max_decision_epoch)
+                                          max_decision_epoch, future_cur_biopsies, max_biopsies)
+      
+      fut_optimal_action_chain = future_action_reward$optimal_action_chain
       
       current_reward = current_reward + DISCOUNT_FACTORS[as.character(next_decision_epoch)] * 
         non_transition_prob * future_action_reward$optimal_reward 
@@ -54,10 +58,18 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
     
     if(current_reward > optimal_reward){
       optimal_action = current_action
+      optimal_action_chain = paste(current_action, fut_optimal_action_chain)
       optimal_reward = current_reward
     }
   }
   
-  return(list(optimal_action=optimal_action, optimal_reward=optimal_reward,
+  # print(paste("Latest survival time:",latest_survival_time,
+  #             "Current Time:", current_decision_epoch, 
+  #             "--- Optimal action:", optimal_action,
+  #             "--- Optimal reward:", optimal_reward))
+  
+  
+  return(list(optimal_action=optimal_action, optimal_action_chain=optimal_action_chain,
+              optimal_reward=optimal_reward,
               G6_probs=G6_probs))
 }
