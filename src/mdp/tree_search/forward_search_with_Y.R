@@ -39,8 +39,8 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
   optimal_reward = -Inf
   
   for(current_action in available_actions){
-    current_reward = G6_prob * getReward(G6, current_action, current_decision_epoch, latest_survival_time) +
-      (1-G6_prob) * getReward(G7, current_action, current_decision_epoch, latest_survival_time)
+    current_reward = G6_prob * getReward(G6, current_action) +
+      (1-G6_prob) * getReward(G7, current_action)
     
     if(next_decision_epoch <= max_decision_epoch){
       #probability of not transitioning to AT, given the current action

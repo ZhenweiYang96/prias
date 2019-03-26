@@ -9,6 +9,7 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   
   if(is.null(G6_probs)){
     survival_predict_times = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>=current_decision_epoch & BIOPSY_TEST_TIMES<=max_decision_epoch]
+    
     cur_state = getExpectedFutureOutcomes(fitted_JM, patient_df, 
                                           latest_survival_time, earliest_failure_time,
                                           survival_predict_times,
@@ -24,8 +25,12 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
   for(current_action in available_actions){
-    current_reward = G6_prob * getReward(G6, current_action) +
-      (1-G6_prob) * getReward(G7, current_action)
+    current_reward = G6_prob * getReward(G6, current_action, 
+                                         current_decision_epoch, latest_survival_time, 
+                                         cur_biopsies) +
+      (1-G6_prob) * getReward(G7, current_action, 
+                              current_decision_epoch, latest_survival_time, 
+                              cur_biopsies)
     
     fut_optimal_action_chain = ""
     if(next_decision_epoch <= max_decision_epoch){
@@ -67,7 +72,6 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   #             "Current Time:", current_decision_epoch, 
   #             "--- Optimal action:", optimal_action,
   #             "--- Optimal reward:", optimal_reward))
-  
   
   return(list(optimal_action=optimal_action, optimal_action_chain=optimal_action_chain,
               optimal_reward=optimal_reward,

@@ -18,10 +18,10 @@ reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
 # reward_matrix = as.matrix(expand.grid(seq(5,100,by=10),
 #                                       -1, 1,
 #                                       seq(-5,-100,by=-10)))
-reward_matrix = as.matrix(expand.grid(10^c(-2,0,2),
-                                      -10^c(-2,0,2), 
-                                      10^c(-2,0,2),
-                                      -10^c(-2,0,2)))
+reward_matrix = as.matrix(expand.grid(c(6/12, 12/12, 18/12, 24/12),
+                                      -c(0/12, 3/12, 6/12, 12/12), 
+                                      c(6/12, 12/12, 18/12, 24/12),
+                                      -1))
 
 colnames(reward_matrix) = reward_names
 
@@ -40,7 +40,7 @@ for(file_num in 10){
   jointModelData$mvJoint_dre_psa_simDs = NULL
   
   sim_res = vector("list", nrow(reward_matrix))
-  for(i in 41:nrow(reward_matrix)){
+  for(i in 1:nrow(reward_matrix)){
     print(paste0("Running for reward row (",i,"): ", paste(reward_matrix[i,], collapse = ' ')))
     sim_res[[i]] = vector("list", length(discount_factors))
     
@@ -84,7 +84,7 @@ for(file_num in 10){
                         act = selectAction(pat_data, current_decision_epoch = decision_epoch,
                                            G6_probs = NULL, latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
                                            max_decision_epoch = min(MAX_FOLLOW_UP_TIME, decision_epoch + max_depth),
-                                           cur_biopsies = 0, max_biopsies = max_biopsies)
+                                           cur_biopsies = nb, max_biopsies = max_biopsies)
                         
                         if(act$optimal_action==BIOPSY){
                           latest_biopsy_time = decision_epoch
@@ -99,7 +99,7 @@ for(file_num in 10){
                       return(c('nb'=nb, 'offset'=delay))
                     }
           
-          save(sim_res, file = paste0("Rdata/mdp/schedule_by_reward/sim_res_",file_num, ".Rdata"))
+          save(sim_res, file = paste0("Rdata/mdp/schedule_by_time/sim_res_",file_num, ".Rdata"))
         }
       }
     }
