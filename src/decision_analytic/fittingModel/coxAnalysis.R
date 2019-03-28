@@ -38,7 +38,13 @@ ggsave(filename = "report/decision_analytic/mdm/latex/images/npmle_plot.eps",
 #############################################################
 prias.id.rightCens = prias.id
 prias.id.rightCens$progressed = ifelse(prias.id$progressed>0, 1, 0)
-prias.id.rightCens$progression_time = ifelse(prias.id$progression_time_end==Inf, prias.id$progression_time_start, 0.5 * (prias.id$progression_time_start+prias.id$progression_time_end))
+prias.id.rightCens$progression_time = ifelse(prias.id$progression_time_end==Inf, 
+                                             prias.id$progression_time_start, 
+                                             0.5 * (prias.id$progression_time_start+prias.id$progression_time_end))
+
+kmfit = survfit(Surv(progression_time, progressed)~1, conf.type="log-log", data=prias.id.rightCens)
+survminer::ggsurvplot(kmfit, risk.table = T,break.time.by = 1, xlab = "Time (years)", ylim = c(0.5,1), conf.int = T)
+
 
 survModel_rightCens = coxph(Surv(progression_time, progressed) ~ I(Age - 70) +  I((Age - 70)^2), 
                                     data=prias.id.rightCens, x = T, model = T)

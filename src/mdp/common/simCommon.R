@@ -3,6 +3,8 @@ MIN_BIOPSY_GAP = 1
 
 N_DESPOT_SCENARIOS = 100
 DESPOT_TREE = list()
+DESPOT_BELIEF_CACHE = list()
+DESPOT_Y_CACHE = list()
 
 #Constants
 MAX_FOLLOW_UP_TIME = 10
@@ -16,10 +18,12 @@ BIOPSY_TEST_TIMES = DRE_CHECK_UP_TIME
 NR_DISCRETIZED_PSA = 5
 
 OUTCOME_CAT_NAMES = c(sapply(c("LD", "HD"), function(x){
-  paste0(paste0("P", 1:NR_DISCRETIZED_PSA), "_", x)
+  paste0(paste0("P", 1:NR_DISCRETIZED_PSA), x)
 }))
 OUTCOME_PSA_DRE_CAT = as.matrix(expand.grid(1:NR_DISCRETIZED_PSA, 0:1))
 rownames(OUTCOME_PSA_DRE_CAT) = OUTCOME_CAT_NAMES
+
+OUTCOME_TREATMENT = "OT"
 
 #Actions
 BIOPSY = "B"

@@ -262,14 +262,18 @@ get_b_fullBayes = function(object, patient_data, lower_upper_psa_limits,
   optim_function <- function (b, data_list){-log_numerator_bayesrule(b, data_list)}
   gradient_function <- function (b, data_list){cd(b, optim_function, 
                                                   data = log_numerator_bayesrule_data, eps = 1e-03)}
-  #par is start values  
-  empiricalbayes_b = optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
-                           fn = optim_function, 
-                           gr = gradient_function, data = log_numerator_bayesrule_data, 
-                           method = "BFGS", hessian = TRUE,
-                           control = list(maxit = 200,
-                                          parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D))))
-  
+  #par is start values
+  for(optim_method in c("BFGS", "L-BFGS-B","CG")){  
+    empiricalbayes_b = optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
+                             fn = optim_function, 
+                             gr = gradient_function, data = log_numerator_bayesrule_data, 
+                             method = optim_method, hessian = TRUE,
+                             control = list(maxit = 200,
+                                            parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D))))
+    if(all(!is.nan(empiricalbayes_b$hessian))){
+      break
+    }
+  }
   if(M==0){
     return(empiricalbayes_b)
   }

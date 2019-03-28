@@ -21,6 +21,7 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
                                                    survival_predict_times = survival_predict_times,
                                                    Y_predict_times = Y_predict_times,
                                                    M=N_MCMC_ITER)
+    expected_future_ifwait$predicted_Y_prob = expected_future_ifwait$predicted_Y_prob[,-1]
   }
   
   G6_prob = expected_future_ifwait$predicted_surv_prob[1]

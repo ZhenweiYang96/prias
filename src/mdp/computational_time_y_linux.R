@@ -56,11 +56,11 @@ ct = makeCluster(3)
 registerDoParallel(ct)
 
 sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID, 
-                                      .packages = c("splines", "JMbayes", "pryr"), .combine = 'rbind') %dopar%{                  
+                                      .packages = c("splines", "JMbayes", "pryr"), .combine = 'rbind') %do%{                  
                                         
-                                        source("src/mdp/common/simCommon.R")
-                                        source("src/mdp/common/prediction_psa_cat.R")
-                                        source("src/mdp/tree_search/forward_search_with_Y.R")
+                                        #source("src/mdp/common/simCommon.R")
+                                        #source("src/mdp/common/prediction_psa_cat.R")
+                                        #source("src/mdp/tree_search/forward_search_with_Y.R")
                                         
                                         m1.sim = mem_used()
                                         t1.sim = Sys.time()

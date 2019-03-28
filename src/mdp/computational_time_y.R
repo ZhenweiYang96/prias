@@ -7,9 +7,9 @@ library(ggplot2)
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
 source("src/mdp/common/prediction_psa_cat.R")
-source("src/mdp/tree_search/forward_search_with_Y.R")
+source("src/mdp/tree_search/despot_y.R")
 
-N_MCMC_ITER = 500
+N_MCMC_ITER = 100
 
 reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
 REWARDS = c(100, -1, 1, -100)
@@ -18,7 +18,7 @@ names(REWARDS) = reward_names
 m1.load = mem_used()
 
 t1.load = Sys.time()
-file = list.files(path='C:/Users/anirudhtomer/data/', full.names = T)[9]
+file = '/home/a_tomer/Data/final_res_2nd_paper/jointModelData_seed_110_simNr_10_normal.Rdata'
 load(file)
 t2.load = Sys.time()
 
@@ -43,22 +43,18 @@ LOWER_UPPER_PSA_LIMITS = by(data = testData$testDs$log2psaplus1,
 names(LOWER_UPPER_PSA_LIMITS) = PSA_CHECK_UP_TIME[1:length(LOWER_UPPER_PSA_LIMITS)]
 
 DISCOUNT_FACTOR = 1
-max_depth = 5       
+max_depth = 1     
 
-sim_res = jointModelData$testData$testDs.id[1:10, c("P_ID", "Age", "progression_time")]
+sim_res = jointModelData$testData$testDs.id[1, c("P_ID", "Age", "progression_time")]
 
 m1Common.sim = mem_used()
 t1Common.sim = Sys.time()
 
-ct = makeCluster(7)
-registerDoParallel(ct)
+#ct = makeCluster(7)
+#registerDoParallel(ct)
 
 sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID, 
-                                      .packages = c("splines", "JMbayes", "pryr"), .combine = 'rbind') %dopar%{                  
-                                        
-                                        source("src/mdp/common/simCommon.R")
-                                        source("src/mdp/common/prediction_psa_cat.R")
-                                        source("src/mdp/tree_search/forward_search_with_Y.R")
+                                      .packages = c("splines", "JMbayes", "pryr"), .combine = 'rbind') %do%{                  
                                         
                                         m1.sim = mem_used()
                                         t1.sim = Sys.time()
@@ -84,17 +80,18 @@ sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID,
                                           names(DISCOUNT_FACTORS) = BIOPSY_TEST_TIMES
                                           
                                           act = selectAction(pat_data, current_decision_epoch = decision_epoch,
-                                                             expected_future_ifwait = NULL, latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
+                                                             latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
                                                              max_decision_epoch = min(MAX_FOLLOW_UP_TIME, decision_epoch + max_depth))
                                           
-                                          if(act$optimal_action==BIOPSY){
-                                            latest_biopsy_time = decision_epoch
-                                            delay = decision_epoch - progression_time
-                                            decision_epoch = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES >= (decision_epoch + MIN_BIOPSY_GAP)][1]
-                                            nb = nb + 1
-                                          }else{
-                                            decision_epoch = getNextDecisionEpoch(decision_epoch)
-                                          }
+                                          # if(act$optimal_action==BIOPSY){
+                                          #   latest_biopsy_time = decision_epoch
+                                          #   delay = decision_epoch - progression_time
+                                          #   decision_epoch = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES >= (decision_epoch + MIN_BIOPSY_GAP)][1]
+                                          #   nb = nb + 1
+                                          # }else{
+                                          #   decision_epoch = getNextDecisionEpoch(decision_epoch)
+                                          # }
+                                          break;
                                         }
                                         
                                         t2.sim = Sys.time()
@@ -107,4 +104,4 @@ sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID,
 t2Common.sim = Sys.time()
 m2Common.sim = mem_used()
 
-stopCluster(ct)
+#stopCluster(ct)
