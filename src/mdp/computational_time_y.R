@@ -7,12 +7,13 @@ library(ggplot2)
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
 source("src/mdp/common/prediction_psa_cat.R")
-source("src/mdp/tree_search/despot_y.R")
+source("src/mdp/tree_search/forward_search_with_Y.R")
+#source("src/mdp/tree_search/despot_y.R")
 
 N_MCMC_ITER = 100
 
 reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
-REWARDS = c(100, -1, 1, -100)
+REWARDS = c(100, -1, 100, -100)
 names(REWARDS) = reward_names
 
 m1.load = mem_used()
@@ -81,7 +82,8 @@ sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID,
                                           
                                           act = selectAction(pat_data, current_decision_epoch = decision_epoch,
                                                              latest_survival_time = latest_biopsy_time, earliest_failure_time = Inf,
-                                                             max_decision_epoch = min(MAX_FOLLOW_UP_TIME, decision_epoch + max_depth))
+                                                             max_decision_epoch = min(MAX_FOLLOW_UP_TIME, decision_epoch + max_depth),
+                                                             cur_biopsies = 0, max_biopsies = max_biopsies)
                                           
                                           # if(act$optimal_action==BIOPSY){
                                           #   latest_biopsy_time = decision_epoch

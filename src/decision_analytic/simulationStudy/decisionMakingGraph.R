@@ -198,11 +198,17 @@ better_balance_results= ggplot() + geom_label(aes(x=medianNb[fixedScheduleIndice
   xlab("Median number of biopsies") + ylab("Median delay in detection of\ncancer progression (years)") +
   coord_cartesian(ylim=c(0,2)) +
   scale_x_continuous(breaks=1:10, limits = c(1,10)) +
-  theme_bw() + 
+  #theme_bw() + 
   theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
         axis.line = element_line(), legend.background = element_blank(), legend.position = "bottom",
         legend.text = element_text(size=FONT_SIZE-3),
         plot.margin = margin(0, 0, 0, 0, "pt"))
+
+#theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
+#axis.line = element_line(), legend.background = element_blank(), legend.position = "bottom",
+#legend.text = element_text(size=FONT_SIZE-3),
+#plot.margin = margin(0, 0, 0, 0, "pt"), plot.background = element_rect(fill="#f5f6fa"),
+#panel.background = element_rect(fill="#f5f6fa"), panel.border = element_blank())
 
 ggsave(filename = "report/decision_analytic/mdm/latex/images/better_balance_results.eps",
        plot=better_balance_results, device=cairo_ps, height=5.5/1.333, width=5.5, dpi = 500)

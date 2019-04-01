@@ -81,6 +81,12 @@ levels(scheduleResCombined$methodName)[3] = "Risk: 10%"
 levels(scheduleResCombined$methodName)[4] = "Risk: 5%"
 levels(scheduleResCombined$methodName)[5] = "Risk: F1"
 
+
+levels(scheduleResCombined$methodName)[6] = "Risk: 15%"
+levels(scheduleResCombined$methodName)[5] = "Risk: 10%"
+levels(scheduleResCombined$methodName)[7] = "Risk: 5%"
+levels(scheduleResCombined$methodName)[8] = "Risk: F1"
+
 FONT_SIZE = 11
 
 getBoxplotStatsDf=function(progression_time_low, progression_time_high, attribute){

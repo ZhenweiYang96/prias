@@ -1,8 +1,8 @@
-selectAction = function(patient_df, current_decision_epoch, expected_future_ifwait=NULL,
+selectAction = function(patient_df, current_decision_epoch, 
                         latest_survival_time, earliest_failure_time,
-                        max_decision_epoch) {
+                        max_decision_epoch, cur_biopsies, max_biopsies) {
   
-  available_actions = if((current_decision_epoch - latest_survival_time)>=MIN_BIOPSY_GAP){
+  available_actions = if((current_decision_epoch - latest_survival_time) >= MIN_BIOPSY_GAP){
     ACTION_VECTOR
   }else{
     WAIT
@@ -10,21 +10,14 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
 
   #First find next decision epoch
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
-  
-  if(is.null(expected_future_ifwait)){
-    survival_predict_times = BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>=current_decision_epoch & BIOPSY_TEST_TIMES<=max_decision_epoch]
-    Y_predict_times = survival_predict_times
-    
-    expected_future_ifwait = getExpectedFuture_Cat(fitted_JM, patient_df,
+  expected_future_ifwait = getExpectedFuture_Cat(fitted_JM, patient_df,
                                                    lower_upper_psa_limits = LOWER_UPPER_PSA_LIMITS,
                                                    latest_survival_time, earliest_failure_time,
-                                                   survival_predict_times = survival_predict_times,
-                                                   Y_predict_times = Y_predict_times,
+                                                   survival_predict_times = current_decision_epoch,
+                                                   Y_predict_times = next_decision_epoch,
                                                    M=N_MCMC_ITER)
-    expected_future_ifwait$predicted_Y_prob = expected_future_ifwait$predicted_Y_prob[,-1]
-  }
   
-  G6_prob = expected_future_ifwait$predicted_surv_prob[1]
+  G6_prob = expected_future_ifwait$predicted_surv_prob
   
   if(BIOPSY %in% available_actions & next_decision_epoch <= max_decision_epoch){
     #The following is the expected future of biopsy when the current state is not G7
@@ -40,8 +33,15 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
   optimal_reward = -Inf
   
   for(current_action in available_actions){
-    current_reward = G6_prob * getReward(G6, current_action) +
-      (1-G6_prob) * getReward(G7, current_action)
+    current_reward = G6_prob * getReward(G6, current_action, 
+                                         current_decision_epoch, latest_survival_time, 
+                                         cur_biopsies) +
+      (1-G6_prob) * getReward(G7, current_action,
+                              current_decision_epoch, latest_survival_time, 
+                              cur_biopsies)
+    
+    fut_optimal_action_chain = vector("list", length(OUTCOME_CAT_NAMES))
+    names(fut_optimal_action_chain) = OUTCOME_CAT_NAMES
     
     if(next_decision_epoch <= max_decision_epoch){
       #probability of not transitioning to AT, given the current action
@@ -61,21 +61,13 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
           future_data$psa_cat_data = T
           future_data[, c("log2psaplus1", "high_dre")] = OUTCOME_PSA_DRE_CAT[o, ]
           
-          if(current_action==BIOPSY){
-            future_expected_future_ifwait = NULL
-          }else{
-            future_expected_future_ifwait = expected_future_ifwait
-            future_expected_future_ifwait$predicted_surv_prob = future_expected_future_ifwait$predicted_surv_prob[-1]
-            future_expected_future_ifwait$predicted_Y_prob = future_expected_future_ifwait$predicted_Y_prob[,-1]
-          }
-          
-          #This is a conditional one. if action is biopsy, the following is conditional upon not detecting anything currently
-          #becuase in the other case, you reach a state AT and future reward is 0
+          future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
           future_action_reward = selectAction(patient_df=rbind(patient_df, future_data),
                                               current_decision_epoch=next_decision_epoch,
-                                              future_expected_future_ifwait,
                                               future_latest_survival_time, earliest_failure_time,
-                                              max_decision_epoch)
+                                              max_decision_epoch, future_cur_biopsies, max_biopsies)
+          
+          fut_optimal_action_chain[[OUTCOME_CAT_NAMES[o]]] = future_action_reward$optimal_action_chain
           
           current_reward = current_reward + DISCOUNT_FACTORS[as.character(next_decision_epoch)] *
               non_AT_transition_prob * Y_prob * future_action_reward$optimal_reward
@@ -87,10 +79,19 @@ selectAction = function(patient_df, current_decision_epoch, expected_future_ifwa
     
     if(current_reward > optimal_reward){
       optimal_action = current_action
+      
+      if(all(sapply(fut_optimal_action_chain, is.null))){
+        optimal_action_chain = list(current_action)
+        names(optimal_action_chain) = "Now"
+      }else{
+        optimal_action_chain = list(current_action, fut_optimal_action_chain)
+        names(optimal_action_chain) = c("Now", "Future")
+      }
       optimal_reward = current_reward
     }
   }
   
-  return(list(optimal_action=optimal_action, optimal_reward=optimal_reward,
-              expected_future_ifwait = expected_future_ifwait))
+  return(list(optimal_action=optimal_action, 
+              optimal_reward=optimal_reward,
+              optimal_action_chain = optimal_action_chain))
 }
