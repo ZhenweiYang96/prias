@@ -10,7 +10,7 @@ source("src/mdp/common/prediction_psa_cat.R")
 source("src/mdp/tree_search/forward_search_with_Y.R")
 #source("src/mdp/tree_search/despot_y.R")
 
-N_MCMC_ITER = 100
+N_MCMC_ITER = 200
 
 reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
 REWARDS = c(100, -1, 100, -100)
@@ -44,7 +44,7 @@ LOWER_UPPER_PSA_LIMITS = by(data = testData$testDs$log2psaplus1,
 names(LOWER_UPPER_PSA_LIMITS) = PSA_CHECK_UP_TIME[1:length(LOWER_UPPER_PSA_LIMITS)]
 
 DISCOUNT_FACTOR = 1
-max_depth = 1     
+max_depth = 2     
 
 sim_res = jointModelData$testData$testDs.id[1, c("P_ID", "Age", "progression_time")]
 
