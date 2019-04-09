@@ -1,7 +1,7 @@
 #Select parameters common for all types of algorithms
 MIN_BIOPSY_GAP = 1
 
-N_DESPOT_SCENARIOS = 100
+N_DESPOT_SCENARIOS = 10
 DESPOT_TREE = list()
 DESPOT_BELIEF_CACHE = list()
 DESPOT_Y_CACHE = list()

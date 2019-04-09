@@ -1,0 +1,42 @@
+% !TEX root =  reply_letter.tex
+\clearpage
+\section*{Response to 3rd Referee's Comments}
+We would like to thank the Referee for their constructive comments, which have allowed us to considerably improve our paper. The main differences of the new version of the manuscript compared to the previous one can be found in the Methods section.
+
+You may find below our responses to the specific issues raised.
+
+\begin{enumerate}
+    \item \underline{Base 2 logarithm transformation for PSA}
+
+    In many prostate cancer surveillance programs, and specifically in the world's largest surveillance program PRIAS (Prostate Cancer International Active Surveillance), $\log_2 \mbox{PSA}$ values have been used for analysis. The reason is that this transformation provides an easy interpretation of the slope of the regression line that is fitted individually for each patient's $\log_2 \mbox{PSA}$ levels. More specifically, the inverse of the slope of this regression line is known as the PSA doubling time \citep{ROBERTS2001576}. Although we model PSA levels non-linearly using B-splines \citep{de1978practical}, we decided to reuse the $\log_2 \mbox{PSA}$ transformation for familiarity. 
+
+    Using $\log_2 \mbox{PSA}$ transformation leads to the same model fit as with $\log_{\mathrm{e}} \mbox{PSA}$ transformation, because logarithms with different bases are scalar multiples of each other.
+
+    \item[2,3.] \underline{Better explanation of the equations in the Methods section}
+
+    We would like to thank the Referee for motivating us to describe these in details. We have added the following text (shaded) in the Methods section.
+
+    \textbf{What are internal knots and boundary knots?}
+    \begin{shadequote}
+    ... our B-spline basis function $B_k(t, \mathcal{K})$ has 3 internal knots at $\mathcal{K} = \{0.1, 0.7, 4\}$ years, and boundary knots at 0 and 5.42 years (95-th percentile of the observed follow-up times). This specification allows fitting the $\log_2 (\mbox{PSA} + 1)$ levels in a piecewise manner for each patient separately. The internal and boundary knots specify the different time periods (analogously pieces) of this piecewise curve. ...
+    \end{shadequote}
+
+    \textbf{Formula 6 on page 12 could also benefit casual readers with a little hand holding:}
+
+    \begin{shadequote}
+	\begin{equation}
+\label{eq:F1_TPR_PPV}
+\begin{split}
+\mbox{F}_1(t,  s, \kappa) &= 2\frac{\mbox{TPR}(t,  s, \kappa)\ \mbox{PPV}(t,  s, \kappa)}{\mbox{TPR}(t,  s, \kappa) + \mbox{PPV}(t,  s, \kappa)},\\
+\mbox{TPR}(t,  s, \kappa) &= \mbox{Pr}\big\{R_j(s \mid t) > \kappa \mid t < T^*_j \leq s\big\},\\
+\mbox{PPV}(t,  s, \kappa) &= \mbox{Pr}\big\{t < T^*_j \leq s \mid R_j(s \mid t) > \kappa \big\},
+\end{split}
+\end{equation}
+where, $\mbox{TPR}(t,  s, \kappa)$ and $\mbox{PPV}(t,  s, \kappa)$ are the time dependent true positive rate and positive predictive value, respectively. These values are unique for each combination of the time period $(t, s]$ and the risk threshold $\kappa$ that is used to discriminate between the patients whose cancer progresses in this time period versus the patients whose cancer does not progress. The same holds true for the resulting $\mbox{F}_1$ score $\mbox{F}_1(t,  s, \kappa)$. The $\mbox{F}_1$ score ranges between 0 and 1, where a value equal to 1 indicates perfect TPR and PPV. Thus the highest $\mbox{F}_1$ score is desired in each time period $(t, s]$. This can be achieved by choosing a risk threshold $\kappa$ which maximizes $\mbox{F}_1(t, s, \kappa)$. That is, during a patient's visit at time $s$, given that his latest biopsy was at time $t$, the visit specific risk threshold to decide a biopsy is given by ${\kappa=\argmax_{\kappa} \mbox{F}_1(t, s, \kappa)}$. ...
+    \end{shadequote}
+
+    \textbf{Authors should state why they chose to center age at the value of 70:}
+    \begin{shadequote}
+		... $\mbox{Age}_i$ is the age of the ${i\mbox{-th}}$ patient at the time of inclusion in AS. We have centered the Age variable around the median age of 70 years for better convergence during parameter estimation. However, this does not change the interpretation of the parameters corresponding to the Age variable. ...
+	\end{shadequote}
+\end{enumerate}

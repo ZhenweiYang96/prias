@@ -7,10 +7,10 @@ library(ggplot2)
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
 source("src/mdp/common/prediction_psa_cat.R")
-source("src/mdp/tree_search/forward_search_with_Y.R")
-#source("src/mdp/tree_search/despot_y.R")
+#source("src/mdp/tree_search/forward_search_with_Y.R")
+source("src/mdp/tree_search/despot_y.R")
 
-N_MCMC_ITER = 200
+N_MCMC_ITER = 500
 
 reward_names = c(TRUE_BIOPSY, FALSE_BIOPSY, TRUE_WAIT, FALSE_WAIT)
 REWARDS = c(100, -1, 100, -100)
@@ -72,7 +72,7 @@ sim_res[,c('t1', 't2','m1', 'm2', 'nb')] = foreach(pid=sim_res$P_ID,
                                         nb = 0
                                         delay = -Inf
                                         latest_biopsy_time = 0
-                                        decision_epoch = 1
+                                        decision_epoch = 3
                                         
                                         while(decision_epoch<MAX_FOLLOW_UP_TIME & delay<0){
                                           pat_data = patient_df[patient_df$visitTimeYears <= decision_epoch,]
