@@ -127,7 +127,8 @@ getGaussianQuadWeightsPoints = function(lower_upper_limit){
 #When M=0 it becomes empirical bayes
 get_b_fullBayes = function(object, patient_data, lower_upper_psa_limits,
                            latest_survival_time, earliest_failure_time=Inf,
-                           scale = 1.6, psaDist = "normal", TdistDf=3, M=200){
+                           scale = 1.6, psaDist = "normal", TdistDf=3, M=200,
+                           optim_methods = c("BFGS", "L-BFGS-B","CG")){
   
   if(is.null(patient_data$psa_cat_data)){
     patient_data$psa_cat_data = F
@@ -263,7 +264,7 @@ get_b_fullBayes = function(object, patient_data, lower_upper_psa_limits,
   gradient_function <- function (b, data_list){cd(b, optim_function, 
                                                   data = log_numerator_bayesrule_data, eps = 1e-03)}
   #par is start values
-  for(optim_method in c("BFGS", "L-BFGS-B","CG")){  
+  for(optim_method in optim_methods){  
     empiricalbayes_b = optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
                              fn = optim_function, 
                              gr = gradient_function, data = log_numerator_bayesrule_data, 
