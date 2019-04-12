@@ -136,8 +136,8 @@ for(t in 1:length(thresholds)){
                                  'optimal_action_chain'=act$optimal_action_chain,
                                  'optimal_reward'=act$optimal_reward))
                       }
-            save(sim_res, file = paste0("Rdata/mdp/decision_for_lines/sim_res_",
-                                        file_num, ".Rdata"))
+            save(sim_res[[t]], file = paste0("Rdata/mdp/decision_for_lines/sim_res_",
+                                        threshold, ".Rdata"))
           }
         }
       }

@@ -128,7 +128,7 @@ getGaussianQuadWeightsPoints = function(lower_upper_limit){
 get_b_fullBayes = function(object, patient_data, lower_upper_psa_limits,
                            latest_survival_time, earliest_failure_time=Inf,
                            scale = 1.6, psaDist = "normal", TdistDf=3, M=200,
-                           optim_methods = c("BFGS", "L-BFGS-B","CG")){
+                           optim_methods = c("BFGS", "L-BFGS-B", "CG")){
   
   if(is.null(patient_data$psa_cat_data)){
     patient_data$psa_cat_data = F
@@ -265,17 +265,18 @@ get_b_fullBayes = function(object, patient_data, lower_upper_psa_limits,
                                                   data = log_numerator_bayesrule_data, eps = 1e-03)}
   #par is start values
   for(optim_method in optim_methods){  
-    empiricalbayes_b = optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
+    empiricalbayes_b = try(optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
                              fn = optim_function, 
                              gr = gradient_function, data = log_numerator_bayesrule_data, 
                              method = optim_method, hessian = TRUE,
                              control = list(maxit = 200,
-                                            parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D))))
-    if(all(!is.nan(empiricalbayes_b$hessian))){
+                                            parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D)))), silent = T)
+    
+    if(!inherits(empiricalbayes_b, 'try-error') && all(!is.nan(empiricalbayes_b$hessian))){
       break
     }
   }
-  if(M==0){
+  if(M==0 | inherits(empiricalbayes_b, 'try-error')){
     return(empiricalbayes_b)
   }
   
@@ -330,10 +331,16 @@ getExpectedFuture_Cat = function(object, patient_data, lower_upper_psa_limits=li
                                  survival_predict_times=NULL, Y_predict_times=NULL,
                                  psaDist = "normal", 
                                  TdistDf=3, M=200, rounding = 5){
-  
-  post_b_beta = get_b_fullBayes(object, patient_data, lower_upper_psa_limits,
+  repeat{
+    post_b_beta = try(get_b_fullBayes(object, patient_data, lower_upper_psa_limits,
                                 latest_survival_time, earliest_failure_time,
-                                scale = 1.6, psaDist, TdistDf=TdistDf, M)  
+                                scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
+    if(!inherits(post_b_beta, 'try-error')){
+      break
+    }
+    
+    earliest_failure_time = earliest_failure_time + abs(jitter(0, amount = 0.05))
+  }
   
   #M==0 check empirical bayes
   if(M==0){
