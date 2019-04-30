@@ -50,15 +50,17 @@ getNextDecisionEpoch = function(current_decision_epoch) {
   return(BIOPSY_TEST_TIMES[BIOPSY_TEST_TIMES>current_decision_epoch][1])
 }
 
-getReward = function(current_state, action, current_decision_epoch, latest_survival_time, cur_biopsies) {
-  if(current_state==AT){
-    return(0)
-  }else if(current_state==G7){
-    return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
-  }else{
-    return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
-  }
-}
+# getReward = function(current_state, action, 
+#                      current_decision_epoch, latest_survival_time, 
+#                      cur_biopsies) {
+#   if(current_state==AT){
+#     return(0)
+#   }else if(current_state==G7){
+#     return(ifelse(action==BIOPSY, yes = REWARDS[TRUE_BIOPSY], no = REWARDS[FALSE_WAIT]))
+#   }else{
+#     return(ifelse(action==BIOPSY, yes = REWARDS[FALSE_BIOPSY], no = REWARDS[TRUE_WAIT]))
+#   }
+# }
 
 # getReward = function(current_state, action, current_decision_epoch,
 #                      latest_survival_time, cur_biopsies) {
@@ -74,6 +76,29 @@ getReward = function(current_state, action, current_decision_epoch, latest_survi
 #                   no = REWARDS[TRUE_WAIT]))
 #   }
 # }
+
+getReward = function(current_state, action, current_decision_epoch,
+                     latest_survival_time, cur_biopsies, conditionalFailTime) {
+  if(current_state==AT){
+    return(0)
+  }else if(current_state==G7){
+    
+    delay = current_decision_epoch - conditionalFailTime
+    
+    #Adding negative reward of a biopsy to the true positive reward
+    return(ifelse(action==BIOPSY,
+                  yes = delay + REWARDS[FALSE_BIOPSY],
+                  no = REWARDS[FALSE_WAIT] - delay))
+    
+  }else if(current_state==G6){
+    
+    #Assuming rewards of false biopsy is -1, and rewards of true wait is 0
+    return(ifelse(action==BIOPSY,
+                  yes = cur_biopsies * REWARDS[FALSE_BIOPSY],
+                  no = REWARDS[TRUE_WAIT]))
+    
+  }
+}
 
 thresholdToReward = function(threshold, int_B, slope_B, int_W, slope_W){
   

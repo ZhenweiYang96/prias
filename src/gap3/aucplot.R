@@ -56,8 +56,9 @@ lapply(center_names[!(center_names %in% c("prias_orig", "PRIAS", "Gothenburg"))]
   temp$Center[temp$Center == "prias_orig"] = "1. PRIAS"
   temp$Center[temp$Center == x] = paste0("2. ", x)
   
-  auc = ggplot(data = temp) + geom_line(aes(x=time, y=auc, color=Center)) +
-    geom_line(aes(x=time, y=auc_onlypsa, color=Center), linetype='dashed') + 
+  auc = ggplot(data = temp) +
+    #geom_line(aes(x=time, y=auc, color=Center)) +
+    geom_line(aes(x=time, y=auc_onlypsa, color=Center), linetype='solid') + 
     ylab("AUC") + xlab("Time (years)")+
     scale_x_continuous(breaks = c(1:10)) +
     theme_bw()+
@@ -65,8 +66,9 @@ lapply(center_names[!(center_names %in% c("prias_orig", "PRIAS", "Gothenburg"))]
     ylim(0,1) + geom_hline(yintercept = 0.5) + 
     geom_vline(xintercept = 5)
   #geom_label(aes(x=time, y=auc, label=auc_nr)) +
-  prederr = ggplot(data = temp) + geom_line(aes(x=time, y=prederr, color=Center)) +
-    geom_line(aes(x=time, y=prederr_onlypsa, color=Center), linetype='dashed') + 
+  prederr = ggplot(data = temp) + 
+    #geom_line(aes(x=time, y=prederr, color=Center)) +
+    geom_line(aes(x=time, y=prederr_onlypsa, color=Center), linetype='solid') + 
     scale_x_continuous(breaks = c(1:10)) + 
     ylab("Sqrt (Prediction Error or MSE)") + xlab("Time (years)")+
     theme_bw()+

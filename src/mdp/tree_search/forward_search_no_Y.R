@@ -24,13 +24,27 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   optimal_reward = -Inf
   
   next_decision_epoch = getNextDecisionEpoch(current_decision_epoch)
+  
+  # Calculate expected failure time conditional on that patient 
+  # may have had even between latest survival time and current decision epoch
+  wtPoints = getGaussianQuadWeightsPoints(c(latest_survival_time, 
+                                            current_decision_epoch))
+  points = sort(wtPoints$points, decreasing = F)
+  wt = wtPoints$weights[order(wtPoints$points, decreasing = F)]
+  
+  conditionalSurvProbs = getExpectedFutureOutcomes(fitted_JM, patient_df, latest_survival_time, 
+                                             earliest_failure_time = current_decision_epoch, 
+                                             points, M = N_MCMC_ITER)$predicted_surv_prob
+  
+  conditionalFailTime = sum(wt * rowMeans(conditionalSurvProbs))
+  
   for(current_action in available_actions){
     current_reward = G6_prob * getReward(G6, current_action, 
                                          current_decision_epoch, latest_survival_time, 
-                                         cur_biopsies) +
+                                         cur_biopsies, conditionalFailTime) +
       (1-G6_prob) * getReward(G7, current_action, 
                               current_decision_epoch, latest_survival_time, 
-                              cur_biopsies)
+                              cur_biopsies, conditionalFailTime)
     
     fut_optimal_action_chain = ""
     if(next_decision_epoch <= max_decision_epoch){

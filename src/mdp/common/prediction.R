@@ -107,7 +107,8 @@ getGaussianQuadWeightsPoints = function(lower_upper_limit){
 
 #When M=0 it becomes empirical bayes
 get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_failure_time=Inf,
-                           scale = 1.6, psaDist = "normal", TdistDf=3, M=200){
+                           scale = 1.6, psaDist = "normal", TdistDf=3, M=200,
+                           optim_methods = c("BFGS", "L-BFGS-B", "CG")){
   
   #Obs data X and Z matrices for longitudinal part
   patient_data_dre = patient_data[!is.na(patient_data$high_dre), c("Age",  "visitTimeYears", "high_dre")]
@@ -206,17 +207,23 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
   optim_function <- function (b, data_list){-log_numerator_bayesrule(b, data_list)}
   gradient_function <- function (b, data_list){cd(b, optim_function, 
                                                   data = log_numerator_bayesrule_data, eps = 1e-03)}
-  #par is start values  
-  empiricalbayes_b = optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
-                           fn = optim_function, 
-                           gr = gradient_function, data = log_numerator_bayesrule_data, 
-                           method = "BFGS", hessian = TRUE, 
-                           control = list(maxit = 200, 
-                                          parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D))))
-  
-  if(M==0){
+  #par is start values
+  for(optim_method in optim_methods){  
+    empiricalbayes_b = try(optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
+                                 fn = optim_function, 
+                                 gr = gradient_function, data = log_numerator_bayesrule_data, 
+                                 method = optim_method, hessian = TRUE,
+                                 control = list(maxit = 200,
+                                                parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D)))), silent = T)
+    
+    if(!inherits(empiricalbayes_b, 'try-error') && all(!is.nan(empiricalbayes_b$hessian))){
+      break
+    }
+  }
+  if(M==0 | inherits(empiricalbayes_b, 'try-error')){
     return(empiricalbayes_b)
   }
+  
   
   #This has M elements
   postMCMC_theta_indices = sample(1:length(object$mcmc$sigma2), size = M)
@@ -264,14 +271,20 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
 #the parameter addRandomError is for adding error term to the mean effect to 
 #get a prediction interval
 getExpectedFutureOutcomes = function(object, patient_data, 
-                               latest_survival_time=0, earliest_failure_time=Inf, 
-                               survival_predict_times=NULL, dre_predict_times=NULL,
-                               psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
-                               TdistDf=3, M=200){
-  
-  post_b_beta = get_b_fullBayes(object, patient_data, 
-                                latest_survival_time, earliest_failure_time,
-                                scale = 1.6, psaDist, TdistDf=TdistDf, M)  
+                                     latest_survival_time=0, earliest_failure_time=Inf, 
+                                     survival_predict_times=NULL, dre_predict_times=NULL,
+                                     psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
+                                     TdistDf=3, M=200){
+  repeat{
+    post_b_beta = try(get_b_fullBayes(object, patient_data,
+                                      latest_survival_time, earliest_failure_time,
+                                      scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
+    if(!inherits(post_b_beta, 'try-error')){
+      break
+    }
+    
+    earliest_failure_time = earliest_failure_time + abs(jitter(0, amount = 0.05))
+  }
   
   #M==0 check empirical bayes
   if(M==0){
@@ -358,7 +371,113 @@ getExpectedFutureOutcomes = function(object, patient_data,
     }
     
     if(latest_survival_time==0){
-       denominator_left = rep(1, M)
+      denominator_left = rep(1, M)
+    }else{
+      denominator_left = surv_prob_M[[1]]
+      surv_prob_M = surv_prob_M[2:length(surv_prob_M)]
+    }
+    
+    if(earliest_failure_time==Inf){
+      denominator_right = rep(0,M)
+    }else{
+      denominator_right = surv_prob_M[[length(surv_prob_M)]]
+      surv_prob_M = surv_prob_M[-length(surv_prob_M)]
+    }
+    
+    denominator = denominator_left - denominator_right
+    if(M==1){
+      predicted_surv_prob = matrix(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}), byrow = F)
+    }else{
+      predicted_surv_prob = t(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}))
+    }
+    rownames(predicted_surv_prob) = survival_predict_times
+  }
+  
+  return(list(predicted_surv_prob=predicted_surv_prob,
+              predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope,
+              predicted_psa_acceleration = predicted_psa_acceleration,
+              predicted_dre_prob=predicted_dre_prob))
+}
+
+getTrueFutureOutcomes = function(object, patient_data, posterior_b,
+                               latest_survival_time=0, earliest_failure_time=Inf, 
+                               survival_predict_times=NULL, dre_predict_times=NULL,
+                               psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
+                               TdistDf=3, M=200){
+  
+  posterior_b = matrix(posterior_b)
+  
+  mcmc_betas_dre = matrix(object$statistics$postMeans$betas1)
+  mcmc_betas_psa = matrix(object$statistics$postMeans$betas2)
+  mcmc_sigma_psa = object$statistics$postMeans$sigma2
+  
+  if(!is.null(survival_predict_times)){
+    mcmc_alphas = matrix(object$statistics$postMeans$alphas)
+    mcmc_Bs_gammas = matrix(object$statistics$postMeans$Bs_gammas)
+    mcmc_gammas = matrix(object$statistics$postMeans$gammas)
+  }
+  M=1
+  
+  predicted_psa = predicted_psa_slope = predicted_psa_acceleration= NULL
+  predicted_dre_prob = predicted_surv_prob = NULL
+  
+  if(!is.null(psa_predict_times)){
+    predicted_psa = psaXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
+    predicted_psa_slope = psaSlopeXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
+    predicted_psa_acceleration = psaAccelerationXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
+    
+    if(addRandomError==T){
+      predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
+    }
+    
+    rownames(predicted_psa) = rownames(predicted_psa_slope) = 
+      rownames(predicted_psa_acceleration) = psa_predict_times
+  }
+  
+  if(!is.null(dre_predict_times)){
+    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$Age[1], dre_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
+    rownames(predicted_dre_prob) = dre_predict_times
+  }
+  
+  if(!is.null(survival_predict_times)){
+    survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
+    
+    integration_time_pairs = rep(c(latest_survival_time, survival_predict_times, earliest_failure_time), each=2)
+    integration_time_pairs = integration_time_pairs[!integration_time_pairs %in% c(0, Inf)]
+    integration_time_pairs = c(0, integration_time_pairs[-length(integration_time_pairs)])
+    
+    integration_time_pairs = split(integration_time_pairs, rep(1:(length(integration_time_pairs)/2), each=2))
+    
+    patient_age = patient_data$Age[1]
+    baseline_hazard_knots=object$control$knots
+    baseline_hazard_ordSpline=object$control$ordSpline
+    
+    #here c(0,1) is just an arbitrary choice to check how many Quad points are used
+    n_quad_points = length(getGaussianQuadWeightsPoints(c(0,1))$points)
+    alpha_dre_matrix = matrix(mcmc_alphas[1,], nrow = n_quad_points, ncol=M, byrow = T)
+    alpha_psa_matrix = matrix(mcmc_alphas[2,], nrow = n_quad_points, ncol=M, byrow = T)
+    alpha_psa_slope_matrix = matrix(mcmc_alphas[3,], nrow = n_quad_points, ncol=M, byrow = T)
+    W_gammas = model.matrix(survivalFormula, data = data.frame(Age = rep(patient_age,n_quad_points))) %*% mcmc_gammas
+    
+    cum_hazard_M = rep(0, M)
+    surv_prob_M = list()
+    for(i in 1:length(integration_time_pairs)){
+      wp = getGaussianQuadWeightsPoints(integration_time_pairs[[i]])
+      GQ_h0_matrix =  splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
+                                   x = wp$points, outer.ok = T)
+      
+      GQ_h0 = exp(GQ_h0_matrix %*% mcmc_Bs_gammas)
+      fitted_psa_alpha = psaXbetaZb(patient_age, wp$points, mcmc_betas_psa, posterior_b[3:7,]) * alpha_psa_matrix
+      fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, wp$points, mcmc_betas_psa[4:7,], posterior_b[4:7,]) * alpha_psa_slope_matrix
+      fitted_dre_alpha = dreLogOddsXbetaZb(patient_age, wp$points, mcmc_betas_dre, posterior_b[1:2,]) * alpha_dre_matrix
+      total_hazard = GQ_h0 * exp(W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha + fitted_dre_alpha)
+      
+      cum_hazard_M = cum_hazard_M + apply(total_hazard, 2, FUN = function(x){sum(x * wp$weights)})
+      surv_prob_M[[i]] = exp(-cum_hazard_M)
+    }
+    
+    if(latest_survival_time==0){
+      denominator_left = rep(1, M)
     }else{
       denominator_left = surv_prob_M[[1]]
       surv_prob_M = surv_prob_M[2:length(surv_prob_M)]
@@ -387,3 +506,4 @@ getExpectedFutureOutcomes = function(object, patient_data,
 }
 environment(get_b_fullBayes) = asNamespace("JMbayes")
 environment(getExpectedFutureOutcomes) = asNamespace("JMbayes")
+environment(getTrueFutureOutcomes) = asNamespace("JMbayes")

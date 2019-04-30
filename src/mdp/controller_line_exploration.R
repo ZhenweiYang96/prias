@@ -5,16 +5,16 @@ library(ggplot2)
 
 #source the common methods for all algorithms
 source("src/mdp/common/simCommon.R")
-source("src/mdp/common/prediction.R")
-source("src/mdp/tree_search/forward_search_no_Y.R")
+source("src/mdp/common/prediction_psa_cat.R")
+source("src/mdp/tree_search/despot_y.R")
 
 max_cores = 3
-N_MCMC_ITER = 250
+N_MCMC_ITER = 150
 N_DESPOT_SCENARIOS = 500
-discount_factors = c(0, 1, 0.5)
+discount_factors = c(1, 0.5)
 max_depth = 3
 
-file = list.files(path='C:/Users/838035/prias/Rdata/mdp/final_res/', full.names = T)[1]
+file = list.files(path='C://Users//838035//prias//Rdata//mdp//final_res', full.names = T)[1]
 load(file)
 print(paste("Loaded file:", 1))
 
@@ -33,8 +33,6 @@ LOWER_UPPER_PSA_LIMITS = by(data = testData$testDs$log2psaplus1,
                               })
                             })
 names(LOWER_UPPER_PSA_LIMITS) = PSA_CHECK_UP_TIME[1:length(LOWER_UPPER_PSA_LIMITS)]
-
-
 
 value_functions = c(10)
 thresholds = c(0.15, 0.10)
@@ -68,7 +66,8 @@ for(t in 1:length(thresholds)){
       sim_res[[t]][[df]][[v]] = vector("list", length(slopes))
       names(sim_res[[t]][[df]][[v]])=slopes
       
-      for(bs in 1:length(slopes)){
+      bsOutwards = 4 + c(0, -1,1,-2,2,-3,3)
+      for(bs in bsOutwards){
         biopsy_slope = slopes[bs]
         print(paste("Running for biopsy slope number",bs, ":", biopsy_slope))
         
@@ -78,7 +77,7 @@ for(t in 1:length(thresholds)){
         sim_res[[t]][[df]][[v]][[bs]] = vector("list", length(slopes))
         names(sim_res[[t]][[df]][[v]][[bs]])=slopes
         
-        for(ws in 1:length(slopes)){
+        for(ws in bsOutwards){
           wait_slope = slopes[ws]
           
           if(wait_slope != biopsy_slope){
@@ -93,14 +92,14 @@ for(t in 1:length(thresholds)){
             sim_res[[t]][[df]][[v]][[bs]][[ws]] = testData$testDs.id[pat_subset, c("P_ID", "Age", "progression_time")]
             
             sim_res[[t]][[df]][[v]][[bs]][[ws]][,c('optimal_action', 
-                                                   'optimal_action_chain',
                                                    'optimal_reward')] = 
               foreach(pid=sim_res[[t]][[df]][[v]][[bs]][[ws]]$P_ID, 
                       .packages = c("splines", "JMbayes"), 
                       .combine = 'rbind') %dopar%{
+
                         source("src/mdp/common/simCommon.R")
-                        source("src/mdp/common/prediction.R")
-                        source("src/mdp/tree_search/forward_search_no_Y.R")
+                        source("src/mdp/common/prediction_psa_cat.R")
+                        source("src/mdp/tree_search/despot_y.R")
                         
                         patient_df = testData$testDs[testData$testDs$P_ID==pid,]
                         if(is.null(patient_df$psa_cat_data)){
@@ -131,12 +130,11 @@ for(t in 1:length(thresholds)){
                                            max_decision_epoch = max_decision_epoch,
                                            cur_biopsies = nb, max_biopsies = Inf)
                         
-                        print(act$G6_probs[1])
                         return(c('optimal_action'=act$optimal_action, 
-                                 'optimal_action_chain'=act$optimal_action_chain,
                                  'optimal_reward'=act$optimal_reward))
                       }
-            save(sim_res[[t]], file = paste0("Rdata/mdp/decision_for_lines/sim_res_",
+            res = sim_res[[t]]
+            save(res, file = paste0("Rdata/mdp/decision_for_lines/sim_res_y_Pc2",
                                         threshold, ".Rdata"))
           }
         }
