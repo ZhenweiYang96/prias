@@ -39,12 +39,15 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
   conditionalFailTime = sum(wt * rowMeans(conditionalSurvProbs))
   
   for(current_action in available_actions){
+    
+    future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
+    
     current_reward = G6_prob * getReward(G6, current_action, 
                                          current_decision_epoch, latest_survival_time, 
-                                         cur_biopsies, conditionalFailTime) +
+                                         future_cur_biopsies, conditionalFailTime) +
       (1-G6_prob) * getReward(G7, current_action, 
                               current_decision_epoch, latest_survival_time, 
-                              cur_biopsies, conditionalFailTime)
+                              future_cur_biopsies, conditionalFailTime)
     
     fut_optimal_action_chain = ""
     if(next_decision_epoch <= max_decision_epoch){
@@ -60,7 +63,6 @@ selectAction = function(patient_df, current_decision_epoch, G6_probs=NULL,
         G6_probs[-1]
       }
       
-      future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
       #This is a conditional one. if action is biopsy, the following is conditional upon not detecting anything currently
       #becuase in the other case, you reach a state AT and future reward is 0
       future_action_reward = selectAction(patient_df, next_decision_epoch, future_G6_probs,

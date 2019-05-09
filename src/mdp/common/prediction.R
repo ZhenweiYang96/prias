@@ -399,7 +399,7 @@ getExpectedFutureOutcomes = function(object, patient_data,
               predicted_dre_prob=predicted_dre_prob))
 }
 
-getTrueFutureOutcomes = function(object, patient_data, posterior_b,
+getTrueFutureOutcomes = function(object, age, posterior_b,
                                latest_survival_time=0, earliest_failure_time=Inf, 
                                survival_predict_times=NULL, dre_predict_times=NULL,
                                psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
@@ -422,9 +422,9 @@ getTrueFutureOutcomes = function(object, patient_data, posterior_b,
   predicted_dre_prob = predicted_surv_prob = NULL
   
   if(!is.null(psa_predict_times)){
-    predicted_psa = psaXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
-    predicted_psa_slope = psaSlopeXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
-    predicted_psa_acceleration = psaAccelerationXbetaZb(patient_data$Age[1], psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
+    predicted_psa = psaXbetaZb(age, psa_predict_times, mcmc_betas_psa, posterior_b[3:7,])
+    predicted_psa_slope = psaSlopeXbetaZb(age, psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
+    predicted_psa_acceleration = psaAccelerationXbetaZb(age, psa_predict_times, mcmc_betas_psa[4:7,], posterior_b[4:7,])
     
     if(addRandomError==T){
       predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
@@ -435,7 +435,7 @@ getTrueFutureOutcomes = function(object, patient_data, posterior_b,
   }
   
   if(!is.null(dre_predict_times)){
-    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$Age[1], dre_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
+    predicted_dre_prob = plogis(dreLogOddsXbetaZb(age, dre_predict_times, mcmc_betas_dre, posterior_b[1:2,]))
     rownames(predicted_dre_prob) = dre_predict_times
   }
   
@@ -448,7 +448,7 @@ getTrueFutureOutcomes = function(object, patient_data, posterior_b,
     
     integration_time_pairs = split(integration_time_pairs, rep(1:(length(integration_time_pairs)/2), each=2))
     
-    patient_age = patient_data$Age[1]
+    patient_age = age
     baseline_hazard_knots=object$control$knots
     baseline_hazard_ordSpline=object$control$ordSpline
     

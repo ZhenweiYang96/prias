@@ -33,12 +33,14 @@ selectAction = function(patient_df, current_decision_epoch,
   optimal_reward = -Inf
   
   for(current_action in available_actions){
+    future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
+    
     current_reward = G6_prob * getReward(G6, current_action, 
                                          current_decision_epoch, latest_survival_time, 
-                                         cur_biopsies) +
+                                         future_cur_biopsies) +
       (1-G6_prob) * getReward(G7, current_action,
                               current_decision_epoch, latest_survival_time, 
-                              cur_biopsies)
+                              future_cur_biopsies)
     
     fut_optimal_action_chain = vector("list", length(OUTCOME_CAT_NAMES))
     names(fut_optimal_action_chain) = OUTCOME_CAT_NAMES
@@ -61,7 +63,6 @@ selectAction = function(patient_df, current_decision_epoch,
           future_data$psa_cat_data = T
           future_data[, c("log2psaplus1", "high_dre")] = OUTCOME_PSA_DRE_CAT[o, ]
           
-          future_cur_biopsies = ifelse(current_action==BIOPSY, cur_biopsies + 1, cur_biopsies)
           future_action_reward = selectAction(patient_df=rbind(patient_df, future_data),
                                               current_decision_epoch=next_decision_epoch,
                                               future_latest_survival_time, earliest_failure_time,
