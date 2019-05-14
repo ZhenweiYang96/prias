@@ -1,4 +1,4 @@
-\begin{thebibliography}{2}
+\begin{thebibliography}{11}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -14,19 +14,128 @@
 \ifx\xfnm\undefined \def\xfnm[#1]{\unskip,\space#1}\fi
 \makeatletter\def\@biblabel#1{#1.}\makeatother
 %Type = Article
-\bibitem[{Feynman and {Vernon Jr.}(1963)}]{Feynman1963118}
-\bibinfo{author}{Feynman\xfnm[ R.]}, \bibinfo{author}{{Vernon Jr.}\xfnm[ F.]}.
-\newblock \bibinfo{title}{The theory of a general quantum system interacting
-  with a linear dissipative system}.
-\newblock \emph{\bibinfo{journal}{Annals of Physics}}
-  \bibinfo{year}{1963};\bibinfo{volume}{24}:\bibinfo{pages}{118--173}.
-\newblock \DOIprefix\doi{10.1016/0003-4916(63)90068-X}.
+\bibitem[{Briganti et~al.(2018)Briganti, Fossati, Catto, Cornford, Montorsi,
+  Mottet, Wirth and Van~Poppel}]{briganti2018active}
+\bibinfo{author}{Briganti\xfnm[ A.]}, \bibinfo{author}{Fossati\xfnm[ N.]},
+  \bibinfo{author}{Catto\xfnm[ J.W.]}, \bibinfo{author}{Cornford\xfnm[ P.]},
+  \bibinfo{author}{Montorsi\xfnm[ F.]}, \bibinfo{author}{Mottet\xfnm[ N.]},
+  \bibinfo{author}{Wirth\xfnm[ M.]}, \bibinfo{author}{Van~Poppel\xfnm[ H.]}.
+\newblock \bibinfo{title}{Active surveillance for low-risk prostate cancer: the
+  {European Association of Urology} position in 2018}.
+\newblock \emph{\bibinfo{journal}{European urology}}
+  \bibinfo{year}{2018};\bibinfo{volume}{74}(\bibinfo{number}{3}):\bibinfo{pages}{357--368}.
 %Type = Article
-\bibitem[{Dirac(1953)}]{Dirac1953888}
-\bibinfo{author}{Dirac\xfnm[ P.]}.
-\newblock \bibinfo{title}{The lorentz transformation and absolute time}.
-\newblock \emph{\bibinfo{journal}{Physica}}
-  \bibinfo{year}{1953};\bibinfo{volume}{19}(\bibinfo{number}{1-–12}):\bibinfo{pages}{888--896}.
-\newblock \DOIprefix\doi{10.1016/S0031-8914(53)80099-6}.
+\bibitem[{Bul et~al.(2013)Bul, Zhu, Valdagni, Pickles, Kakehi, Rannikko,
+  Bjartell, Van Der~Schoot, Cornel, Conti et~al.}]{bul2013active}
+\bibinfo{author}{Bul\xfnm[ M.]}, \bibinfo{author}{Zhu\xfnm[ X.]},
+  \bibinfo{author}{Valdagni\xfnm[ R.]}, \bibinfo{author}{Pickles\xfnm[ T.]},
+  \bibinfo{author}{Kakehi\xfnm[ Y.]}, \bibinfo{author}{Rannikko\xfnm[ A.]},
+  \bibinfo{author}{Bjartell\xfnm[ A.]}, \bibinfo{author}{Van Der~Schoot\xfnm[
+  D.K.]}, \bibinfo{author}{Cornel\xfnm[ E.B.]}, \bibinfo{author}{Conti\xfnm[
+  G.N.]}, et~al.
+\newblock \bibinfo{title}{Active surveillance for low-risk prostate cancer
+  worldwide: the prias study}.
+\newblock \emph{\bibinfo{journal}{European urology}}
+  \bibinfo{year}{2013};\bibinfo{volume}{63}(\bibinfo{number}{4}):\bibinfo{pages}{597--603}.
+%Type = Article
+\bibitem[{Nieboer et~al.(2018)Nieboer, Tomer, Rizopoulos, Roobol and
+  Steyerberg}]{nieboer2018active}
+\bibinfo{author}{Nieboer\xfnm[ D.]}, \bibinfo{author}{Tomer\xfnm[ A.]},
+  \bibinfo{author}{Rizopoulos\xfnm[ D.]}, \bibinfo{author}{Roobol\xfnm[ M.J.]},
+  \bibinfo{author}{Steyerberg\xfnm[ E.W.]}.
+\newblock \bibinfo{title}{Active surveillance: a review of risk-based, dynamic
+  monitoring}.
+\newblock \emph{\bibinfo{journal}{Translational andrology and urology}}
+  \bibinfo{year}{2018};\bibinfo{volume}{7}(\bibinfo{number}{1}):\bibinfo{pages}{106--115}.
+%Type = Article
+\bibitem[{Loeb et~al.(2014)Loeb, Carter, Schwartz, Fagerlin, Braithwaite and
+  Lepor}]{loeb2014heterogeneity}
+\bibinfo{author}{Loeb\xfnm[ S.]}, \bibinfo{author}{Carter\xfnm[ H.B.]},
+  \bibinfo{author}{Schwartz\xfnm[ M.]}, \bibinfo{author}{Fagerlin\xfnm[ A.]},
+  \bibinfo{author}{Braithwaite\xfnm[ R.S.]}, \bibinfo{author}{Lepor\xfnm[ H.]}.
+\newblock \bibinfo{title}{Heterogeneity in active surveillance protocols
+  worldwide}.
+\newblock \emph{\bibinfo{journal}{Reviews in urology}}
+  \bibinfo{year}{2014};\bibinfo{volume}{16}(\bibinfo{number}{4}):\bibinfo{pages}{202--203}.
+%Type = Article
+\bibitem[{Bokhorst et~al.(2015)Bokhorst, Alberts, Rannikko, Valdagni, Pickles,
+  Kakehi, Bangma, Roobol and {\relax PRIAS study
+  group}}]{bokhorst2015compliance}
+\bibinfo{author}{Bokhorst\xfnm[ L.P.]}, \bibinfo{author}{Alberts\xfnm[ A.R.]},
+  \bibinfo{author}{Rannikko\xfnm[ A.]}, \bibinfo{author}{Valdagni\xfnm[ R.]},
+  \bibinfo{author}{Pickles\xfnm[ T.]}, \bibinfo{author}{Kakehi\xfnm[ Y.]},
+  \bibinfo{author}{Bangma\xfnm[ C.H.]}, \bibinfo{author}{Roobol\xfnm[ M.J.]},
+  \bibinfo{author}{{\relax PRIAS study group}\xfnm[]}.
+\newblock \bibinfo{title}{Compliance rates with the {Prostate Cancer Research
+  International Active Surveillance (PRIAS)} protocol and disease
+  reclassification in noncompliers}.
+\newblock \emph{\bibinfo{journal}{European Urology}}
+  \bibinfo{year}{2015};\bibinfo{volume}{68}(\bibinfo{number}{5}):\bibinfo{pages}{814--821}.
+%Type = Article
+\bibitem[{Inoue et~al.(2018)Inoue, Lin, Newcomb, Leonardson, Ankerst, Gulati,
+  Carter, Trock, Carroll, Cooperberg et~al.}]{inoue2018comparative}
+\bibinfo{author}{Inoue\xfnm[ L.Y.]}, \bibinfo{author}{Lin\xfnm[ D.W.]},
+  \bibinfo{author}{Newcomb\xfnm[ L.F.]}, \bibinfo{author}{Leonardson\xfnm[
+  A.S.]}, \bibinfo{author}{Ankerst\xfnm[ D.]}, \bibinfo{author}{Gulati\xfnm[
+  R.]}, \bibinfo{author}{Carter\xfnm[ H.B.]}, \bibinfo{author}{Trock\xfnm[
+  B.J.]}, \bibinfo{author}{Carroll\xfnm[ P.R.]},
+  \bibinfo{author}{Cooperberg\xfnm[ M.R.]}, et~al.
+\newblock \bibinfo{title}{Comparative analysis of biopsy upgrading in four
+  prostate cancer active surveillance cohorts}.
+\newblock \emph{\bibinfo{journal}{Annals of internal medicine}}
+  \bibinfo{year}{2018};\bibinfo{volume}{168}(\bibinfo{number}{1}):\bibinfo{pages}{1--9}.
+%Type = Article
+\bibitem[{Bratt et~al.(2013)Bratt, Carlsson, Holmberg, Holmberg, Johansson,
+  Josefsson, Nilsson, Nyberg, Robinsson, Sandberg et~al.}]{bratt2013study}
+\bibinfo{author}{Bratt\xfnm[ O.]}, \bibinfo{author}{Carlsson\xfnm[ S.]},
+  \bibinfo{author}{Holmberg\xfnm[ E.]}, \bibinfo{author}{Holmberg\xfnm[ L.]},
+  \bibinfo{author}{Johansson\xfnm[ E.]}, \bibinfo{author}{Josefsson\xfnm[ A.]},
+  \bibinfo{author}{Nilsson\xfnm[ A.]}, \bibinfo{author}{Nyberg\xfnm[ M.]},
+  \bibinfo{author}{Robinsson\xfnm[ D.]}, \bibinfo{author}{Sandberg\xfnm[ J.]},
+  et~al.
+\newblock \bibinfo{title}{The study of active monitoring in sweden (sams): a
+  randomized study comparing two different follow-up schedules for active
+  surveillance of low-risk prostate cancer}.
+\newblock \emph{\bibinfo{journal}{Scandinavian journal of urology}}
+  \bibinfo{year}{2013};\bibinfo{volume}{47}(\bibinfo{number}{5}):\bibinfo{pages}{347--355}.
+%Type = Article
+\bibitem[{Ito et~al.(2003)Ito, Yamamoto, Ohi, Takechi, Kurokawa, Suzuki and
+  Yamanaka}]{ito2003natural}
+\bibinfo{author}{Ito\xfnm[ K.]}, \bibinfo{author}{Yamamoto\xfnm[ T.]},
+  \bibinfo{author}{Ohi\xfnm[ M.]}, \bibinfo{author}{Takechi\xfnm[ H.]},
+  \bibinfo{author}{Kurokawa\xfnm[ K.]}, \bibinfo{author}{Suzuki\xfnm[ K.]},
+  \bibinfo{author}{Yamanaka\xfnm[ H.]}.
+\newblock \bibinfo{title}{Natural history of psa increase with and without
+  prostate cancer}.
+\newblock \emph{\bibinfo{journal}{Urology}}
+  \bibinfo{year}{2003};\bibinfo{volume}{62}(\bibinfo{number}{1}):\bibinfo{pages}{64--69}.
+%Type = Book
+\bibitem[{Rizopoulos(2012)}]{rizopoulos2012joint}
+\bibinfo{author}{Rizopoulos\xfnm[ D.]}.
+\newblock \bibinfo{title}{Joint Models for Longitudinal and Time-to-Event Data:
+  With Applications in R}.
+\newblock \bibinfo{publisher}{CRC Press}; \bibinfo{year}{2012}.
+\newblock ISBN \bibinfo{isbn}{9781439872864}.
+%Type = Article
+\bibitem[{Tomer et~al.(2019)Tomer, Nieboer, Roobol, Steyerberg and
+  Rizopoulos}]{tomer2019}
+\bibinfo{author}{Tomer\xfnm[ A.]}, \bibinfo{author}{Nieboer\xfnm[ D.]},
+  \bibinfo{author}{Roobol\xfnm[ M.J.]}, \bibinfo{author}{Steyerberg\xfnm[
+  E.W.]}, \bibinfo{author}{Rizopoulos\xfnm[ D.]}.
+\newblock \bibinfo{title}{Personalized schedules for surveillance of low-risk
+  prostate cancer patients}.
+\newblock \emph{\bibinfo{journal}{Biometrics}}
+  \bibinfo{year}{2019};\bibinfo{volume}{75}(\bibinfo{number}{1}):\bibinfo{pages}{153--162}.
+\newblock \DOIprefix\doi{10.1111/biom.12940}.
+%Type = Article
+\bibitem[{Coley et~al.(2017)Coley, Zeger, Mamawala, Pienta and
+  Carter}]{coley2017prediction}
+\bibinfo{author}{Coley\xfnm[ R.Y.]}, \bibinfo{author}{Zeger\xfnm[ S.L.]},
+  \bibinfo{author}{Mamawala\xfnm[ M.]}, \bibinfo{author}{Pienta\xfnm[ K.J.]},
+  \bibinfo{author}{Carter\xfnm[ H.B.]}.
+\newblock \bibinfo{title}{Prediction of the pathologic gleason score to inform
+  a personalized management program for prostate cancer}.
+\newblock \emph{\bibinfo{journal}{European urology}}
+  \bibinfo{year}{2017};\bibinfo{volume}{72}(\bibinfo{number}{1}):\bibinfo{pages}{135--141}.
 
 \end{thebibliography}

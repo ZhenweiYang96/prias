@@ -1,0 +1,15 @@
+*.aux
+*.toc
+*.out
+*.bbl
+*.blg
+*.log
+*.xml
+*.gz
+*.lnk
+*.lot
+*.lof
+*.ttt
+*.fff
+*.ent
+supplementary-blx.bib

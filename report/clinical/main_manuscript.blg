@@ -1,5 +1,5 @@
-This is BibTeX, Version 0.99d (TeX Live 2017/W32TeX)
-Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: main_manuscript.aux
 The style file: model6-num-names.bst
 A level-1 auxiliary file: mainmatter/abstract.aux
@@ -8,47 +8,47 @@ A level-1 auxiliary file: mainmatter/pat_method.aux
 A level-1 auxiliary file: mainmatter/result.aux
 A level-1 auxiliary file: mainmatter/discussion.aux
 A level-1 auxiliary file: mainmatter/conclusion.aux
-Database file #1: mybibfile.bib
+Database file #1: bibliography.bib
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-You've used 2 entries,
+You've used 11 entries,
             3094 wiz_defined-function locations,
-            681 strings with 5820 characters,
-and the built_in function-call counts, 1480 in all, are:
-= -- 119
-> -- 20
-< -- 2
-+ -- 14
-- -- 6
-* -- 163
-:= -- 199
-add.period$ -- 8
-call.type$ -- 2
-change.case$ -- 10
-chr.to.int$ -- 2
-cite$ -- 2
-duplicate$ -- 124
-empty$ -- 130
-format.name$ -- 12
-if$ -- 276
+            740 strings with 8664 characters,
+and the built_in function-call counts, 10686 in all, are:
+= -- 674
+> -- 485
+< -- 1
++ -- 182
+- -- 158
+* -- 1437
+:= -- 1437
+add.period$ -- 35
+call.type$ -- 11
+change.case$ -- 54
+chr.to.int$ -- 11
+cite$ -- 11
+duplicate$ -- 881
+empty$ -- 831
+format.name$ -- 189
+if$ -- 1961
 int.to.chr$ -- 1
-int.to.str$ -- 3
-missing$ -- 19
-newline$ -- 29
-num.names$ -- 6
-pop$ -- 26
+int.to.str$ -- 12
+missing$ -- 167
+newline$ -- 74
+num.names$ -- 33
+pop$ -- 162
 preamble$ -- 1
-purify$ -- 10
+purify$ -- 55
 quote$ -- 0
-skip$ -- 26
+skip$ -- 125
 stack$ -- 0
-substring$ -- 126
-swap$ -- 74
+substring$ -- 746
+swap$ -- 664
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 12
+type$ -- 64
 warning$ -- 0
-while$ -- 10
+while$ -- 51
 width$ -- 0
-write$ -- 48
+write$ -- 173
