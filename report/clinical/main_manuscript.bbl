@@ -1,4 +1,4 @@
-\begin{thebibliography}{11}
+\begin{thebibliography}{12}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -98,6 +98,19 @@
   surveillance of low-risk prostate cancer}.
 \newblock \emph{\bibinfo{journal}{Scandinavian journal of urology}}
   \bibinfo{year}{2013};\bibinfo{volume}{47}(\bibinfo{number}{5}):\bibinfo{pages}{347--355}.
+%Type = Article
+\bibitem[{Bruinsma et~al.(2018)Bruinsma, Zhang, Roobol, Bangma, Steyerberg,
+  Nieboer, Van~Hemelrijck, consortium, Trock, Ehdaie et~al.}]{gap3_2018}
+\bibinfo{author}{Bruinsma\xfnm[ S.M.]}, \bibinfo{author}{Zhang\xfnm[ L.]},
+  \bibinfo{author}{Roobol\xfnm[ M.J.]}, \bibinfo{author}{Bangma\xfnm[ C.H.]},
+  \bibinfo{author}{Steyerberg\xfnm[ E.W.]}, \bibinfo{author}{Nieboer\xfnm[
+  D.]}, \bibinfo{author}{Van~Hemelrijck\xfnm[ M.]},
+  \bibinfo{author}{consortium\xfnm[ M.F.G.A.P.P.C.A.S.G.]},
+  \bibinfo{author}{Trock\xfnm[ B.]}, \bibinfo{author}{Ehdaie\xfnm[ B.]}, et~al.
+\newblock \bibinfo{title}{The movember foundation's gap3 cohort: a profile of
+  the largest global prostate cancer active surveillance database to date}.
+\newblock \emph{\bibinfo{journal}{BJU international}}
+  \bibinfo{year}{2018};\bibinfo{volume}{121}(\bibinfo{number}{5}):\bibinfo{pages}{737--744}.
 %Type = Article
 \bibitem[{Ito et~al.(2003)Ito, Yamamoto, Ohi, Takechi, Kurokawa, Suzuki and
   Yamanaka}]{ito2003natural}
