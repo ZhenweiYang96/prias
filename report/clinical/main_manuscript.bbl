@@ -1,4 +1,4 @@
-\begin{thebibliography}{11}
+\begin{thebibliography}{12}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \providecommand{\href}[2]{#2}
@@ -111,13 +111,6 @@
   the largest global prostate cancer active surveillance database to date}.
 \newblock \emph{\bibinfo{journal}{BJU international}}
   \bibinfo{year}{2018};\bibinfo{volume}{121}(\bibinfo{number}{5}):\bibinfo{pages}{737--744}.
-%Type = Book
-\bibitem[{Rizopoulos(2012)}]{rizopoulos2012joint}
-\bibinfo{author}{Rizopoulos\xfnm[ D.]}.
-\newblock \bibinfo{title}{Joint Models for Longitudinal and Time-to-Event Data:
-  With Applications in R}.
-\newblock \bibinfo{publisher}{CRC Press}; \bibinfo{year}{2012}.
-\newblock ISBN \bibinfo{isbn}{9781439872864}.
 %Type = Article
 \bibitem[{Tomer et~al.(2019)Tomer, Nieboer, Roobol, Steyerberg and
   Rizopoulos}]{tomer2019}
@@ -139,5 +132,19 @@
   a personalized management program for prostate cancer}.
 \newblock \emph{\bibinfo{journal}{European urology}}
   \bibinfo{year}{2017};\bibinfo{volume}{72}(\bibinfo{number}{1}):\bibinfo{pages}{135--141}.
+%Type = Book
+\bibitem[{Rizopoulos(2012)}]{rizopoulos2012joint}
+\bibinfo{author}{Rizopoulos\xfnm[ D.]}.
+\newblock \bibinfo{title}{Joint Models for Longitudinal and Time-to-Event Data:
+  With Applications in R}.
+\newblock \bibinfo{publisher}{CRC Press}; \bibinfo{year}{2012}.
+\newblock ISBN \bibinfo{isbn}{9781439872864}.
+%Type = Article
+\bibitem[{Rizopoulos(2016)}]{rizopoulosJMbayes}
+\bibinfo{author}{Rizopoulos\xfnm[ D.]}.
+\newblock \bibinfo{title}{The {R} package {JMbayes} for fitting joint models
+  for longitudinal and time-to-event data using {MCMC}}.
+\newblock \emph{\bibinfo{journal}{Journal of Statistical Software}}
+  \bibinfo{year}{2016};\bibinfo{volume}{72}(\bibinfo{number}{7}):\bibinfo{pages}{1--46}.
 
 \end{thebibliography}
