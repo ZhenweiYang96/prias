@@ -15,8 +15,24 @@ colnames(prias[,usefulCols])
 prias = prias[,usefulCols]
 prias$Date_birth = (prias$Date_dianosis - prias$Date_birth)/YEAR_DIVIDER
 colnames(prias)[2] = "age"
+colnames(prias)[11] = "Treatment_Type"
+colnames(prias)[12] = "Treatment_Reason"
+levels(prias$Treatment_Reason) = trimws(prias$Treatment_Reason)
+levels(prias$Treatment_Type) = trimws(prias$Treatment_Type)
+
+#Check how many NA
+table(prias$Treatment_Reason, useNA = 'always')
+prias$Treatment_Reason[prias$Treatment_Reason %in% c("", "N/A")] = NA
+prias$Treatment_Reason=droplevels(prias$Treatment_Reason)
+
+table(prias$Treatment_Type, useNA = 'always')
+prias$Treatment_Type[prias$Treatment_Type %in% c("", "N/A")] = NA
+prias$Treatment_Type=droplevels(prias$Treatment_Type)
+
+#Do not change the order
 prias$Gleason_sum_2 = prias$Gleason1_2 + prias$Gleason2_2
 prias$N_A = NA
+prias$gleason_rad_prost = prias$Gleason1_Rad_Prost + prias$Gleason2_Rad_Prost
 
 #Remove patients with NA, and age less than 30 (includes negative ages)
 prias = prias[!is.na(prias$age) & prias$age > 30,]
@@ -43,6 +59,8 @@ prias = prias[prias$P_ID != 317,]
 #Lets remove all patients who have a Gleason > 6 at first visit
 prias = prias[!(prias$Gleason_sum %in% c(7,8,9,10)),]
 
+#Now going to check reasons of treatment etc.
+
 #The column 584 is a dummy column to handle Gleason2 which is 
 #gleason taken again at the time of diagnosis
 prias_long=reshape(prias, direction='long', idvar='P_ID', timevar = "visit_number",
@@ -66,6 +84,9 @@ table(prias_long$gleason_sum, useNA = "always")
 table(prias_long$ncores, useNA = "always")
 table(prias_long$ncores_pc, useNA = "always")
 
+# No one tried to write ncores_pc=0 as NA. thank god
+sum(!is.na(prias_long$ncores) & is.na(prias_long$ncores_pc))
+
 #Some cores are NA, 99, 999 or 0, and some cores_pc are 99 or NA. 
 #Lets set those Gleason and cores as NA
 temp_filter = prias_long$ncores %in% c(NA, 99, 999, 0) | prias_long$ncores_pc %in% c(NA, 99)
@@ -87,7 +108,7 @@ prias_long$ncores[temp_filter] = NA
 prias_long$ncores_pc[temp_filter] = NA
 
 #Lets check first row data, we have 48 rows per patient
-firstRowLongFilter = seq(1, nrow(prias_long), by = 48)
+firstRowLongFilter = (prias_long$visit_number==1)
 
 #Set Gleason = 6 for all patients on row 1
 prias_long$gleason_sum[firstRowLongFilter] = 6
@@ -131,6 +152,26 @@ prias_long$psa[temp_filter] = NA
 prias_long$dom_psa[temp_filter] = NA
 prias_long$year_psa[temp_filter] = NA
 
+#Now some PSA are 0.0 and PSA jumps to suddenly zero, such as this guy
+View(prias_long[prias_long$P_ID==548, c("psa","year_psa")])
+
+#There are 41 such people
+unique(prias_long$P_ID[prias_long$psa %in% 0])
+
+#I checked every row of these 41 people
+#PSA is likely really 0 only for patients 1631, 2521, 2565, 2654
+#Because first two really had low PSA overall, and last two has 0 PSA after a few years
+#I am converting all zero psa to 0.1 as well
+View(prias_long[prias_long$P_ID %in% unique(prias_long$P_ID[prias_long$psa %in% 0]), c("P_ID","psa","year_psa")])
+
+temp_filter = prias_long$psa %in% 0 & !(prias_long$P_ID %in% c(1631, 2521, 2565, 2654))
+prias_long$psa[temp_filter] = NA
+prias_long$dom_psa[temp_filter] = NA
+prias_long$year_psa[temp_filter] = NA
+
+#for the 4 aforementioned patients I set PSA 0 as 0.1
+prias_long$psa[prias_long$psa %in% 0] = 0.1
+
 #Now lets focus on DRE
 table(prias_long$dre, useNA = "always")
 table(prias_long$dre_recode, useNA = "always")
@@ -143,23 +184,215 @@ prias_long$dre = droplevels(prias_long$dre)
 table(prias_long$dre, useNA = "always")
 
 #Now lets focus on dummy indicator, dont think of active indicator
-prias_long$dom_psa[prias_long$dummy==1] = NA
-prias_long$psa[prias_long$dummy==1] = NA
-prias_long$dom_psa[prias_long$dummy==1] = NA
-prias_long$dom_dre_gleason[prias_long$dummy==1] = NA
-prias_long$dre[prias_long$dummy==1] = NA
-prias_long$dre_recode[prias_long$dummy==1] = NA
-prias_long$gleason_1[prias_long$dummy==1] = NA
-prias_long$gleason_2[prias_long$dummy==1] = NA
-prias_long$gleason_sum[prias_long$dummy==1] = NA
-prias_long$ncores[prias_long$dummy==1] = NA
-prias_long$ncores_pc[prias_long$dummy==1] = NA
-prias_long$year_dre_gleason[prias_long$dummy==1] = NA
-prias_long$year_psa[prias_long$dummy==1] = NA
+temp_filter = prias_long$dummy==1
+prias_long$dom_psa[temp_filter] = NA
+prias_long$psa[temp_filter] = NA
+prias_long$dom_psa[temp_filter] = NA
+prias_long$dom_dre_gleason[temp_filter] = NA
+prias_long$dre[temp_filter] = NA
+prias_long$dre_recode[temp_filter] = NA
+prias_long$gleason_1[temp_filter] = NA
+prias_long$gleason_2[temp_filter] = NA
+prias_long$gleason_sum[temp_filter] = NA
+prias_long$ncores[temp_filter] = NA
+prias_long$ncores_pc[temp_filter] = NA
+prias_long$year_dre_gleason[temp_filter] = NA
+prias_long$year_psa[temp_filter] = NA
+
+#Now lets focus on surgery years
+summary(prias_long$year_surgery)
+
+table(prias_long$gleason_rad_prost, useNA = "always")
+
+temp_filter = is.na(prias_long$year_surgery) | 
+  prias_long$year_surgery<=0 | 
+  prias_long$gleason_rad_prost %in% c(0, NA)
+  
+prias_long$gleason_rad_prost[temp_filter] = NA
+prias_long$Surgerydate[temp_filter] = NA
+prias_long$year_surgery[temp_filter] = NA
+
+#Now the same for discontinued status and its date
+summary(prias_long$year_discontinued)
+#None is negative although some are zero, dont worry about them
+which(prias_long$year_discontinued %in% 0)
+
+#this is not an issue for dead date
+summary(prias_long$year_dead)
+
+#Now lets focus on dates, first for PSA, lets order dates
+psa_date_right_order = order(prias_long$P_ID, prias_long$year_psa, na.last = T)
+prias_long$psa = prias_long$psa[psa_date_right_order]
+prias_long$year_psa = prias_long$year_psa[psa_date_right_order]
+prias_long$dom_psa = prias_long$dom_psa[psa_date_right_order]
+
+#Now ofcourse some people have the psa repeated on same date or almost same date
+#I only care if it is measured on the same day twice, so 107 such people are there
+psa_date_diff_issue = by(prias_long$year_psa, INDICES = prias_long$P_ID, FUN = function(x){
+  any(duplicated(x[!is.na(x)]))
+})
+table(psa_date_diff_issue)
+
+temp_filter = unlist(by(prias_long$year_psa, INDICES = prias_long$P_ID, FUN = duplicated))
+prias_long$psa[temp_filter] = NA
+prias_long$year_psa[temp_filter] = NA
+prias_long$dom_psa[temp_filter] = NA
+
+#Now lets focus on dates of DRE and gleason, lets order them first
+dregleason_date_right_order = order(prias_long$P_ID, prias_long$year_dre_gleason, 
+                                    prias_long$gleason_sum, prias_long$dre,
+                                    na.last = T)
+prias_long$dom_dre_gleason = prias_long$dom_dre_gleason[dregleason_date_right_order]
+prias_long$year_dre_gleason = prias_long$year_dre_gleason[dregleason_date_right_order]
+prias_long$dre = prias_long$dre[dregleason_date_right_order]
+prias_long$dre_recode = prias_long$dre_recode[dregleason_date_right_order]
+prias_long$gleason_1 = prias_long$gleason_1[dregleason_date_right_order]
+prias_long$gleason_2 = prias_long$gleason_2[dregleason_date_right_order]
+prias_long$gleason_sum = prias_long$gleason_sum[dregleason_date_right_order]
+prias_long$ncores = prias_long$ncores[dregleason_date_right_order]
+prias_long$ncores_pc = prias_long$ncores_pc[dregleason_date_right_order]
+
+#Now ofcourse some people have the psa repeated on same date or almost same date
+#I only care if it is measured on the same day twice, so 107 such people are there
+dregleason_date_diff_issue = by(prias_long$year_dre_gleason, 
+                                INDICES = prias_long$P_ID, 
+                                FUN = function(x){
+  sum(duplicated(x[!is.na(x)]))
+})
+table(dregleason_date_diff_issue)
+
+View(prias_long[prias_long$P_ID %in% as.numeric(names(which(dregleason_date_diff_issue>4))),])
+
+#Remove everything but first duplicated item
+temp_filter = unlist(by(prias_long$year_dre_gleason, INDICES = prias_long$P_ID, FUN = duplicated))
+prias_long$dom_dre_gleason[temp_filter] = NA
+prias_long$year_dre_gleason[temp_filter] = NA
+prias_long$dre[temp_filter] = NA
+prias_long$dre_recode[temp_filter] = NA
+prias_long$gleason_1[temp_filter] = NA
+prias_long$gleason_2[temp_filter] = NA
+prias_long$gleason_sum[temp_filter] = NA
+prias_long$ncores[temp_filter] = NA
+prias_long$ncores_pc[temp_filter] = NA
 
 #Now lets focus on gleason reclassification and risk reclassification
 #What do we do with Gleason equal to 0?
 table(prias_long$gleason_sum)
 
+#In all cases when gleason is zero, number of cores are non zero and non NA
 table(prias_long$ncores[prias_long$gleason_sum %in% 0], useNA = 'always')
+
+#But in some cases ncores_pc are more than 0
 table(prias_long$ncores_pc[prias_long$gleason_sum %in% 0], useNA = 'always')
+
+#So first lets give Gleason 6 to all those Gleason 0, who have ncores>0 (default) 
+#and ncores_pc == 0. that is no cancer found
+temp_filter = prias_long$gleason_sum %in% 0 & prias_long$ncores_pc %in% 0
+prias_long$gleason_1[temp_filter] = 3
+prias_long$gleason_2[temp_filter] = 3
+prias_long$gleason_sum[temp_filter] = 6
+
+#now some gleason 0 but non zero ncores_pc. lets check these patients thoroughly
+temp_pid_filter=prias_long$P_ID[prias_long$gleason_sum %in% 0 & !(prias_long$ncores %in% c(NA,0))]
+View(prias_long[prias_long$P_ID %in% temp_pid_filter,
+                c("P_ID","ncores","ncores_pc", "gleason_sum", "year_dre_gleason")])
+
+#After thorough checking only a biopsy for 2520 was an issue. 
+#there was not much gap in the biopsies. for the rest set gleason 0 to 6
+temp_filter = prias_long$gleason_sum %in% 0 & prias_long$ncores_pc > 0
+prias_long$gleason_1[temp_filter & prias_long$P_ID!=2520] = 3
+prias_long$gleason_2[temp_filter & prias_long$P_ID!=2520] = 3
+prias_long$gleason_sum[temp_filter & prias_long$P_ID!=2520] = 6
+
+prias_long$gleason_1[temp_filter & prias_long$P_ID==2520] = NA
+prias_long$gleason_2[temp_filter & prias_long$P_ID==2520] = NA
+prias_long$gleason_sum[temp_filter & prias_long$P_ID==2520] = NA
+
+#Now we gotta if two biopsies are too close to each other, 
+#because thats not correct, but also doesn't matter coz
+#at the end the time interval matters...and that will only be affected
+#by a few decimals
+biopsy_diff_times = by(prias_long, prias_long$P_ID, FUN = function(x){
+  min(diff(x$year_dre_gleason[!is.na(x$gleason_sum)]))
+})
+
+biopsy_diff_times_pid = as.numeric(names(sort(biopsy_diff_times)[1:50]))
+View(prias_long[prias_long$P_ID %in% biopsy_diff_times_pid & !is.na(prias_long$gleason_sum), 
+                c("P_ID", "gleason_sum", "psa","dre","year_dre_gleason")])
+
+
+#Create new high_gleason variable (takes care of NA)
+prias_long$high_gleason = prias_long$gleason_sum > 6
+
+#Now find the Gleason upgrade time for each patient
+reclassification_interval = by(prias_long, prias_long$P_ID, FUN = function(x){
+  high_gleason = x$high_gleason[!is.na(x$high_gleason)]
+  year_dre_gleason = x$year_dre_gleason[!is.na(x$high_gleason)]
+  
+  c(max(year_dre_gleason[which(high_gleason==F)]), min(year_dre_gleason[which(high_gleason==T)]))
+})
+
+reclassification_interval = matrix(unlist(reclassification_interval), ncol = 2, byrow = T)
+
+prias_long$latest_survival_time = rep(reclassification_interval[,1], each=48)
+prias_long$earliest_failure_time = rep(reclassification_interval[,2], each=48)
+prias_long$reclassification = !is.infinite(prias_long$earliest_failure_time)
+prias_long$log2psaplus1 = log(prias_long$psa + 1, base = 2)
+prias_long$high_dre = prias_long$dre!='T1c'
+
+#Reassign new visit numbers
+prias_long$visit_number = 1:48
+cut_times = by(prias_long, prias_long$P_ID, function(x){
+  if(x$reclassification[1]==T){
+    return(x$earliest_failure_time[1])
+  }else{
+    return(max(x$year_psa[!is.na(x$psa)], 
+               x$year_dre_gleason[!(is.na(x$dre) & is.na(x$gleason_sum))]))
+  }
+})
+
+prias_long$year_max_followup = rep(cut_times, each=48)
+
+prias_long = prias_long[!(is.na(prias_long$year_psa) & is.na(prias_long$year_dre_gleason)) &
+                        prias_long$year_psa <= prias_long$year_max_followup & 
+                          prias_long$year_dre_gleason <= prias_long$year_max_followup,]
+
+#some people have follow-up after dying, seems wrong, so fixing it
+table(prias_long$year_max_followup > prias_long$year_dead)
+prias_long$year_dead[!is.na(prias_long$year_dead) & 
+                       prias_long$year_max_followup > prias_long$year_dead] = NA
+prias_long$Dead = !is.na(prias_long$year_dead)
+
+#some people have surgery date before maximum follow-up
+View(prias_long[!is.na(prias_long$year_surgery) & 
+                       prias_long$year_max_followup > prias_long$year_surgery,])
+
+#I checked them in detail, very strange. better leave it the way it is
+colnames(prias_long)
+
+prias_long = prias_long[,c("P_ID", "visit_number", "age", "reclassification",
+                           "latest_survival_time","earliest_failure_time",
+                           "year_max_followup",
+                           "Treatment_Type","Treatment_Reason",
+                           "year_discontinued","Dead", "year_dead", "gleason_rad_prost", "year_surgery",
+                           "psa", "log2psaplus1","year_psa", "dre","high_dre", 
+                           "gleason_sum","high_gleason", "year_dre_gleason")]
+
+#Now gonna make a single visitTimeYears Variable
+newds = by(prias_long, INDICES = prias_long$P_ID, function(x){
+  year_psa = x$year_psa
+  year_dre_gleason = x$year_dre_gleason
+  psa = x$psa
+  dre = x$dre
+  gleason_sum = x$gleason_sum
+  
+  year_visit = sort(unique(c(year_psa, year_dre_gleason)), decreasing = F)
+  new_gleason = new_dre = new_psa = rep(NA, length(year_visit))
+  levels(new_dre) = levels(prias_long$dre)
+  which_dregleason_indices = which(year_visit %in% year_dre_gleason) 
+  new_gleason[which_dregleason_indices] = gleason_sum
+  new_dre[which_dregleason_indices] = dre
+  new_psa[which(year_visit %in% year_psa)] = psa
+  
+  data.frame(year_visit, new_gleason, new_dre, new_psa)
+})
