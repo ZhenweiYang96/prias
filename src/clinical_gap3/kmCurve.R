@@ -1,3 +1,16 @@
+library(JMbayes)
+
+prias_psa = prias_long_final[!is.na(prias_long_final$psa),]
+X_Z = model.matrix(~0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)), 
+                   data = prias_psa)
+psacount_per_patient = table(prias_psa$P_ID)
+fitted_velocities = X_Z %*% mvJoint_psa$statistics$postMeans$betas1[-c(1:2)] +
+  apply(X_Z * mvJoint_psa$statistics$postMeans$b[rep(1:7813, psacount_per_patient),-1], MARGIN = 1, sum)
+summary(fitted_velocities)  
+round(quantile(fitted_velocities, probs = c(0.025,0.975)),2)
+
+load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
+
 npmle_plotdf_all=do.call('rbind', 
                          lapply(c("Hopkins", "London-KCL", "MSKCC", "PRIAS", "Toronto"), FUN = function(name){
                            survProb = 1 - cumsum(npmle_all[[name]]$pf)
@@ -33,3 +46,8 @@ npmle_plot_all = ggplot(data=npmle_plotdf_all) +
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",
        plot=npmle_plot_all, device=cairo_ps, height=5.5, width=5.5, dpi = 500)
+
+library(survminer)
+ggsurvplot(survfit(Surv(right_cens_time, reclassification) ~ 1, 
+                   data = prias_final.id), pval = TRUE, conf.int = TRUE,
+           risk.table = TRUE, risk.table.y.text.col = TRUE)

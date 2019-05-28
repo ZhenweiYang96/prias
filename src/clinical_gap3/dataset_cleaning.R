@@ -2,8 +2,12 @@ library(foreign)
 
 YEAR_DIVIDER = 24 * 60 * 60 * 365
 
-prias=read.spss("/home/a_tomer/Documents/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
-          to.data.frame = T)
+# prias=read.spss("/home/a_tomer/Documents/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
+#           to.data.frame = T)
+
+prias=read.spss("C:/Users/anirudhtomer/Documents/2019-04-10_dump.sav",
+           to.data.frame = T)
+
 
 usefulCols = c(1,2,3,4,6,7,8,14,15,16, 21,22,23,24,25,32,33,34,35,36,38,
                    63:200, 201:292, 385:430, 707:844,
@@ -34,8 +38,8 @@ prias$Gleason_sum_2 = prias$Gleason1_2 + prias$Gleason2_2
 prias$N_A = NA
 prias$gleason_rad_prost = prias$Gleason1_Rad_Prost + prias$Gleason2_Rad_Prost
 
-#Remove patients with NA, and age less than 30 (includes negative ages)
-prias = prias[!is.na(prias$age) & prias$age > 30,]
+#Remove patients with NA, and age less than 30 and age more than 90 (includes negative ages)
+prias = prias[!is.na(prias$age) & prias$age >= 30 & prias$age<=90,]
 
 #16 patients had a repeat Gleason measurement
 gl2_filter = !is.na(prias$Gleason_sum_2) & !is.na(prias$Date_dianosis2) & 
@@ -325,23 +329,46 @@ biopsy_diff_times_pid = as.numeric(names(sort(biopsy_diff_times)[1:50]))
 View(prias_long[prias_long$P_ID %in% biopsy_diff_times_pid & !is.na(prias_long$gleason_sum), 
                 c("P_ID", "gleason_sum", "psa","dre","year_dre_gleason")])
 
-
 #Create new high_gleason variable (takes care of NA)
 prias_long$high_gleason = prias_long$gleason_sum > 6
+
+#Now certain patients get a high gleason with a few cores...but they remain in study
+#later they undergo biopsy again and they get a low gleason 
+#we know Gleason is subject to error. in this case I will assume all Gleason before the
+#last high gleason are low gleason, even if the earlier gleasons were low
+#there are 18 such patients
+sum(by(prias_long$high_gleason, INDICES = prias_long$P_ID, is.unsorted, na.rm=T))
+
+#lets pick up these rows and make them all Gleason 6
+temp_filter = unlist(by(prias_long, INDICES = prias_long$P_ID, FUN = function(x){
+  #select all except the last one
+  if(is.unsorted(x$high_gleason, na.rm = T)){
+    return(!is.na(x$high_gleason) & x$year_dre_gleason < max(x$year_dre_gleason[!is.na(x$high_gleason)]))
+  }else{
+    return(rep(F, 48))
+  }
+}))
+
+prias_long$gleason_1[temp_filter] = 3
+prias_long$gleason_2[temp_filter] = 3
+prias_long$gleason_sum[temp_filter] = 6
+prias_long$high_gleason[temp_filter] = F
 
 #Now find the Gleason upgrade time for each patient
 reclassification_times = by(prias_long, prias_long$P_ID, FUN = function(x){
   high_gleason = x$high_gleason[!is.na(x$high_gleason)]
   year_dre_gleason = x$year_dre_gleason[!is.na(x$high_gleason)]
   
-  t1 = max(year_dre_gleason[which(high_gleason==F)])
-  t2 = min(year_dre_gleason[which(high_gleason==T)])
-  tright_cens = ifelse(t2==Inf, t1, 0.5 * (t1 + t2))
-  year_max_follow_up = ifelse(t2!=Inf, t2, 
+  t_end = min(year_dre_gleason[which(high_gleason==T)])
+  # A few patients have a Gleason 6 after they get Gleason 7...clearly measurement error issue
+  t_start = max(year_dre_gleason[which(high_gleason==F)])
+  
+  tright_cens = ifelse(t_end==Inf, t_start, 0.5 * (t_end))
+  year_max_follow_up = ifelse(t_end!=Inf, t_end, 
                               max(x$year_psa[!is.na(x$psa)], 
                                           x$year_dre_gleason[!(is.na(x$dre) & is.na(x$gleason_sum))]))
            
-  c(t1, t2, tright_cens, year_max_follow_up)
+  c(t_start, t_end, tright_cens, year_max_follow_up)
 })
 
 reclassification_times = matrix(unlist(reclassification_times), ncol = 4, byrow = T)
@@ -415,7 +442,7 @@ prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, fu
 }))
 
 prias_long_final = droplevels(prias_long_final)
-prias_long_final.id = prias_long_final[!duplicated(prias_long_final$P_ID),]
+prias_final.id = prias_long_final[!duplicated(prias_long_final$P_ID),]
 
-rm(list = setdiff(ls(), c("prias_long_final", "prias_long_final.id")))
+rm(list = setdiff(ls(), c("prias_long_final", "prias_final.id")))
 save.image(file="Rdata/gap3/PRIAS_2019/cleandata.Rdata")
