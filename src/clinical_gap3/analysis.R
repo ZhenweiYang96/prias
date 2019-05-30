@@ -51,17 +51,13 @@ startTime_mvglmer = Sys.time()
 mvglmer_psa = mvglmer(list(log2psaplus1 ~ age +
                                  ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)) + 
                                  (ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID)),
-                          data=prias_psa, families = list(gaussian), 
-                          control = list(n.iter=5000))
+                          data=prias_psa, families = list(gaussian), engine = "STAN",
+                          control = list(n.iter=10000))
 endTime_mvglmer = Sys.time()
 
 print(endTime_mvglmer - startTime_mvglmer)
-save(mvglmer_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_psa.Rdata")
-
-forms_psa = list("log2psaplus1" = "value",
-                 "log2psaplus1" = list(fixed = ~ 0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
-                                             random=~0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
-                                             indFixed = 4:7, indRandom=2:5, name = "slope"))
+save(mvglmer_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_psa_stanhome.Rdata")
+save(mvglmer_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_psa_stanpc2.Rdata")
 
 forms_psa = list("log2psaplus1" = "value",
                  "log2psaplus1" = list(fixed = ~ 0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
@@ -74,7 +70,8 @@ mvJoint_psa = mvJointModelBayes(mvglmer_psa, survModel,
                                 Formulas = forms_psa, control = list(n_cores=5))
 endTime_mvJoint = Sys.time()
 
-save(mvJoint_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_psa.Rdata")
+save(mvJoint_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_stanhome.Rdata")
+save(mvJoint_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_stanpc2.Rdata")
 
 rm(mvglmer_psa)
 rm(mvJoint_psa)

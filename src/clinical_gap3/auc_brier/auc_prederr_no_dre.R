@@ -15,7 +15,7 @@ large_centers = names(sort(by(longdata$center,
 
 set.seed(2019)
 M = 500
-t_starts = 0:9
+t_starts = seq(0, 9, by = 0.5)
 for(center_name in large_centers){
 
   load(paste0("Rdata/data/longdata_", center_name,".Rdata"))

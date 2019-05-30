@@ -5,7 +5,7 @@ YEAR_DIVIDER = 24 * 60 * 60 * 365
 # prias=read.spss("/home/a_tomer/Documents/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
 #           to.data.frame = T)
 
-prias=read.spss("C:/Users/anirudhtomer/Documents/2019-04-10_dump.sav",
+prias=read.spss("/home/a_tomer/Data/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
            to.data.frame = T)
 
 
@@ -407,6 +407,7 @@ prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, fu
   gleason_sum = x$gleason_sum
   
   new_year_visit = sort(unique(c(year_psa, year_dre_gleason)), decreasing = F)
+  new_dom_visit = sort(unique(c(x$dom_psa, x$dom_dre_gleason)), decreasing = F)
   
   new_psa = rep(NA, length(new_year_visit))
   new_psa[new_year_visit %in% year_psa] = psa
@@ -421,6 +422,7 @@ prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, fu
   data.frame(P_ID=x$P_ID[1], 
              visit_number=1:length(new_year_visit),
              age=x$age[1],
+             dom_diagnosis=x$dom_diagnosis[1],
              reclassification=x$reclassification[1],
              latest_survival_time = x$latest_survival_time[1],
              earliest_failure_time = x$earliest_failure_time[1],
@@ -436,6 +438,7 @@ prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, fu
              year_surgery = x$year_surgery[1],
              
              year_visit = new_year_visit,
+             dom_visit = new_dom_visit,
              psa = new_psa, log2psaplus1 = log(new_psa + 1, base = 2),
              dre = new_dre, palpable_dre = (new_dre!='T1c'),
              gleason_sum = new_gleason, high_gleason = new_gleason > 6)
@@ -445,4 +448,6 @@ prias_long_final = droplevels(prias_long_final)
 prias_final.id = prias_long_final[!duplicated(prias_long_final$P_ID),]
 
 rm(list = setdiff(ls(), c("prias_long_final", "prias_final.id")))
+prias_long_list = split(prias_long_final, f = prias_long_final$P_ID)
+
 save.image(file="Rdata/gap3/PRIAS_2019/cleandata.Rdata")

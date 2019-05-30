@@ -3,7 +3,7 @@ source('src/clinical_gap3/prediction_only_psa.R')
 
 compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_time=NA,
                             risk_thresholds = c(0.05, 0.1, 0.15), 
-                            horizon = 10, 
+                            horizon = 10, weight_by_horizon_risk=T,
                             M=500, CACHE_SIZE=200){
   #The various schedules we will compare are
   #biopsy every year
@@ -34,17 +34,23 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
                                      psa_predict_times = SURV_CACHE_TIMES, 
                                      psaDist = "Tdist", M = M, addRandomError = T)
   
-  SURV_CACHE_PSA = pred_res$predicted_psa
+  PSA_CACHE_FULL = pred_res$predicted_psa
   SURV_CACHE_MEAN = c(1,rowMeans(pred_res$predicted_surv_prob))
   #As many rows as the times at which surv is calculated
   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
   rm(pred_res)
   
-  #First convert to risk
-  COND_SURV_CACHE_MEAN = 1-SURV_CACHE_FULL
-  #then scale the probabilities
-  COND_SURV_CACHE_MEAN = COND_SURV_CACHE_MEAN / matrix(COND_SURV_CACHE_MEAN[CACHE_SIZE,], nrow=CACHE_SIZE, ncol=M, byrow = T)
-  COND_SURV_CACHE_MEAN = apply(1-COND_SURV_CACHE_MEAN,1, mean)
+  #First convert to conditional risk (condition on T<horizon)
+  COND_RISK_CACHE_FULL = t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-SURV_CACHE_FULL[CACHE_SIZE,])
+  }))
+  COND_SURV_CACHE_FULL = 1-COND_RISK_CACHE_FULL
+  #See I could do this 1- thing in one step, but this is for readability
+  rm(COND_RISK_CACHE_FULL)
+  
+  if(weight_by_horizon_risk==T){
+    COND_SURV_CACHE_FULL = SURV_CACHE_FULL
+  }
   
   horizon_surv_prob = min(SURV_CACHE_MEAN)
   
@@ -52,19 +58,20 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
   visit_nearest_indices = sapply(visit_schedule, FUN = function(x){
     which.min(abs(x-SURV_CACHE_TIMES))
   })  
-  surv_visit_schedule = SURV_CACHE_MEAN[visit_nearest_indices]
-  SURV_CACHE_PSA = SURV_CACHE_PSA[visit_nearest_indices,]
+  surv_schedule = SURV_CACHE_FULL[visit_nearest_indices,]
+  PSA_CACHE_FULL = PSA_CACHE_FULL[visit_nearest_indices,]
   
   #Now we calculate schedule and consequences
   
   #added 3 for prias, annual and biennial schedule
   res = vector("list", length=length(risk_thresholds)+ 3)
   names(res) = c(paste("Risk:", risk_thresholds), "prias","annual", "biennial")
+  
   for(i in 1:length(risk_thresholds)){
     threshold = risk_thresholds[i]
-    risk_schedule = getRiskSchedule(SURV_CACHE_TIMES, SURV_CACHE_MEAN, threshold, horizon, 
-                                    latest_survival_time, visit_schedule, surv_visit_schedule)
-    res[[i]] = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_MEAN,
+    risk_schedule = getRiskSchedule(SURV_CACHE_TIMES, SURV_CACHE_MEAN, 1-threshold, horizon, 
+                                    latest_survival_time, visit_schedule, surv_schedule)
+    res[[i]] = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_FULL,
                                risk_schedule, latest_survival_time)
   }
   
@@ -74,7 +81,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
     annual_schedule = annual_schedule[-length(annual_schedule)]
   }
   annual_schedule = c(annual_schedule, horizon)
-  res$annual = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_MEAN,
+  res$annual = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_FULL,
                                annual_schedule, latest_survival_time)
   
   #now make the biennial schedule
@@ -83,7 +90,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
     biennial_schedule = biennial_schedule[-length(biennial_schedule)]
   }
   biennial_schedule = c(biennial_schedule, horizon)
-  res$biennial = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_MEAN,
+  res$biennial = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_FULL,
                                  biennial_schedule, latest_survival_time)
   
   #now lets make the PRIAS schedule
@@ -93,12 +100,12 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
                                       patient_data$psa[!is.na(patient_data$psa)],
                                       patient_data$year_visit[!is.na(patient_data$psa)],
                                       visit_schedule,
-                                      apply(SURV_CACHE_PSA, MARGIN = 1, sample, size=1))
+                                      apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1))
     if(max(prias_schedule)>=(horizon-0.5)){
       prias_schedule = prias_schedule[-length(prias_schedule)]
     }
     prias_schedule = c(prias_schedule, horizon)
-    return(getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_MEAN,
+    return(getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_FULL,
                     prias_schedule, latest_survival_time))
   })
   
@@ -153,18 +160,21 @@ getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times,
 }
 
 getRiskSchedule = function(SURV_CACHE_TIMES, SURV_CACHE_MEAN,  
-                           risk_threshold, horizon,
+                           surv_threshold, horizon,
                            latest_survival_time,
-                           visit_schedule, surv_visit_schedule){
+                           visit_schedule, surv_schedule){
   proposed_biopsy_times = c()
-  latest_surv_prob = 1
   latest_biopsy_time = latest_survival_time
+  
+  surv_schedule_temp = surv_schedule
   for(i in 1:length(visit_schedule)){
-    if((latest_surv_prob - surv_visit_schedule[i]) >= risk_threshold & 
+    if(mean(surv_schedule_temp[i,]) <= surv_threshold & 
        (visit_schedule[i]-latest_biopsy_time)>=MIN_BIOPSY_GAP){
       latest_biopsy_time = visit_schedule[i]
       proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
-      latest_surv_prob = surv_visit_schedule[i]
+      surv_schedule_temp = t(apply(surv_schedule, 1, FUN = function(x){
+        x/surv_schedule[i,]
+      }))
     }
   }
   
@@ -178,41 +188,45 @@ getRiskSchedule = function(SURV_CACHE_TIMES, SURV_CACHE_MEAN,
   return(proposed_biopsy_times)
 }
 
-getConsequences = function(SURV_TIMES, SURV_MEAN, 
+getConsequences = function(cache_times, cache_surv_full, 
                            proposed_biopsy_times, latest_survival_time){
   
   #Now we create intervals in which to integrate the conditional surv prob
   if(length(proposed_biopsy_times)==1){
-    intervals = list(c(latest_survival_time,proposed_biopsy_times))
+    biop_intervals = list(c(latest_survival_time,proposed_biopsy_times))
   }else{
-    intervals = c(latest_survival_time,
+    biop_intervals = c(latest_survival_time,
                   rep(proposed_biopsy_times[-length(proposed_biopsy_times)],each=2),
                   proposed_biopsy_times[length(proposed_biopsy_times)])
-    intervals = split(intervals, rep(1:(length(intervals)/2), each=2))
+    biop_intervals = split(biop_intervals, rep(1:(length(biop_intervals)/2), each=2))
   }
   
-  delay_prob = lapply(intervals, function(interval){
-    lower_limit = interval[1]
-    upper_limit = interval[2]
+  res = vector("list", length(biop_intervals))
+  for(j in 1:length(biop_intervals)){
+    wt_points=getGaussianQuadWeightsPoints(biop_intervals[[j]])
+    lower_limit = biop_intervals[[j]][1]
+    upper_limit = biop_intervals[[j]][2]
     
-    total_marginal_prob = SURV_MEAN[which.min(abs(lower_limit-SURV_TIMES))] -
-      SURV_MEAN[which.min(abs(upper_limit-SURV_TIMES))]
+    lower_limit_nearest_index = which.min(abs(lower_limit-cache_times))
+    upper_limit_nearest_index = which.min(abs(upper_limit-cache_times))
+    res[[j]]$cum_risk_interval = cache_surv_full[lower_limit_nearest_index,] - 
+      cache_surv_full[upper_limit_nearest_index,]
     
-    wt_points=getGaussianQuadWeightsPoints(interval)
-    
-    expected_fail_time = lower_limit + sum(sapply(wt_points$points, FUN = function(x){
-      prob_at_x_scaled = SURV_MEAN[which.min(abs(x-SURV_TIMES))] -
-        SURV_MEAN[which.min(abs(upper_limit-SURV_TIMES))]
-      prob_at_x_scaled = prob_at_x_scaled / total_marginal_prob
-    }) * wt_points$weights)
-    
-    delay = upper_limit - expected_fail_time
-    
-    return(c(delay=delay, total_marginal_prob=total_marginal_prob))
-  })
+    cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
+      cum_surv_at_points = cache_surv_full[which.min(abs(wt_points$points[i]-cache_times)),] - cache_surv_full[upper_limit_nearest_index,]
+      scaled_cum_surv_at_points = cum_surv_at_points/res[[j]]$cum_risk_interval
+      
+      return(wt_points$weights[i] * scaled_cum_surv_at_points)
+    })
   
-  return(list(delay_prob = delay_prob,
-              expected_delay = sum(sapply(delay_prob, FUN = prod)),
-              prop_total_biopsies = length(proposed_biopsy_times),
-              proposed_biopsy_times=proposed_biopsy_times))
+    res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time,1,sum))
+  }
+  
+  expected_delay = mean(apply(sapply(res, FUN = function(x){
+    x$delay * x$cum_risk_interval
+  }),1, sum, na.rm=T),na.rm=T)
+  
+  return(list(expected_delay = expected_delay,
+              total_biopsies = length(proposed_biopsy_times),
+              biopsy_times=proposed_biopsy_times))
 }

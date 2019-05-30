@@ -1,0 +1,41 @@
+.no-margin{
+  margin: 0px 0px 0px 0px;
+}
+
+.nav-tabs a{
+  font-size: 20px;
+}
+
+#biopsy_decision_yes{
+  color: red;
+  font-size: 18px;
+}
+
+#biopsy_decision_no{
+  color: #04A4DC;
+  font-size: 18px;
+}
+
+.observed_graph_title{
+  text-align: center;
+}
+
+#impact_check_msg{
+  color: #04A4DC;
+  font-weight: bold;
+}
+
+#info_boxplots{
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+#biopsy_threshold_reason_title{
+  color: black;
+  font-size: 18px;
+}
+
+#biopsy_threshold_reason{
+  text-align: justify;
+  text-justify: inter-word;
+}

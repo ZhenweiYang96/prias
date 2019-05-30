@@ -82,7 +82,7 @@ getGaussianQuadWeightsPoints = function(lower_upper_limit){
 
 #When M=0 it becomes empirical bayes
 get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_failure_time=Inf,
-                           scale = 1.6, psaDist = "normal", TdistDf=3, M=200,
+                           scale = 1.6, psaDist = "Tdist", TdistDf=3, M=200,
                            optim_methods = c("BFGS", "L-BFGS-B", "CG")){
   
   #Obs data X and Z matrices for longitudinal part
@@ -235,7 +235,7 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
 getExpectedFutureOutcomes = function(object, patient_data, 
                                      latest_survival_time=0, earliest_failure_time=Inf, 
                                      survival_predict_times=NULL,
-                                     psa_predict_times=NULL, addRandomError=F, psaDist = "normal", 
+                                     psa_predict_times=NULL, addRandomError=F, psaDist = "Tdist", 
                                      TdistDf=3, M=200){
   repeat{
     post_b_beta = try(get_b_fullBayes(object, patient_data,
@@ -243,6 +243,8 @@ getExpectedFutureOutcomes = function(object, patient_data,
                                       scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
     if(!inherits(post_b_beta, 'try-error')){
       break
+    }else{
+      print(post_b_beta)
     }
     
     earliest_failure_time = earliest_failure_time + abs(jitter(0, amount = 0.05))
@@ -285,6 +287,7 @@ getExpectedFutureOutcomes = function(object, patient_data,
     rownames(predicted_psa) = rownames(predicted_psa_slope) = psa_predict_times
   }
   
+  predicted_surv_prob = NULL
   if(!is.null(survival_predict_times)){
     survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
     
