@@ -1,15 +1,20 @@
-source('src/clinical_gap3/constants.R')
-source('src/clinical_gap3/prediction_only_psa.R')
-
 compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_time=NA,
                             risk_thresholds = c(0.05, 0.1, 0.15), 
                             horizon = 10, weight_by_horizon_risk=T,
+                            min_biopsy_gap = 1,
                             M=500, CACHE_SIZE=200){
   #The various schedules we will compare are
   #biopsy every year
   #biopsy every 2 years
   #PRIAS
   #risk 5%, 10% and 15%
+  
+  #Decision Epochs in years
+  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+  #DRE check up time years
+  DRE_CHECK_UP_TIME = seq(0, horizon, 0.5)
+  
+  BIOPSY_TEST_TIMES = DRE_CHECK_UP_TIME
   
   if(is.na(cur_visit_time)){
     cur_visit_time = max(patient_data$year_visit)
@@ -24,7 +29,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
   
   if(cur_visit_time < latest_survival_time){
     stop("Current visit time should be more than latest survival time")
-  }else if((cur_visit_time - latest_survival_time)<MIN_BIOPSY_GAP){
+  }else if((cur_visit_time - latest_survival_time)<min_biopsy_gap){
     stop("No need for biopsy as current time should be more than latest survival by the minimum biopsy gap")
   }
   
@@ -70,7 +75,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
   for(i in 1:length(risk_thresholds)){
     threshold = risk_thresholds[i]
     risk_schedule = getRiskSchedule(SURV_CACHE_TIMES, SURV_CACHE_MEAN, 1-threshold, horizon, 
-                                    latest_survival_time, visit_schedule, surv_schedule)
+                                    latest_survival_time, visit_schedule, surv_schedule, min_biopsy_gap)
     res[[i]] = getConsequences(SURV_CACHE_TIMES, COND_SURV_CACHE_FULL,
                                risk_schedule, latest_survival_time)
   }
@@ -100,7 +105,8 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
                                       patient_data$psa[!is.na(patient_data$psa)],
                                       patient_data$year_visit[!is.na(patient_data$psa)],
                                       visit_schedule,
-                                      apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1))
+                                      apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1),
+                                      min_biopsy_gap)
     if(max(prias_schedule)>=(horizon-0.5)){
       prias_schedule = prias_schedule[-length(prias_schedule)]
     }
@@ -125,7 +131,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
 }
 
 getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times, 
-                            visit_schedule, future_log2psaplus1){
+                            visit_schedule, future_log2psaplus1, min_biopsy_gap){
   
   fixed_schedule = c(1,4,7,10,15)
   
@@ -140,14 +146,14 @@ getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times,
     
     #if switch to annual schedule
     if(psa_dt>=0 & psa_dt<=10){
-      if((visit_schedule[i] - latest_biopsy_time) >= MIN_BIOPSY_GAP){
+      if((visit_schedule[i] - latest_biopsy_time) >= min_biopsy_gap){
         latest_biopsy_time = visit_schedule[i]
         proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
       }
       #else wait
     }else{
       if(visit_schedule[i] %in% fixed_schedule){
-        if((visit_schedule[i] - latest_biopsy_time) >= MIN_BIOPSY_GAP){
+        if((visit_schedule[i] - latest_biopsy_time) >= min_biopsy_gap){
           latest_biopsy_time = visit_schedule[i]
           proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
         }
@@ -162,14 +168,15 @@ getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times,
 getRiskSchedule = function(SURV_CACHE_TIMES, SURV_CACHE_MEAN,  
                            surv_threshold, horizon,
                            latest_survival_time,
-                           visit_schedule, surv_schedule){
+                           visit_schedule, surv_schedule,
+                           min_biopsy_gap){
   proposed_biopsy_times = c()
   latest_biopsy_time = latest_survival_time
   
   surv_schedule_temp = surv_schedule
   for(i in 1:length(visit_schedule)){
     if(mean(surv_schedule_temp[i,]) <= surv_threshold & 
-       (visit_schedule[i]-latest_biopsy_time)>=MIN_BIOPSY_GAP){
+       (visit_schedule[i]-latest_biopsy_time)>=min_biopsy_gap){
       latest_biopsy_time = visit_schedule[i]
       proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
       surv_schedule_temp = t(apply(surv_schedule, 1, FUN = function(x){

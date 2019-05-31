@@ -1,11 +1,14 @@
 load("/home/a_tomer/Google Drive/PhD/src/prias/Rdata/gap3/PRIAS_2019/mvJoint_psa.Rdata")
 print("Done")
 source("prediction_only_psa.R")
+source("riskSchedule.R")
 
 #load("appdata.Rdata")
-MAX_FOLLOW_UP = 13.5
+MAX_FOLLOW_UP = 10
+YEAR_DIVIDER = 24 * 60 * 60 * 365
 SPSS_ORIGIN_DATE = "1582-10-14"
 DATE_PRINT_FORMAT = "%b %e, %Y"
+DATE_PRINT_FORMAT_ABBREVIATED = "%b %y"
 FONT_SIZE=15
 POINT_SIZE=4
 M=500
@@ -14,8 +17,9 @@ DANGER_COLOR = "#c71c22"
 THEME_COLOR = "#2fa4e7"
 THEME_COLOR_DARK = "#033a6f"
 
-getHumanReadableDate = function(spss_date){
-  format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), format = DATE_PRINT_FORMAT)
+getHumanReadableDate = function(spss_date, abbreviated=F){
+  format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), 
+         format = ifelse(abbreviated, DATE_PRINT_FORMAT_ABBREVIATED, DATE_PRINT_FORMAT))
 }
 
 psaObsDataGraph = function(data){
@@ -56,6 +60,51 @@ psaObsDataGraph = function(data){
     xlab("Follow-up time (years)") + 
     ylab("PSA (ng/mL)")
   return(plot)
+}
+
+cumRiskGraph = function(data){
+  
+  last_visit_time = data$year_max_followup[1]
+  if(last_visit_time >= MAX_FOLLOW_UP){
+    return(NULL)
+  }
+  
+  latest_survival_time = data$latest_survival_time[1]
+  
+  pred_times = seq(last_visit_time, MAX_FOLLOW_UP, length.out=50)
+  
+  xTicks = seq(last_visit_time, MAX_FOLLOW_UP, by=1)
+  xTicks_spps_dates = data$dom_diagnosis[1] + xTicks*YEAR_DIVIDER
+  xlabels = sapply(xTicks_spps_dates, getHumanReadableDate, abbreviated=T)
+  xlabels[1] = paste0(getHumanReadableDate(xTicks_spps_dates[1]),"\n(Current Visit)")
+  
+  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa, data,
+                                             data$latest_survival_time[1],
+                                             data$earliest_failure_time[1],
+                                             survival_predict_times = pred_times,
+                                             M = M)$predicted_surv_prob
+  
+  mean_risk_prob = apply(1-pred_surv_prob,1, mean)
+  lower_risk_prob = apply(1-pred_surv_prob,1, quantile, probs=c(0.025))
+  upper_risk_prob = apply(1-pred_surv_prob,1, quantile, probs=c(0.975))
+  
+  cumRiskPlot = ggplot() + 
+    geom_line(aes(x=pred_times, y=mean_risk_prob), color=DANGER_COLOR) + 
+    geom_ribbon(aes(x=pred_times, ymin=lower_risk_prob,
+                    ymax=upper_risk_prob), fill=DANGER_COLOR, alpha=0.25) + 
+    theme_bw() + 
+    theme(axis.text = element_text(size = FONT_SIZE),
+          axis.title = element_text(size = FONT_SIZE),
+          legend.position = "bottom", legend.direction = "horizontal") + 
+    scale_x_continuous(breaks = xTicks, labels=xlabels,
+                       limits = c(last_visit_time, MAX_FOLLOW_UP))+
+    scale_y_continuous(breaks = seq(0,1, 0.25), 
+                       labels= paste0(seq(0,1, 0.25)*100, "%"),
+                      limits = c(0,1)) +
+    xlab("Future Dates") + 
+    ylab("Cumulative Risk of Gleason Upgrade (%)")
+  
+  return(cumRiskPlot)
 }
 
 riskGaugeGraph = function(data, visit_time){

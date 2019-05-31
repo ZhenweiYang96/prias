@@ -86,6 +86,35 @@ shinyServer(function(input, output, session) {
     return(riskGaugeGraph(data, futureVisitTime))
   })
   
+  output$plot_cum_risk=renderPlot({
+    inFile <- input$patientFile
+    
+    if (is.null(inFile)){
+      return(NULL)
+    }
+    
+    data = read.csv(inFile$datapath, header=TRUE, dec = input$dec,
+                    sep = input$sep, quote = input$quote)
+    data = data[data$year_visit<=MAX_FOLLOW_UP,]
+    
+    return(cumRiskGraph(data))
+  })
+  
+  output$cum_risk_gauge = renderPlot({
+    inFile <- input$patientFile
+    
+    if (is.null(inFile)){
+      return(NULL)
+    }
+    
+    data = read.csv(inFile$datapath, header=TRUE, dec = input$dec,
+                    sep = input$sep, quote = input$quote)
+    data = data[data$year_visit<=MAX_FOLLOW_UP,]
+    
+    futureVisitTime = data$year_max_followup[1] + input$risk_pred_time
+    return(riskGaugeGraph(data, futureVisitTime))
+  })
+  
   output$table_biopsy_options = renderTable({
     inFile <- input$patientFile
     
@@ -96,11 +125,42 @@ shinyServer(function(input, output, session) {
                     sep = input$sep, quote = input$quote)
     data = data[data$year_visit<=MAX_FOLLOW_UP,]
     
-    horizon = input$horizon_biopsy
-    min_gap_biopsy = input$year_gap_biopsy
+    biopsy_schedules = compareSchedules(data, data$year_max_followup[1], 
+                     data$latest_survival_time[1], 
+                     horizon = MAX_FOLLOW_UP, 
+                     min_biopsy_gap = input$year_gap_biopsy)
     
-    output$biopsy_options_graph = renderPlot(getBiopsyOptionsGraph(options_df))
+    schedules = c("5% Risk", "10% Risk", "15% Risk", 
+                  "PRIAS", "Yearly", "Every 2 Years")
+    expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay") * 12
+    total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
     
-    return(NULL)
+    biopsy_times = do.call('c', lapply(biopsy_schedules$schedules, "[[", "biopsy_times"))
+    plotDf = data.frame(Schedule=rep(schedules, total_biopsies), 
+                        biopsy_times)
+    
+    schedule_tab = data.frame("Schedule"=schedules, 
+               "Delay (months)"=expected_delays,
+               "Total Biopsies" = total_biopsies, check.names = F)
+    
+    xTicks = seq(data$year_max_followup[1], 
+                 MAX_FOLLOW_UP, by=1)
+    xTicks_spps_dates = data$dom_diagnosis[1] + xTicks*YEAR_DIVIDER
+    xlabels = sapply(xTicks_spps_dates, getHumanReadableDate, abbreviated=T)
+    xlabels[1] = paste0(getHumanReadableDate(xTicks_spps_dates[1]),"\n(Current Visit)")
+    
+    biopsy_times_plot = ggplot(plotDf) + 
+      geom_point(aes(x=biopsy_times, y=Schedule), color=THEME_COLOR,
+                 size=POINT_SIZE) + 
+      theme_bw() + xlab("Proposed Dates of Biopsy") + 
+      scale_x_continuous(breaks = xTicks, labels=xlabels,
+                         limits = c(data$year_max_followup[1], MAX_FOLLOW_UP))+
+      ylab("Schedule") + theme(axis.text = element_text(size = FONT_SIZE),
+                               axis.title = element_text(size = FONT_SIZE),
+                               legend.position = "bottom", legend.direction = "horizontal")
+    
+    output$biopsy_options_graph = renderPlot(biopsy_times_plot)
+    
+    return(schedule_tab)
   })
 })
