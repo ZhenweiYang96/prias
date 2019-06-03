@@ -65,7 +65,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
     mainPanel(
       tabsetPanel(type = "tabs",
                   tabPanel("Patient Data", value="patient_data", tags$br(), 
-                           splitLayout(cellWidths = c("18%","5%", "65%"),
+                           splitLayout(cellWidths = c("25%","5%", "60%"),
                              tags$div(class="panel panel-default",
                                                 tags$div(class="panel-heading",
                                                          "Patient History"),

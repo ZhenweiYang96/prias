@@ -56,6 +56,7 @@ psaObsDataGraph = function(data){
     theme_bw() + 
     theme(axis.text = element_text(size = FONT_SIZE),
           axis.title = element_text(size = FONT_SIZE),
+          legend.text = element_text(size = FONT_SIZE),
       legend.position = "bottom", legend.direction = "horizontal") + 
     xlab("Follow-up time (years)") + 
     ylab("PSA (ng/mL)")
