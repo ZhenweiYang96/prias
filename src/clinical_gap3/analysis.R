@@ -46,6 +46,10 @@ survModel = survreg(Surv(latest_survival_time, earliest_failure_time, type = "in
                     data = prias_final.id, model = TRUE)
 save(survModel, file="Rdata/gap3/PRIAS_2019/survModel.Rdata")
 
+model1 = lme(fixed=log2psaplus1 ~ age + ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)), 
+             random = ~ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID, 
+             data = prias_psa, control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"))
+
 prias_psa = droplevels(prias_long_final[!is.na(prias_long_final$psa),])
 startTime_mvglmer = Sys.time()
 mvglmer_psa = mvglmer(list(log2psaplus1 ~ age +

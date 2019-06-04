@@ -1,4 +1,5 @@
 library(JMbayes)
+load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 
 prias_psa = prias_long_final[!is.na(prias_long_final$psa),]
 X_Z = model.matrix(~0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)), 
@@ -26,26 +27,35 @@ npmle_plotdf_all=do.call('rbind',
                          }))
 levels(npmle_plotdf_all$Cohort)[1:2] = c("JHAS", "KCL")
 
+cohort_names = unique(npmle_plotdf_all$Cohort)
+cohort_labpos_x = c(8.75, 10, 9.375, 10, 8.5)
+cohort_labpos_y = c(0.52, 1, 0.625, 0.42, 0.79)
+
 FONT_SIZE=13
-npmle_plot_all = ggplot(data=npmle_plotdf_all) + 
-  geom_line(aes(x=timePoints, y=riskProbs, group=Cohort, 
-                color=Cohort)) +  
-  coord_cartesian(xlim=c(0,10)) + 
+npmle_plot_all = ggplot() + 
+  geom_line(aes(x=npmle_plotdf_all$timePoints, 
+                y=npmle_plotdf_all$riskProbs, 
+                group=npmle_plotdf_all$Cohort, 
+                color=npmle_plotdf_all$Cohort)) +  
+  geom_label(aes(x=cohort_labpos_x, 
+                 y=cohort_labpos_y, 
+                 label=cohort_names,
+                 color=cohort_names))+
+  coord_cartesian(xlim=c(0,10.2)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
         axis.text=element_text(size=FONT_SIZE),
-        legend.position = "bottom",
+        legend.position = "none",
         legend.text = element_text(size=FONT_SIZE-4),
         axis.line = element_line(), 
         plot.margin = margin(0, 0, 0, 0, "pt")) + 
-  guides(colour = guide_legend(nrow = 1)) +
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
   ylab("Cumulative risk of reclassification (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",
-       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=5.5, dpi = 500)
+       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
 
 library(survminer)
 ggsurvplot(survfit(Surv(right_cens_time, reclassification) ~ 1, 

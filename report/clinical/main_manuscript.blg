@@ -13,45 +13,45 @@ Database file #1: bibliography.bib
 Warning--I didn't find a database entry for "bruinsma2016active"
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
-You've used 12 entries,
+You've used 15 entries,
             3094 wiz_defined-function locations,
-            750 strings with 9185 characters,
-and the built_in function-call counts, 11772 in all, are:
-= -- 756
-> -- 516
+            767 strings with 9719 characters,
+and the built_in function-call counts, 14163 in all, are:
+= -- 939
+> -- 573
 < -- 2
-+ -- 198
-- -- 168
-* -- 1568
-:= -- 1579
-add.period$ -- 38
-call.type$ -- 12
-change.case$ -- 59
-chr.to.int$ -- 12
-cite$ -- 12
-duplicate$ -- 979
-empty$ -- 928
-format.name$ -- 200
-if$ -- 2171
++ -- 222
+- -- 186
+* -- 1860
+:= -- 1891
+add.period$ -- 46
+call.type$ -- 15
+change.case$ -- 74
+chr.to.int$ -- 15
+cite$ -- 15
+duplicate$ -- 1190
+empty$ -- 1141
+format.name$ -- 227
+if$ -- 2627
 int.to.chr$ -- 1
-int.to.str$ -- 13
-missing$ -- 180
-newline$ -- 79
-num.names$ -- 36
-pop$ -- 173
+int.to.str$ -- 16
+missing$ -- 213
+newline$ -- 93
+num.names$ -- 45
+pop$ -- 218
 preamble$ -- 1
-purify$ -- 60
+purify$ -- 75
 quote$ -- 0
-skip$ -- 137
+skip$ -- 169
 stack$ -- 0
-substring$ -- 866
-swap$ -- 715
+substring$ -- 1075
+swap$ -- 848
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 70
+type$ -- 88
 warning$ -- 0
-while$ -- 56
+while$ -- 71
 width$ -- 0
-write$ -- 187
+write$ -- 227
 (There was 1 warning)
