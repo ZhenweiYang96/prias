@@ -12,4 +12,6 @@
 *.ttt
 *.fff
 *.ent
+*.spl
+*.synctex.gz
 supplementary-blx.bib
