@@ -1,6 +1,6 @@
-fixed_psaFormula = ~ 1 + age + ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))
-random_psaFormula = ~ 1 + ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))
-fixed_random_psaSlopeFormula = ~ 0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))
+fixed_psaFormula = ~ 1 + age + ns(I(year_visit-2)/2, knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)
+random_psaFormula = ~ 1 + ns(I(year_visit-2)/2, knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)
+fixed_random_psaSlopeFormula = ~ 0 + dns(I(year_visit-2)/2, knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)
 
 survivalFormula = ~ 0 + age
 
@@ -82,7 +82,7 @@ getGaussianQuadWeightsPoints = function(lower_upper_limit){
 
 #When M=0 it becomes empirical bayes
 get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_failure_time=Inf,
-                           scale = 1.6, psaDist = "Tdist", TdistDf=3, M=200,
+                           scale = 1.6, psaDist = "Tdist", TdistDf=3, M=500,
                            optim_methods = c("BFGS", "L-BFGS-B", "CG")){
   
   #Obs data X and Z matrices for longitudinal part
@@ -235,8 +235,9 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
 getExpectedFutureOutcomes = function(object, patient_data, 
                                      latest_survival_time=0, earliest_failure_time=Inf, 
                                      survival_predict_times=NULL,
-                                     psa_predict_times=NULL, addRandomError=F, psaDist = "Tdist", 
-                                     TdistDf=3, M=200){
+                                     psa_predict_times=NULL, addRandomError=F, 
+                                     psaDist = "Tdist", 
+                                     TdistDf=3, M=500){
   repeat{
     post_b_beta = try(get_b_fullBayes(object, patient_data,
                                       latest_survival_time, earliest_failure_time,

@@ -5,3 +5,31 @@ For patients in the PRIAS dataset, the probability of obtaining reclassification
 The time dependent area under the receiver operating characteristic curves (AUC) and the root mean squared prediction error (RMSPE) with 95\% CI are shown in Figure. The results are comparable for internal and external validation in cohorts that are similar to the PRIAS cohort. That is, the model may also be useful for risk prediction in other cohorts such as the Toronto AS cohort. 
 
 Using the fitted model we next predict the 
+
+\begin{table}
+\small\sf\centering
+\caption{\textbf{Assessment of predictions of Gleason~$\geq$~7 (GS7) from our model using}, area under the receiver operating characteristic curve (AUC), and root mean squared prediction error (RMSPE).}
+\label{table:prediction_validation}
+\begin{tabular}{lr}
+\hline
+\hline
+Characteristic & Value\\
+\hline
+Total patients & 7813\\
+Gleason $\geq$ 7 (primary event) & 1134\\
+Treatment & 2250\\
+Watchful waiting & 334\\
+Loss to follow-up & 250\\
+Death (unrelated to prostate cancer) & 95\\
+Death (related to prostate cancer) & 2\\
+\hline
+Median age at diagnosis (years) & 61 (IQR: 66--71)\\
+Median follow-up period per patient (years) &  1.8 (IQR: 0.9--3.99)\\
+Total PSA measurements & 65798\\
+Median number of PSA measurements per patient &  6 (IQR: 4--12)\\
+Median PSA value (ng/mL) & 5.7 (IQR: 4.1--7.7)\\
+Total biopsies & 15563\\
+Median number of biopsies per patient &  2 (IQR: 1--3)\\
+\hline
+\end{tabular}
+\end{table}

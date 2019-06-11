@@ -46,73 +46,33 @@ survModel = survreg(Surv(latest_survival_time, earliest_failure_time, type = "in
                     data = prias_final.id, model = TRUE)
 save(survModel, file="Rdata/gap3/PRIAS_2019/survModel.Rdata")
 
-model1 = lme(fixed=log2psaplus1 ~ age + ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)), 
-             random = ~ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID, 
-             data = prias_psa, control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"))
-
 prias_psa = droplevels(prias_long_final[!is.na(prias_long_final$psa),])
-startTime_mvglmer = Sys.time()
-mvglmer_psa = mvglmer(list(log2psaplus1 ~ age +
-                                 ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)) + 
-                                 (ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID)),
-                          data=prias_psa, families = list(gaussian), engine = "STAN",
-                          control = list(n.iter=10000))
-endTime_mvglmer = Sys.time()
+# model = lme(fixed=log2psaplus1 ~ age + ns(I((year_visit-2)/2), 
+#                                           knots=(c(0.5, 1.3, 3)-2)/2, 
+#                                           Boundary.knots=(c(0, 6.3)-2)/2), 
+#             random = ~ns(I((year_visit-2)/2), 
+#                          knots=(c(0.5, 1.3, 3)-2)/2, 
+#                          Boundary.knots=(c(0, 6.3)-2)/2)|P_ID, 
+#             data = prias_psa, control = lmeControl(opt = "optim", optimMethod = "L-BFGS-B"))
 
+startTime_mvglmer = Sys.time()
+mvglmer_psa_time_scaled = mvglmer(list(log2psaplus1 ~ age +
+                                         ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2) + 
+                                         (ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)|P_ID)),
+                                  data=prias_psa, families = list(gaussian), engine = "JAGS",
+                                  control = list(n.iter=60000, n.burnin = 10000))
+endTime_mvglmer = Sys.time()
 print(endTime_mvglmer - startTime_mvglmer)
-save(mvglmer_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_psa_stanhome.Rdata")
-save(mvglmer_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_psa_stanpc2.Rdata")
 
 forms_psa = list("log2psaplus1" = "value",
-                 "log2psaplus1" = list(fixed = ~ 0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
-                                       random=~0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
+                 "log2psaplus1" = list(fixed = ~ 0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
+                                       random=~0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
                                        indFixed = 3:6, indRandom=2:5, name = "slope"))
 
 startTime_mvJoint = Sys.time()
-mvJoint_psa = mvJointModelBayes(mvglmer_psa, survModel, 
+mvJoint_psa_time_scaled = mvJointModelBayes(mvglmer_psa_time_scaled, survModel, 
                                 timeVar = "year_visit", 
-                                Formulas = forms_psa, control = list(n_cores=5))
+                                Formulas = forms_psa, control = list(n_cores=3))
 endTime_mvJoint = Sys.time()
 
-save(mvJoint_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_stanhome.Rdata")
-save(mvJoint_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_stanpc2.Rdata")
-
-rm(mvglmer_psa)
-rm(mvJoint_psa)
-
-################
-# DRE PSA both
-################
-prias_psa_dre = droplevels(prias_long_final[!(is.na(prias_long_final$psa) & 
-                                                is.na(prias_long_final$palpable_dre)),])
-startTime_mvglmer = Sys.time()
-mvglmer_dre_psa = mvglmer(list(palpable_dre~age + year_visit  + 
-                                 (year_visit|P_ID),
-                               
-                               log2psaplus1 ~ age +
-                                 ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)) + 
-                                 (ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID)),
-                          data=prias_psa_dre, families = list(binomial, gaussian), 
-                          engine = "STAN",
-                          control = list(n.iter=10000))
-endTime_mvglmer = Sys.time()
-print(endTime_mvglmer - startTime_mvglmer)
-
-save(mvglmer_dre_psa, file="Rdata/gap3/PRIAS_2019/mvglmer_dre_psa.Rdata")
-
-forms_dre_value = list("palpable_dre" = "value",
-                       "log2psaplus1" = "value",
-                       "log2psaplus1" = list(fixed = ~ 0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
-                                             random=~0 + dns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)),
-                                             indFixed = 3:5, indRandom=2:5, name = "slope"))
-
-startTime_mvJoint_dre_value = Sys.time()
-mvJoint_dre_psa = mvJointModelBayes(mvglmer_dre_psa, survModel, 
-                                              timeVar = "year_visit", 
-                                              Formulas = forms_dre_value,
-                                              control = list(n_cores=5))
-endTime_mvJoint_dre_value = Sys.time()
-print(endTime_mvJoint_dre_value - startTime_mvJoint_dre_value)
-save(mvJoint_dre_psa, file="Rdata/gap3/PRIAS_2019/mvJoint_dre_psa.Rdata")
-rm(mvJoint_dre_psa)
-
+save(mvJoint_psa_time_scaled, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")

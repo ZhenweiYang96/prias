@@ -71,7 +71,8 @@ simResults_n500_method_all = foreach(i=1:50, .combine="rbind") %do%{
 
 scheduleResCombined = simResults_n500_method_all
 scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "Risk (10%)", "Risk (5%)", "Risk (F1) Real", "PRIAS"),]
-scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "18 Months", "Biennial", "Triennial", "PRIAS", "Risk (5%)", "Risk (10%)", "Risk (15%)", "Risk (F1) Real"),]
+scheduleResCombined = simResults_n500_method_all[simResults_n500_method_all$methodName %in% c("Annual", "18 Months", "Biennial", "Triennial", "Quadriennial",
+                                                                                              "PRIAS", "Risk (5%)", "Risk (10%)", "Risk (15%)", "Risk (F1) Real"),]
 scheduleResCombined$methodName = droplevels(scheduleResCombined$methodName)
 
 scheduleResCombined$nb[scheduleResCombined$offset < 0] = scheduleResCombined$nb[scheduleResCombined$offset<0] + 1
@@ -82,8 +83,8 @@ levels(scheduleResCombined$methodName)[4] = "Risk: 5%"
 levels(scheduleResCombined$methodName)[5] = "Risk: F1"
 
 
-levels(scheduleResCombined$methodName)[6] = "Risk: 15%"
 levels(scheduleResCombined$methodName)[5] = "Risk: 10%"
+levels(scheduleResCombined$methodName)[6] = "Risk: 15%"
 levels(scheduleResCombined$methodName)[7] = "Risk: 5%"
 levels(scheduleResCombined$methodName)[8] = "Risk: F1"
 
