@@ -2,54 +2,59 @@ library(JMbayes)
 library(survival)
 library(splines)
 
-load("Rdata/gap3/PRIAS_2019/mvJoint_psa.Rdata")
+load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
+load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
 source("src/clinical_gap3/auc_brier/auc_mod_prias.R")
 source("src/clinical_gap3/auc_brier/prederr_mod_prias.R")
-load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 
-large_centers = names(sort(by(longdata$center,
-                              data = longdata$P_ID, 
-                              function(x){length(unique(x))}), 
-                           decreasing = T))[2:10]
-#large_centers = c("prias_orig", large_centers)
+nr_bootstrap = 26
 
+M = 750
+t_horizs = seq(1, 10, 0.5)
+center_name = "PRIAS"
 set.seed(2019)
-M = 500
-t_starts = seq(0, 9, by = 0.5)
-for(center_name in large_centers){
 
-  load(paste0("Rdata/data/longdata_", center_name,".Rdata"))
-  longds = get(paste0("longdata_", center_name))
-  
-  print(paste0("Doing for center: ", center_name))
-  
-  longds$age = longds$Age
-  #This line only for PRIAS
-  longds$gleason = longds$gleason_sum
-  longds$visitTimeYears = longds$year_visit
-  longds$year_visit = longds$visitTimeYears
-  longds$progression_time_start = longds$latest_survival_time
-  longds$progression_time_end = longds$earliest_failure_time
-  
-  auc_list = vector("list", length(t_starts))
-  prederr_list = vector("list", length(t_starts))
-  for(t_start in t_starts){
-    auc_list[[t_start + 1]] = aucJM.mvJMbayes_mod(mvJoint_psa,
-                                                  newdata = longds,
-                                                   Tstart = t_start,
-                                                   Thoriz = t_start + 1,
-                                                   idVar = "P_ID", M = M)
+#This is done to help in bootstrap dataset generation
+dataset_list = vector("list", length = nr_bootstrap)
+#First item is original item
+dataset_list[[1]] = prias_long_final
 
-    print(paste0('AUC for ', t_start,"--", t_start + 1, ": ", auc_list[[t_start + 1]]$auc))
-    save(auc_list, file = paste0("Rdata/gap3/PRIAS_2019/auc_only_psa//auc_list_",center_name,".Rdata"))
+dataset_list[2:nr_bootstrap] = lapply(2:nr_bootstrap, FUN = function(x){
+  bs_oldpids = sample(unique(prias_long_final$P_ID), replace = T)
+  
+  newds = do.call('rbind', lapply(1:length(bs_oldpids), FUN = function(j){
+    tempds = prias_long_final[prias_long_final$P_ID == bs_oldpids[j],]
+    tempds$P_ID = j
+    return(tempds)
+  }))
+  
+  return(newds)
+})
+
+auc_prederr_bs = vector("list", nr_bootstrap)
+
+for(j in 1:nr_bootstrap){
+  print(paste("Calculations started for bootstrapped sample:", j))
+  auc_prederr_bs[[j]]$auc_list = vector("list", length(t_horizs))
+  auc_prederr_bs[[j]]$prederr_list = vector("list", length(t_horizs))
+  
+  for(k in 1:length(t_horizs)){
+    auc_prederr_bs[[j]]$auc_list[[k]] = aucJM.mvJMbayes_mod(mvJoint_psa_time_scaled,
+                                                            newdata = dataset_list[[j]],
+                                                            Tstart = t_horizs[k]-1,
+                                                            Thoriz = t_horizs[k],
+                                                            idVar = "P_ID", M = M)
     
-    prederr_list[[t_start + 1]] = prederrJM.mvJMbayes_mod(mvJoint_psa, 
-                                                  newdata = longds, 
-                                                  Tstart = t_start, 
-                                                  Thoriz = t_start + 1, 
-                                                  idVar = "P_ID", M = M)
+    print(paste0('AUC for ', t_horizs[k]-1,"--", t_horizs[k], ": ", auc_prederr_bs[[j]]$auc_list[[k]]$auc))
+    save(auc_prederr_bs, file = paste0("Rdata/gap3/PRIAS_2019/auc_prederr/",center_name,".Rdata"))
     
-    print(paste0('Prederr for ', t_start,"--", t_start+1, ": ", prederr_list[[t_start + 1]]$prederr))
-    save(prederr_list, file = paste0("Rdata/gap3/PRIAS_2019/prederr_only_psa//prederr_list_", center_name,".Rdata"))
+    auc_prederr_bs[[j]]$prederr_list[[k]] = prederrJM.mvJMbayes_mod(mvJoint_psa_time_scaled, 
+                                                                    newdata = dataset_list[[j]], 
+                                                                    Tstart = t_horizs[k]-1, 
+                                                                    Thoriz = t_horizs[k], 
+                                                                    idVar = "P_ID", M = M)
+    
+    print(paste0('Prederr for ', t_horizs[k]-1,"--", t_horizs[k], ": ", auc_prederr_bs[[j]]$prederr_list[[k]]$prederr))
+    save(auc_prederr_bs, file = paste0("Rdata/gap3/PRIAS_2019/auc_prederr/", center_name,".Rdata"))
   }
 }

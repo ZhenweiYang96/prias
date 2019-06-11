@@ -51,7 +51,7 @@ aucJM.mvJMbayes_mod <- function (object, newdata, Tstart, Thoriz = NULL, Dt = NU
       newdata2_max_Tstart$P_ID = droplevels(newdata2_max_Tstart$P_ID)
     }
     lastTime = by(INDICES = newdata2_max_Tstart$P_ID, data = newdata2_max_Tstart, function(x){
-      max(x$visitTimeYears[!is.na(x$gleason)],0)
+      max(x$year_visit[!is.na(x$gleason_sum)],0)
     })
     survfitJM(object, newdata = newdata2_max_Thoriz, idVar = idVar, survTimes = Thoriz, M = M, last.time = lastTime, seed=2019)
   }

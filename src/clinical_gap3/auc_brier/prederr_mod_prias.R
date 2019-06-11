@@ -76,7 +76,7 @@ prederrJM.mvJMbayes_mod <- function (object, newdata, Tstart, Thoriz, lossFun = 
         aliveTstart$P_ID = droplevels(aliveTstart$P_ID)
       }
       lastTime = by(INDICES = aliveTstart$P_ID, data = aliveTstart, function(x){
-        max(x$visitTimeYears[!is.na(x$gleason)],0)
+        max(x$year_visit[!is.na(x$gleason_sum)],0)
       })
       
       survfitJM(object, newdata = aliveThoriz, idVar = idVar, M = M,
@@ -93,7 +93,7 @@ prederrJM.mvJMbayes_mod <- function (object, newdata, Tstart, Thoriz, lossFun = 
         deadTstart$P_ID = droplevels(deadTstart$P_ID)
       }
       lastTime = by(INDICES = deadTstart$P_ID, data = deadTstart, function(x){
-        max(x$visitTimeYears[!is.na(x$gleason)],0)
+        max(x$year_visit[!is.na(x$gleason_sum)],0)
       })
       
       survfitJM(object, newdata = deadThoriz, idVar = idVar, M=M,
@@ -114,7 +114,7 @@ prederrJM.mvJMbayes_mod <- function (object, newdata, Tstart, Thoriz, lossFun = 
         }
         
         lastTime = by(INDICES = censTstart$P_ID, data = censTstart, function(x){
-          max(x$visitTimeYears[!is.na(x$gleason)],0)
+          max(x$year_visit[!is.na(x$gleason_sum)],0)
         })
         
         survfitJM(object, newdata = censThoriz, idVar = idVar, M = M,
