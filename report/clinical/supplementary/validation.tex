@@ -1,7 +1,7 @@
 % !TEX root =  ../supplementary.tex
 \section{Obtaining Dynamic Risk Predictions from the Joint Model}
 \label{sec:param_estimates_jm_fit_prias}
-Let us assume a new patient $j$, for whom we need to estimate the risk of GS7. Let his current follow-up visit time be $s$, latest time of biopsy be $t\leq s$, observed vector PSA measurements be $\mathcal{Y}_{j}(s)$. The combined information from the observed data about the time of GS7, is given by the following posterior predictive distribution $g(T^*_j)$ of his time $T^*_j$ of GS7:
+Let us assume a new patient $j$, for whom we need to estimate the risk of GS7. Let his current follow-up visit time be $s$, latest time of biopsy be $t$, observed vector PSA measurements be $\mathcal{Y}_{j}(s)$. The combined information from the observed data about the time of GS7, is given by the following posterior predictive distribution $g(T^*_j)$ of his time $T^*_j$ of GS7:
 \begin{equation*}
 \label{eq:post_pred_dist}
 \begin{aligned}
@@ -15,7 +15,7 @@ The distribution $g(T^*_j)$ depends not only depends on the observed data of the
 The cumulative risk of GS7 can be derived from $g(T^*_j)$ as given in \citep{rizopoulos2017dynamic}. It is given by:
 \begin{equation}
 \label{eq:dynamic_risk_prob}
-R_j(s \mid t) = \mbox{Pr}\big\{T^*_j \leq s \mid T^*_j > t, \mathcal{Y}_{j}(s), \mathcal{D}_n\big\}, \quad s \geq t.
+R_j(u \mid t,s) = \mbox{Pr}\big\{T^*_j > u \mid T^*_j > t, \mathcal{Y}_{j}(s), \mathcal{D}_n\big\}, \quad u \geq t.
 \end{equation}
 The personalized risk profile of the patient (see Panel~C, Figure~\ref{fig:dynrisk_plot_102}) updates as more data is gathered over follow-up visits. 
 
@@ -109,15 +109,15 @@ Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\
 \hline
 Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\ 
 \hline
-0.0 to 1.0 & 0.656 [0.623, 0.690] & 0.227 [0.223, 0.236]\\
-0.5 to 1.5 & 0.657 [0.641, 0.671] & 0.376 [0.371, 0.382]\\
-1.0 to 2.0 & 0.663 [0.651, 0.678] & 0.371 [0.364, 0.379]\\
-1.5 to 2.5 & 0.650 [0.600, 0.684] & 0.253 [0.245, 0.263]\\
-2.0 to 3.0 & 0.676 [0.641, 0.725] & 0.252 [0.241, 0.262]\\
-2.5 to 3.5 & 0.689 [0.629, 0.732] & 0.238 [0.224, 0.251]\\
-3.0 to 4.0 & 0.652 [0.614, 0.709] & 0.273 [0.263, 0.285]\\
-3.5 to 4.5 & 0.625 [0.591, 0.663] & 0.338 [0.326, 0.349]\\
-4.0 to 5.0 & 0.623 [0.587, 0.657] & 0.338 [0.325, 0.350]\\
+0.0 to 1.0 & 0.626 [0.558, 0.681]  & 0.276 [0.260, 0.297]\\
+0.5 to 1.5 & 0.605 [0.539, 0.666]  & 0.340 [0.321, 0.360]\\
+1.0 to 2.0 & 0.612 [0.564, 0.672]  & 0.334 [0.316, 0.350]\\
+1.5 to 2.5 & 0.592 [0.502, 0.670]  & 0.327 [0.306, 0.345]\\
+2.0 to 3.0 & 0.638 [0.548, 0.720]  & 0.332 [0.304, 0.363]\\
+2.5 to 3.5 & 0.625 [0.542, 0.717]  & 0.330 [0.303, 0.371]\\
+3.0 to 4.0 & 0.594 [0.511, 0.655]  & 0.328 [0.281, 0.368]\\
+3.5 to 4.5 & 0.599 [0.481, 0.740]  & 0.350 [0.312, 0.373]\\
+4.0 to 5.0 & 0.653 [0.562, 0.724]  & 0.355 [0.320, 0.380]\\
 \hline
 \end{tabular}	
 \end{table}
@@ -131,15 +131,15 @@ Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\
 \hline
 Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\ 
 \hline
-0.0 to 1.0 & 0.656 [0.623, 0.690] & 0.227 [0.223, 0.236]\\
-0.5 to 1.5 & 0.657 [0.641, 0.671] & 0.376 [0.371, 0.382]\\
-1.0 to 2.0 & 0.663 [0.651, 0.678] & 0.371 [0.364, 0.379]\\
-1.5 to 2.5 & 0.650 [0.600, 0.684] & 0.253 [0.245, 0.263]\\
-2.0 to 3.0 & 0.676 [0.641, 0.725] & 0.252 [0.241, 0.262]\\
-2.5 to 3.5 & 0.689 [0.629, 0.732] & 0.238 [0.224, 0.251]\\
-3.0 to 4.0 & 0.652 [0.614, 0.709] & 0.273 [0.263, 0.285]\\
-3.5 to 4.5 & 0.625 [0.591, 0.663] & 0.338 [0.326, 0.349]\\
-4.0 to 5.0 & 0.623 [0.587, 0.657] & 0.338 [0.325, 0.350]\\
+0.0 to 1.0 & 0.604[0.548, 0.663] & 0.389[0.366, 0.411]\\
+0.5 to 1.5 & 0.676[0.603, 0.744] & 0.347[0.328, 0.372]\\
+1.0 to 2.0 & 0.657[0.578, 0.728] & 0.402[0.368, 0.426]\\
+1.5 to 2.5 & 0.683[0.595, 0.773] & 0.438[0.395, 0.469]\\
+2.0 to 3.0 & 0.664[0.576, 0.735] & 0.433[0.396, 0.467]\\
+2.5 to 3.5 & 0.578[0.443, 0.712] & 0.422[0.345, 0.479]\\
+3.0 to 4.0 & 0.508[0.358, 0.670] & 0.380[0.313, 0.452]\\
+3.5 to 4.5 & 0.566[0.346, 0.776] & 0.419[0.354, 0.484]\\
+4.0 to 5.0 & 0.538[0.295, 0.759] & 0.412[0.345, 0.470]\\
 \hline
 \end{tabular}	
 \end{table}

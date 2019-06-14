@@ -6,7 +6,7 @@ files = list.files("Rdata/gap3/PRIAS_2019/auc_prederr/", full.names = T)
 t_horizs = seq(1, 10, 0.5)
 bs_number = 1:25
 
-cohortNames = c("JHAS", "PRIAS", "Toronto")
+cohortNames = c("JHAS", "KCL", "MSKCC", "PRIAS", "Toronto")
 
 auc_rmspe_df = do.call('rbind',lapply(1:length(files), function(i){
   load(files[[i]])
@@ -50,14 +50,14 @@ aucplot = ggplot(data=plotDf) +
              size=3.5) +
   scale_x_continuous(breaks = seq(1,5, by=1), limits = c(1,5)) + 
   theme_bw() + theme(text=element_text(size=FONT_SIZE)) +
-  ylab("AUC") + xlab("Follow-up time (years)")
+  ylab("AUC (higher is better)") + xlab("Follow-up time (years)")
 
 rmspeplot = ggplot(data=plotDf) + 
   geom_line(aes(x=t_horiz, y=mean_rmspe, group=Cohort, color=Cohort)) + 
   scale_y_continuous(breaks = seq(0,1,0.25), limits=c(0,1)) + 
   scale_x_continuous(breaks = seq(1,5, by=1), limits = c(1,5)) + 
   theme_bw() + theme(text=element_text(size=FONT_SIZE)) +
-  ylab("RMSPE") + xlab("Follow-up time (years)")
+  ylab("RMSPE (lower is better)") + xlab("Follow-up time (years)")
 
 ggsave(ggarrange(aucplot, rmspeplot, nrow=1, ncol = 2,
           common.legend = T, legend = "bottom", labels = "AUTO"), device = cairo_ps,

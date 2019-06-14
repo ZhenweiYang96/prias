@@ -15,7 +15,7 @@ MAX_FOLLOW_UP = 10
 POINT_SIZE = 2
 FONT_SIZE = 15
 
-plotForEurology = function(object, pat_df, latest_survival_time, 
+schedulePlot = function(object, pat_df, latest_survival_time, 
                            xbreaks, xlabs,
                            max_follow_up){
   set.seed(2019)
@@ -128,7 +128,7 @@ plotForEurology = function(object, pat_df, latest_survival_time,
 }
 
 pat_data = prias_long_final[prias_long_final$P_ID==102,]
-eurology_plot = plotForEurology(mvJoint_psa_time_scaled, pat_data[pat_data$year_visit <=3,],
+eurology_plot = schedulePlot(mvJoint_psa_time_scaled, pat_data[pat_data$year_visit <=3,],
                 latest_survival_time = 1, xbreaks = c(0, 1, 2.5, 7.5, 10),
                 xlabs = c("0", "1\n(Latest\nbiopsy)",
                           "2.5\n (Current\nvisit)", "7.5", "10"),
