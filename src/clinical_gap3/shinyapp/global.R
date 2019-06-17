@@ -1,4 +1,4 @@
-load("/home/a_tomer/Google Drive/PhD/src/prias/Rdata/gap3/PRIAS_2019/mvJoint_psa.Rdata")
+load("/home/a_tomer/Google Drive/PhD/src/prias/Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 print("Done")
 source("prediction_only_psa.R")
 source("riskSchedule.R")
@@ -28,7 +28,7 @@ psaObsDataGraph = function(data){
   
   pred_times = seq(0, last_visit_time, length.out=50)
   
-  pred_log2psaplus1 = getExpectedFutureOutcomes(mvJoint_psa, data,
+  pred_log2psaplus1 = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, data,
                             data$latest_survival_time[1],
                             data$earliest_failure_time[1],
                             psa_predict_times = pred_times,
@@ -79,7 +79,7 @@ cumRiskGraph = function(data){
   xlabels = sapply(xTicks_spps_dates, getHumanReadableDate, abbreviated=T)
   xlabels[1] = paste0(getHumanReadableDate(xTicks_spps_dates[1]),"\n(Current Visit)")
   
-  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa, data,
+  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, data,
                                              data$latest_survival_time[1],
                                              data$earliest_failure_time[1],
                                              survival_predict_times = pred_times,
@@ -110,7 +110,7 @@ cumRiskGraph = function(data){
 
 riskGaugeGraph = function(data, visit_time){
   
-  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa, data,
+  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, data,
                             data$latest_survival_time[1],
                             data$earliest_failure_time[1],
                             survival_predict_times = visit_time,

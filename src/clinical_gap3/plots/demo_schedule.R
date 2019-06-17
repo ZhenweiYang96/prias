@@ -1,12 +1,12 @@
-# library(JMbayes)
-# library(splines)
-# library(ggplot2)
-# library(ggpubr)
-# 
-# load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
-# load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
-# source("src/clinical_gap3/prediction_only_psa.R")
-# source("src/clinical_gap3/compareSchedules.R")
+library(JMbayes)
+library(splines)
+library(ggplot2)
+library(ggpubr)
+
+load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
+load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
+source("src/clinical_gap3/prediction_only_psa.R")
+source("src/clinical_gap3/compareSchedules.R")
 
 SUCCESS_COLOR = 'green'
 DANGER_COLOR = 'red'
@@ -65,7 +65,7 @@ schedulePlot = function(object, pat_df, latest_survival_time,
                     ymax=upper_cum_risk), alpha=0.15, fill=DANGER_COLOR) + 
     scale_y_continuous(breaks = seq(0,1, 0.5), 
                        labels = c("0%", "50%", "100%"), 
-                       limits = c(0,1)) + ylab("Cumulative risk of\n Gleason \u2265 7")
+                       limits = c(0,1)) + ylab("Cumulative risk\n of Gleason \u2265 7")
     
   biopsy_schedules = compareSchedules(pat_data,cur_visit_time = max_psa_time, 
                                       latest_survival_time = latest_survival_time)
@@ -120,7 +120,7 @@ schedulePlot = function(object, pat_df, latest_survival_time,
     coord_flip()
 
   upper_plot = ggarrange(A,B, C, ncol=1, nrow=3, align = "v",
-                    heights = c(1,1,1.35))
+                         labels="AUTO", heights = c(1,1,1.35))
   lower_plot = ggarrange(D, E, ncol=2, nrow=1, 
                          align="h", widths = c(1.25,1))
   
@@ -128,10 +128,10 @@ schedulePlot = function(object, pat_df, latest_survival_time,
 }
 
 pat_data = prias_long_final[prias_long_final$P_ID==102,]
-eurology_plot = schedulePlot(mvJoint_psa_time_scaled, pat_data[pat_data$year_visit <=3,],
+demo_pat_plot = schedulePlot(mvJoint_psa_time_scaled, pat_data[pat_data$year_visit <=3,],
                 latest_survival_time = 1, xbreaks = c(0, 1, 2.5, 7.5, 10),
                 xlabs = c("0", "1\n(Latest\nbiopsy)",
                           "2.5\n (Current\nvisit)", "7.5", "10"),
                 MAX_FOLLOW_UP)
-ggsave(eurology_plot, filename = "report/clinical/images/demo_pat1.eps",
+ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
        device = cairo_ps, height = 9)

@@ -26,11 +26,11 @@ The personalized risk profile of the patient (see Panel~C, Figure~\ref{fig:dynri
 \end{figure}
 
 \subsection{Validation of Risk Predictions}
-We validated the predictions of GS7 internally within the PRIAS dataset, as well as externally in five AS cohorts from the GAP3 database, having the longest follow-up periods \citep{gap3_2018}. These are the University of Toronto AS (Toronto), Johns Hopkins AS (JHAS), Memorial Sloan Kettering Cancer Center AS (MSKCC), King's College London Active Surveillance (KCL), and ....  In all of these cohorts, we calculated the area under the receiver operating characteristic curve or AUC \cite{rizopoulos2017dynamic} as a measure of discrimination between patients who obtain GS7 and those do not obtain GS7. We also calculated root mean squared prediction error or RMSPE \cite{rizopoulos2017dynamic} as a measure of calibration. Both AUC and RMSPE take a value between 0 and 1. Ideally RMSPE should be 0 and AUC should 1. In addition, it is preferred that AUC $>$ 0.5 because an AUC $\leq$ 0.5 indicates that the model performs worse than random discrimination. Since AS studies are longitudinal in nature, AUC and RMSPE are also time dependent. More specifically, given the time of latest biopsy $t$, and history of PSA measurements up to time $s$, we calculate AUC and RMSPE for a medically relevant time frame $(t, s]$, within which the occurrence of GS7 is of interest. In the case of prostate cancer, at any point in time $s$ it is of interest to identify patients who may have obtained GS7 in the last one year $(s-1, s]$. That is we set $t=s-1$. We then calculate AUC and RMSPE at a gap of every six months (follow-up schedule of PRIAS) until year five (95-percentile of the observed times of GS7), that is, $s \epsilon \{1, 1.5, \ldots, 5\}$ years. The resulting estimates are summarized in Figure~\ref{fig:auc_pe}, and in Table~\ref{tab:AUC_PE_PRIAS} to Table~\ref{tab:AUC_PE_KCL}.
+We validated the predictions of GS7 internally within the PRIAS dataset, as well as externally in five largest AS cohorts from the GAP3 database \citep{gap3_2018}. These are the University of Toronto AS (Toronto), Johns Hopkins AS (JHAS), Memorial Sloan Kettering Cancer Center AS (MSKCC), King's College London AS (KCL), and Michigan Urological Surgery Improvement Collaborative AS (MUSIC). In all of these cohorts, we calculated the area under the receiver operating characteristic curve or AUC \cite{rizopoulos2017dynamic} as a measure of discrimination between patients who obtain GS7 and those do not obtain GS7. We also calculated root mean squared prediction error or RMSPE \cite{rizopoulos2017dynamic} as a measure of calibration. Both AUC and RMSPE take a value between 0 and 1. Ideally RMSPE should be 0 and AUC should 1. In addition, it is preferred that AUC $>$ 0.5 because an AUC $\leq$ 0.5 indicates that the model performs worse than random discrimination. Since AS studies are longitudinal in nature, AUC and RMSPE are also time dependent. More specifically, given the time of latest biopsy $t$, and history of PSA measurements up to time $s$, we calculate AUC and RMSPE for a medically relevant time frame $(t, s]$, within which the occurrence of GS7 is of interest. In the case of prostate cancer, at any point in time $s$ it is of interest to identify patients who may have obtained GS7 in the last one year $(s-1, s]$. That is we set $t=s-1$. We then calculate AUC and RMSPE at a gap of every six months (follow-up schedule of PRIAS) until year five (95-percentile of the observed times of GS7), that is, $s \epsilon \{1, 1.5, \ldots, 5\}$ years. The resulting estimates are summarized in Figure~\ref{fig:auc_pe}, and in Table~\ref{tab:AUC_PE_PRIAS} to Table~\ref{tab:AUC_PE_MUSIC}.
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/auc_pe.eps}}
-\caption{\textbf{Validation of predictions of Gleason $\geq$ 7 (GS7)}. In \textbf{Panel~A} we can see that the time dependent area under the receiver operating characteristic curve or AUC (measure of discrimination) is above 0.5 in PRIAS (internal validation), and JHAS and Toronto cohorts (external validation). In \textbf{Panel~B} we can see that the time dependent root mean squared prediction error or RMSPE (measure of calibration) is similar for PRIAS, and JHAS and Toronto cohorts. The bootstrapped 95\% confidence interval for these estimates are presented in Table~\ref{tab:AUC_PE_PRIAS} to Table~\ref{tab:AUC_PE_KCL}. Full names of Cohorts are \textit{JHAS}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance.}
+\caption{\textbf{Validation of predictions of Gleason $\geq$ 7 (GS7)}. In \textbf{Panel~A} we can see that the time dependent area under the receiver operating characteristic curve or AUC (measure of discrimination) is above 0.5 in PRIAS (internal validation), and in Toronto, JHAS, MSKCC, KCL, and MUSIC AS cohorts (external validation). In \textbf{Panel~B} we can see that the time dependent root mean squared prediction error or RMSPE (measure of calibration) is similar for PRIAS, and JHAS and Toronto cohorts. The bootstrapped 95\% confidence interval for these estimates are presented in Table~\ref{tab:AUC_PE_PRIAS} to Table~\ref{tab:AUC_PE_KCL}. Full names of Cohorts are \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{JHAS}: Johns Hopkins Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative Active Surveillance.}
 \label{fig:auc_pe}
 \end{figure}
 
@@ -131,15 +131,37 @@ Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\
 \hline
 Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\ 
 \hline
-0.0 to 1.0 & 0.604[0.548, 0.663] & 0.389[0.366, 0.411]\\
-0.5 to 1.5 & 0.676[0.603, 0.744] & 0.347[0.328, 0.372]\\
-1.0 to 2.0 & 0.657[0.578, 0.728] & 0.402[0.368, 0.426]\\
-1.5 to 2.5 & 0.683[0.595, 0.773] & 0.438[0.395, 0.469]\\
-2.0 to 3.0 & 0.664[0.576, 0.735] & 0.433[0.396, 0.467]\\
-2.5 to 3.5 & 0.578[0.443, 0.712] & 0.422[0.345, 0.479]\\
-3.0 to 4.0 & 0.508[0.358, 0.670] & 0.380[0.313, 0.452]\\
-3.5 to 4.5 & 0.566[0.346, 0.776] & 0.419[0.354, 0.484]\\
-4.0 to 5.0 & 0.538[0.295, 0.759] & 0.412[0.345, 0.470]\\
+0.0 to 1.0 & 0.604 [0.548, 0.663] & 0.389 [0.366, 0.411]\\
+0.5 to 1.5 & 0.676 [0.603, 0.744] & 0.347 [0.328, 0.372]\\
+1.0 to 2.0 & 0.657 [0.578, 0.728] & 0.402 [0.368, 0.426]\\
+1.5 to 2.5 & 0.683 [0.595, 0.773] & 0.438 [0.395, 0.469]\\
+2.0 to 3.0 & 0.664 [0.576, 0.735] & 0.433 [0.396, 0.467]\\
+2.5 to 3.5 & 0.578 [0.443, 0.712] & 0.422 [0.345, 0.479]\\
+3.0 to 4.0 & 0.508 [0.358, 0.670] & 0.380 [0.313, 0.452]\\
+3.5 to 4.5 & 0.566 [0.346, 0.776] & 0.419 [0.354, 0.484]\\
+4.0 to 5.0 & 0.538 [0.295, 0.759] & 0.412 [0.345, 0.470]\\
+\hline
+\end{tabular}	
+\end{table}
+
+\begin{table}[!htb]
+\small\sf\centering
+\caption{\textbf{External Validation of predictions of Gleason $\geq$ 7 (GS7) in Michigan Urological Surgery Improvement Collaborative Active Surveillance cohort}. The area under the receiver operating characteristic curve or AUC (measure of discrimination) root mean squared prediction error or RMSPE (measure of calibration) are calculated over the follow-up period at a gap of 6 months. In addition bootstrapped 95\% confidence intervals (CI) are also presented.}
+\label{tab:AUC_PE_MUSIC}
+\begin{tabular}{r|r|r}
+\hline
+\hline
+Follow-up period (years) & AUC (95\% CI) & RMSPE (95\%CI)\\ 
+\hline
+0.0 to 1.0 & 0.667 [0.616, 0.703] & 0.387 [0.369, 0.409]\\
+0.5 to 1.5 & 0.620 [0.566, 0.646] & 0.481 [0.462, 0.495]\\
+1.0 to 2.0 & 0.623 [0.569, 0.666] & 0.480 [0.459, 0.501]\\
+1.5 to 2.5 & 0.621 [0.580, 0.677] & 0.444 [0.418, 0.472]\\
+2.0 to 3.0 & 0.626 [0.464, 0.710] & 0.416 [0.376, 0.459]\\
+2.5 to 3.5 & 0.665 [0.554, 0.796] & 0.449 [0.390, 0.493]\\
+3.0 to 4.0 & 0.674 [0.540, 0.757] & 0.438 [0.374, 0.483]\\
+3.5 to 4.5 & 0.633 [0.410, 0.865] & 0.434 [0.346, 0.485]\\
+4.0 to 5.0 & 0.650 [0.248, 0.946] & --    [--   , --   ]\\
 \hline
 \end{tabular}	
 \end{table}

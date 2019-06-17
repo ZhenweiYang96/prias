@@ -1,6 +1,6 @@
-#load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value.Rdata")
-#load("Rdata/decision_analytic/cleandata.Rdata")
-#source("src/decision_analytic/load_lib.R")
+load("Rdata/decision_analytic/DRE_PSA/mvJoint_dre_psa_dre_value.Rdata")
+load("Rdata/decision_analytic/cleandata.Rdata")
+source("src/decision_analytic/load_lib.R")
 
 getLastBiopsyTime = function(pid, lastnumber=1, upperLimitTime = Inf){
   temp = prias_long[prias_long$P_ID %in% pid & prias_long$visitTimeYears<=upperLimitTime,][, c("visitTimeYears", "gleason")]
@@ -378,7 +378,7 @@ plotJMExplanationPlot_Stacked = function(pid, fittedJointModel, maxVisitTime,
     ylab("Estimated Hazard of\ncancer progression") + xlab("Follow-up time (years)") +
     theme(text = element_text(size=FONT_SIZE), 
           axis.title.y = element_text(colour = 'red3'),
-          axis.text.y = element_text(colour = 'red3'),
+          axis.text.y = element_text(colour = 'red3', size=FONT_SIZE),
           axis.line = element_line(),
           axis.text=element_text(size=FONT_SIZE),
           plot.margin = margin(0, 5.5, 0, 5.5, "pt")) +

@@ -2,7 +2,7 @@ library(JMbayes)
 load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
 
 npmle_plotdf_all=do.call('rbind', 
-                         lapply(c("Hopkins", "London-KCL", "MSKCC", "PRIAS", "Toronto"), FUN = function(name){
+                         lapply(c("Hopkins", "London-KCL", "MSKCC", "PRIAS", "Toronto", "MUSIC"), FUN = function(name){
                            survProb = 1 - cumsum(npmle_all[[name]]$pf)
                            survProb = c(1, survProb)
                            
@@ -17,8 +17,8 @@ npmle_plotdf_all=do.call('rbind',
 levels(npmle_plotdf_all$Cohort)[1:2] = c("JHAS", "KCL")
 
 cohort_names = unique(npmle_plotdf_all$Cohort)
-cohort_labpos_x = c(8.75, 10, 9.375, 10, 8.5)
-cohort_labpos_y = c(0.52, 1, 0.625, 0.42, 0.79)
+cohort_labpos_x = c(8.75, 10, 9.375, 10, 8.5, 4.5)
+cohort_labpos_y = c(0.52, 1, 0.625, 0.42, 0.79, 0.625)
 
 FONT_SIZE=13
 npmle_plot_all = ggplot() + 
@@ -40,7 +40,7 @@ npmle_plot_all = ggplot() +
         plot.margin = margin(0, 0, 0, 0, "pt")) + 
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
-  ylab("Cumulative risk of reclassification (%)") +
+  ylab("Cumulative risk of Gleason ≥ 7 (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",

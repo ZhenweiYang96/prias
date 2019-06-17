@@ -238,7 +238,7 @@ getExpectedFutureOutcomes = function(object, patient_data,
                                      psa_predict_times=NULL, addRandomError=F, 
                                      psaDist = "Tdist", 
                                      TdistDf=3, M=500){
-  repeat{
+  for(trial in 1:25){
     post_b_beta = try(get_b_fullBayes(object, patient_data,
                                       latest_survival_time, earliest_failure_time,
                                       scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
