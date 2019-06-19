@@ -1,21 +1,10 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#]
 library(shiny)
 library(JMbayes)
 library(splines)
 library(ggplot2)
-library(plotly)
-library(DT)
 library(ggpubr)
 library(plyr)
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output, session) {
   
   #making a reactive value to track changes in patient data
@@ -96,19 +85,19 @@ shinyServer(function(input, output, session) {
   }
   
   observeEvent(input$load_pat1, {
-    setPatientDataInCache(demo_patient_data_1)
+    setPatientDataInCache(demo_pat_list[[1]])
   })
   
   observeEvent(input$load_pat2, {
-    setPatientDataInCache(demo_patient_data_2)
+    setPatientDataInCache(demo_pat_list[[2]])
   })
   
   observeEvent(input$load_pat3, {
-    setPatientDataInCache(demo_patient_data_3)
+    setPatientDataInCache(demo_pat_list[[3]])
   })
   
   observeEvent(input$load_pat4, {
-    setPatientDataInCache(demo_patient_data_4)
+    setPatientDataInCache(demo_pat_list[[4]])
   })
   
   observeEvent(input$patientFile,{
@@ -180,10 +169,10 @@ shinyServer(function(input, output, session) {
   output$biopsy_schedule_graph = renderPlot({
     if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
       return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
-                                                  as.numeric(input$selected_schedules),
-                                                  patient_cache$dom_diagnosis,
-                                                  patient_cache$current_visit_time,
-                                                  patient_cache$latest_survival_time))
+                                 as.numeric(input$selected_schedules),
+                                 patient_cache$dom_diagnosis,
+                                 patient_cache$current_visit_time,
+                                 patient_cache$latest_survival_time))
     }else{
       return(NULL)
     }
@@ -196,7 +185,7 @@ shinyServer(function(input, output, session) {
       biopsy_delay_graph = biopsyDelayGraph(patient_cache$biopsy_total_delay_plotDf,
                                             as.numeric(input$selected_schedules))
       return(ggarrange(biopsy_total_graph, biopsy_delay_graph,
-                                                             align = "h", widths = c(1.15,1)))
+                       align = "h", widths = c(1.15,1)))
     }else{
       return(NULL)
     }

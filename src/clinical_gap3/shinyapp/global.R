@@ -1,4 +1,5 @@
-load("/home/a_tomer/Google Drive/PhD/src/prias/Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
+load("mvJoint_psa_time_scaled_light.Rdata")
+load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("riskSchedule.R")
 source("schedules.R")
