@@ -105,8 +105,7 @@ compareSchedules = function(patient_data, cur_visit_time=NA, latest_survival_tim
                                       patient_data$psa[!is.na(patient_data$psa)],
                                       patient_data$year_visit[!is.na(patient_data$psa)],
                                       visit_schedule,
-                                      apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1),
-                                      min_biopsy_gap)
+                                      apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1))
     if(max(prias_schedule)>=(horizon-0.5)){
       prias_schedule = prias_schedule[-length(prias_schedule)]
     }

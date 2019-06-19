@@ -28,15 +28,18 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                   sidebarLayout(
                     # Sidebar with a slider input for number of bins 
                     sidebarPanel(
-                      
-                      #fileInput('RDfile', 'Load the R Workspace with the fitted joint model',
-                      #          accept = NULL),
+                      tags$label("Load demo datient data"),
+                      actionButton("load_pat1", "Demo Patient 1", class="btn-primary"),
+                      tags$br(), tags$br(),
+                      actionButton("load_pat2", "Demo Patient 2", class="btn-primary"),
+                      tags$br(), tags$br(),
+                      actionButton("load_pat3", "Demo Patient 3", class="btn-primary"),
+                      tags$br(), tags$br(),
+                      actionButton("load_pat4", "Demo Patient 4", class="btn-primary"),
+                      tags$hr(),
                       
                       fileInput('patientFile', 'Load patient data (CSV file)',
                                 accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                      
-                      # Horizontal line ----
-                      tags$hr(),
                       
                       # Input: Checkbox if file has header ----
                       checkboxInput("header", "Header", TRUE),

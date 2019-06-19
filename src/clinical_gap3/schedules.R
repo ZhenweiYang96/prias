@@ -1,5 +1,5 @@
 getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times, 
-                            visit_schedule, future_log2psaplus1, min_biopsy_gap){
+                            visit_schedule, future_log2psaplus1){
   
   fixed_schedule = c(1,4,7,10,15)
   
@@ -14,14 +14,14 @@ getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times,
     
     #if switch to annual schedule
     if(psa_dt>=0 & psa_dt<=10){
-      if((visit_schedule[i] - latest_biopsy_time) >= min_biopsy_gap){
+      if((visit_schedule[i] - latest_biopsy_time) >= 1){
         latest_biopsy_time = visit_schedule[i]
         proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
       }
       #else wait
     }else{
       if(visit_schedule[i] %in% fixed_schedule){
-        if((visit_schedule[i] - latest_biopsy_time) >= min_biopsy_gap){
+        if((visit_schedule[i] - latest_biopsy_time) >= 1){
           latest_biopsy_time = visit_schedule[i]
           proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])
         }
