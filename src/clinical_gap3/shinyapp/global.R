@@ -58,55 +58,86 @@ psaObsDataGraph = function(data, pred_times, pred_log2psaplus1){
     theme(axis.text = element_text(size = FONT_SIZE),
           axis.title = element_text(size = FONT_SIZE),
           legend.text = element_text(size = FONT_SIZE),
-      legend.position = "bottom", legend.direction = "horizontal") + 
+          legend.position = "bottom", legend.direction = "horizontal") + 
     xlab("Follow-up time (years)") + 
     ylab("PSA (ng/mL)")
   return(plot)
 }
 
-cumRiskGraph = function(data){
+biopsyScheduleGraph = function(schedule_df, 
+                               selected_schedule_ids,
+                               start_dom,
+                               current_visit_time,
+                               latest_survival_time){
   
-  last_visit_time = data$year_max_followup[1]
-  if(last_visit_time >= MAX_FOLLOW_UP){
-    return(NULL)
-  }
+  schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
   
-  latest_survival_time = data$latest_survival_time[1]
-  
-  pred_times = seq(last_visit_time, MAX_FOLLOW_UP, length.out=50)
-  
-  xTicks = seq(last_visit_time, MAX_FOLLOW_UP, by=1)
-  xTicks_spps_dates = data$dom_diagnosis[1] + xTicks*YEAR_DIVIDER
+  xTicks = seq(0, MAX_FOLLOW_UP, length.out = 6)
+  xTicks_spps_dates = start_dom + xTicks*YEAR_DIVIDER
   xlabels = sapply(xTicks_spps_dates, getHumanReadableDate, abbreviated=T)
-  xlabels[1] = paste0(getHumanReadableDate(xTicks_spps_dates[1]),"\n(Current Visit)")
+  xlabels[1] = paste0(getHumanReadableDate(xTicks_spps_dates[1]),"\n(Start AS)")
   
-  pred_surv_prob = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, data,
-                                             data$latest_survival_time[1],
-                                             data$earliest_failure_time[1],
-                                             survival_predict_times = pred_times,
-                                             M = M)$predicted_surv_prob
+  ybreaks = unique(schedule_df$schedule_id)
+  ylabels = unique(schedule_df$Schedule)
   
-  mean_risk_prob = apply(1-pred_surv_prob,1, mean)
-  lower_risk_prob = apply(1-pred_surv_prob,1, quantile, probs=c(0.025))
-  upper_risk_prob = apply(1-pred_surv_prob,1, quantile, probs=c(0.975))
-  
-  cumRiskPlot = ggplot() + 
-    geom_line(aes(x=pred_times, y=mean_risk_prob), color=DANGER_COLOR) + 
-    geom_ribbon(aes(x=pred_times, ymin=lower_risk_prob,
-                    ymax=upper_risk_prob), fill=DANGER_COLOR, alpha=0.25) + 
-    theme_bw() + 
-    theme(axis.text = element_text(size = FONT_SIZE),
-          axis.title = element_text(size = FONT_SIZE),
-          legend.position = "bottom", legend.direction = "horizontal") + 
+  pp = ggplot() +
+    geom_ribbon(aes(x=c(0, latest_survival_time),
+                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Region with Gleason ≤ 6"),
+                alpha=0.25) +
+    geom_vline(xintercept = latest_survival_time) +
+    geom_vline(xintercept = current_visit_time, linetype='dashed') +
+    geom_label(data=schedule_df,
+               aes(x=biopsy_times, y=schedule_id, label='B', group=schedule_id), color=THEME_COLOR,
+               size=7) +
+    geom_line(data=schedule_df,
+              aes(x=biopsy_times, y=schedule_id, group=schedule_id), color=THEME_COLOR,
+              linetype='dotted') +
+    scale_fill_manual(name="", values = SUCCESS_COLOR) + 
+    theme_bw() + xlab("Proposed Dates of Biopsy") +
     scale_x_continuous(breaks = xTicks, labels=xlabels,
-                       limits = c(last_visit_time, MAX_FOLLOW_UP))+
-    scale_y_continuous(breaks = seq(0,1, 0.25), 
-                       labels= paste0(seq(0,1, 0.25)*100, "%"),
-                      limits = c(0,1)) +
-    xlab("Future Dates") + 
-    ylab("Cumulative-risk of Gleason ≥ 7 (%)")
+                       limits = c(0, MAX_FOLLOW_UP))+
+    scale_y_continuous(breaks = ybreaks, labels = ylabels, 
+                       limits = c(ybreaks[1]-0.5, tail(ybreaks,1) + 0.5)) +
+    ylab("Biopsy Schedule") + 
+    theme(text = element_text(size = FONT_SIZE),
+          legend.position = "bottom", legend.direction = "horizontal")
   
-  return(cumRiskPlot)
+  return(pp)
+}
+
+biopsyDelayGraph = function(schedule_df, 
+                            selected_schedule_ids){
+  schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
+  ybreaks = seq(0,ceiling(max(schedule_df$expected_delay)), length.out = 4)
+  ylabels = round(ybreaks,1)
+  
+  pp = ggplot(data=schedule_df) + geom_bar(aes(x=schedule, y=expected_delay),
+                          stat='identity', width=0.5) +  
+    ylab("Expected delay (months)\n in detecting Gleason \u2265 7") + 
+    xlab("Biopsy schedule") +
+    scale_y_continuous(breaks = ybreaks,
+                       labels = ylabels,
+                       limits = c(ybreaks[1], tail(ybreaks,1)))+
+    coord_flip() +
+    theme_bw() + 
+    theme(text = element_text(size = FONT_SIZE),
+          axis.text.y = element_blank(), axis.title.y = element_blank(),
+          axis.ticks.y = element_blank())
+  return(pp)
+}
+
+biopsyTotalGraph = function(schedule_df, 
+                            selected_schedule_ids){  
+  schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
+  
+  pp = ggplot(data=schedule_df) + geom_bar(aes(x=schedule, y=total_biopsies),
+                          stat='identity', width=0.5) +  
+    ylab("Total biopsies scheduled") + 
+    xlab("Biopsy schedule") + 
+    theme_bw() + 
+    theme(text = element_text(size = FONT_SIZE))+
+    coord_flip()
+  return(pp)
 }
 
 riskGaugeGraph = function(mean_risk_prob, date=""){
@@ -118,7 +149,7 @@ riskGaugeGraph = function(mean_risk_prob, date=""){
   
   riskGauge = ggplot(data = NULL, 
                      aes(ymax = mean_risk_prob, ymin = 0, xmax = 2, xmin = 1, 
-                     fill="Risk")) +
+                         fill="Risk")) +
     geom_rect(aes(ymax=1, ymin=0, xmax=2, xmin=1), fill ="white", color=gauge_color) +
     geom_rect() +
     coord_polar(theta = "y",start=-pi/2) + xlim(c(0, 2.5)) + ylim(c(0,2)) +

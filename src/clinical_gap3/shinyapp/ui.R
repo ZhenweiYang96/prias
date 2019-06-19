@@ -64,33 +64,38 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                     # Show a plot of the generated distribution
                     mainPanel(
                       tabsetPanel(type = "tabs",
-                                  tabPanel("Patient Data", value="patient_data", tags$br(), 
-                                           splitLayout(cellWidths = c("25%","5%", "60%"),
-                                                       tags$div(class="panel panel-default",
-                                                                tags$div(class="panel-heading",
-                                                                         "Patient History"),
-                                                                tableOutput("table_obs_data")),
-                                                       tags$div(), plotOutput("graph_obs_psa", height="500px"))
+                                  tabPanel("Patient Data", value="patient_data", tags$br(),
+                                           fluidRow(column(5, tags$div(class="panel panel-default",
+                                                                       tags$div(class="panel-heading",
+                                                                                "Patient History"),
+                                                                       tableOutput("table_obs_data"))),
+                                                    column(7, plotOutput("graph_obs_psa")))
                                   ),
                                   tabPanel("Risk of Gleason ≥ 7", tags$br(),
                                            sliderInput("risk_pred_time", "Time (years) since latest visit:",
-                                                      0, 10, 0, step = 0.5, animate = animationOptions(interval = 2000, 
-                                                                                                       loop = FALSE)),
+                                                       0, 10, 0, step = 0.5, animate = animationOptions(interval = 2000, 
+                                                                                                        loop = FALSE)),
                                            plotOutput("cum_risk_gauge", width = "400px"),
                                            textOutput("gauge_date")),
-                                  tabPanel("Biopsy recommendation", tags$br(), 
-                                           numericInput("year_gap_biopsy",
-                                                        "Minimum gap (years) between biopsies",
-                                                        step=0.5, min=0, value=1),
-                                           splitLayout(tags$div(class="panel panel-default",
-                                                                tags$div(class="panel-heading",
-                                                                         "Biopsy Schedules"),
-                                                                tableOutput("table_biopsy_options")),
-                                                       plotOutput("biopsy_options_graph"))
+                                  tabPanel("Biopsy recommendation", 
+                                           tags$br(), 
+                                           fluidRow(column(6, numericInput("year_gap_biopsy",
+                                                                           "Minimum gap (years) between biopsies",
+                                                                           step=0.5, min=0, value=1)),
+                                                    column(6, selectizeInput('selected_schedules', label = "Select Biopsy Schedule", 
+                                                                             choices = c("Personalized: 5% risk"=1,
+                                                                                         "Personalized: 10% risk"=2,
+                                                                                         "Personalized: 15% risk"=3,
+                                                                                         "Fixed: PRIAS"=4,
+                                                                                         "Fixed: Yearly"=5,
+                                                                                         "Fixed: Every 2 years"=6),
+                                                                             selected = c(4,5),
+                                                                             multiple=TRUE))),
+                                           plotOutput("biopsy_schedule_graph"),
+                                           plotOutput("biopsy_total_delay_graph"))
                                            
                                   )
                       )
                     )
                   )
-)
 )
