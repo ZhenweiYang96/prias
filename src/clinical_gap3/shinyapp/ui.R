@@ -94,8 +94,16 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                                                                                          "Fixed: Every 2 years"=6),
                                                                              selected = c(4,5),
                                                                              multiple=TRUE))),
+                                           tags$h3("Biopsy Decision At Current Visit"),
+                                           fluidRow(column(2, htmlOutput("decision1")),
+                                                    column(2, htmlOutput("decision2")),
+                                                    column(2, htmlOutput("decision3")),
+                                                    column(2, htmlOutput("decision4")),
+                                                    column(2, htmlOutput("decision5")),
+                                                    column(2, htmlOutput("decision6"))),
+                                           tags$h3("Schedule of Future Biopsies"),
                                            plotOutput("biopsy_schedule_graph"),
-                                           #plotOutput("biopsy_total_delay_graph"),
+                                           tags$h3("Expected Time Delay (months) to Detect Gleason ≥ 7"),
                                            plotOutput("biopsy_delay_gauge_graph"))
                                            
                                   )

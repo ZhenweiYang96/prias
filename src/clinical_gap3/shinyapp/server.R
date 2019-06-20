@@ -176,23 +176,34 @@ shinyServer(function(input, output, session) {
     }
   }) 
   
-  output$biopsy_total_delay_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
-      biopsy_total_graph = biopsyTotalGraph(patient_cache$biopsy_total_delay_plotDf,
-                                            as.numeric(input$selected_schedules))
-      biopsy_delay_graph = biopsyDelayGraph(patient_cache$biopsy_total_delay_plotDf,
-                                            as.numeric(input$selected_schedules))
-      return(ggarrange(biopsy_total_graph, biopsy_delay_graph,
-                       align = "h", widths = c(1.15,1)))
-    }else{
-      return(NULL)
-    }
-  })
+  decisionRenderer = function(decision_label_num){
+    renderUI({
+      if(patientCounter()>0 & biopsyCounter()>0 & 
+         !is.null(input$selected_schedules) & length(input$selected_schedules)> (decision_label_num-1)){
+        schedule_name = patient_cache$biopsy_schedule_plotDf$Schedule[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
+        first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
+        
+        decision = ifelse(first_biopsy_time > patient_cache$current_visit_time, "No", "Yes")
+        decision = paste0(schedule_name,": ", decision)
+        class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-danger", "label-success"))
+        
+        return(tags$h4(tags$span(decision, class=class)))
+      }else{
+        return(NULL)
+      }
+    })
+  }
+  output$decision1 = decisionRenderer(1)
+  output$decision2 = decisionRenderer(2)
+  output$decision3 = decisionRenderer(3)
+  output$decision4 = decisionRenderer(4)
+  output$decision5 = decisionRenderer(5)
+  output$decision6 = decisionRenderer(6)
   
   output$biopsy_delay_gauge_graph = renderPlot({
     if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
       max_delay = max(DELAY_GAUGE_MAX, 
-                ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
+                      ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
       
       plotDf = patient_cache$biopsy_total_delay_plotDf
       
