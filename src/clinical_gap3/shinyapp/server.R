@@ -71,7 +71,7 @@ shinyServer(function(input, output, session) {
     
     #slider on tab 2
     sliderLabel = paste0("Time (years) since latest visit in ", 
-                         getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER, abbreviated = T))
+                         getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER, abbreviated = T),":")
     
     max_slider = round_any(MAX_FOLLOW_UP - patient_cache$current_visit_time, accuracy=0.5)
     updateSliderInput(session, "risk_pred_time", value = 0,
@@ -123,17 +123,17 @@ shinyServer(function(input, output, session) {
       
       first_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis)
       last_biopsy_date = getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$latest_survival_time*YEAR_DIVIDER)
-      latest_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER)
+      current_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER)
       nr_biopsies = sum(!is.na(patient_data$gleason_sum))
       nr_visits = nrow(patient_data)
       age = round(patient_data$age[1])
       latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
       
       return(data.frame("Data"=c("ID", "Age (years)", 
-                                 "First Visit", "Latest Visit", "Total Visits", 
+                                 "First Visit", "Current Visit", "Total Visits", 
                                  "Latest Biopsy", "Latest Gleason","Total Biopsies"),
                         "Value"=c(patient_cache$P_ID, age,
-                                  first_visit_date,latest_visit_date, nr_visits,
+                                  first_visit_date,current_visit_date, nr_visits,
                                   last_biopsy_date, latest_gleason,nr_biopsies)))
       
     }else{
@@ -145,6 +145,9 @@ shinyServer(function(input, output, session) {
     if(patientCounter()>0){
       sampled_psa_indices = c(1:20, seq(22, length(patient_cache$PSA_CACHE_TIMES), by = 7))
       return(psaObsDataGraph(patient_cache$patient_data,
+                             patient_cache$dom_diagnosis,
+                             patient_cache$current_visit_time,
+                             patient_cache$latest_survival_time,
                              patient_cache$PSA_CACHE_TIMES[sampled_psa_indices],
                              patient_cache$PSA_CACHE_FULL[sampled_psa_indices,]))
     }else{
@@ -170,7 +173,8 @@ shinyServer(function(input, output, session) {
                                  as.numeric(input$selected_schedules),
                                  patient_cache$dom_diagnosis,
                                  patient_cache$current_visit_time,
-                                 patient_cache$latest_survival_time))
+                                 patient_cache$latest_survival_time,
+                                 patient_cache$patient_data$year_visit[!is.na(patient_cache$patient_data$gleason_sum)]))
     }else{
       return(NULL)
     }
