@@ -142,8 +142,8 @@ shinyServer(function(input, output, session) {
     year_visit = sort(unique(c(manual_biopsy_times, manual_psa_times)))
     psa = rep(NA, length(year_visit))
     gleason_sum = rep(NA, length(year_visit))
-    psa[year_visit==manual_psa_times] = manual_psa_values
-    gleason_sum[year_visit==manual_biopsy_times] = 6
+    psa[year_visit %in% manual_psa_times] = manual_psa_values
+    gleason_sum[year_visit %in% manual_biopsy_times] = 6
     
     manual_pat_data = data.frame('P_ID'=-10, age = manual_age,
                                  dom_diagnosis=manual_dom_diagnosis,

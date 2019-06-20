@@ -36,54 +36,43 @@ psaObsDataGraph = function(data, dom_diagnosis, current_visit_time,
   
   pred_mean_psa = rowMeans(2^pred_log2psaplus1 - 1)
   
-  first_visit_date = getHumanReadableDate(dom_diagnosis, abbreviated = T)
-  last_biopsy_date = getHumanReadableDate(dom_diagnosis + latest_survival_time*YEAR_DIVIDER, abbreviated = T)
-  current_visit_date = getHumanReadableDate(dom_diagnosis + current_visit_time*YEAR_DIVIDER, abbreviated = T)
-  
-  x_points = seq(0, current_visit_time, length.out = 5)
-  x_labels = as.character(round(x_points,1))
-  
-  latest_biopsy_point_done = F
-  x_labels[1] = "0\n(Start AS"
-  if(x_points[1]==latest_survival_time){
-    x_labels[1] = paste0(x_labels[1], " &\nLatest biopsy\n", first_visit_date, ")")
-    latest_biopsy_point_done = T
-  }else{
-    x_labels[1] = paste0(x_labels[1],"\n",first_visit_date,")")
-  }
-  
-  x_labels[5] = paste(round(current_visit_time,1),"\n(Current visit")
-  if(x_points[5]==latest_survival_time){
-    x_labels[5] = paste0(x_labels[5], " &\nLatest biopsy\n", current_visit_date, ")")
-    latest_biopsy_point_done = T
-  }else{
-    x_labels[5] = paste0(x_labels[5],"\n",current_visit_date,")")
-  }
-  
-  if(latest_biopsy_point_done==F){
-    pp = c(2:4)[which.min(abs(x_points[c(2,3,4)] - latest_survival_time))]
-    x_points[[pp]] = latest_survival_time
-    if((current_visit_time - latest_survival_time) < 1 | latest_survival_time<1){
-      x_labels[[pp]] = paste(round(latest_survival_time,1),"\n(Latest      \nbiopsy    \n", last_biopsy_date, ")    ")
+  xTicks = seq(0, current_visit_time, length.out = 5)
+  if(current_visit_time != latest_survival_time & latest_survival_time!=0){
+    nearest_tick_index = c(2:4)[which.min(abs(xTicks[2:4] - latest_survival_time))]
+    xTicks[nearest_tick_index] = latest_survival_time
+    if(nearest_tick_index==2){
+      xTicks[3:4] = seq(latest_survival_time, current_visit_time, length.out = 4)[2:3]
+    }else if(nearest_tick_index==4){
+      xTicks[2:3] = seq(0, latest_survival_time, length.out = 4)[2:3]
     }else{
-      x_labels[[pp]] = paste(round(latest_survival_time,1),"\n(Latest biopsy\n", last_biopsy_date, ")")
-    }
-    
-    #readjust other points
-    if(pp==3){
-      x_points[2] = latest_survival_time/2
-      x_labels[2] = round(x_points[2],1)
-      
-      x_points[4] = (latest_survival_time + current_visit_time)/2
-      x_labels[4] = round(x_points[4],1)
-    }else if(pp==4){
-      x_points[2:3] = seq(0, latest_survival_time, length.out = 4)[2:3]
-      x_labels[2:2] = round(x_points[2:3],1)
-    }else if(pp==2){
-      x_points[3:4] = seq(latest_survival_time, current_visit_time, length.out = 4)[2:3]
-      x_labels[3:4] = round(x_points[3:4],1)
+      xTicks[2] = latest_survival_time/2
+      xTicks[4] = (latest_survival_time + current_visit_time)/2
     }
   }
+  
+  latest_biopsy_label = NULL
+  if(latest_survival_time==0){
+    startAS_label = "Start AS\n& Latest\nbiopsy"
+    current_visit_label = "Current\nvisit"
+  }else{
+    startAS_label = "Start AS"
+    
+    if(current_visit_time == latest_survival_time){
+      current_visit_label = "Current visit\n& Latest biopsy"
+    }else{
+      current_visit_label = "Current\nvisit"
+      latest_biopsy_label = "Latest\nbiopsy"
+    }
+  }
+  
+  xlabels = as.character(round(xTicks,1))
+  xTicks_spps_dates = sapply(dom_diagnosis + xTicks*YEAR_DIVIDER, getHumanReadableDate, abbreviated=T)
+  xlabels = sapply(1:length(xlabels), function(i){paste0(xlabels[i],"\n(",xTicks_spps_dates[i], ")")})
+  
+  psa_min = min(data$psa, na.rm = T)
+  psa_max = max(data$psa, na.rm = T)
+
+  psa_breaks = seq(psa_min, psa_max, length.out = 4)
   
   plot = ggplot() +
     geom_ribbon(aes(x=c(0, latest_survival_time),
@@ -98,18 +87,32 @@ psaObsDataGraph = function(data, dom_diagnosis, current_visit_time,
                      y=-rep(Inf,length(biopsy_times)), 
                      yend=rep(Inf,length(biopsy_times)), linetype="Biopsy")) + 
     geom_vline(xintercept = current_visit_time, linetype='dashed') +
+    geom_label(aes(x=c(0, current_visit_time), 
+                   y=rep(psa_max * 1.1,2),
+                   label=c(startAS_label, current_visit_label)), 
+               fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines")) +
     scale_fill_manual(name="", values = SUCCESS_COLOR) + 
     scale_shape_manual(name="", values = 16)+
     scale_linetype_manual(name="", values = c("solid","dotted"))+
-    scale_x_continuous(breaks = x_points, labels = x_labels,
-                       limits = c(0, 1.1*current_visit_time))+
+    scale_x_continuous(breaks = xTicks, labels = xlabels,
+                       limits = c(-0.2, 1.2*current_visit_time))+
+    scale_y_continuous(breaks = psa_breaks, labels=round(psa_breaks,1),
+                       limits = c(psa_min, psa_max *1.4)) +
     theme_bw() + 
-    theme(axis.text = element_text(size = FONT_SIZE),
-          axis.title = element_text(size = FONT_SIZE),
-          legend.text = element_text(size = FONT_SIZE),
-          legend.position = "bottom", legend.direction = "horizontal") + 
+    theme(text = element_text(size = FONT_SIZE),
+          axis.text.y = element_text(size = FONT_SIZE),
+          axis.text.x = element_text(size = FONT_SIZE,
+                                     angle = 30, hjust = 1),
+          legend.position = "bottom", legend.direction = "horizontal")+
     xlab("Follow-up time (years)") + 
     ylab("PSA (ng/mL)")
+  
+  if(!is.null(latest_biopsy_label)){
+    plot = plot + geom_label(aes(x=latest_survival_time, y=psa_max*1.3, 
+                             label=latest_biopsy_label), 
+                         fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines"))
+  }
+  
   return(plot)
 }
 
@@ -130,20 +133,21 @@ biopsyScheduleGraph = function(schedule_df,
   
   xlabels = as.character(round(xTicks,1))
   xTicks_spps_dates = sapply(start_dom + xTicks*YEAR_DIVIDER, getHumanReadableDate, abbreviated=T)
-  xlabels[1] = paste0("0\n(Start AS\n", xTicks_spps_dates[1], ")")
+  xlabels = sapply(1:length(xlabels), function(i){paste0(xlabels[i],"\n(",xTicks_spps_dates[i], ")")})
   
-  if(current_visit_time == latest_survival_time){
-    xlabels[2] = paste0(xlabels[2],"\n(Current visit\n& Latest biopsy\n",xTicks_spps_dates[2], ")")
-    xlabels[3:6] = sapply(3:6, function(i){paste0(xlabels[i],"\n(",xTicks_spps_dates[i], ")")})
+  latest_biopsy_label = NULL
+  if(latest_survival_time==0){
+    startAS_label = "Start AS\n& Latest\nbiopsy"
+    current_visit_label = "Current\nvisit"
   }else{
-    if((current_visit_time - latest_survival_time) < 1 | latest_survival_time < 1){
-      xlabels[2] = paste0(xlabels[2],"\n(Latest      \n biopsy      \n",xTicks_spps_dates[2], ")      ")
-    }else{
-      xlabels[2] = paste0(xlabels[2],"\n(Latest biopsy\n",xTicks_spps_dates[2], ")")
-    }
+    startAS_label = "Start AS"
     
-    xlabels[3] = paste0(xlabels[3],"\n(Current visit\n",xTicks_spps_dates[3], ")")
-    xlabels[4:6] = sapply(4:6, function(i){paste0(xlabels[i],"\n(",xTicks_spps_dates[i], ")")})
+    if(current_visit_time == latest_survival_time){
+      current_visit_label = "Current visit\n& Latest biopsy"
+    }else{
+      current_visit_label = "Current\nvisit"
+      latest_biopsy_label = "Latest\nbiopsy"
+    }
   }
   
   ybreaks = unique(schedule_df$schedule_id)
@@ -166,16 +170,29 @@ biopsyScheduleGraph = function(schedule_df,
                fill=THEME_COLOR,
                color='white',
                size=7) +
+    geom_label(aes(x=c(0, current_visit_time), 
+                   y=rep(tail(ybreaks,1)+1,2),
+                   label=c(startAS_label, current_visit_label)), 
+               fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines")) +
     scale_fill_manual(name="", values = SUCCESS_COLOR) + 
     scale_linetype_manual(name="", values = c("solid"))+
     theme_bw() + xlab("Follow-up time (years)") +
     scale_x_continuous(breaks = xTicks, labels=xlabels,
                        limits = c(0, MAX_FOLLOW_UP))+
     scale_y_continuous(breaks = ybreaks, labels = ylabels, 
-                       limits = c(ybreaks[1]-0.5, tail(ybreaks,1) + 0.5)) +
+                       limits = c(ybreaks[1]-0.5, tail(ybreaks,1) + 1.5)) +
     ylab("Biopsy Schedule") + 
-    theme(text = element_text(size = FONT_SIZE + 2),
+    theme(text = element_text(size = FONT_SIZE),
+          axis.text.y = element_text(size = FONT_SIZE),
+          axis.text.x = element_text(size = FONT_SIZE,
+                                     angle = 30, hjust = 1),
           legend.position = "bottom", legend.direction = "horizontal")
+  
+  if(!is.null(latest_biopsy_label)){
+    pp = pp + geom_label(aes(x=latest_survival_time, y=sum(range(ybreaks))/2, 
+                             label=latest_biopsy_label), 
+                         fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines"))
+  }
   
   return(pp)
 }
