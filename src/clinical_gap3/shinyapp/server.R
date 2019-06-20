@@ -24,18 +24,16 @@ shinyServer(function(input, output, session) {
                                         patient_cache$SURV_CACHE_TIMES, patient_cache$PSA_CACHE_TIMES,
                                         patient_cache$SURV_CACHE_FULL, patient_cache$PSA_CACHE_FULL)
     
-    schedules = c("5% Risk", "10% Risk", "15% Risk",
-                  "PRIAS", "Yearly", "Every 2 Years")
     expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay") * 12
     total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
     
     biopsy_times = do.call('c', lapply(biopsy_schedules$schedules, "[[", "biopsy_times"))
-    patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(schedules), total_biopsies),
-                                                        Schedule=rep(schedules, total_biopsies),
+    patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
+                                                        Schedule=rep(SCHEDULES, total_biopsies),
                                                         biopsy_times)
     
-    patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(schedules),
-                                                           schedule=schedules,
+    patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
+                                                           schedule=SCHEDULES,
                                                            expected_delay=expected_delays,
                                                            total_biopsies = total_biopsies, check.names = F)
     biopsyCounter(biopsyCounter() + 1)
@@ -186,6 +184,24 @@ shinyServer(function(input, output, session) {
                                             as.numeric(input$selected_schedules))
       return(ggarrange(biopsy_total_graph, biopsy_delay_graph,
                        align = "h", widths = c(1.15,1)))
+    }else{
+      return(NULL)
+    }
+  })
+  
+  output$biopsy_delay_gauge_graph = renderPlot({
+    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
+      max_delay = max(DELAY_GAUGE_MAX, 
+                ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
+      
+      plotDf = patient_cache$biopsy_total_delay_plotDf
+      
+      delayGaugeList = lapply(1:length(input$selected_schedules), FUN = function(x){
+        roww = plotDf$schedule_id == as.numeric(input$selected_schedules[x])
+        biopsyDelayGaugeGraph(plotDf$expected_delay[roww], plotDf$schedule[roww], max_delay = max_delay)
+      })
+      
+      return(ggarrange(plotlist = delayGaugeList, nrow=2, ncol=3))
     }else{
       return(NULL)
     }

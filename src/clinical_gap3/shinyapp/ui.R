@@ -95,7 +95,8 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                                                                              selected = c(4,5),
                                                                              multiple=TRUE))),
                                            plotOutput("biopsy_schedule_graph"),
-                                           plotOutput("biopsy_total_delay_graph"))
+                                           #plotOutput("biopsy_total_delay_graph"),
+                                           plotOutput("biopsy_delay_gauge_graph"))
                                            
                                   )
                       )

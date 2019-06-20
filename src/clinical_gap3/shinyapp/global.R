@@ -14,6 +14,9 @@ FONT_SIZE=15
 POINT_SIZE=4
 M=500
 CACHE_SIZE=200
+SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
+              "PRIAS", "Yearly", "Every 2 Years")
+DELAY_GAUGE_MAX = 24
 
 DANGER_COLOR = "#c71c22"
 THEME_COLOR = "#2fa4e7"
@@ -127,6 +130,52 @@ biopsyDelayGraph = function(schedule_df,
   return(pp)
 }
 
+biopsyDelayGaugeGraph = function(delay, schedule, max_delay=DELAY_GAUGE_MAX){
+  prop_delay = delay/max_delay
+  
+  gauge_color = colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop_delay)
+  gauge_color = rgb(gauge_color[1], gauge_color[2], gauge_color[3], maxColorValue = 255)
+  
+  gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
+    col=colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop)
+    rgb(col[1], col[2], col[3], maxColorValue = 255)
+  })
+  
+  risk_label = paste0("\n\n\nExpected delay: ", round(delay)," months\nSchedule: ", schedule)
+  
+  riskGauge = ggplot(data = NULL, 
+                     aes(ymax = prop_delay, ymin = 0, xmax = 2, xmin = 1, 
+                         fill="Risk")) +
+    geom_rect(aes(ymax=1, ymin=0, xmax=2, xmin=1), fill ="white", color=gauge_color) +
+    geom_rect() +
+    geom_segment(aes(x=2.0, xend=2.1, y=0, yend=0), color=gauge_ticks_colors[1])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.25, yend=0.25), color=gauge_ticks_colors[2])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.5, yend=0.5), color=gauge_ticks_colors[3])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.75, yend=0.75), color=gauge_ticks_colors[4])+
+    geom_segment(aes(x=2.0, xend=2.1, y=1, yend=1), color=gauge_ticks_colors[5])+
+    geom_text(aes(x = 2.25, y = 0, label = 0), size=4, color=gauge_ticks_colors[1]) +
+    geom_text(aes(x = 2.25, y = 0.25, label = round(max_delay * 0.25,1)), size=4, color=gauge_ticks_colors[2]) +
+    geom_text(aes(x = 2.25, y = 0.5, label = round(max_delay * 0.5,1)), size=4, color=gauge_ticks_colors[3]) +
+    geom_text(aes(x = 2.25, y = 0.75, label = round(max_delay * 0.75,1)), size=4, color=gauge_ticks_colors[4]) +
+    geom_text(aes(x = 2.25, y = 1, label = max_delay), size=4, color=gauge_ticks_colors[5]) +
+    geom_text(aes(x = 0, y = 0, label = risk_label), 
+              color=gauge_color, size=6) +
+    coord_polar(theta = "y",start=-pi/2) + xlim(c(0, 2.5)) + ylim(c(0,2)) +
+    geom_segment(aes(x=0, xend=1, y=prop_delay, yend=prop_delay), 
+                 color=gauge_color,
+                 arrow = arrow(length = unit(0.2,"cm")))+
+    geom_point(aes(x=0, y=0), color=gauge_color, size=3)+
+    scale_fill_manual("", values=gauge_color)+
+    theme_void() +
+    theme(strip.background = element_blank(),
+          strip.text.x = element_blank(),
+          plot.title = element_text(hjust = 0.5),
+          title = element_text(size=15, color=gauge_color)) +
+    guides(fill=FALSE) +
+    guides(colour=FALSE)
+  return(riskGauge)
+}
+
 biopsyTotalGraph = function(schedule_df, 
                             selected_schedule_ids){  
   schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
@@ -148,11 +197,26 @@ riskGaugeGraph = function(mean_risk_prob, date=""){
   
   risk_label = paste0("\n\n\nCumulative-risk: ", round(mean_risk_prob*100,2),"%\n on ",date)
   
+  gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
+    col=colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop)
+    rgb(col[1], col[2], col[3], maxColorValue = 255)
+  })
+  
   riskGauge = ggplot(data = NULL, 
                      aes(ymax = mean_risk_prob, ymin = 0, xmax = 2, xmin = 1, 
                          fill="Risk")) +
     geom_rect(aes(ymax=1, ymin=0, xmax=2, xmin=1), fill ="white", color=gauge_color) +
     geom_rect() +
+    geom_segment(aes(x=2.0, xend=2.1, y=0, yend=0), color=gauge_ticks_colors[1])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.25, yend=0.25), color=gauge_ticks_colors[2])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.5, yend=0.5), color=gauge_ticks_colors[3])+
+    geom_segment(aes(x=2.0, xend=2.1, y=0.75, yend=0.75), color=gauge_ticks_colors[4])+
+    geom_segment(aes(x=2.0, xend=2.1, y=1, yend=1), color=gauge_ticks_colors[5])+
+    geom_text(aes(x = 2.35, y = 0, label = "0%"), size=5, color=gauge_ticks_colors[1]) +
+    geom_text(aes(x = 2.35, y = 0.25, label = "25%"), size=5, color=gauge_ticks_colors[2]) +
+    geom_text(aes(x = 2.35, y = 0.5, label = "50%"), size=5, color=gauge_ticks_colors[3]) +
+    geom_text(aes(x = 2.35, y = 0.75, label = "75%"), size=5, color=gauge_ticks_colors[4]) +
+    geom_text(aes(x = 2.35, y = 1, label = "100%"), size=5, color=gauge_ticks_colors[5]) +
     coord_polar(theta = "y",start=-pi/2) + xlim(c(0, 2.5)) + ylim(c(0,2)) +
     geom_text(aes(x = 0, y = 0, label = risk_label), 
               color=gauge_color, size=6) +
