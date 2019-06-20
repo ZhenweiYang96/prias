@@ -34,41 +34,23 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                     sidebarPanel(
                       tags$label("Load demo patient data"),
                       tags$br(), 
-                      actionButton("load_pat1", "Patient 1", class="btn-primary"),
+                      actionButton("load_pat1", "Patient 1", class="btn-default"),
                       tags$br(), tags$br(),
-                      actionButton("load_pat2", "Patient 2", class="btn-primary"),
+                      actionButton("load_pat2", "Patient 2", class="btn-default"),
                       tags$br(), tags$br(),
-                      actionButton("load_pat3", "Patient 3", class="btn-primary"),
+                      actionButton("load_pat3", "Patient 3", class="btn-default"),
                       tags$br(), tags$br(),
-                      actionButton("load_pat4", "Patient 4", class="btn-primary"),
+                      actionButton("load_pat4", "Patient 4", class="btn-default"),
                       tags$hr(),
                       tags$label("Enter patient data manually"),
                       actionButton("load_manual", "Manual Entry", class="btn-primary"),
                       tags$hr(),
-                      fileInput('patientFile', 'Load patient data (CSV file)',
+                      fileInput('patientFile', 'Load patient data (Excel file)',
                                 accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
-                      
-                      # Input: Checkbox if file has header ----
-                      checkboxInput("header", "Header", TRUE),
-                      
-                      # Input: Select separator ----
-                      radioButtons("sep", "Separator",
-                                   choices = c(Comma = ",",
-                                               Semicolon = ";",
-                                               Tab = "\t"),
-                                   selected = ","),
-                      
-                      radioButtons('dec', 'Decimal', c(Dot = '.', Comma = ','), 
-                                   selected='.'),
-                      
-                      # Input: Select quotes ----
-                      radioButtons("quote", "Quote",
-                                   choices = c(None = "",
-                                               "Double Quote" = '"',
-                                               "Single Quote" = "'"),
-                                   selected = '"'),
+                      actionButton("show_example_data", "Show Example File", class='btn-info'),
+                      tags$br(),tags$br(),
+                      downloadButton("download_example_data", "Download Example File", class='btn-success'),
                       width=2
-                      
                     ),
                     
                     # Show a plot of the generated distribution

@@ -4,6 +4,7 @@ library(splines)
 library(ggplot2)
 library(ggpubr)
 library(plyr)
+library(xlsx)
 
 shinyServer(function(input, output, session) {
   
@@ -42,6 +43,46 @@ shinyServer(function(input, output, session) {
       actionButton("ok_manual_entry", "OK", class='btn-primary')
     )
   )
+  
+  exampleDataModal = modalDialog(
+    tags$h3("Example Excel Format"),
+    tags$hr(),
+    tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
+    tableOutput('example_data'),
+    tags$hr(),
+    tags$span("Description", class="lead"),
+    tags$br(),
+    tags$span("P_ID", class='label label-primary'),
+    tags$span(" is the ID of the patient and should be a number"),
+    tags$br(),
+    tags$span("age", class='label label-primary'),
+    tags$span(" is the age (years) of the patient when patient started AS."),
+    tags$br(),
+    tags$span("start_date", class='label label-primary'),
+    tags$span(" is the date on which patient started AS in yyyy-mm-dd format."),
+    tags$br(),
+    tags$span("year_visit", class='label label-primary'),
+    tags$span(" is the follow-up time (years) since patient started AS, on which either PSA was measured or a biopsy was conducted."),
+    tags$br(),
+    tags$span("psa", class='label label-primary'),
+    tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values are denoted as NA."),
+    tags$br(),
+    tags$span("gleason_sum", class='label label-primary'),
+    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values are denoted as NA."),
+    tags$br(),
+    tags$hr(),
+    downloadButton("download_example_data2", "Download Example File", class='btn-success'),
+    footer = tagList(modalButton("OK"))
+  )
+  
+  exampleDF = data.frame(P_ID=factor(10),
+             age=62.3,
+             start_date = "2016-02-21",
+             year_visit = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
+             psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
+             gleason_sum = c(6,NA, 6, NA, NA, 6, NA, NA))
+  
+  output$example_data = renderTable(exampleDF)
   
   recalculateBiopsySchedules = function(){
     patient_data = patient_cache$patient_data
@@ -156,17 +197,35 @@ shinyServer(function(input, output, session) {
     setPatientDataInCache(manual_pat_data)
   }) 
   
+  observeEvent(input$show_example_data, {
+    showModal(exampleDataModal)
+  })
+  
   observeEvent(input$patientFile,{
     inFile <- input$patientFile
     
     if (!is.null(inFile)){
-      patient_data = read.csv(inFile$datapath, header=TRUE, dec = input$dec,
-                              sep = input$sep, quote = input$quote)
+      patient_data = read.xlsx(inFile$datapath,sheetIndex = 1,
+                               as.data.frame = T, header = T)
+      
+      patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
+      patient_data$dom_diagnosis = as.numeric(difftime(patient_data$start_date[1], SPSS_ORIGIN_DATE, units='secs'))
+      
       setPatientDataInCache(patient_data)
     }else{
       resetPatientCache()
     }
   })
+  
+  exampleDataDownloadHandler = downloadHandler(
+    filename = "example_dataset.xlsx",
+    content = function(file) {
+      write.xlsx(x=exampleDF, file = file,row.names = FALSE, col.names = T,
+                 append = F, showNA = T)
+    }
+  )
+  output$download_example_data = exampleDataDownloadHandler
+  output$download_example_data2 = exampleDataDownloadHandler
   
   observeEvent(input$year_gap_biopsy,{
     if(patientCounter()>0 & is.numeric(input$year_gap_biopsy)){
