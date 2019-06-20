@@ -18,6 +18,10 @@ library(DT)
 shinyUI(fluidPage(theme = shinytheme("cerulean"),
                   useShinyalert(),
                   
+                  tags$head(
+                    tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
+                  ),
+                  
                   # Application title
                   #tags$div(class="text-center bg-dark",
                   tags$h1(style="font-size: 40px; margin: 0 0 0 0; padding: 25px 0px 25px 0px;",
@@ -28,7 +32,7 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                   sidebarLayout(
                     # Sidebar with a slider input for number of bins 
                     sidebarPanel(
-                      tags$label("Load demo datient data"),
+                      tags$label("Load demo patient data"),
                       tags$br(), 
                       actionButton("load_pat1", "Patient 1", class="btn-primary"),
                       tags$br(), tags$br(),
@@ -38,7 +42,9 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                       tags$br(), tags$br(),
                       actionButton("load_pat4", "Patient 4", class="btn-primary"),
                       tags$hr(),
-                      
+                      tags$label("Enter patient data manually"),
+                      actionButton("load_manual", "Manual Entry", class="btn-primary"),
+                      tags$hr(),
                       fileInput('patientFile', 'Load patient data (CSV file)',
                                 accept = c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
                       
@@ -93,18 +99,18 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                                                                                          "Fixed: PRIAS"=4,
                                                                                          "Fixed: Yearly"=5,
                                                                                          "Fixed: Every 2 years"=6),
-                                                                             selected = c(4,5),
+                                                                             selected = c(2,4,5),
                                                                              multiple=TRUE))),
-                                           tags$h4("Biopsy Decision At Current Visit"),
-                                           fluidRow(column(2, htmlOutput("decision1")),
-                                                    column(2, htmlOutput("decision2")),
-                                                    column(2, htmlOutput("decision3")),
-                                                    column(2, htmlOutput("decision4")),
-                                                    column(2, htmlOutput("decision5")),
-                                                    column(2, htmlOutput("decision6"))),
-                                           tags$h4("Schedule of Future Biopsies"),
+                                           tags$div("Date of Next Biopsy", class='lead'),
+                                           fluidRow(column(4, htmlOutput("decision1")),
+                                                    column(4, htmlOutput("decision2")),
+                                                    column(4, htmlOutput("decision3"))),
+                                           fluidRow(column(4, htmlOutput("decision4")),
+                                                    column(4, htmlOutput("decision5")),
+                                                    column(4, htmlOutput("decision6"))),
+                                           tags$div("Expected Schedule of Future Biopsies", class='lead'),
                                            plotOutput("biopsy_schedule_graph"),
-                                           tags$h4("Expected Time Delay (months) to Detect Gleason ≥ 7"),
+                                           tags$div("Expected Time Delay (months) to Detect Gleason ≥ 7", class='lead'),
                                            plotOutput("biopsy_delay_gauge_graph"))
                                            
                                   )

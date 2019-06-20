@@ -1,7 +1,7 @@
 load("mvJoint_psa_time_scaled_light.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
-source("riskSchedule.R")
+source("scheduleCreator.R")
 source("schedules.R")
 
 #load("appdata.Rdata")
@@ -158,12 +158,14 @@ biopsyScheduleGraph = function(schedule_df,
                      yend=rep(Inf,length(prev_biopsies)),
                      linetype=rep("Previous Biopsies", length(prev_biopsies)))) + 
     geom_vline(xintercept = current_visit_time, linetype='dashed') +
-    geom_label(data=schedule_df,
-               aes(x=biopsy_times, y=schedule_id, label='B', group=schedule_id), color=THEME_COLOR,
-               size=7) +
     geom_line(data=schedule_df,
               aes(x=biopsy_times, y=schedule_id, group=schedule_id), color=THEME_COLOR,
               linetype='dotted') +
+    geom_label(data=schedule_df,
+               aes(x=biopsy_times, y=schedule_id, label='B', group=schedule_id),
+               fill=THEME_COLOR,
+               color='white',
+               size=7) +
     scale_fill_manual(name="", values = SUCCESS_COLOR) + 
     scale_linetype_manual(name="", values = c("solid"))+
     theme_bw() + xlab("Follow-up time (years)") +

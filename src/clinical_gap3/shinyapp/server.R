@@ -15,14 +15,42 @@ shinyServer(function(input, output, session) {
     patient_cache <<- list(P_ID = -1, data=NULL)
   }
   
+  #modal to show processing
+  pleaseWaitModal = modalDialog(title = "Please wait", "Analyzing patient data.", 
+                                footer = NULL,size = "s", fade = F)
+  
+  #modal for manual entry
+  manual_entry_modal = modalDialog(
+    tags$h3("Patient Data Manual Entry Form"),
+    tags$hr(),
+    numericInput("manual_age", label = "Enter patient age (years)", value = 60),
+    dateInput("manual_dom_diagnosis", label="Enter date of low-grade prostate cancer diagnosis",
+              value = "01-01-2019",
+              format = "dd-mm-yyyy", startview = "month",
+              language = "en"),
+    textInput("manual_biopsy_times", 
+              label = "Enter time (years) of previous biopsies with Gleason ≤ 6. Count years since diagnosis, and separate them by comma.",
+              value = "0, 1, 2.5"),
+    textInput("manual_psa_times", 
+              label = "Enter time (years) of all follow-up visits on which PSA was measured. Count years since diagnosis, and separate them by comma.",
+              value = "0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5"),
+    textInput("manual_psa_values", 
+              label = "Enter PSA values (ng/mL). Separate them by comma.",
+              value = "5.7, 3.2, 12, 8.5, 15, 21.7, 25, 20.3"),
+    footer = tagList(
+      modalButton("Cancel"),
+      actionButton("ok_manual_entry", "OK", class='btn-primary')
+    )
+  )
+  
   recalculateBiopsySchedules = function(){
     patient_data = patient_cache$patient_data
-    biopsy_schedules = compareSchedules(patient_data, patient_cache$current_visit_time,
-                                        patient_cache$latest_survival_time,
-                                        risk_thresholds = c(0.05, 0.1, 0.15),
-                                        input$year_gap_biopsy,
-                                        patient_cache$SURV_CACHE_TIMES, patient_cache$PSA_CACHE_TIMES,
-                                        patient_cache$SURV_CACHE_FULL, patient_cache$PSA_CACHE_FULL)
+    biopsy_schedules = createSchedules(patient_data, patient_cache$current_visit_time,
+                                       patient_cache$latest_survival_time,
+                                       risk_thresholds = c(0.05, 0.1, 0.15),
+                                       input$year_gap_biopsy,
+                                       patient_cache$SURV_CACHE_TIMES, patient_cache$PSA_CACHE_TIMES,
+                                       patient_cache$SURV_CACHE_FULL, patient_cache$PSA_CACHE_FULL)
     
     expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay") * 12
     total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
@@ -40,6 +68,7 @@ shinyServer(function(input, output, session) {
   }
   
   setPatientDataInCache = function(patient_data){
+    showModal(pleaseWaitModal)
     patient_data = patient_data[patient_data$year_visit<=MAX_FOLLOW_UP,]
     
     if(max(patient_data$gleason_sum, na.rm=T) > 6){
@@ -80,6 +109,7 @@ shinyServer(function(input, output, session) {
     recalculateBiopsySchedules()
     
     patientCounter(patientCounter() + 1)
+    removeModal()
   }
   
   observeEvent(input$load_pat1, {
@@ -97,6 +127,34 @@ shinyServer(function(input, output, session) {
   observeEvent(input$load_pat4, {
     setPatientDataInCache(demo_pat_list[[4]])
   })
+  
+  observeEvent(input$load_manual,{
+    showModal(manual_entry_modal)
+  })
+  
+  observeEvent(input$ok_manual_entry, {
+    manual_dom_diagnosis = as.numeric(difftime(input$manual_dom_diagnosis, SPSS_ORIGIN_DATE, units='secs'))
+    manual_age = input$manual_age
+    manual_biopsy_times = as.numeric(unlist(strsplit(input$manual_biopsy_times, ",")))
+    manual_psa_times = as.numeric(unlist(strsplit(input$manual_psa_times, ",")))
+    manual_psa_values = as.numeric(unlist(strsplit(input$manual_psa_values, ",")))
+    
+    year_visit = sort(unique(c(manual_biopsy_times, manual_psa_times)))
+    psa = rep(NA, length(year_visit))
+    gleason_sum = rep(NA, length(year_visit))
+    psa[year_visit==manual_psa_times] = manual_psa_values
+    gleason_sum[year_visit==manual_biopsy_times] = 6
+    
+    manual_pat_data = data.frame('P_ID'=-10, age = manual_age,
+                                 dom_diagnosis=manual_dom_diagnosis,
+                                 year_visit=year_visit,
+                                 psa = psa, gleason_sum=gleason_sum,
+                                 log2psaplus1 = log(psa + 1, base = 2))
+    
+    removeModal()
+    
+    setPatientDataInCache(manual_pat_data)
+  }) 
   
   observeEvent(input$patientFile,{
     inFile <- input$patientFile
@@ -187,11 +245,10 @@ shinyServer(function(input, output, session) {
         schedule_name = patient_cache$biopsy_schedule_plotDf$Schedule[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
         first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
         
-        decision = ifelse(first_biopsy_time > patient_cache$current_visit_time, "No", "Yes")
-        decision = paste0(schedule_name,": ", decision)
-        class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-danger", "label-success"))
+        first_biopsy_date = paste0(schedule_name,": ", getHumanReadableDate(patient_cache$dom_diagnosis + first_biopsy_time*YEAR_DIVIDER))
+        class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-primary", "label-success"))
         
-        return(tags$h4(tags$span(decision, class=class)))
+        return(tags$h4(tags$span(first_biopsy_date, class=class)))
       }else{
         return(NULL)
       }
