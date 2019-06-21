@@ -18,11 +18,18 @@ SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
               "PRIAS", "Yearly", "Every 2 Years")
 DELAY_GAUGE_MAX = 24
 
-DANGER_COLOR = "#c71c22"
+DANGER_COLOR = "red"
 THEME_COLOR = "#2fa4e7"
 THEME_COLOR_DARK = "#033a6f"
-SUCCESS_COLOR = "#73A839"
+SUCCESS_COLOR = "forestgreen"
 WARNING_COLOR="orange"
+
+EXAMPLE_DF = data.frame(P_ID=factor(10),
+                       age=62.3,
+                       start_date = "2016-02-21",
+                       year_visit = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
+                       psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
+                       gleason_sum = c(6,NA, 6, NA, NA, 6, NA, NA))
 
 getHumanReadableDate = function(spss_date, abbreviated=F){
   format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), 
@@ -186,6 +193,7 @@ biopsyScheduleGraph = function(schedule_df,
           axis.text.y = element_text(size = FONT_SIZE),
           axis.text.x = element_text(size = FONT_SIZE,
                                      angle = 30, hjust = 1),
+          legend.text = element_text(size=FONT_SIZE),
           legend.position = "bottom", legend.direction = "horizontal")
   
   if(!is.null(latest_biopsy_label)){

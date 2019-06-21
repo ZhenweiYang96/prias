@@ -8,6 +8,9 @@ library(xlsx)
 
 shinyServer(function(input, output, session) {
   
+  #####################
+  #Functions related to patient cache
+  #####################
   #making a reactive value to track changes in patient data
   patientCounter <- reactiveVal(0)
   biopsyCounter <- reactiveVal(0)
@@ -15,74 +18,6 @@ shinyServer(function(input, output, session) {
   resetPatientCache = function(){
     patient_cache <<- list(P_ID = -1, data=NULL)
   }
-  
-  #modal to show processing
-  pleaseWaitModal = modalDialog(title = "Please wait", "Analyzing patient data.", 
-                                footer = NULL,size = "s", fade = F)
-  
-  #modal for manual entry
-  manual_entry_modal = modalDialog(
-    tags$h3("Patient Data Manual Entry Form"),
-    tags$hr(),
-    numericInput("manual_age", label = "Enter patient age (years)", value = 60),
-    dateInput("manual_dom_diagnosis", label="Enter date of low-grade prostate cancer diagnosis",
-              value = "01-01-2019",
-              format = "dd-mm-yyyy", startview = "month",
-              language = "en"),
-    textInput("manual_biopsy_times", 
-              label = "Enter time (years) of previous biopsies with Gleason ≤ 6. Count years since diagnosis, and separate them by comma.",
-              value = "0, 1, 2.5"),
-    textInput("manual_psa_times", 
-              label = "Enter time (years) of all follow-up visits on which PSA was measured. Count years since diagnosis, and separate them by comma.",
-              value = "0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5"),
-    textInput("manual_psa_values", 
-              label = "Enter PSA values (ng/mL). Separate them by comma.",
-              value = "5.7, 3.2, 12, 8.5, 15, 21.7, 25, 20.3"),
-    footer = tagList(
-      modalButton("Cancel"),
-      actionButton("ok_manual_entry", "OK", class='btn-primary')
-    )
-  )
-  
-  exampleDataModal = modalDialog(
-    tags$h3("Example Excel Format"),
-    tags$hr(),
-    tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
-    tableOutput('example_data'),
-    tags$hr(),
-    tags$span("Description", class="lead"),
-    tags$br(),
-    tags$span("P_ID", class='label label-primary'),
-    tags$span(" is the ID of the patient and should be a number"),
-    tags$br(),
-    tags$span("age", class='label label-primary'),
-    tags$span(" is the age (years) of the patient when patient started AS."),
-    tags$br(),
-    tags$span("start_date", class='label label-primary'),
-    tags$span(" is the date on which patient started AS in yyyy-mm-dd format."),
-    tags$br(),
-    tags$span("year_visit", class='label label-primary'),
-    tags$span(" is the follow-up time (years) since patient started AS, on which either PSA was measured or a biopsy was conducted."),
-    tags$br(),
-    tags$span("psa", class='label label-primary'),
-    tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values are denoted as NA."),
-    tags$br(),
-    tags$span("gleason_sum", class='label label-primary'),
-    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values are denoted as NA."),
-    tags$br(),
-    tags$hr(),
-    downloadButton("download_example_data2", "Download Example File", class='btn-success'),
-    footer = tagList(modalButton("OK"))
-  )
-  
-  exampleDF = data.frame(P_ID=factor(10),
-             age=62.3,
-             start_date = "2016-02-21",
-             year_visit = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
-             psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
-             gleason_sum = c(6,NA, 6, NA, NA, 6, NA, NA))
-  
-  output$example_data = renderTable(exampleDF)
   
   recalculateBiopsySchedules = function(){
     patient_data = patient_cache$patient_data
@@ -153,6 +88,86 @@ shinyServer(function(input, output, session) {
     removeModal()
   }
   
+  ######################
+  # All modals
+  ######################
+  
+  #modal to show processing
+  pleaseWaitModal = modalDialog(title = "Please wait", "Analyzing patient data.", 
+                                footer = NULL,size = "s", fade = F)
+  
+  #modal for manual entry
+  manual_entry_modal = modalDialog(
+    tags$h3("Patient Data Manual Entry Form"),
+    tags$hr(),
+    numericInput("manual_age", label = "Enter patient age (years)", value = 60),
+    dateInput("manual_dom_diagnosis", label="Enter date of low-grade prostate cancer diagnosis",
+              value = "01-01-2019",
+              format = "dd-mm-yyyy", startview = "month",
+              language = "en"),
+    textInput("manual_biopsy_times", 
+              label = "Enter time (years) of previous biopsies with Gleason ≤ 6. Count years since diagnosis, and separate them by comma.",
+              value = "0, 1, 2.5"),
+    textInput("manual_psa_times", 
+              label = "Enter time (years) of all follow-up visits on which PSA was measured. Count years since diagnosis, and separate them by comma.",
+              value = "0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5"),
+    textInput("manual_psa_values", 
+              label = "Enter PSA values (ng/mL). Separate them by comma.",
+              value = "5.7, 3.2, 12, 8.5, 15, 21.7, 25, 20.3"),
+    footer = tagList(
+      modalButton("Cancel"),
+      actionButton("ok_manual_entry", "OK", class='btn-primary')
+    )
+  )
+  
+  #Modal to show example data
+  exampleDataModal = modalDialog(
+    tags$h3("Example Excel Format"),
+    tags$hr(),
+    tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
+    tags$h4(tags$span("Missing values should be either left as blank or should be entered as #N/A.", class='label label-warning')),
+    tableOutput('example_data_in_modal'),
+    tags$hr(),
+    tags$span("Description", class="lead"),
+    tags$br(),
+    tags$span("P_ID", class='label label-primary'),
+    tags$span(" is the ID of the patient and should be a number. Missing values are not allowed."),
+    tags$br(),
+    tags$span("age", class='label label-primary'),
+    tags$span(" is the age (years) of the patient when patient started AS. Missing values are not allowed."),
+    tags$br(),
+    tags$span("start_date", class='label label-primary'),
+    tags$span(" is the date on which patient started AS in yyyy-mm-dd format. Missing values are not allowed."),
+    tags$br(),
+    tags$span("year_visit", class='label label-primary'),
+    tags$span(" is the follow-up time (years) since patient started AS, on which either PSA was measured or a biopsy was conducted. Missing values are not allowed."),
+    tags$br(),
+    tags$span("psa", class='label label-primary'),
+    tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be either left as blank or should be entered as #N/A."),
+    tags$br(),
+    tags$span("gleason_sum", class='label label-primary'),
+    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values should be either left as blank or should be entered as #N/A."),
+    tags$br(),
+    tags$hr(),
+    downloadButton("download_example_data2", "Download Example File", class='btn-success'),
+    footer = tagList(modalButton("OK"))
+  )
+  
+  output$example_data_in_modal = renderTable(EXAMPLE_DF)
+  exampleDataDownloadHandler = downloadHandler(
+    filename = "example_dataset.xlsx",
+    contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    content = function(file) {
+      write.xlsx(x=EXAMPLE_DF, file = file,row.names = FALSE, col.names = T,
+                 append = F, showNA = T)
+    }
+  )
+  output$download_example_data = exampleDataDownloadHandler
+  output$download_example_data2 = exampleDataDownloadHandler
+  
+  ################################
+  # Events for buttons on sidebar panel
+  ################################
   observeEvent(input$load_pat1, {
     setPatientDataInCache(demo_pat_list[[1]])
   })
@@ -208,6 +223,11 @@ shinyServer(function(input, output, session) {
       patient_data = read.xlsx(inFile$datapath,sheetIndex = 1,
                                as.data.frame = T, header = T)
       
+      patient_data$psa[patient_data$psa %in% "NA"] = NA
+      patient_data$gleason_sum[patient_data$gleason_sum %in% "NA"] = NA
+      patient_data$psa = as.numeric(as.character(patient_data$psa))
+      patient_data$gleason_sum = as.numeric(as.character(patient_data$gleason_sum))
+      
       patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
       patient_data$dom_diagnosis = as.numeric(difftime(patient_data$start_date[1], SPSS_ORIGIN_DATE, units='secs'))
       
@@ -217,23 +237,9 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  exampleDataDownloadHandler = downloadHandler(
-    filename = "example_dataset.xlsx",
-    content = function(file) {
-      write.xlsx(x=exampleDF, file = file,row.names = FALSE, col.names = T,
-                 append = F, showNA = T)
-    }
-  )
-  output$download_example_data = exampleDataDownloadHandler
-  output$download_example_data2 = exampleDataDownloadHandler
-  
-  observeEvent(input$year_gap_biopsy,{
-    if(patientCounter()>0 & is.numeric(input$year_gap_biopsy)){
-      recalculateBiopsySchedules()
-    }
-  })
-  
-  #For the first tab panel's first table
+  #############################
+  # Output on Tab 1 showing patient data
+  #############################
   output$table_obs_data <- renderTable({
     if(patientCounter()>0){
       patient_data = patient_cache$patient_data
@@ -272,6 +278,9 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #############################
+  # Output on Tab 2 showing patient risk
+  #############################
   output$cum_risk_gauge = renderPlot({
     if(patientCounter()>0){
       futureTime = patient_cache$current_visit_time + input$risk_pred_time
@@ -284,18 +293,14 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  output$biopsy_schedule_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
-      return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
-                                 as.numeric(input$selected_schedules),
-                                 patient_cache$dom_diagnosis,
-                                 patient_cache$current_visit_time,
-                                 patient_cache$latest_survival_time,
-                                 patient_cache$patient_data$year_visit[!is.na(patient_cache$patient_data$gleason_sum)]))
-    }else{
-      return(NULL)
+  #############################
+  # Output on Tab 3 showing biopsy recommendation
+  #############################
+  observeEvent(input$year_gap_biopsy,{
+    if(patientCounter()>0 & is.numeric(input$year_gap_biopsy)){
+      recalculateBiopsySchedules()
     }
-  }) 
+  })
   
   decisionRenderer = function(decision_label_num){
     renderUI({
@@ -320,6 +325,19 @@ shinyServer(function(input, output, session) {
   output$decision5 = decisionRenderer(5)
   output$decision6 = decisionRenderer(6)
   
+  output$biopsy_schedule_graph = renderPlot({
+    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
+      return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
+                                 as.numeric(input$selected_schedules),
+                                 patient_cache$dom_diagnosis,
+                                 patient_cache$current_visit_time,
+                                 patient_cache$latest_survival_time,
+                                 patient_cache$patient_data$year_visit[!is.na(patient_cache$patient_data$gleason_sum)]))
+    }else{
+      return(NULL)
+    }
+  }) 
+  
   output$biopsy_delay_gauge_graph = renderPlot({
     if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
       max_delay = max(DELAY_GAUGE_MAX, 
@@ -338,5 +356,6 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  #Finally before we start the server, we reset the patient cache
   resetPatientCache()
 })
