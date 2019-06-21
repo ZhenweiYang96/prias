@@ -133,9 +133,17 @@ biopsyScheduleGraph = function(schedule_df,
   schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
   
   if(current_visit_time == latest_survival_time){
-    xTicks = c(0, seq(current_visit_time, MAX_FOLLOW_UP, length.out = 5))  
+    if(MAX_FOLLOW_UP-current_visit_time >= 1){
+      xTicks = c(0, seq(current_visit_time, MAX_FOLLOW_UP, length.out = 5))
+    }else{
+      xTicks = c(seq(0, current_visit_time, length.out = 5), MAX_FOLLOW_UP)
+    }
   }else{
-    xTicks = c(0, latest_survival_time, seq(current_visit_time, MAX_FOLLOW_UP, length.out = 4))
+    if(MAX_FOLLOW_UP-current_visit_time >= 1){
+      xTicks = c(0, latest_survival_time, seq(current_visit_time, MAX_FOLLOW_UP, length.out = 4))
+    }else{
+      xTicks = c(0,latest_survival_time/2, latest_survival_time, (latest_survival_time+current_visit_time)/2, current_visit_time, MAX_FOLLOW_UP)
+    }
   }
   
   xlabels = as.character(round(xTicks,1))

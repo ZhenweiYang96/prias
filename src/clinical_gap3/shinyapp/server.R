@@ -51,6 +51,9 @@ shinyServer(function(input, output, session) {
       patient_data$gleason_sum[patient_data$gleason_sum %in% c(7,8,9,10)] = NA
     }
     
+    patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
+    patient_data$dom_diagnosis = as.numeric(difftime(patient_data$start_date, SPSS_ORIGIN_DATE, units='secs'))
+    
     patient_cache <<- list(P_ID = patient_data$P_ID[1],
                            patient_data = patient_data,
                            dom_diagnosis = patient_data$dom_diagnosis[1],
@@ -125,7 +128,7 @@ shinyServer(function(input, output, session) {
     tags$h3("Example Excel Format"),
     tags$hr(),
     tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
-    tags$h4(tags$span("Missing values should be either left as blank or should be entered as #N/A.", class='label label-warning')),
+    tags$h4(tags$span("Missing values should be left blank.", class='label label-warning')),
     tableOutput('example_data_in_modal'),
     tags$hr(),
     tags$span("Description", class="lead"),
@@ -143,10 +146,10 @@ shinyServer(function(input, output, session) {
     tags$span(" is the follow-up time (years) since patient started AS, on which either PSA was measured or a biopsy was conducted. Missing values are not allowed."),
     tags$br(),
     tags$span("psa", class='label label-primary'),
-    tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be either left as blank or should be entered as #N/A."),
+    tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be left blank."),
     tags$br(),
     tags$span("gleason_sum", class='label label-primary'),
-    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values should be either left as blank or should be entered as #N/A."),
+    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values should be left blank."),
     tags$br(),
     tags$hr(),
     downloadButton("download_example_data2", "Download Example File", class='btn-success'),
@@ -159,7 +162,7 @@ shinyServer(function(input, output, session) {
     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     content = function(file) {
       write.xlsx(x=EXAMPLE_DF, file = file,row.names = FALSE, col.names = T,
-                 append = F, showNA = T)
+                 append = F, showNA = F)
     }
   )
   output$download_example_data = exampleDataDownloadHandler
@@ -189,8 +192,6 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$ok_manual_entry, {
-    manual_dom_diagnosis = as.numeric(difftime(input$manual_dom_diagnosis, SPSS_ORIGIN_DATE, units='secs'))
-    manual_age = input$manual_age
     manual_biopsy_times = as.numeric(unlist(strsplit(input$manual_biopsy_times, ",")))
     manual_psa_times = as.numeric(unlist(strsplit(input$manual_psa_times, ",")))
     manual_psa_values = as.numeric(unlist(strsplit(input$manual_psa_values, ",")))
@@ -201,11 +202,10 @@ shinyServer(function(input, output, session) {
     psa[year_visit %in% manual_psa_times] = manual_psa_values
     gleason_sum[year_visit %in% manual_biopsy_times] = 6
     
-    manual_pat_data = data.frame('P_ID'=-10, age = manual_age,
-                                 dom_diagnosis=manual_dom_diagnosis,
+    manual_pat_data = data.frame('P_ID'=-10, age = input$manual_age,
+                                 start_date=input$manual_dom_diagnosis,
                                  year_visit=year_visit,
-                                 psa = psa, gleason_sum=gleason_sum,
-                                 log2psaplus1 = log(psa + 1, base = 2))
+                                 psa = psa, gleason_sum=gleason_sum)
     
     removeModal()
     
@@ -227,9 +227,6 @@ shinyServer(function(input, output, session) {
       patient_data$gleason_sum[patient_data$gleason_sum %in% "NA"] = NA
       patient_data$psa = as.numeric(as.character(patient_data$psa))
       patient_data$gleason_sum = as.numeric(as.character(patient_data$gleason_sum))
-      
-      patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
-      patient_data$dom_diagnosis = as.numeric(difftime(patient_data$start_date[1], SPSS_ORIGIN_DATE, units='secs'))
       
       setPatientDataInCache(patient_data)
     }else{

@@ -379,12 +379,6 @@ prias_long$right_cens_time = rep(reclassification_times[,3], each=48)
 prias_long$year_max_followup = rep(reclassification_times[,4], each=48)
 prias_long$reclassification = !is.infinite(prias_long$earliest_failure_time)
 
-#Reassign new visit numbers and remove data points after max follow-up
-prias_long$visit_number = 1:48
-prias_long = prias_long[!(is.na(prias_long$year_psa) & is.na(prias_long$year_dre_gleason)) &
-                        prias_long$year_psa <= prias_long$year_max_followup & 
-                          prias_long$year_dre_gleason <= prias_long$year_max_followup,]
-
 #some people have follow-up after dying, seems wrong, so fixing it
 table(prias_long$year_max_followup > prias_long$year_dead)
 prias_long$year_dead[!is.na(prias_long$year_dead) & 
@@ -398,16 +392,38 @@ View(prias_long[!is.na(prias_long$year_surgery) &
 #I checked them in detail, very strange. better leave it the way it is
 colnames(prias_long)
 
+SPSS_ORIGIN_DATE = "1582-10-14"
 #Now gonna make a single visitTimeYears Variable
 prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, function(x){
-  year_psa = x$year_psa
-  year_dre_gleason = x$year_dre_gleason
-  psa = x$psa
-  dre = x$dre
-  gleason_sum = x$gleason_sum
+  #due to multiple rounds of processing, some NA's remain
+  temp_filter = !is.na(x$year_psa) & !is.na(x$psa)
+  psa = x$psa[temp_filter]
+  dom_psa = x$dom_psa[temp_filter]
+  year_psa = x$year_psa[temp_filter]
   
+  temp_filter = !is.na(x$year_dre_gleason) & !(is.na(x$dre) & is.na(x$gleason_sum))
+  dre = x$dre[temp_filter]
+  gleason_sum = x$gleason_sum[temp_filter]
+  dom_dre_gleason = x$dom_dre_gleason[temp_filter]
+  year_dre_gleason = x$year_dre_gleason[temp_filter]
+  
+  #Further delete all data after year of maximum follow-up
+  year_max_followup = x$year_max_followup[1]
+  
+  temp_filter = year_psa <= year_max_followup
+  dom_psa = dom_psa[temp_filter]
+  psa = psa[temp_filter]
+  year_psa = year_psa[temp_filter]
+  
+  temp_filter = year_dre_gleason <= year_max_followup
+  dre = dre[temp_filter]
+  gleason_sum = gleason_sum[temp_filter]
+  dom_dre_gleason = dom_dre_gleason[temp_filter]
+  year_dre_gleason = year_dre_gleason[temp_filter]
+    
+  #creating single year_visit
   new_year_visit = sort(unique(c(year_psa, year_dre_gleason)), decreasing = F)
-  new_dom_visit = sort(unique(c(x$dom_psa, x$dom_dre_gleason)), decreasing = F)
+  new_dom_visit = sort(unique(c(dom_psa, dom_dre_gleason)), decreasing = F)
   
   new_psa = rep(NA, length(new_year_visit))
   new_psa[new_year_visit %in% year_psa] = psa
@@ -419,10 +435,14 @@ prias_long_final = do.call('rbind', by(prias_long, INDICES = prias_long$P_ID, fu
   new_gleason[dregleason_indices] = gleason_sum
   new_dre[dregleason_indices] = dre
   
+  start_date = as.character.Date(as.POSIXct(x$dom_diagnosis[1],
+                                            origin = SPSS_ORIGIN_DATE, "%Y-%m-%d"))
+  
   data.frame(P_ID=x$P_ID[1], 
              visit_number=1:length(new_year_visit),
              age=x$age[1],
              dom_diagnosis=x$dom_diagnosis[1],
+             start_date=start_date,
              reclassification=x$reclassification[1],
              latest_survival_time = x$latest_survival_time[1],
              earliest_failure_time = x$earliest_failure_time[1],
@@ -450,4 +470,4 @@ prias_final.id = prias_long_final[!duplicated(prias_long_final$P_ID),]
 rm(list = setdiff(ls(), c("prias_long_final", "prias_final.id")))
 prias_long_list = split(prias_long_final, f = prias_long_final$P_ID)
 
-save.image(file="Rdata/gap3/PRIAS_2019/cleandata.Rdata")
+save.image(file="Rdata/gap3/PRIAS_2019/cleandata.Rdata", version = 2)
