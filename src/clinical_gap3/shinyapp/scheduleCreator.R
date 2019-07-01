@@ -30,9 +30,8 @@ createSchedules = function(patient_data, cur_visit_time, latest_survival_time,
   
   for(i in 1:length(risk_thresholds)){
     threshold = risk_thresholds[i]
-    risk_schedule = getRiskSchedule(1-threshold, MAX_FOLLOW_UP, 
-                                    latest_survival_time, visit_schedule, surv_schedule, min_biopsy_gap)
-    res[[i]] = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,
+    risk_schedule = getRiskSchedule(1-threshold, latest_survival_time, visit_schedule, surv_schedule, min_biopsy_gap)
+    res[[i]] = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL, MAX_FOLLOW_UP,
                                risk_schedule, latest_survival_time)
   }
   
@@ -42,11 +41,7 @@ createSchedules = function(patient_data, cur_visit_time, latest_survival_time,
   }else{
     seq(cur_visit_time, MAX_FOLLOW_UP, by=1)
   }
-  if(max(annual_schedule)>=(MAX_FOLLOW_UP-0.5)){
-    annual_schedule = annual_schedule[-length(annual_schedule)]
-  }
-  annual_schedule = c(annual_schedule, MAX_FOLLOW_UP)
-  res$annual = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,
+  res$annual = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,MAX_FOLLOW_UP,
                                annual_schedule, latest_survival_time)
   
   #now make the biennial schedule
@@ -55,13 +50,14 @@ createSchedules = function(patient_data, cur_visit_time, latest_survival_time,
   }else{
     seq(cur_visit_time, MAX_FOLLOW_UP, by=2)
   }
-  if(max(biennial_schedule)>=(MAX_FOLLOW_UP-0.5)){
-    biennial_schedule = biennial_schedule[-length(biennial_schedule)]
-  }
-  biennial_schedule = c(biennial_schedule, MAX_FOLLOW_UP)
-  res$biennial = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,
+  res$biennial = getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL, MAX_FOLLOW_UP,
                                  biennial_schedule, latest_survival_time)
   
+  getPRIASSchedule(latest_survival_time, 
+                   patient_data$psa[!is.na(patient_data$psa)],
+                   patient_data$year_visit[!is.na(patient_data$psa)],
+                   visit_schedule,
+                   apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1))
   #now lets make the PRIAS schedule
   #But to account for variation in future PSA, we try it 50 times
   prias_conseq = lapply(1:50, function(x){
@@ -70,11 +66,7 @@ createSchedules = function(patient_data, cur_visit_time, latest_survival_time,
                                       patient_data$year_visit[!is.na(patient_data$psa)],
                                       visit_schedule,
                                       apply(PSA_CACHE_FULL, MARGIN = 1, sample, size=1))
-    if(max(prias_schedule)>=(MAX_FOLLOW_UP-0.5)){
-      prias_schedule = prias_schedule[-length(prias_schedule)]
-    }
-    prias_schedule = c(prias_schedule, MAX_FOLLOW_UP)
-    return(getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,
+    return(getConsequences(SURV_CACHE_TIMES, SURV_CACHE_FULL,MAX_FOLLOW_UP,
                            prias_schedule, latest_survival_time))
   })
   

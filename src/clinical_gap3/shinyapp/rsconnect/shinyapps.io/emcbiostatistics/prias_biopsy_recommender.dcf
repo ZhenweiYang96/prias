@@ -1,0 +1,13 @@
+name: prias_biopsy_recommender
+title: prias_biopsy_recommender
+username:
+account: emcbiostatistics
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 999102
+bundleId: 2182689
+url: https://emcbiostatistics.shinyapps.io/prias_biopsy_recommender/
+when: 1561642111.90842
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: explanation-images.pptx|jitter_real_patient_data.R

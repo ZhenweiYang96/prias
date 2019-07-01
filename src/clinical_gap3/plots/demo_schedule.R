@@ -89,7 +89,7 @@ schedulePlot = function(object, pat_df, latest_survival_time,
               linetype='dotted')+
     geom_label(data = plotDf, 
                           aes(x=biopsy_times, y=as.numeric(plotDf$Schedule)),
-                          label="B",size=POINT_SIZE + 2) + 
+                          label="B",size=POINT_SIZE + 2, fill='black', color='white') + 
     ylab("Biopsy schedule") + 
     scale_y_continuous(breaks = 1:length(levels(plotDf$Schedule)),
       labels = levels(plotDf$Schedule),
@@ -134,4 +134,4 @@ demo_pat_plot = schedulePlot(mvJoint_psa_time_scaled, pat_data[pat_data$year_vis
                           "2.5\n (Current\nvisit)", "7.5", "10"),
                 MAX_FOLLOW_UP)
 ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
-       device = cairo_ps, height = 9)
+       device = cairo_ps, height = 9, width = 7)

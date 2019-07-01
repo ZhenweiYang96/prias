@@ -1,3 +1,31 @@
+# auc_files = list.files("Rdata/gap3/PRIAS_2019/auc_prederr/temp/", pattern = "auc", full.names = T)
+# pred_err_files = list.files("Rdata/gap3/PRIAS_2019/auc_prederr/temp/", pattern = "pred", full.names = T)
+# 
+# temp = vector("list", length = length(auc_files))
+# lapply(1:length(temp), FUN = function(i){
+#   load(auc_files[i])
+#   temp[[i]]$auc_list <<- auc_prederr_bs[[1]]$auc_list
+#   
+#   load(pred_err_files[i])
+#   temp[[i]]$prederr_list <<- auc_prederr_bs[[1]]$prederr_list
+# })
+# 
+# auc_prederr_bs = temp
+# sapply(temp, function(x){
+#   sapply(x$auc_list, function(x){
+#     x$auc
+#   })
+# })
+# 
+# sapply(temp, function(x){
+#   sapply(x$prederr_list, function(x){
+#     x$prederr
+#   })
+# })
+
+
+
+
 fileNames_all = list.files("~/Data/AUC_Brier/all/", full.names = T)
 
 auc_prederr_all = lapply(fileNames_all, function(x){

@@ -57,13 +57,17 @@ log_numerator_bayesrule = function(b, data){
   #Longitudinal PSA contribution
   Y_fitted_psa = c(data$Xbeta_Wgamma_h0BsGamma$obsPsa_Xbeta + data$obsPsa_Z %*% b)
   Y_psa_meanShift=data$obs_log2psaplus1 - Y_fitted_psa
-  meanShift_sigmaMatrix_meanShift = Y_psa_meanShift %*% data$invSigmaMatrix %*% Y_psa_meanShift
   
   psa_contrib = if(data$psaDist=="normal"){
-    -0.5 * meanShift_sigmaMatrix_meanShift
+    -0.5 * (Y_psa_meanShift %*% data$invSigmaMatrix %*% Y_psa_meanShift)
   }else{
     #T distribution
-    -0.5 * (data$df + length(Y_psa_meanShift)) * log(1 + meanShift_sigmaMatrix_meanShift/data$df)
+    #I suspect doing it the multivariate way is not correct. The Sigma matrix is not covariance. Gotta understand more
+    #but for now I will stick to adding up univariate log likelihoods
+    #-0.5 * (data$df + length(Y_psa_meanShift)) * log(1 + meanShift_sigmaMatrix_meanShift/data$df)
+    sum(sapply(Y_psa_meanShift * sqrt(data$invSigmaMatrix[1,1]), function(x){
+      - 0.5 * (data$df + 1) * log(1 + x^2/data$df)
+    }))
   }
   
   #Time to event contribution
@@ -217,7 +221,8 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
     logl_data_proposed_b = log_numerator_bayesrule(b=proposed_b[m,], data = log_numerator_bayesrule_data)
     
     acceptance_probability = min(exp(logl_data_proposed_b - logl_data_current_b + log_pdf_current_b - log_pdf_proposed_b[m]),1)
-    if(!is.nan(acceptance_probability) & rbinom(n = 1, size = 1, prob = acceptance_probability)==1){
+    # if(!is.nan(acceptance_probability) & rbinom(n = 1, size = 1, prob = acceptance_probability)==1){
+    if(!is.nan(acceptance_probability) & runif(1) <= acceptance_probability){
       accepted_b[m,] = proposed_b[m,]
       current_b = proposed_b[m,]
       log_pdf_current_b = log_pdf_proposed_b[m]

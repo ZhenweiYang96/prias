@@ -24,7 +24,7 @@ shinyServer(function(input, output, session) {
     biopsy_schedules = createSchedules(patient_data, patient_cache$current_visit_time,
                                        patient_cache$latest_survival_time,
                                        risk_thresholds = c(0.05, 0.1, 0.15),
-                                       input$year_gap_biopsy,
+                                       input$month_gap_biopsy/12,
                                        patient_cache$SURV_CACHE_TIMES, patient_cache$PSA_CACHE_TIMES,
                                        patient_cache$SURV_CACHE_FULL, patient_cache$PSA_CACHE_FULL)
     
@@ -78,13 +78,21 @@ shinyServer(function(input, output, session) {
     patient_cache$SURV_CACHE_FULL <<- rbind(rep(1, M), pred_res$predicted_surv_prob)
     
     #slider on tab 2
-    sliderLabel = paste0("Time (years) since latest visit in ", 
-                         getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER, abbreviated = T),":")
+    cur_visit_time_in_secs = patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER
+    max_visit_time_in_secs = patient_cache$dom_diagnosis + MAX_FOLLOW_UP * YEAR_DIVIDER
+    
+    sliderLabel = paste0("Follow-up time since current visit on ", 
+                         getHumanReadableDate(cur_visit_time_in_secs, abbreviated = F),":")
     
     max_slider = round_any(MAX_FOLLOW_UP - patient_cache$current_visit_time, accuracy=0.5)
-    updateSliderInput(session, "risk_pred_time", value = 0,
-                      max = max_slider, label = sliderLabel)
-    
+    # updateSliderInput(session, "risk_pred_time", value = 0,
+    #                   max = max_slider, label = sliderLabel)
+    updateSliderInput(session, "risk_pred_time", value = as.POSIXct(cur_visit_time_in_secs, origin = SPSS_ORIGIN_DATE),
+                      max = as.POSIXct(max_visit_time_in_secs, origin = SPSS_ORIGIN_DATE), 
+                      min = as.POSIXct(cur_visit_time_in_secs, origin = SPSS_ORIGIN_DATE),
+                      step = NULL,
+                      label = sliderLabel,
+                      timeFormat = "%b %Y")
     recalculateBiopsySchedules()
     
     patientCounter(patientCounter() + 1)
@@ -132,9 +140,6 @@ shinyServer(function(input, output, session) {
     tableOutput('example_data_in_modal'),
     tags$hr(),
     tags$span("Description", class="lead"),
-    tags$br(),
-    tags$span("P_ID", class='label label-primary'),
-    tags$span(" is the ID of the patient and should be a number. Missing values are not allowed."),
     tags$br(),
     tags$span("age", class='label label-primary'),
     tags$span(" is the age (years) of the patient when patient started AS. Missing values are not allowed."),
@@ -223,6 +228,7 @@ shinyServer(function(input, output, session) {
       patient_data = read.xlsx(inFile$datapath,sheetIndex = 1,
                                as.data.frame = T, header = T)
       
+      patient_data$P_ID = -15
       patient_data$psa[patient_data$psa %in% "NA"] = NA
       patient_data$gleason_sum[patient_data$gleason_sum %in% "NA"] = NA
       patient_data$psa = as.numeric(as.character(patient_data$psa))
@@ -249,10 +255,16 @@ shinyServer(function(input, output, session) {
       age = round(patient_data$age[1])
       latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
       
-      return(data.frame("Data"=c("ID", "Age (years)", 
+      # return(data.frame("Data"=c("ID", "Age (years)", 
+      #                            "First Visit", "Current Visit", "Total Visits", 
+      #                            "Latest Biopsy", "Latest Gleason","Total Biopsies"),
+      #                   "Value"=c(patient_cache$P_ID, age,
+      #                             first_visit_date,current_visit_date, nr_visits,
+      #                             last_biopsy_date, latest_gleason,nr_biopsies)))
+      return(data.frame("Data"=c("Age (years)", 
                                  "First Visit", "Current Visit", "Total Visits", 
                                  "Latest Biopsy", "Latest Gleason","Total Biopsies"),
-                        "Value"=c(patient_cache$P_ID, age,
+                        "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
                                   last_biopsy_date, latest_gleason,nr_biopsies)))
       
@@ -279,8 +291,9 @@ shinyServer(function(input, output, session) {
   # Output on Tab 2 showing patient risk
   #############################
   output$cum_risk_gauge = renderPlot({
-    if(patientCounter()>0){
-      futureTime = patient_cache$current_visit_time + input$risk_pred_time
+    if(patientCounter()>0 & input$risk_pred_time!=0){
+      futureTime = as.numeric((difftime(input$risk_pred_time, SPSS_ORIGIN_DATE, units='secs') - patient_cache$dom_diagnosis)/YEAR_DIVIDER)
+      
       riskProb = 1 - patient_cache$SURV_CACHE_MEAN[which.min(abs(patient_cache$SURV_CACHE_TIMES - futureTime))]
       date = getHumanReadableDate(patient_cache$dom_diagnosis + futureTime*YEAR_DIVIDER)
       
@@ -293,8 +306,8 @@ shinyServer(function(input, output, session) {
   #############################
   # Output on Tab 3 showing biopsy recommendation
   #############################
-  observeEvent(input$year_gap_biopsy,{
-    if(patientCounter()>0 & is.numeric(input$year_gap_biopsy)){
+  observeEvent(input$month_gap_biopsy,{
+    if(patientCounter()>0 & is.numeric(input$month_gap_biopsy)){
       recalculateBiopsySchedules()
     }
   })
@@ -351,6 +364,33 @@ shinyServer(function(input, output, session) {
     }else{
       return(NULL)
     }
+  })
+  
+  output$delay_explanation_plot = renderPlot({
+    ggplot() + geom_ribbon(aes(x=c(3.25, 4.5), ymin=-Inf, ymax=Inf), fill=DANGER_COLOR, alpha=0.25) +
+      geom_label(aes(x=3.875, y=0.8, label='15 months \ntime delay\n in detecting\nGleason ≥ 7'),size=5)+
+      geom_segment(aes(x=c(0,1,2), y=c(-Inf, -Inf, -Inf), xend=c(0,1,2), yend=c(0.5, 0.5, 0.5)),
+                   color=c(WARNING_COLOR, rep(SUCCESS_COLOR, 2)))+
+      geom_vline(xintercept = 4.5, color=DANGER_COLOR) + 
+      geom_vline(xintercept = 3.25, linetype='dashed', color=DANGER_COLOR) + 
+      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason ≥ 7"),
+                 size=6, color='white',
+                 fill=c(DANGER_COLOR)) +
+      geom_label(aes(x=c(0,1,2,4.5), y=rep(0.5,4),
+                     label = c("Start AS", rep("Biopsy\nGleason ≤ 6",2), "Biopsy\nGleason ≥ 7\ndetected")),
+                 size=6, color=c('white', rep(SUCCESS_COLOR,2), DANGER_COLOR),
+                 fill=c(WARNING_COLOR, rep('white',3))) +
+      xlab("Time of biopsy visits") + 
+      scale_x_continuous(breaks = c(0,1,2,3.25,4.5), 
+                         labels = c("Jan 2005","Jan 2006", "Jan 2007",
+                                    "Apr 2008", "Jul 2009"), limits=c(-0.1,5)) + 
+      ylim(0,1) + 
+      theme_bw() +
+      theme(text = element_text(size=FONT_SIZE + 4), 
+            axis.text.x = element_text(size=FONT_SIZE + 4), 
+            axis.title.x= element_text(size=FONT_SIZE + 4), 
+            axis.text.y = element_blank(),
+            axis.title.y = element_blank(), axis.ticks.y = element_blank())
   })
   
   #Finally before we start the server, we reset the patient cache

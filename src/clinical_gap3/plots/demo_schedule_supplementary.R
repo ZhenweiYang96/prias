@@ -52,7 +52,7 @@ schedulePlotSupp = function(object, pat_df, latest_survival_time=NA,
               linetype='dotted')+
     geom_label(data = plotDf, 
                aes(x=biopsy_times, y=as.numeric(plotDf$Schedule)),
-               label="B",size=POINT_SIZE + 2) + 
+               label="B",size=POINT_SIZE + 2, fill='black', color='white') + 
     ylab("Biopsy schedule") + 
     scale_y_continuous(breaks = 1:length(levels(plotDf$Schedule)),
                        labels = levels(plotDf$Schedule),
@@ -99,7 +99,7 @@ schedule_plot_pat1 = schedulePlotSupp(mvJoint_psa_time_scaled, pat1_data,
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 10, title = "Real Patient 1") + theme(axis.title.x = element_blank())
 ggsave(schedule_plot_pat1, filename = "report/clinical/images/demo_pat1_supp.eps",
-       device = cairo_ps, height = 8)
+       device = cairo_ps, height = 8, width = 7)
 
 #############
 pat2_data = prias_long_final[prias_long_final$P_ID==102 & prias_long_final$year_visit<=3,]
@@ -114,7 +114,7 @@ schedule_plot_pat2 = schedulePlotSupp(mvJoint_psa_time_scaled, pat2_data,
                                       max_follow_up = 10, title = "Real Patient 2") + theme(axis.title.x = element_blank())
 
 ggsave(schedule_plot_pat2, filename = "report/clinical/images/demo_pat2_supp.eps",
-       device = cairo_ps, height = 8)
+       device = cairo_ps, height = 8, width = 7)
 ##########
 
 pat3_data = prias_long_final[prias_long_final$P_ID==101 & prias_long_final$year_visit<=5,]
@@ -128,7 +128,7 @@ schedule_plot_pat3 = schedulePlotSupp(mvJoint_psa_time_scaled, pat3_data,
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 10, title = "Real Patient 3") + theme(axis.title.x = element_blank())
 ggsave(schedule_plot_pat3, filename = "report/clinical/images/demo_pat3_supp.eps",
-       device = cairo_ps, height = 8)
+       device = cairo_ps, height = 8, width = 7)
 
 ##########
 
@@ -143,7 +143,7 @@ schedule_plot_pat4 = schedulePlotSupp(mvJoint_psa_time_scaled, pat4_data,
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 10, title = "Real Patient 4") + theme(axis.title.x = element_blank())
 ggsave(schedule_plot_pat4, filename = "report/clinical/images/demo_pat4_supp.eps",
-       device = cairo_ps, height = 8)
+       device = cairo_ps, height = 8, width = 7)
 
 ##########
 

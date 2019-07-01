@@ -24,8 +24,7 @@ THEME_COLOR_DARK = "#033a6f"
 SUCCESS_COLOR = "forestgreen"
 WARNING_COLOR="orange"
 
-EXAMPLE_DF = data.frame(P_ID=factor(10),
-                       age=62.3,
+EXAMPLE_DF = data.frame(age=62.3,
                        start_date = "2016-02-21",
                        year_visit = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
                        psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
@@ -294,16 +293,24 @@ biopsyTotalGraph = function(schedule_df,
   return(pp)
 }
 
-riskGaugeGraph = function(mean_risk_prob, date=""){
+riskGaugeGraph = function(mean_risk_prob, date="", danger_color_threshold = 0.25){
   
-  gauge_color = colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(mean_risk_prob)
-  gauge_color = rgb(gauge_color[1], gauge_color[2], gauge_color[3], maxColorValue = 255)
+  if(mean_risk_prob > danger_color_threshold){
+    gauge_color = DANGER_COLOR
+  }else{
+    gauge_color = colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(mean_risk_prob/danger_color_threshold)
+    gauge_color = rgb(gauge_color[1], gauge_color[2], gauge_color[3], maxColorValue = 255)
+  }
   
-  risk_label = paste0("\n\n\nCumulative-risk: ", round(mean_risk_prob*100,2),"%\n on ",date)
+  risk_label = paste0("\n\n\nCumulative-risk: ", round(mean_risk_prob*100),"%\n on ",date)
   
   gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
-    col=colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop)
-    rgb(col[1], col[2], col[3], maxColorValue = 255)
+    if(prop > danger_color_threshold){
+      return(DANGER_COLOR)
+    }else{
+      col=colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop/danger_color_threshold)
+      return(rgb(col[1], col[2], col[3], maxColorValue = 255))
+    }
   })
   
   riskGauge = ggplot(data = NULL, 

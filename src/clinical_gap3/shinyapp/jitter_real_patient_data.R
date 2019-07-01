@@ -2,8 +2,10 @@ demo_pat_list = list(pat1_data, pat2_data, pat3_data, pat4_data)
 demo_pat_list = lapply(1:length(demo_pat_list), function(i){
   set.seed(2019 + i)
   x = demo_pat_list[[i]][,c("P_ID", "age", "start_date", "year_visit", "psa", "gleason_sum")]
+  x$P_ID = -i
   x$age = x$age + rnorm(1, 0, 2)
   x$psa = x$psa + rnorm(nrow(x), 0, 1)
+  x$psa[x$psa < 0] = 0.1
   gleason_sums = x$gleason_sum[!is.na(x$gleason_sum)]
   gleason_sums = sapply(gleason_sums, FUN = function(gs){
     if(gs<=6){

@@ -22,13 +22,13 @@ Loss to follow-up & 250\\
 Death (unrelated to prostate cancer) & 95\\
 Death (related to prostate cancer) & 2\\
 \hline
-Median age at diagnosis (years) & 61 (IQR: 66--71)\\
-Median follow-up period per patient (years) &  1.8 (IQR: 0.9--3.99)\\
-Total PSA measurements & 65798\\
+Median age at diagnosis (years) & 66 (IQR: 61--71)\\
+Median follow-up period per patient (years) &  1.8 (IQR: 0.9--4.0)\\
+Total PSA measurements & 67578\\
 Median number of PSA measurements per patient &  6 (IQR: 4--12)\\
 Median PSA value (ng/mL) & 5.7 (IQR: 4.1--7.7)\\
-Total biopsies & 15563\\
-Median number of biopsies per patient &  2 (IQR: 1--3)\\
+Total biopsies & 15686\\
+Median number of biopsies per patient &  2 (IQR: 1--2)\\
 \hline
 \end{tabular}
 \end{table}
@@ -107,17 +107,16 @@ The joint model was fitted using the R package \textbf{JMbayes} \citep{rizopoulo
 \hline
 Random Effects    & $b_{0}$    & $b_{1}$   & $b_{2}$   & $b_{3}$   & $b_{4}$    \\
 \hline
-$b_{0}$ & \textbf{0.229} & 0.029 & 0.022 & 0.070 & 0.005\\
-$b_{1}$ & 0.029 & \textbf{0.149}  & 0.097  & 0.169 & 0.085 \\
-$b_{2}$ & 0.022 & 0.097  & \textbf{0.270}  & 0.326 & 0.231 \\
-$b_{3}$ & 0.070  & 0.169 & 0.326  & \textbf{0.550} & 0.355 \\
-$b_{4}$ & 0.005  & 0.085  & 0.231  & 0.355 & \textbf{0.348} \\
+$b_{0}$ & \textbf{0.229} & 0.030 & 0.023 & 0.073 & 0.007 \\
+$b_{1}$ & 0.030 & \textbf{0.149} & 0.098 & 0.171 & 0.085 \\
+$b_{2}$ & 0.023 & 0.098 & \textbf{0.276} & 0.335 & 0.236 \\
+$b_{3}$ & 0.073 & 0.171 & 0.335 & \textbf{0.560} & 0.359 \\
+$b_{4}$ & 0.007 & 0.085 & 0.236 & 0.359 & \textbf{0.351} \\
 \hline
 \end{tabular}
 \end{table}
 
 For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:long_model_psa}), in Table~\ref{tab:PSA_long} we can see that the age of the patient trivially affects the baseline ${\log_2(\mbox{PSA} + 1)}$ measurement. Since the longitudinal evolution of ${\log_2 (\mbox{PSA} + 1)}$ measurements is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Figure~\ref{fig:fitted_9subject_psa} we present plots of observed versus fitted PSA profiles for nine randomly selected patients. 
-
 \begin{table}[!htb]
 \small\sf\centering
 \caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_psa}) for the PSA outcome.}
@@ -126,13 +125,13 @@ For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:lo
 \hline
 Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\% & P     \\
 \hline
-Intercept & 2.124    & 0.054 & 2.024 & 2.236 & \textless0.001 \\
-Age & 0.009    & 0.001 & 0.007 & 0.010   &\textless0.001 \\
-Spline: [0.0, 0.5] years & 0.062    & 0.006 & 0.050  & 0.075  & \textless0.001 \\
-Spline: [0.5, 1.3] years & 0.194    & 0.011 & 0.175 & 0.214  & \textless0.001 \\
-Spline: [1.3, 3.0] years & 0.243    & 0.014 & 0.218 & 0.269  & \textless0.001 \\
-Spline: [3.0, 6.3] years & 0.382    & 0.014 & 0.356 & 0.408  &  \textless0.001 \\
-$\sigma$ & 0.139    & 0.001 & 0.137 & 0.140  & \\
+Intercept & 2.129    & 0.060  & 2.009 & 2.244 & \textless0.001 \\
+Age & 0.008    & 0.001 & 0.007 & 0.010   &\textless0.001 \\
+Spline: [0.0, 0.5] years & 0.063    & 0.007 & 0.051 & 0.075  & \textless0.001 \\
+Spline: [0.5, 1.3] years & 0.196    & 0.010  & 0.177 & 0.217  & \textless0.001 \\
+Spline: [1.3, 3.0] years & 0.244    & 0.014 & 0.217 & 0.272  & \textless0.001 \\
+Spline: [3.0, 6.3] years & 0.382    & 0.014 & 0.356 & 0.410 &  \textless0.001 \\
+$\sigma$ & 0.139    & 0.001 & 0.138 & 0.140  & \\
 \hline
 \end{tabular}
 \end{table}
@@ -153,14 +152,14 @@ For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the para
 \hline
 Variable                      & Mean   & Std. Dev & 2.5\%  & 97.5\%                 & P              \\
 \hline
-Age                      & 0.037    & 0.006 & 0.026  & 0.049  & \textless0.001 \\
-Fitted $\log_2 (\mbox{PSA} + 1)$ value            & -0.013   & 0.078 & -0.157 & 0.143  & 0.812 \\
-Fitted $\log_2 (\mbox{PSA} + 1)$ velocity             & 2.297    & 0.303 & 1.670   & 2.789  & \textless0.001   \\
+Age                      & 0.037    & 0.006 & 0.025  & 0.049  & \textless0.001 \\
+Fitted $\log_2 (\mbox{PSA} + 1)$ value            & -0.012   & 0.076 & -0.164 & 0.135  & 0.856 \\
+Fitted $\log_2 (\mbox{PSA} + 1)$ velocity             & 2.266    & 0.299 & 1.613  & 2.767  & \textless0.001   \\
 \hline
 \end{tabular}
 \end{table}
 
-It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value and velocity are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:PSA_survival_easy}, we present the hazard (of GS7) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in fitted $\log_2 (\mbox{PSA} + 1)$ velocity from -0.086 to 0.307 (fitted first and third quartiles) corresponds to a hazard ratio of 2.466. The interpretation for the rest is similar.
+It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value and velocity are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:PSA_survival_easy}, we present the hazard (of GS7) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in fitted $\log_2 (\mbox{PSA} + 1)$ velocity from -0.085 to 0.308 (fitted first and third quartiles) corresponds to a hazard ratio of 2.433. The interpretation for the rest is similar.
 
 \begin{table}[!htb]
 \small\sf\centering
@@ -170,9 +169,9 @@ It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value an
 \hline
 Variable                      & $\mbox{Q}_1$   & $\mbox{Q}_3$ & Hazard ratio [95\% CI] \\
 \hline
-Age & 61 & 71 & 1.452 [1.298, 1.631] \\
-Fitted $\log_2 (\mbox{PSA} + 1)$ value & 2.359 & 3.074 & 0.991 [0.894, 1.108]\\
-Fitted $\log_2 (\mbox{PSA} + 1)$ velocity & -0.086 & 0.307 & 2.466 [1.927, 2.992]\\
+Age & 61 & 71 & 1.455 [1.285, 1.631] \\
+Fitted $\log_2 (\mbox{PSA} + 1)$ value & 2.360 & 3.078 & 0.991 [0.889, 1.102] \\
+Fitted $\log_2 (\mbox{PSA} + 1)$ velocity & -0.085 & 0.308 & 2.433 [1.883, 2.962] \\
 \hline
 \end{tabular}
 \end{table}

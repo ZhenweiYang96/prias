@@ -9,7 +9,7 @@ To assist patients in making an informed choice for a schedule, be it personaliz
 D_j(\mathcal{S} \mid t,s) &= \sum_{v=1}^{h-1} \Big\{R_j(t_{v+1}\mid t,s) - R_j(t_v\mid t,s)\Big\} \\ & \times  \Bigg\{t_{v+1} - t_{v} - \int_{t_v}^{t_{v+1}} \frac{R_j(t_{v+1}\mid t,s)-R_j(u \mid t,s)}{R_j(t_{v+1}\mid t,s) - R_j(t_v\mid t,s)} \mathrm{d}u \Bigg\}
 \end{split}
 \end{equation}
-The personalized and fixed schedules, and their consequences for a few real patients from the PRIAS dataset are shown in Figure~\ref{fig:demo_pat1_supp} to Figure~\ref{fig:demo_pat4_supp}. For all patients, the risk estimates are smaller after a negative biopsy.
+The personalized and fixed schedules, and their consequences for a few real patients from the PRIAS dataset are shown in Figure~\ref{fig:demo_pat1_supp} to Figure~\ref{fig:demo_pat4_supp}. We maintained a minimum gap of one year between biopsies as advised by the PRIAS protocol. In addition, we scheduled biopsies only for the first ten years follow-up because of limited follow-up data period of PRIAS. A compulsory biopsy was done at year ten of follow-up in all schedules for meaningful comparison of their expected delays in detection of GS7.
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/demo_pat1_supp.eps}}

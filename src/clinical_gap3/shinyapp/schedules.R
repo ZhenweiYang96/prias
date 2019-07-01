@@ -33,7 +33,7 @@ getPRIASSchedule = function(latest_survival_time, obs_psa, obs_psa_times,
   return(proposed_biopsy_times)
 }
 
-getRiskSchedule = function(surv_threshold, horizon,
+getRiskSchedule = function(surv_threshold,
                            latest_survival_time,
                            visit_schedule, surv_schedule,
                            min_biopsy_gap){
@@ -52,6 +52,13 @@ getRiskSchedule = function(surv_threshold, horizon,
     }
   }
   
+  return(proposed_biopsy_times)
+}
+
+getConsequences = function(cache_times, cache_surv_full, horizon,
+                           proposed_biopsy_times, latest_survival_time){
+  
+  orig_biopsy_times = proposed_biopsy_times
   #Make the last biopsy at year 10
   #and if the last biopsy was 9.5 or more, remove it and only keep the one at 10
   if(max(proposed_biopsy_times)>=(horizon-0.5)){
@@ -59,11 +66,6 @@ getRiskSchedule = function(surv_threshold, horizon,
   }
   proposed_biopsy_times = c(proposed_biopsy_times, horizon)
   
-  return(proposed_biopsy_times)
-}
-
-getConsequences = function(cache_times, cache_surv_full, 
-                           proposed_biopsy_times, latest_survival_time){
   
   #Now we create intervals in which to integrate the conditional surv prob
   if(length(proposed_biopsy_times)==1){
@@ -101,6 +103,6 @@ getConsequences = function(cache_times, cache_surv_full,
   }),1, sum, na.rm=T),na.rm=T)
   
   return(list(expected_delay = expected_delay,
-              total_biopsies = length(proposed_biopsy_times),
-              biopsy_times=proposed_biopsy_times))
+              total_biopsies = length(orig_biopsy_times),
+              biopsy_times=orig_biopsy_times))
 }

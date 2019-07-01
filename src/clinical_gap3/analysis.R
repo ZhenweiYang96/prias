@@ -44,7 +44,7 @@ prias_final.id$latest_survival_time[prias_final.id$latest_survival_time==0] = 0.
 survModel = survreg(Surv(latest_survival_time, earliest_failure_time, type = "interval2") ~ 
                       age, x = T,
                     data = prias_final.id, model = TRUE)
-save(survModel, file="Rdata/gap3/PRIAS_2019/survModel.Rdata")
+save(survModel, file="Rdata/gap3/PRIAS_2019/survModel.Rdata", version = 2)
 
 prias_psa = droplevels(prias_long_final[!is.na(prias_long_final$psa),])
 # model = lme(fixed=log2psaplus1 ~ age + ns(I((year_visit-2)/2), 
@@ -64,6 +64,8 @@ mvglmer_psa_time_scaled = mvglmer(list(log2psaplus1 ~ age +
 endTime_mvglmer = Sys.time()
 print(endTime_mvglmer - startTime_mvglmer)
 
+save(mvglmer_psa_time_scaled, file="Rdata/gap3/PRIAS_2019/mvglmer_psa_time_scaled.Rdata", version = 2)
+
 forms_psa = list("log2psaplus1" = "value",
                  "log2psaplus1" = list(fixed = ~ 0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
                                        random=~0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
@@ -75,4 +77,4 @@ mvJoint_psa_time_scaled = mvJointModelBayes(mvglmer_psa_time_scaled, survModel,
                                 Formulas = forms_psa, control = list(n_cores=3))
 endTime_mvJoint = Sys.time()
 
-save(mvJoint_psa_time_scaled, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
+save(mvJoint_psa_time_scaled, file="Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata", version = 2)

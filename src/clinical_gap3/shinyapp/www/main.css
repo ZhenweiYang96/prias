@@ -1,3 +1,12 @@
 .nav-tabs a{
   font-size: 1.2em;
 }
+
+.nav-tabs a[data-value~="Documentation"]{
+  font-size: 1.2em;
+  color: orange;
+}
+
+form hr{
+  border-top: 1px solid #ccc;
+}
