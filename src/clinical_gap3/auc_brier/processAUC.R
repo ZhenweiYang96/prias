@@ -5,19 +5,18 @@
 # lapply(1:length(temp), FUN = function(i){
 #   load(auc_files[i])
 #   temp[[i]]$auc_list <<- auc_prederr_bs[[1]]$auc_list
-#   
+# 
 #   load(pred_err_files[i])
 #   temp[[i]]$prederr_list <<- auc_prederr_bs[[1]]$prederr_list
 # })
 # 
-# auc_prederr_bs = temp
 # sapply(temp, function(x){
 #   sapply(x$auc_list, function(x){
 #     x$auc
 #   })
 # })
 # 
-# sapply(temp, function(x){
+# 
 #   sapply(x$prederr_list, function(x){
 #     x$prederr
 #   })

@@ -45,14 +45,18 @@ shinyServer(function(input, output, session) {
   
   setPatientDataInCache = function(patient_data){
     showModal(pleaseWaitModal)
-    patient_data = patient_data[patient_data$year_visit<=MAX_FOLLOW_UP,]
     
+    start_date = as.Date(patient_data$start_date, tryFormats = c("%d-%m-%Y"))
+    visit_date = as.Date(patient_data$visit_date, tryFormats = c("%d-%m-%Y"))
+    
+    patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
+    patient_data$dom_diagnosis = as.numeric(difftime(start_date, SPSS_ORIGIN_DATE, units='secs'))
+    patient_data$year_visit = (as.numeric(difftime(visit_date, SPSS_ORIGIN_DATE, units='secs')) - patient_data$dom_diagnosis)/YEAR_DIVIDER
+    
+    patient_data = patient_data[patient_data$year_visit<=MAX_FOLLOW_UP,]
     if(max(patient_data$gleason_sum, na.rm=T) > 6){
       patient_data$gleason_sum[patient_data$gleason_sum %in% c(7,8,9,10)] = NA
     }
-    
-    patient_data$log2psaplus1 = log(patient_data$psa + 1, base = 2)
-    patient_data$dom_diagnosis = as.numeric(difftime(patient_data$start_date, SPSS_ORIGIN_DATE, units='secs'))
     
     patient_cache <<- list(P_ID = patient_data$P_ID[1],
                            patient_data = patient_data,
@@ -60,7 +64,7 @@ shinyServer(function(input, output, session) {
                            latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)]),
                            current_visit_time = max(patient_data$year_visit))
     
-    set.seed(patient_cache$P_ID)
+    set.seed(2019)
     latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
     
     patient_cache$SURV_CACHE_TIMES <<- c(patient_cache$latest_survival_time, 
@@ -111,20 +115,21 @@ shinyServer(function(input, output, session) {
   manual_entry_modal = modalDialog(
     tags$h3("Patient Data Manual Entry Form"),
     tags$hr(),
-    numericInput("manual_age", label = "Enter patient age (years)", value = 60),
-    dateInput("manual_dom_diagnosis", label="Enter date of low-grade prostate cancer diagnosis",
-              value = "01-01-2019",
-              format = "dd-mm-yyyy", startview = "month",
-              language = "en"),
+    tags$h4(tags$span("Dates are in dd-mm-yyyy (e.g., 23-02-2007) format.", class='label label-warning')),
+    numericInput("manual_age", label = "Enter patient age (years)", value = 60, width = "80%"),
+    textInput("manual_dom_diagnosis", label="Enter date (dd-mm-yyyy format) of low-grade prostate cancer diagnosis:",
+              value = "01-01-2019", width = "80%"),
     textInput("manual_biopsy_times", 
-              label = "Enter time (years) of previous biopsies with Gleason ≤ 6. Count years since diagnosis, and separate them by comma.",
-              value = "0, 1, 2.5"),
+              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason ≤ 6. Separate dates by comma.",
+              value = "01-01-2019, 02-01-2020, 03-06-2021",
+              width = "80%"),
     textInput("manual_psa_times", 
-              label = "Enter time (years) of all follow-up visits on which PSA was measured. Count years since diagnosis, and separate them by comma.",
-              value = "0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5"),
+              label = "Enter dates (dd-mm-yyyy format) of previous PSA measurements. Separate dates by comma.",
+              value = "01-01-2019, 04-06-2019, 05-01-2020, 08-06-2020, 02-01-2021, 03-06-2021, 02-01-2022, 09-06-2022",
+              width = "80%"),
     textInput("manual_psa_values", 
               label = "Enter PSA values (ng/mL). Separate them by comma.",
-              value = "5.7, 3.2, 12, 8.5, 15, 21.7, 25, 20.3"),
+              value = "5.7, 3.2, 12, 8.5, 15, 21.7, 25, 20.3", width = "80%"),
     footer = tagList(
       modalButton("Cancel"),
       actionButton("ok_manual_entry", "OK", class='btn-primary')
@@ -137,6 +142,7 @@ shinyServer(function(input, output, session) {
     tags$hr(),
     tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
     tags$h4(tags$span("Missing values should be left blank.", class='label label-warning')),
+    tags$h4(tags$span("Dates are in dd-mm-yyyy (e.g., 23-02-2007) format.", class='label label-warning')),
     tableOutput('example_data_in_modal'),
     tags$hr(),
     tags$span("Description", class="lead"),
@@ -145,10 +151,10 @@ shinyServer(function(input, output, session) {
     tags$span(" is the age (years) of the patient when patient started AS. Missing values are not allowed."),
     tags$br(),
     tags$span("start_date", class='label label-primary'),
-    tags$span(" is the date on which patient started AS in yyyy-mm-dd format. Missing values are not allowed."),
+    tags$span(" is the date (dd-mm-yyyy; e.g., 23-02-2007 format) on which patient started AS. Missing values are not allowed."),
     tags$br(),
-    tags$span("year_visit", class='label label-primary'),
-    tags$span(" is the follow-up time (years) since patient started AS, on which either PSA was measured or a biopsy was conducted. Missing values are not allowed."),
+    tags$span("visit_date", class='label label-primary'),
+    tags$span(" is the date (dd-mm-yyyy; e.g., 23-02-2007 format) of follow-up on which either PSA was measured or a biopsy was conducted. Missing values are not allowed. It should never be before the start date."),
     tags$br(),
     tags$span("psa", class='label label-primary'),
     tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be left blank."),
@@ -197,19 +203,20 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$ok_manual_entry, {
-    manual_biopsy_times = as.numeric(unlist(strsplit(input$manual_biopsy_times, ",")))
-    manual_psa_times = as.numeric(unlist(strsplit(input$manual_psa_times, ",")))
+    manual_biopsy_date = as.Date(unlist(strsplit(input$manual_biopsy_times, ",")),tryFormats = c("%d-%m-%Y"))
+    manual_psa_date = as.Date(unlist(strsplit(input$manual_psa_times, ",")), tryFormats = c("%d-%m-%Y"))
     manual_psa_values = as.numeric(unlist(strsplit(input$manual_psa_values, ",")))
     
-    year_visit = sort(unique(c(manual_biopsy_times, manual_psa_times)))
-    psa = rep(NA, length(year_visit))
-    gleason_sum = rep(NA, length(year_visit))
-    psa[year_visit %in% manual_psa_times] = manual_psa_values
-    gleason_sum[year_visit %in% manual_biopsy_times] = 6
+    visit_date = sort(unique(c(manual_biopsy_date, manual_psa_date)))
+    
+    psa = rep(NA, length(visit_date))
+    gleason_sum = rep(NA, length(visit_date))
+    psa[visit_date %in% manual_psa_date] = manual_psa_values
+    gleason_sum[visit_date %in% manual_biopsy_date] = 6
     
     manual_pat_data = data.frame('P_ID'=-10, age = input$manual_age,
                                  start_date=input$manual_dom_diagnosis,
-                                 year_visit=year_visit,
+                                 visit_date=format(visit_date, "%d-%m-%Y"),
                                  psa = psa, gleason_sum=gleason_sum)
     
     removeModal()

@@ -25,8 +25,9 @@ SUCCESS_COLOR = "forestgreen"
 WARNING_COLOR="orange"
 
 EXAMPLE_DF = data.frame(age=62.3,
-                       start_date = "2016-02-21",
-                       year_visit = c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5),
+                       start_date = "21-02-2016",
+                       visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
+                                      "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
                        psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
                        gleason_sum = c(6,NA, 6, NA, NA, 6, NA, NA))
 

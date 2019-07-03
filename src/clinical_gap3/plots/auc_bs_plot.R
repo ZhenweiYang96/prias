@@ -3,7 +3,7 @@ library(ggpubr)
 
 files = list.files("Rdata/gap3/PRIAS_2019/auc_prederr/", full.names = T)
 
-t_horizs = seq(1, 10, 0.5)
+t_horizs = seq(1, 5, 0.5)
 bs_number = 1:25
 
 cohortNames = c("JHAS", "KCL", "MSKCC", "MUSIC",  "PRIAS", "Toronto")
