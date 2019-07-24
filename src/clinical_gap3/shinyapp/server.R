@@ -120,7 +120,7 @@ shinyServer(function(input, output, session) {
     textInput("manual_dom_diagnosis", label="Enter date (dd-mm-yyyy format) of low-grade prostate cancer diagnosis:",
               value = "01-01-2019", width = "80%"),
     textInput("manual_biopsy_times", 
-              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason ≤ 6. Separate dates by comma.",
+              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason \u2264 6. Separate dates by comma.",
               value = "01-01-2019, 02-01-2020, 03-06-2021",
               width = "80%"),
     textInput("manual_psa_times", 
@@ -375,16 +375,16 @@ shinyServer(function(input, output, session) {
   
   output$delay_explanation_plot = renderPlot({
     ggplot() + geom_ribbon(aes(x=c(3.25, 4.5), ymin=-Inf, ymax=Inf), fill=DANGER_COLOR, alpha=0.25) +
-      geom_label(aes(x=3.875, y=0.8, label='15 months \ntime delay\n in detecting\nGleason ≥ 7'),size=5)+
+      geom_label(aes(x=3.875, y=0.8, label='15 months \ntime delay\n in detecting\nGleason \u2267 7'),size=5)+
       geom_segment(aes(x=c(0,1,2), y=c(-Inf, -Inf, -Inf), xend=c(0,1,2), yend=c(0.5, 0.5, 0.5)),
                    color=c(WARNING_COLOR, rep(SUCCESS_COLOR, 2)))+
       geom_vline(xintercept = 4.5, color=DANGER_COLOR) + 
       geom_vline(xintercept = 3.25, linetype='dashed', color=DANGER_COLOR) + 
-      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason ≥ 7"),
+      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason \u2267 7"),
                  size=6, color='white',
                  fill=c(DANGER_COLOR)) +
       geom_label(aes(x=c(0,1,2,4.5), y=rep(0.5,4),
-                     label = c("Start AS", rep("Biopsy\nGleason ≤ 6",2), "Biopsy\nGleason ≥ 7\ndetected")),
+                     label = c("Start AS", rep("Biopsy\nGleason \u2264 6",2), "Biopsy\nGleason \u2267 7\ndetected")),
                  size=6, color=c('white', rep(SUCCESS_COLOR,2), DANGER_COLOR),
                  fill=c(WARNING_COLOR, rep('white',3))) +
       xlab("Time of biopsy visits") + 

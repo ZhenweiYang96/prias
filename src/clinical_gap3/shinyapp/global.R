@@ -2,7 +2,6 @@ load("mvJoint_psa_time_scaled_light.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
-source("schedules.R")
 
 #load("appdata.Rdata")
 MAX_FOLLOW_UP = 10
@@ -15,7 +14,7 @@ POINT_SIZE=4
 M=500
 CACHE_SIZE=200
 SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
-              "PRIAS", "Yearly", "Every 2 Years")
+             "Yearly", "Every 2 Years", "PRIAS")
 DELAY_GAUGE_MAX = 24
 
 DANGER_COLOR = "red"
@@ -83,7 +82,7 @@ psaObsDataGraph = function(data, dom_diagnosis, current_visit_time,
   
   plot = ggplot() +
     geom_ribbon(aes(x=c(0, latest_survival_time),
-                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason ≤ 6"),
+                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason \u2264 6"),
                 alpha=0.25) +
     geom_point(aes(x=data$year_visit,y=data$psa,
                    shape="Observed PSA"), 
@@ -170,7 +169,7 @@ biopsyScheduleGraph = function(schedule_df,
   
   pp = ggplot() +
     geom_ribbon(aes(x=c(0, latest_survival_time),
-                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason ≤ 6"),
+                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason \u2264 6"),
                 alpha=0.25) +
     geom_segment(aes(x=prev_biopsies, xend=prev_biopsies,
                      y=-rep(Inf,length(prev_biopsies)), 
