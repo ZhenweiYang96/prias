@@ -45,12 +45,11 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   #various follow-ups under the condition
   #that they didnt have an event until T_start
   cumrisk_auc_wp = getGaussianQuadWeightsPoints(c(T_start, T_horiz))
-  cum_risk_times = c(cumrisk_auc_wp$points, T_horiz)
   cum_risk_T_start_onwards = by(INDICES = newdata$P_ID, data = newdata, FUN = function(pat_data){
     1 - getExpectedFutureOutcomes(object, pat_data, 
                                   latest_survival_time = T_start,
                                   earliest_failure_time = Inf,
-                                  survival_predict_times = cum_risk_times,
+                                  survival_predict_times = c(cumrisk_auc_wp$points, T_horiz),
                                   psaDist = "Tdist", M = M)$predicted_surv_prob
   })
   
