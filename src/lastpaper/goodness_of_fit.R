@@ -45,7 +45,6 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   #various follow-ups under the condition
   #that they didnt have an event until T_start
   cumrisk_auc_wp = getGaussianQuadWeightsPoints(c(T_start, T_horiz))
-  
   cum_risk_times = c(cumrisk_auc_wp$points, T_horiz)
   cum_risk_T_start_onwards = by(INDICES = newdata$P_ID, data = newdata, FUN = function(pat_data){
     1 - getExpectedFutureOutcomes(object, pat_data, 
@@ -56,20 +55,11 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   })
   
   newdata.id$cum_risk_T_start_T_horiz = as.numeric(sapply(cum_risk_T_start_onwards, function(x){
-    mean(x[which.min(abs(cum_risk_times - T_horiz)),])
+    mean(x[nrow(x),])
   }))
   
   newdata.id$auc_T_start_T_horiz = as.numeric(sapply(cum_risk_T_start_onwards, function(x){
-    #Area under the survival curve
-    # aucs = apply(x, MARGIN = 2, FUN = function(risk_col){
-    #   risks = sapply(cumrisk_auc_wp$points, function(risk_time){
-    #     risk_col[which.min(abs(cum_risk_times - risk_time))]
-    #   })
-    #   
-    #   sum(risks * cumrisk_auc_wp$weights)
-    # })
-    
-    aucs = apply(x[-16,], MARGIN = 2, FUN = function(risk_col){
+    aucs = apply(x[-nrow(x),], MARGIN = 2, FUN = function(risk_col){
       sum(risk_col * cumrisk_auc_wp$weights)
     })
     
@@ -79,11 +69,11 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   ###############
   # First we get normal ROC results
   ################
-  minthres = max(0, min(newdata.id$cum_risk_T_start_T_horiz) - 0.01)
-  maxthres = min(1, max(newdata.id$cum_risk_T_start_T_horiz) + 0.01)
-  thresholds = seq(minthres, maxthres, length.out = 1000)
+  minthres = max(0, min(newdata.id$cum_risk_T_start_T_horiz) - 0.001)
+  maxthres = min(1, max(newdata.id$cum_risk_T_start_T_horiz) + 0.001)
+  thresholds_cumrisk = seq(minthres, maxthres, length.out = 500)
   
-  roc_results = t(sapply(thresholds, FUN = function(threshold){
+  roc_results = t(sapply(thresholds_cumrisk, FUN = function(threshold){
     predicted_cancer = newdata.id$cum_risk_T_start_T_horiz >= threshold
     real_cancer = newdata.id$real_period_status
     
@@ -101,11 +91,11 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   ###############
   # Then we get auc_T_start_T_horiz ROC results
   ################
-  minthres = max(0, min(newdata.id$auc_T_start_T_horiz) - 0.01)
-  maxthres = min(horizon, max(newdata.id$auc_T_start_T_horiz) + 0.01)
-  thresholds = seq(minthres, maxthres, length.out = 1000)
+  minthres = max(0, min(newdata.id$auc_T_start_T_horiz) - 0.001)
+  maxthres = min(horizon, max(newdata.id$auc_T_start_T_horiz) + 0.001)
+  thresholds_aucrisk = seq(minthres, maxthres, length.out = 500)
   
-  roc_results_auc_T_start_T_horiz = t(sapply(thresholds, FUN = function(threshold){
+  roc_results_auc_T_start_T_horiz = t(sapply(thresholds_aucrisk, FUN = function(threshold){
     predicted_cancer = newdata.id$auc_T_start_T_horiz >= threshold
     real_cancer = newdata.id$real_period_status
     
@@ -119,6 +109,56 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   roc_results_auc_T_start_T_horiz = data.frame(roc_results_auc_T_start_T_horiz)
   roc_results_auc_T_start_T_horiz$tpr = roc_results_auc_T_start_T_horiz$nTP / (roc_results_auc_T_start_T_horiz$nTP + roc_results_auc_T_start_T_horiz$nFN)
   roc_results_auc_T_start_T_horiz$fpr = roc_results_auc_T_start_T_horiz$nFP / (roc_results_auc_T_start_T_horiz$nTN + roc_results_auc_T_start_T_horiz$nFP)
+  
+  # ###############
+  # # Then we get composite "and" ROC results
+  # ################
+  # thresholds_cumauc = expand.grid(thresholds_cumrisk, thresholds_aucrisk)
+  # 
+  # roc_results_composite_and = t(sapply(1:nrow(thresholds_cumauc), FUN = function(threshold_index){
+  #   threshold_cumrisk = thresholds_cumauc[threshold_index, 1]
+  #   threshold_auc = thresholds_cumauc[threshold_index, 2]
+  #   
+  #   predicted_cancer = newdata.id$cum_risk_T_start_T_horiz >= threshold_cumrisk &
+  #     newdata.id$auc_T_start_T_horiz >= threshold_auc
+  #   real_cancer = newdata.id$real_period_status
+  #   
+  #   c("threshold_cumrisk" = threshold_cumrisk,
+  #     "threshold_auc" = threshold_auc,
+  #     "nTP" = sum(real_cancer * predicted_cancer),
+  #     "nFN" = sum(real_cancer * (1-predicted_cancer)),
+  #     "nFP" = sum((1-real_cancer) * predicted_cancer),
+  #     "nTN" = sum((1-real_cancer) * (1-predicted_cancer)))
+  # }))
+  # 
+  # roc_results_composite_and = data.frame(roc_results_composite_and)
+  # roc_results_composite_and$tpr = roc_results_composite_and$nTP / (roc_results_composite_and$nTP + roc_results_composite_and$nFN)
+  # roc_results_composite_and$fpr = roc_results_composite_and$nFP / (roc_results_composite_and$nTN + roc_results_composite_and$nFP)
+  # 
+  # ###############
+  # # Then we get composite "or" ROC results
+  # ################
+  # thresholds_cumauc = expand.grid(thresholds_cumrisk, thresholds_aucrisk)
+  # 
+  # roc_results_composite_or = t(sapply(1:nrow(thresholds_cumauc), FUN = function(threshold_index){
+  #   threshold_cumrisk = thresholds_cumauc[threshold_index, 1]
+  #   threshold_auc = thresholds_cumauc[threshold_index, 2]
+  #   
+  #   predicted_cancer = newdata.id$cum_risk_T_start_T_horiz >= threshold_cumrisk |
+  #     newdata.id$auc_T_start_T_horiz >= threshold_auc
+  #   real_cancer = newdata.id$real_period_status
+  #   
+  #   c("threshold_cumrisk" = threshold_cumrisk,
+  #     "threshold_auc" = threshold_auc,
+  #     "nTP" = sum(real_cancer * predicted_cancer),
+  #     "nFN" = sum(real_cancer * (1-predicted_cancer)),
+  #     "nFP" = sum((1-real_cancer) * predicted_cancer),
+  #     "nTN" = sum((1-real_cancer) * (1-predicted_cancer)))
+  # }))
+  # 
+  # roc_results_composite_or = data.frame(roc_results_composite_or)
+  # roc_results_composite_or$tpr = roc_results_composite_or$nTP / (roc_results_composite_or$nTP + roc_results_composite_or$nFN)
+  # roc_results_composite_or$fpr = roc_results_composite_or$nFP / (roc_results_composite_or$nTN + roc_results_composite_or$nFP)
   
   #############
   # Then we get prediction error results
