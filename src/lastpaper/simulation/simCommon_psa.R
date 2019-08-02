@@ -65,7 +65,6 @@ generateSimulationData = function(nSub, psaErrorDist = "t3", bNames){
     Root <- try(uniroot(invSurvival, interval = c(Low, Up), 
                         u = survProb, patientId)$root, TRUE)
     if(inherits(Root, "try-error")){
-      print(Root)
       return(NA)
     }else{
       return(Root)
@@ -130,7 +129,7 @@ generateSimulationData = function(nSub, psaErrorDist = "t3", bNames){
   print(paste0("Percent of event times studyended-censored = ", percentageCensored*100, "%"))
   plot(density(simDs.id$progression_time, na.rm=T))
   
-  simDs.id$progressed = ifelse(is.na(simDs.id$progression_time), 0,1)
+  simDs.id$progressed = ifelse(is.na(simDs.id$progression_time), 0, 1)
   simDs.id$studyend_censored = simDs.id$progressed
   simDs.id$progression_time[simDs.id$progressed==0] = MAX_FOLLOW_UP
   

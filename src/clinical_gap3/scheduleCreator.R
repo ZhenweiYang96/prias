@@ -49,7 +49,7 @@ createSchedules = function(patient_data, cur_visit_time, latest_survival_time,
   #Decision epochs in years
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, MAX_FOLLOW_UP, 0.5))
   
-  horizon_surv_prob = min(rowMeans(SURV_CACHE_FULL))
+  horizon_surv_prob = min(rowMeans(SURV_CACHE_FULL, na.rm = T))
   
   visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME<=MAX_FOLLOW_UP])
   visit_nearest_indices = sapply(visit_schedule, FUN = function(x){
@@ -166,7 +166,7 @@ getRiskSchedule = function(surv_threshold,
   
   surv_schedule_temp = surv_schedule
   for(i in 1:length(visit_schedule)){
-    if(mean(surv_schedule_temp[i,]) <= surv_threshold & 
+    if(mean(surv_schedule_temp[i,], na.rm = T) <= surv_threshold & 
        (visit_schedule[i]-latest_biopsy_time)>=min_biopsy_gap){
       latest_biopsy_time = visit_schedule[i]
       proposed_biopsy_times = c(proposed_biopsy_times, visit_schedule[i])

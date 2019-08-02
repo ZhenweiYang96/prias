@@ -1,7 +1,7 @@
-#When nb_offset_ratio = 2 it means biopsy distance will be multiplied by 2
+#When nb1_to_delay = 2 it means 1 biopsy is equal to 2 units of delay
 minDistScheduleDecision = function(object, patient_data, cur_visit_time=NA,
                                    latest_survival_time=NA, 
-                                   nb_offset_ratio = 1, weight_by_horizon_risk=T){
+                                   nb1_to_delay = 1, weight_by_horizon_risk=T){
 
   if(is.na(cur_visit_time)){
     cur_visit_time = min(max(patient_data$year_visit), MAX_FOLLOW_UP)
@@ -15,7 +15,7 @@ minDistScheduleDecision = function(object, patient_data, cur_visit_time=NA,
   total_biopsies = as.numeric(sapply(lapply(res$schedules, "[[", "proposed_biopsy_times"), length))
   
   #Distance from optimal point
-  dist = sqrt(expected_delays^2 + nb_offset_ratio * (total_biopsies - 1)^2)
+  dist = sqrt(expected_delays^2 + (nb1_to_delay * (total_biopsies - 1))^2)
   
   #There are many, but we select only one for now
   #optimal_threshold_indices = which(dist == min(dist))
