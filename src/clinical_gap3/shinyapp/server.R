@@ -16,7 +16,7 @@ shinyServer(function(input, output, session) {
   biopsyCounter <- reactiveVal(0)
   
   resetPatientCache = function(){
-    patient_cache <<- list(P_ID = -1, data=NULL)
+    patient_cache <<- list(P_ID = -1, patient_data=NULL)
   }
   
   recalculateBiopsySchedules = function(){
@@ -191,6 +191,12 @@ shinyServer(function(input, output, session) {
   ################################
   # Events for buttons on sidebar panel
   ################################
+  observeEvent(input$cohort, {
+    mvJoint_psa_time_scaled <<- models[[input$cohort]]
+    resetPatientCache()
+    patientCounter(patientCounter() + 1)
+  })
+  
   observeEvent(input$load_pat1, {
     setPatientDataInCache(demo_pat_list[[1]])
   })
@@ -264,7 +270,7 @@ shinyServer(function(input, output, session) {
   # Output on Tab 1 showing patient data
   #############################
   output$table_obs_data <- renderTable({
-    if(patientCounter()>0){
+    if(patientCounter()>0 & !is.null(patient_cache$patient_data)){
       patient_data = patient_cache$patient_data
       
       first_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis)
@@ -298,7 +304,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$graph_obs_psa <- renderPlot({
-    if(patientCounter()>0){
+    if(patientCounter()>0 & !is.null(patient_cache$patient_data)){
       sampled_psa_indices = c(1:20, seq(22, length(patient_cache$PSA_CACHE_TIMES), by = 7))
       return(psaObsDataGraph(patient_cache$patient_data,
                              patient_cache$dom_diagnosis,
@@ -315,7 +321,7 @@ shinyServer(function(input, output, session) {
   # Output on Tab 2 showing patient risk
   #############################
   output$cum_risk_gauge = renderPlot({
-    if(patientCounter()>0 & input$risk_pred_time!=0){
+    if(patientCounter()>0 & input$risk_pred_time!=0 & !is.null(patient_cache$patient_data)){
       futureTime = as.numeric((difftime(input$risk_pred_time, SPSS_ORIGIN_DATE, units='secs') - patient_cache$dom_diagnosis)/YEAR_DIVIDER)
       
       riskProb = 1 - patient_cache$SURV_CACHE_MEAN[which.min(abs(patient_cache$SURV_CACHE_TIMES - futureTime))]
@@ -331,14 +337,14 @@ shinyServer(function(input, output, session) {
   # Output on Tab 3 showing biopsy recommendation
   #############################
   observeEvent(input$month_gap_biopsy,{
-    if(patientCounter()>0 & is.numeric(input$month_gap_biopsy)){
+    if(patientCounter()>0 & is.numeric(input$month_gap_biopsy) & !is.null(patient_cache$patient_data)){
       recalculateBiopsySchedules()
     }
   })
   
   decisionRenderer = function(decision_label_num){
     renderUI({
-      if(patientCounter()>0 & biopsyCounter()>0 & 
+      if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) &
          !is.null(input$selected_schedules) & length(input$selected_schedules)> (decision_label_num-1)){
         
         schedule_id = as.numeric(input$selected_schedules[decision_label_num])
@@ -366,7 +372,7 @@ shinyServer(function(input, output, session) {
   output$decision6 = decisionRenderer(6)
   
   output$biopsy_schedule_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
+    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) & !is.null(input$selected_schedules)){
       return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
                                  as.numeric(input$selected_schedules),
                                  patient_cache$dom_diagnosis,
@@ -379,7 +385,7 @@ shinyServer(function(input, output, session) {
   }) 
   
   output$biopsy_delay_gauge_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(input$selected_schedules)){
+    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) & !is.null(input$selected_schedules)){
       max_delay = max(DELAY_GAUGE_MAX, 
                       ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
       

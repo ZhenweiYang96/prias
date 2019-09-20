@@ -7,12 +7,12 @@ library(splines)
 library(survival)
 library(interval) 
 
-load("Rdata/gap3/PRIAS_2019/validation/fitted_true_models/mvJoint_psa_MSKCC.Rdata")
+load("Rdata/gap3/PRIAS_2019/validation/fitted_true_models/mvJoint_psa_LondonKCL.Rdata")
 cohort_model = mvJoint_psa_time_scaled
 load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 prias_model = mvJoint_psa_time_scaled
 rm(mvJoint_psa_time_scaled)
-load("Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_priasMSKCC.Rdata")
+load("Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_priasLondonKCL.Rdata")
 
 source("src/clinical_gap3/prediction_only_psa.R")
 
@@ -60,4 +60,4 @@ cumrisk_models = lapply(models, FUN = function(model){
 })
 names(cumrisk_models) = c("cohort_model", "prias_model", "prias_model_recalib")
 
-save(cumrisk_models, file="Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/MSKCC.Rdata")
+save(cumrisk_models, file="Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/LondonKCL.Rdata")

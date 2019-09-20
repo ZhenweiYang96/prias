@@ -173,12 +173,12 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
   
   optim_function <- function (b, data_list){-log_numerator_bayesrule(b, data_list)}
   gradient_function <- function (b, data_list){cd(b, optim_function, 
-                                                  data = log_numerator_bayesrule_data, eps = 1e-03)}
+                                                  data_list = data_list, eps = 1e-03)}
   #par is start values
   for(optim_method in optim_methods){  
     empiricalbayes_b = try(optim(par = rep(0, ncol(object$statistics$postMeans$inv_D)),
                                  fn = optim_function, 
-                                 gr = gradient_function, data = log_numerator_bayesrule_data, 
+                                 gr = gradient_function, data_list = log_numerator_bayesrule_data, 
                                  method = optim_method, hessian = TRUE,
                                  control = list(maxit = 200,
                                                 parscale = rep(0.1, ncol(object$statistics$postMeans$inv_D)))), silent = T)
@@ -240,7 +240,8 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
 getExpectedFutureOutcomes = function(object, patient_data, 
                                      latest_survival_time=0, earliest_failure_time=Inf, 
                                      survival_predict_times=NULL,
-                                     psa_predict_times=NULL, addRandomError=F, 
+                                     psa_predict_times=NULL, 
+                                     addRandomError=F, 
                                      psaDist = "Tdist", 
                                      TdistDf=3, M=500){
   
@@ -331,6 +332,30 @@ getExpectedFutureOutcomes = function(object, patient_data,
     rownames(predicted_psa) = rownames(predicted_psa_slope) = psa_predict_times
   }
   
+  predicted_loghazard = NULL
+  log_baseline_hazard = NULL
+  if(!is.null(survival_predict_times)){
+    survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
+    
+    patient_age = patient_data$age[1]
+    baseline_hazard_knots=object$control$knots
+    baseline_hazard_ordSpline=object$control$ordSpline
+    
+    log_baseline_hazard = splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
+                                       x = survival_predict_times, outer.ok = T) %*% mcmc_Bs_gammas
+    
+    W_gammas = model.matrix(survivalFormula, data = data.frame(age = rep(patient_age, length(survival_predict_times)))) %*% mcmc_gammas
+    
+    alpha_psa_matrix = matrix(mcmc_alphas[1,], nrow = length(survival_predict_times), ncol=M, byrow = T)
+    alpha_psa_slope_matrix = matrix(mcmc_alphas[2,], nrow = length(survival_predict_times), ncol=M, byrow = T)
+    
+    fitted_psa_alpha = psaXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa, posterior_b) * alpha_psa_matrix
+    fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa[-c(1:2),], posterior_b[-1,]) * alpha_psa_slope_matrix
+    predicted_loghazard = log_baseline_hazard + W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha
+    
+    rownames(predicted_loghazard) = survival_predict_times
+  }
+  
   predicted_surv_prob = NULL
   if(!is.null(survival_predict_times)){
     survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
@@ -390,7 +415,9 @@ getExpectedFutureOutcomes = function(object, patient_data,
     rownames(predicted_surv_prob) = survival_predict_times
   }
   
-  return(list(predicted_surv_prob=predicted_surv_prob,
+  return(list(predicted_surv_prob=predicted_surv_prob, 
+              predicted_loghazard = predicted_loghazard,
+              log_baseline_hazard = log_baseline_hazard,
               predicted_psa=predicted_psa, predicted_psa_slope=predicted_psa_slope))
 }
 

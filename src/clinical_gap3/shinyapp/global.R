@@ -1,4 +1,4 @@
-load("mvJoint_psa_time_scaled_light.Rdata")
+load("models.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
@@ -29,6 +29,15 @@ SCHEDULES_MAPPING = c("5% Risk (Personalized)"=1,
               "Yearly (Fixed)"=4,
               "Every 2 years (Fixed)"=5,
               "PRIAS (Fixed)"=6)
+
+COHORT_MAPPING = c("PRIAS" = "PRIAS",
+                   "Toronto AS" = "Toronto",
+                   "Johns Hopkins AS" = "Hopkins",
+                   "MSKCC AS" = "MSKCC",
+                   "MUSIC AS" = "MUSIC",
+                   "KCL London AS" = "LondonKCL")
+
+mvJoint_psa_time_scaled = models$PRIAS
 
 EXAMPLE_DF = data.frame(age=62.3,
                         start_date = "21-02-2016",

@@ -29,9 +29,13 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                   
                   sidebarLayout(
                     # Sidebar with a slider input for number of bins 
-                    sidebarPanel(                      
+                    sidebarPanel(
+                      selectInput("cohort", "Choose AS cohort:", 
+                                  choices=COHORT_MAPPING,
+                                  selected = "PRIAS"),
+                      hr(),
                       tags$h4("Load Patient Data"),
-                      tags$hr(),
+                      tags$br(), 
                       tags$label("Load demo patient data"),
                       tags$br(), 
                       actionButton("load_pat1", "Patient 1", class="btn-default"),
