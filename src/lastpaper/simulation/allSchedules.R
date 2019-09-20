@@ -6,6 +6,8 @@ seed = as.numeric(args[1])
 
 load(paste0("Rdata/lastpaper/sims/sim_seed_", seed, ".Rdata"))
 
+MAX_FOLLOW_UP = 10
+
 source("src/lastpaper/prediction.R")
 source("src/lastpaper/minDistThreshold.R")
 source("src/clinical_gap3/scheduleCreator.R")

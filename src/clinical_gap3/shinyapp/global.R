@@ -14,7 +14,7 @@ POINT_SIZE=4
 M=500
 CACHE_SIZE=200
 SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
-             "Yearly", "Every 2 Years", "PRIAS")
+              "Yearly", "Every 2 Years", "PRIAS")
 DELAY_GAUGE_MAX = 24
 
 DANGER_COLOR = "red"
@@ -23,12 +23,19 @@ THEME_COLOR_DARK = "#033a6f"
 SUCCESS_COLOR = "forestgreen"
 WARNING_COLOR="orange"
 
+SCHEDULES_MAPPING = c("5% Risk (Personalized)"=1,
+              "10% Risk (Personalized)"=2,
+              "15% Risk (Personalized)"=3,
+              "Yearly (Fixed)"=4,
+              "Every 2 years (Fixed)"=5,
+              "PRIAS (Fixed)"=6)
+
 EXAMPLE_DF = data.frame(age=62.3,
-                       start_date = "21-02-2016",
-                       visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
-                                      "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
-                       psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
-                       gleason_sum = c(6,NA, 6, NA, NA, 6, NA, NA))
+                        start_date = "21-02-2016",
+                        visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
+                                       "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
+                        psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
+                        gleason_grade = c(1,NA, 1, NA, NA, 1, NA, NA))
 
 getHumanReadableDate = function(spss_date, abbreviated=F){
   format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), 
@@ -77,12 +84,12 @@ psaObsDataGraph = function(data, dom_diagnosis, current_visit_time,
   
   psa_min = min(data$psa, na.rm = T)
   psa_max = max(data$psa, na.rm = T)
-
+  
   psa_breaks = seq(psa_min, psa_max, length.out = 4)
   
   plot = ggplot() +
     geom_ribbon(aes(x=c(0, latest_survival_time),
-                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason \u2264 6"),
+                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason grade 1"),
                 alpha=0.25) +
     geom_point(aes(x=data$year_visit,y=data$psa,
                    shape="Observed PSA"), 
@@ -115,8 +122,8 @@ psaObsDataGraph = function(data, dom_diagnosis, current_visit_time,
   
   if(!is.null(latest_biopsy_label)){
     plot = plot + geom_label(aes(x=latest_survival_time, y=psa_max*1.3, 
-                             label=latest_biopsy_label), 
-                         fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines"))
+                                 label=latest_biopsy_label), 
+                             fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines"))
   }
   
   return(plot)
@@ -169,7 +176,7 @@ biopsyScheduleGraph = function(schedule_df,
   
   pp = ggplot() +
     geom_ribbon(aes(x=c(0, latest_survival_time),
-                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason \u2264 6"),
+                    ymin=-c(Inf,Inf), ymax=c(Inf,Inf), fill="Gleason grade 1"),
                 alpha=0.25) +
     geom_segment(aes(x=prev_biopsies, xend=prev_biopsies,
                      y=-rep(Inf,length(prev_biopsies)), 
@@ -209,27 +216,6 @@ biopsyScheduleGraph = function(schedule_df,
                          fill=WARNING_COLOR, color='white', size=6, label.r = unit(0.25,units = "lines"))
   }
   
-  return(pp)
-}
-
-biopsyDelayGraph = function(schedule_df, 
-                            selected_schedule_ids){
-  schedule_df = schedule_df[schedule_df$schedule_id %in% selected_schedule_ids,]
-  ybreaks = seq(0,ceiling(max(schedule_df$expected_delay)), length.out = 4)
-  ylabels = round(ybreaks,1)
-  
-  pp = ggplot(data=schedule_df) + geom_bar(aes(x=schedule, y=expected_delay),
-                                           stat='identity', width=0.5) +  
-    ylab("Expected delay (months)\n in detecting Gleason \u2265 7") + 
-    xlab("Biopsy schedule") +
-    scale_y_continuous(breaks = ybreaks,
-                       labels = ylabels,
-                       limits = c(ybreaks[1], tail(ybreaks,1)))+
-    coord_flip() +
-    theme_bw() + 
-    theme(text = element_text(size = FONT_SIZE),
-          axis.text.y = element_blank(), axis.title.y = element_blank(),
-          axis.ticks.y = element_blank())
   return(pp)
 }
 

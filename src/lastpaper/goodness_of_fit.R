@@ -44,21 +44,23 @@ goodness_of_fit <- function (object, newdata, T_start, T_horiz, horizon = 10, M 
   #Now for each of the patients obtain their cumulative risk at 
   #various follow-ups under the condition
   #that they didnt have an event until T_start
-  cumrisk_auc_wp = getGaussianQuadWeightsPoints(c(T_start, T_horiz))
+  cumrisk_auc_wp = getGaussianQuadWeightsPoints(c(T_start, T_horiz+1))
+  predict_times = sort(c(cumrisk_auc_wp$points, T_horiz), decreasing = F)
   cum_risk_T_start_onwards = by(INDICES = newdata$P_ID, data = newdata, FUN = function(pat_data){
     1 - getExpectedFutureOutcomes(object, pat_data, 
                                   latest_survival_time = T_start,
                                   earliest_failure_time = Inf,
-                                  survival_predict_times = c(cumrisk_auc_wp$points, T_horiz),
+                                  survival_predict_times = predict_times,
                                   psaDist = "Tdist", M = M)$predicted_surv_prob
   })
   
+  T_horiz_position = which(predict_times==T_horiz)
   newdata.id$cum_risk_T_start_T_horiz = as.numeric(sapply(cum_risk_T_start_onwards, function(x){
-    mean(x[nrow(x),])
+    mean(x[T_horiz_position,])
   }))
   
   newdata.id$auc_T_start_T_horiz = as.numeric(sapply(cum_risk_T_start_onwards, function(x){
-    aucs = apply(x[-nrow(x),], MARGIN = 2, FUN = function(risk_col){
+    aucs = apply(x[-T_horiz_position,], MARGIN = 2, FUN = function(risk_col){
       sum(risk_col * cumrisk_auc_wp$weights)
     })
     

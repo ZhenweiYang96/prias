@@ -243,17 +243,55 @@ getExpectedFutureOutcomes = function(object, patient_data,
                                      psa_predict_times=NULL, addRandomError=F, 
                                      psaDist = "Tdist", 
                                      TdistDf=3, M=500){
-  for(trial in 1:25){
-    post_b_beta = try(get_b_fullBayes(object, patient_data,
-                                      latest_survival_time, earliest_failure_time,
-                                      scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
-    if(!inherits(post_b_beta, 'try-error')){
-      break
-    }else{
-      print(post_b_beta)
+  
+  jitter_amounts = rep(seq(0.05, 4, 0.05), each=25)
+  
+  if(is.infinite(earliest_failure_time)){
+    orig_latest_survival_time = latest_survival_time
+    
+    for(jitter_amount in jitter_amounts){
+      post_b_beta = try(get_b_fullBayes(object, patient_data,
+                                        latest_survival_time, earliest_failure_time,
+                                        scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
+      
+      if(!inherits(post_b_beta, 'try-error')){
+        break
+      }else{
+        print(post_b_beta)
+      }
+      latest_survival_time = orig_latest_survival_time + abs(jitter(x=0, amount = jitter_amount))
+    }
+  }else{
+    orig_latest_survival_time = latest_survival_time
+    orig_earliest_failure_time = earliest_failure_time
+    
+    for(jitter_amount in jitter_amounts){
+      post_b_beta = try(get_b_fullBayes(object, patient_data,
+                                        latest_survival_time, earliest_failure_time,
+                                        scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
+      
+      if(!inherits(post_b_beta, 'try-error')){
+        break
+      }else{
+        print(post_b_beta)
+      }
+      earliest_failure_time = orig_earliest_failure_time + abs(jitter(x=0, amount = jitter_amount))
     }
     
-    earliest_failure_time = earliest_failure_time + abs(jitter(0, amount = 0.05))
+    if(inherits(post_b_beta, 'try-error')){
+      for(jitter_amount in jitter_amounts){
+        post_b_beta = try(get_b_fullBayes(object, patient_data,
+                                          latest_survival_time, earliest_failure_time,
+                                          scale = 1.6, psaDist, TdistDf=TdistDf, M), silent = T)
+        
+        if(!inherits(post_b_beta, 'try-error')){
+          break
+        }else{
+          print(post_b_beta)
+        }
+        latest_survival_time = orig_latest_survival_time + abs(jitter(x=0, amount = jitter_amount))
+      }
+    }
   }
   
   #M==0 check empirical bayes

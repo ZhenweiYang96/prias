@@ -6,7 +6,7 @@ library(survival)
 load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 source("src/lastpaper/simulation/simCommon_psa.R")
 
-nSub = 1200
+nSub = 5000
 bNames = paste0("b", 0:4)
 for(seed in 2020:2030){
   set.seed(seed)

@@ -31,7 +31,16 @@ shinyServer(function(input, output, session) {
     expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay") * 12
     total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
     
-    biopsy_times = do.call('c', lapply(biopsy_schedules$schedules, "[[", "biopsy_times"))
+    #some schedules never schedule a biopsy because risk threshold is too high
+    #...we show a biopsy at year 10 for them
+    total_biopsies[total_biopsies == 0] = 1
+    biopsy_times = lapply(biopsy_schedules$schedules, "[[", "biopsy_times")
+    empty_schedules = sapply(biopsy_times, is.null)
+    if(any(empty_schedules)){
+      biopsy_times[which(empty_schedules)] = 10
+    }
+    
+    biopsy_times = do.call('c', biopsy_times)
     patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
                                                         Schedule=rep(SCHEDULES, total_biopsies),
                                                         biopsy_times)
@@ -115,12 +124,12 @@ shinyServer(function(input, output, session) {
   manual_entry_modal = modalDialog(
     tags$h3("Patient Data Manual Entry Form"),
     tags$hr(),
-    tags$h4(tags$span("Dates are in dd-mm-yyyy (e.g., 23-02-2007) format.", class='label label-warning')),
+    tags$h4(tags$span("Dates are in dd-mm-yyyy format.", class='label label-warning')),
     numericInput("manual_age", label = "Enter patient age (years)", value = 60, width = "80%"),
     textInput("manual_dom_diagnosis", label="Enter date (dd-mm-yyyy format) of low-grade prostate cancer diagnosis:",
               value = "01-01-2019", width = "80%"),
     textInput("manual_biopsy_times", 
-              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason \u2264 6. Separate dates by comma.",
+              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason grade 1 (Gleason 3+3). Separate dates by comma.",
               value = "01-01-2019, 02-01-2020, 03-06-2021",
               width = "80%"),
     textInput("manual_psa_times", 
@@ -138,11 +147,11 @@ shinyServer(function(input, output, session) {
   
   #Modal to show example data
   exampleDataModal = modalDialog(
-    tags$h3("Example Excel Format"),
+    tags$h3("Example Patient Excel Data"),
     tags$hr(),
-    tags$h4(tags$span("All column names are case sensitive", class='label label-danger')),
+    tags$h4(tags$span("All column names are case sensitive.", class='label label-danger')),
     tags$h4(tags$span("Missing values should be left blank.", class='label label-warning')),
-    tags$h4(tags$span("Dates are in dd-mm-yyyy (e.g., 23-02-2007) format.", class='label label-warning')),
+    tags$h4(tags$span("Dates are in dd-mm-yyyy format.", class='label label-warning')),
     tableOutput('example_data_in_modal'),
     tags$hr(),
     tags$span("Description", class="lead"),
@@ -151,16 +160,16 @@ shinyServer(function(input, output, session) {
     tags$span(" is the age (years) of the patient when patient started AS. Missing values are not allowed."),
     tags$br(),
     tags$span("start_date", class='label label-primary'),
-    tags$span(" is the date (dd-mm-yyyy; e.g., 23-02-2007 format) on which patient started AS. Missing values are not allowed."),
+    tags$span(" is the date (dd-mm-yyyy format) on which patient started AS. Missing values are not allowed."),
     tags$br(),
     tags$span("visit_date", class='label label-primary'),
-    tags$span(" is the date (dd-mm-yyyy; e.g., 23-02-2007 format) of follow-up on which either PSA was measured or a biopsy was conducted. Missing values are not allowed. It should never be before the start date."),
+    tags$span(" is the date (dd-mm-yyyy format) of follow-up on which either PSA was measured or a biopsy was conducted. Missing values are not allowed. It should never be before the start date."),
     tags$br(),
     tags$span("psa", class='label label-primary'),
     tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be left blank."),
     tags$br(),
-    tags$span("gleason_sum", class='label label-primary'),
-    tags$span(" is the Gleason sum (maximum 10) at the follow-up time. Missing values should be left blank."),
+    tags$span("gleason_grade", class='label label-primary'),
+    tags$span(" is the ISUP Gleason grade group (lowest 1, highest 5) at the follow-up time. Missing values should be left blank."),
     tags$br(),
     tags$hr(),
     downloadButton("download_example_data2", "Download Example File", class='btn-success'),
@@ -237,9 +246,13 @@ shinyServer(function(input, output, session) {
       
       patient_data$P_ID = -15
       patient_data$psa[patient_data$psa %in% "NA"] = NA
-      patient_data$gleason_sum[patient_data$gleason_sum %in% "NA"] = NA
+      patient_data$gleason_grade[patient_data$gleason_grade %in% "NA"] = NA
       patient_data$psa = as.numeric(as.character(patient_data$psa))
-      patient_data$gleason_sum = as.numeric(as.character(patient_data$gleason_sum))
+      patient_data$gleason_grade = as.numeric(as.character(patient_data$gleason_grade))
+      patient_data$gleason_sum[!is.na(patient_data$gleason_grade) & 
+                                 patient_data$gleason_grade==1] = 6
+      patient_data$gleason_sum[!is.na(patient_data$gleason_grade) & 
+                                 patient_data$gleason_grade > 1] = 7
       
       setPatientDataInCache(patient_data)
     }else{
@@ -262,6 +275,10 @@ shinyServer(function(input, output, session) {
       age = round(patient_data$age[1])
       latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
       
+      if(latest_gleason <= 6){
+        latest_gleason_grade = "1 (Gleason 3+3)"
+      } 
+      
       # return(data.frame("Data"=c("ID", "Age (years)", 
       #                            "First Visit", "Current Visit", "Total Visits", 
       #                            "Latest Biopsy", "Latest Gleason","Total Biopsies"),
@@ -270,10 +287,10 @@ shinyServer(function(input, output, session) {
       #                             last_biopsy_date, latest_gleason,nr_biopsies)))
       return(data.frame("Data"=c("Age (years)", 
                                  "First Visit", "Current Visit", "Total Visits", 
-                                 "Latest Biopsy", "Latest Gleason","Total Biopsies"),
+                                 "Latest Biopsy", "Latest Gleason Grade","Total Biopsies"),
                         "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
-                                  last_biopsy_date, latest_gleason,nr_biopsies)))
+                                  last_biopsy_date, latest_gleason_grade, nr_biopsies)))
       
     }else{
       return(NULL)
@@ -323,13 +340,19 @@ shinyServer(function(input, output, session) {
     renderUI({
       if(patientCounter()>0 & biopsyCounter()>0 & 
          !is.null(input$selected_schedules) & length(input$selected_schedules)> (decision_label_num-1)){
-        schedule_name = patient_cache$biopsy_schedule_plotDf$Schedule[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
-        first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==as.numeric(input$selected_schedules[decision_label_num])][1]
         
-        first_biopsy_date = paste0(schedule_name,": ", getHumanReadableDate(patient_cache$dom_diagnosis + first_biopsy_time*YEAR_DIVIDER))
-        class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-primary", "label-success"))
+        schedule_id = as.numeric(input$selected_schedules[decision_label_num])
         
-        return(tags$h4(tags$span(first_biopsy_date, class=class)))
+        schedule_name = paste0(names(SCHEDULES_MAPPING)[schedule_id], ":")
+        first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==schedule_id][1]
+        
+        first_biopsy_date = getHumanReadableDate(patient_cache$dom_diagnosis + first_biopsy_time*YEAR_DIVIDER)
+        #class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-primary", "label-success"))
+        class = "label label-default"
+        
+        return(tags$div(tags$span(schedule_name, class=class), 
+                        tags$span(first_biopsy_date, class='text-default'),
+                        class='lead'))
       }else{
         return(NULL)
       }
@@ -375,16 +398,16 @@ shinyServer(function(input, output, session) {
   
   output$delay_explanation_plot = renderPlot({
     ggplot() + geom_ribbon(aes(x=c(3.25, 4.5), ymin=-Inf, ymax=Inf), fill=DANGER_COLOR, alpha=0.25) +
-      geom_label(aes(x=3.875, y=0.8, label='15 months \ntime delay\n in detecting\nGleason \u2267 7'),size=5)+
+      geom_label(aes(x=3.875, y=0.8, label='15 months time\ndelay in detecting\nGleason reclassification'),size=5)+
       geom_segment(aes(x=c(0,1,2), y=c(-Inf, -Inf, -Inf), xend=c(0,1,2), yend=c(0.5, 0.5, 0.5)),
                    color=c(WARNING_COLOR, rep(SUCCESS_COLOR, 2)))+
       geom_vline(xintercept = 4.5, color=DANGER_COLOR) + 
       geom_vline(xintercept = 3.25, linetype='dashed', color=DANGER_COLOR) + 
-      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason \u2267 7"),
+      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason\nreclassification"),
                  size=6, color='white',
                  fill=c(DANGER_COLOR)) +
       geom_label(aes(x=c(0,1,2,4.5), y=rep(0.5,4),
-                     label = c("Start AS", rep("Biopsy\nGleason \u2264 6",2), "Biopsy\nGleason \u2267 7\ndetected")),
+                     label = c("Start AS", rep("Biopsy\nGleason grade 1",2), "Biopsy Gleason\nreclassification\ndetected")),
                  size=6, color=c('white', rep(SUCCESS_COLOR,2), DANGER_COLOR),
                  fill=c(WARNING_COLOR, rep('white',3))) +
       xlab("Time of biopsy visits") + 

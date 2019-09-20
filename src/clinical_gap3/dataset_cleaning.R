@@ -363,7 +363,7 @@ reclassification_times = by(prias_long, prias_long$P_ID, FUN = function(x){
   # A few patients have a Gleason 6 after they get Gleason 7...clearly measurement error issue
   t_start = max(year_dre_gleason[which(high_gleason==F)])
   
-  tright_cens = ifelse(t_end==Inf, t_start, 0.5 * (t_end))
+  tright_cens = ifelse(t_end==Inf, t_start, 0.5 * (t_start + t_end))
   year_max_follow_up = ifelse(t_end!=Inf, t_end, 
                               max(x$year_psa[!is.na(x$psa)], 
                                           x$year_dre_gleason[!(is.na(x$dre) & is.na(x$gleason_sum))]))

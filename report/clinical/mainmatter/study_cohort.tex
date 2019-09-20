@@ -2,25 +2,27 @@
 \section{Patients and Methods}
 
 \subsection{Study Cohort}
-Prostate Cancer International Active Surveillance (PRIAS) is an ongoing prospective cohort study of men with low- and very-low risk PCa diagnoses \cite{bul2013active}. More than 100 medical centers from 17 countries contribute in PRIAS, using a common study protocol (\url{www.prias-project.org}). We used the data collected between December~2006 (beginning of PRIAS study) and May~2019. The PSA was measured every three months until year two of follow-up and every six months thereafter. Biopsy schedule was year one, four, seven, and ten, and additional yearly biopsies when PSA doubling time was between zero and ten years. The primary event used in this work is Gleason~$\geq$~7 (GS7) because it is commonly used as a trigger for treatment advice. It was observed in 1134 patients. However, 2250 patients were provided treatment (see Table \ref{table:prias_summary}). Treatment in absence of GS7 may have been advised on the basis of PSA, number of biopsy cores with cancer, anxiety, or other reasons. We focused only on GS7 because of its strong association with cancer-related outcomes. Due to the periodical nature of biopsies, the time of GS7 was only available as a time interval in which GS7 occurred.
+\label{subsec:cohort}
+Prostate Cancer International Active Surveillance (PRIAS) is an ongoing (December~2006~--~to date) prospective cohort study of men with low- and very-low risk prostate cancer diagnoses \cite{bul2013active}. More than 100 medical centers from 17 countries contributed to PRIAS, using a common study protocol (\url{www.prias-project.org}). Cancer progression was monitored by measuring PSA every three months for the first two years of follow-up and every six months thereafter. Biopsies were scheduled at year one, four, seven, and ten. Additional yearly biopsies were scheduled when PSA doubling time fell between zero and ten years.
+
+We selected all 7813 patients between December~2006 and April~2019 who had Gleason grade~1 \citep{epsteinGG2014} at the time of inclusion in AS (Table \ref{table:prias_summary}). Our primary event of interest is reclassification (1134 patients), defined as, increase in Gleason grade on repeat biopsy from grade~1 to 2 or higher. Reclassification is a trigger for treatment advice in PRIAS. Although, 2250 patients were also advised treatment on the basis of PSA, the number of biopsy cores with cancer, anxiety, or other reasons. We focused solely on reclassification because of its strong association with cancer-related outcomes. Due to the periodical nature of biopsies, the true time of reclassification was interval censored (Figure~\ref{fig:delay_explanation}).
 
 \begin{table}
 \small\sf\centering
-\caption{\textbf{Patient characteristics for the PRIAS dataset}. The primary event of interest is Gleason~$\geq$~7. IQR: interquartile range, PSA: prostate-specific antigen.}
+\caption{\textbf{Summary of the PRIAS dataset}. The primary event of interest is reclassification, that is, increase in Gleason grade from grade~1 to 2 or higher. IQR:~interquartile range, PSA:~prostate-specific antigen.}
 \label{table:prias_summary}
 \begin{tabular}{lr}
-\hline
-\hline
-Characteristic & Value\\
-\hline
+\toprule
+\textbf{Characteristic} & \textbf{Value}\\
+\midrule
 Total patients & 7813\\
-Gleason~$\geq$~7 (primary event) & 1134\\
+Reclassification (primary event) & 1134\\
 Treatment & 2250\\
 Watchful waiting & 334\\
 Loss to follow-up & 250\\
 Death (unrelated to prostate cancer) & 95\\
 Death (related to prostate cancer) & 2\\
-\hline
+\midrule
 Median age at diagnosis (years) & 66 (IQR: 61--71)\\
 Median follow-up period per patient (years) &  1.8 (IQR: 0.9--4.0)\\
 Total PSA measurements & 67578\\
@@ -28,6 +30,6 @@ Median number of PSA measurements per patient &  6 (IQR: 4--12)\\
 Median PSA value (ng/mL) & 5.7 (IQR: 4.1--7.7)\\
 Total biopsies & 15686\\
 Median number of biopsies per patient &  2 (IQR: 1--2)\\
-\hline
+\bottomrule
 \end{tabular}
 \end{table}
