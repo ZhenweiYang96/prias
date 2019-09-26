@@ -2,12 +2,6 @@
 \section{A Joint Model for the Longitudinal PSA, and Time to Gleason Reclassification}
 \label{sec:jm_framework}
 
-\begin{figure}
-\centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
-\caption{\textbf{Estimated cumulative risk of having reclassification} in the world's largest AS cohort PRIAS, and five of the largest AS cohorts part of the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{JHAS}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance. In the world's largest AS cohort PRIAS and in JHAS, roughly 50\% of patients do not obtain reclassification in the first ten years. That is, ideally, no biopsies should be prescribed to 50\% of the patients in the first ten years of AS.}
-\label{fig:npmle_plot}
-\end{figure}
-
 Let $T_i^*$ denote the true time of reclassification (increase in biopsy Gleason grade from 1 to 2 or higher) for the ${i\mbox{-th}}$ patient included in PRIAS. Since biopsies are conducted periodically, $T_i^*$ is observed with interval censoring ${l_i < T_i^* \leq r_i}$. When reclassification is observed for the patient at his latest biopsy time $r_i$, then $l_i$ denotes the time of the second latest biopsy. Otherwise, $l_i$ denotes the time of the latest biopsy and ${r_i=\infty}$. Let $\boldsymbol{y}_{i}$ denote his observed PSA longitudinal measurements. The observed data of all $n$ patients is denoted by ${\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_{i}; i = 1, \ldots, n\}}$.
 
 \begin{figure}
@@ -69,7 +63,25 @@ The integral in (\ref{web_eq : likelihood_contribution_survival}) does not have 
 
 We use independent normal priors with zero mean and variance 100 for the fixed effects $\{\beta_{0},\ldots,\beta_{5}\}$, and inverse Gamma prior with shape and rate both equal to 0.01 for the parameter $\sigma^2$. For the variance-covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to 5 (number of random effects). For the relative risk model's parameter $\gamma$ and the association parameters $\alpha_{1}, \alpha_{2}$, we use independent normal priors with zero mean and variance 100.
 
-\subsection{Parameter Estimates}
+\subsection{Assumption of t-distributed (df=3) Error Terms}
+\label{subsec:t-dist-assumption}
+With regards to the choice of the distribution for the error term $\varepsilon$ for the PSA measurements (see Equation \ref{eq:long_model_psa}), we attempted fitting multiple joint models differing in error distribution, namely t-distribution with three, and four degrees of freedom, and a normal distribution for the error term. However, the model assumption for the error term were best met by the model with t-distribution having three degrees of freedom. The quantile-quantile plot of subject-specific residuals for the corresponding model in Panel~A of Figure~\ref{fig:qqplot}, shows that the assumption of t-distributed (df=3) errors is reasonably met by the fitted model. 
+
+\begin{figure}
+\centerline{\includegraphics[width=\columnwidth]{images/qqplot.eps}}
+\caption{Quantile-quantile plot of subject-specific residuals from the joint models fitted to the PRIAS dataset. \textbf{Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon$ (see Equation \ref{eq:long_model_psa}). \textbf{Panel B}: model assuming a normal distribution for the error term $\varepsilon$.}
+\label{fig:qqplot}
+\end{figure}
+
+\clearpage
+\subsection{Results}
+
+\begin{figure}
+\centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
+\caption{\textbf{Nonparametric estimate \citep{turnbull1976empirical} of cumulative risk of reclassification} in the world's largest AS cohort PRIAS, and largest five AS cohorts from the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
+\label{fig:npmle_plot}
+\end{figure}
+
 The joint model was fitted using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. This package utilizes the Bayesian methodology to estimate model parameters. The corresponding posterior parameter estimates are shown in Table~\ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and Table~\ref{tab:PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model for PSA are shown in the following Table~\ref{tab:D_matrix}:
 \begin{table}
 \small\sf\centering
@@ -148,12 +160,4 @@ Fitted $\log_2 (\mbox{PSA} + 1)$ velocity & -0.085 & 0.308 & 2.433 [1.883, 2.962
 \end{tabular}
 \end{table}
 
-\subsection{Assumption of t-distributed (df=3) Error Terms}
-\label{subsec:t-dist-assumption}
-With regards to the choice of the distribution for the error term $\varepsilon$ for the PSA measurements (see Equation \ref{eq:long_model_psa}), we attempted fitting multiple joint models differing in error distribution, namely t-distribution with three, and four degrees of freedom, and a normal distribution for the error term. However, the model assumption for the error term were best met by the model with t-distribution having three degrees of freedom. The quantile-quantile plot of subject-specific residuals for the corresponding model in Panel~A of Figure~\ref{fig:qqplot}, shows that the assumption of t-distributed (df=3) errors is reasonably met by the fitted model. 
 
-\begin{figure}
-\centerline{\includegraphics[width=\columnwidth]{images/qqplot.eps}}
-\caption{Quantile-quantile plot of subject-specific residuals from the joint models fitted to the PRIAS dataset. \textbf{Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon$ (see Equation \ref{eq:long_model_psa}). \textbf{Panel B}: model assuming a normal distribution for the error term $\varepsilon$.}
-\label{fig:qqplot}
-\end{figure}

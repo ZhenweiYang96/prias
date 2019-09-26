@@ -16,9 +16,14 @@ npmle_plotdf_all=do.call('rbind',
                          }))
 levels(npmle_plotdf_all$Cohort)[2] = c("KCL")
 
+npmle_plotdf_all$time_10pat_risk_set = sapply(npmle_plotdf_all$Cohort, function(x){
+  reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
+})
+npmle_plotdf_all = npmle_plotdf_all[npmle_plotdf_all$timePoints <= npmle_plotdf_all$time_10pat_risk_set,]
+
 cohort_names = unique(npmle_plotdf_all$Cohort)
-cohort_labpos_x = c(8.75, 10, 9.375, 10, 8.5, 4.5)
-cohort_labpos_y = c(0.52, 1, 0.625, 0.42, 0.79, 0.625)
+cohort_labpos_x = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$timePoints, max))
+cohort_labpos_y = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$riskProbs, max))
 
 FONT_SIZE=13
 npmle_plot_all = ggplot() + 
@@ -29,8 +34,8 @@ npmle_plot_all = ggplot() +
   geom_label(aes(x=cohort_labpos_x, 
                  y=cohort_labpos_y, 
                  label=cohort_names,
-                 color=cohort_names))+
-  coord_cartesian(xlim=c(0,10.2)) + 
+                 fill=cohort_names), color='white')+
+  coord_cartesian(xlim=c(0,8)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
         axis.text=element_text(size=FONT_SIZE),
@@ -40,7 +45,7 @@ npmle_plot_all = ggplot() +
         plot.margin = margin(0, 0, 0, 0, "pt")) + 
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
-  ylab("Cumulative risk of Gleason ≥ 7 (%)") +
+  ylab("Cumulative risk of reclassification (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",
