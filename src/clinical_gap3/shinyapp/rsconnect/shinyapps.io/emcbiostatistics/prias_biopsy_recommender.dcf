@@ -5,9 +5,9 @@ account: emcbiostatistics
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 999102
-bundleId: 2405566
+bundleId: 2429538
 url: https://emcbiostatistics.shinyapps.io/prias_biopsy_recommender/
-when: 1568187229.38222
+when: 1568989049.80946
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: explanation-images.pptx|jitter_real_patient_data.R
+ignoredFiles: explanation-images.pptx|jitter_real_patient_data.R|mvJoint_psa_time_scaled_light.Rdata

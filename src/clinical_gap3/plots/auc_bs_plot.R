@@ -12,11 +12,11 @@ auc_rmspe_df = do.call('rbind',lapply(1:length(files), function(i){
   load(files[[i]])
   
   aucs = as.numeric(sapply(auc_prederr_bs, function(bs){
-    sapply(bs$auc_list, "[[", "auc")
+    sapply(bs$auc_list[1:length(t_horizs)], "[[", "auc")
   }))
   
   prederrs = as.numeric(sapply(auc_prederr_bs, function(bs){
-    sapply(bs$prederr_list, "[[", "prederr")
+    sapply(bs$prederr_list[1:length(t_horizs)], "[[", "prederr")
   }))
   
   return(data.frame(Cohort=cohortNames[i],
@@ -60,5 +60,66 @@ rmspeplot = ggplot(data=plotDf) +
   ylab("RMSPE (lower is better)") + xlab("Follow-up time (years)")
 
 ggsave(ggarrange(aucplot, rmspeplot, nrow=1, ncol = 2,
-          common.legend = T, legend = "bottom", labels = "AUTO"), device = cairo_ps,
+                 common.legend = T, legend = "bottom", labels = "AUTO"), device = cairo_ps,
        file="report/clinical/images/auc_pe.eps", width = 8, height=5.5)
+
+
+#calibration plot
+source("src/clinical_gap3/plots/kmCurve.R")
+
+npmle_plotdf_all_trimmed= npmle_plotdf_all
+npmle_plotdf_all_trimmed$time_10pat_risk_set = sapply(npmle_plotdf_all_trimmed$Cohort, function(x){
+  reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
+})
+npmle_plotdf_all_trimmed = npmle_plotdf_all_trimmed[npmle_plotdf_all_trimmed$timePoints <= npmle_plotdf_all_trimmed$time_10pat_risk_set,]
+
+npmle_plot_all_trimmed = ggplot() + 
+  geom_line(aes(x=npmle_plotdf_all_trimmed$timePoints, 
+                y=npmle_plotdf_all_trimmed$riskProbs, 
+                group=npmle_plotdf_all_trimmed$Cohort, 
+                color=npmle_plotdf_all_trimmed$Cohort)) +  
+  geom_label(aes(x=cohort_labpos_x, 
+                 y=cohort_labpos_y, 
+                 label=cohort_names,
+                 color=cohort_names))+
+  coord_cartesian(xlim=c(0,10.2)) + 
+  theme_bw() +
+  theme(text = element_text(size=FONT_SIZE), 
+        axis.text=element_text(size=FONT_SIZE),
+        legend.position = "none",
+        legend.text = element_text(size=FONT_SIZE-4),
+        axis.line = element_line(), 
+        plot.margin = margin(0, 0, 0, 0, "pt")) + 
+  scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
+                     limits = c(0,1)) + 
+  ylab("Cumulative risk of reclassification (%)") +
+  xlab("Follow-up time (years)")
+
+
+calib_pred_times = seq(0, 10, 0.1)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/Hopkins.Rdata")
+calib_Hopkins= rowMeans(cumrisk_models[[2]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/Toronto.Rdata")
+calib_Toronto= rowMeans(cumrisk_models[[3]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/MSKCC.Rdata")
+calib_MSKCC= rowMeans(cumrisk_models[[3]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/LondonKCL.Rdata")
+calib_KCL= rowMeans(cumrisk_models[[3]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/MUSIC.Rdata")
+calib_MUSIC= rowMeans(cumrisk_models[[3]],na.rm = T)
+calib_df = data.frame(pred_time=calib_pred_times,
+                      cum_risk=c(calib_Hopkins, calib_KCL,
+                                 calib_MSKCC, calib_Toronto, calib_MUSIC),
+                      Cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", "MUSIC"), each=length(calib_pred_times)))
+
+calib_df$time_10pat_risk_set = sapply(calib_df$Cohort, function(x){
+  reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
+})
+
+calib_plot = npmle_plot_all_trimmed +
+  geom_line(data=calib_df, aes(x=pred_time, y=cum_risk, color=Cohort), linetype="dashed")
+  
+ggsave(ggarrange(aucplot, calib_plot, nrow=1, ncol = 2,
+                 common.legend = T, legend = "bottom", labels = "AUTO"), device = cairo_ps,
+       file="report/clinical/images/auc_calib.eps", width = 8, height=5.5)
+

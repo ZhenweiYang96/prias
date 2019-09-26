@@ -1,10 +1,16 @@
 % !TEX root =  ../main_manuscript.tex 
 \begin{abstract}
-\texttt{Background}: Low-risk prostate cancer patients enrolled in active surveillance (AS) undergo repeat biopsies. Treatment often advised when biopsy Gleason~$\geq$~7 (GS7). Many patients never obtain GS7, yet undergo biopsies frequently.\\
-\texttt{Objective}: Better balance the number of biopsies and time delay in detection of GS7.\\
-\texttt{Design, Setting, and Participants}: World's largest AS study PRIAS, 7813 patients, 1134 obtained GS7, 100 medical centers in 17 countries, common study protocol.\\
-\texttt{Outcome Measurements, and Statistical Analysis}: Prostate-specific antigen (PSA) measured every six months, repeat biopsies every one to three years. Bayesian joint model fitted to the observed time of GS7 and longitudinal PSA measurements. Risk predictions for GS7 externally validated in five largest AS cohorts from GAP3 database. Personalized risk based biopsy schedules developed using GS7 predictions. Total biopsies, time of biopsies and expected time delay in detection of GS7 calculated for various schedules to compare them.\\
-\texttt{Results and Limitations}: Roughly 50\% patients did not obtain GS7 in first 10 years in PRIAS. PSA velocity was a stronger predictor of GS7 (Hazard~Ratio:~2.47, 95\%CI:~1.93--2.99), than PSA value (Hazard~Ratio:~0.99, 95\%CI:~0.89--1.11). Internal validation: Time varying area under ROC curve for GS7 prediction between 0.62 and 0.69, and prediction error between 0.23 and 0.37. External validation: Results similar to internal validation only for Toronto, Memorial Sloan Kettering, and Johns Hopkins AS cohorts.\\
-\texttt{Conclusions}: We developed personalized risk based biopsy schedules as alternative to fixed schedules. To assist patients in biopsy decisions we provided total and time of biopsies, and expected time delay in detection of GS7, for fixed and personalized schedules. Personalized schedules update with more patient data over follow-up.\\
-\texttt{Patient Summary}: Personalized biopsy schedules are a novel alternative to fixed biopsy schedules (e.g., yearly biopsies). They utilize a patient's PSA and biopsy history to decide best time of biopsies. Personalized schedules can offer a better balance between number of biopsies and delay in detection of Gleason upgrade than yearly biopsies.
+\texttt{Background}: Prostate cancer patients enrolled in active surveillance (AS) undergo repeat biopsies. When biopsy Gleason~grade~$\geq$~2 (reclassification), treatment is commonly advised. Many patients never experience reclassification, yet undergo biopsies frequently.\\
+
+\texttt{Objective}: Better balance the number of biopsies and time delay in detection of reclassification.\\
+
+\texttt{Design, Setting, and Participants}: World's largest AS study, PRIAS; 7813 patients, 1134 experienced reclassification; prostate-specific antigen (PSA) and repeat biopsy data available.\\
+
+\texttt{Outcome Measurements, and Statistical Analysis}: Bayesian joint model based on accumulated clinical data used to predict patient-specific risk of reclassification. Predicted risks were utilized to schedule personalized biopsies. Personalized and fixed schedules were compared by number of biopsies, and model estimated expected time delay in detection of reclassification for each schedule. Model was validated externally in largest five AS cohorts from GAP3 database. Methodology implemented in a web-application.\\
+
+\texttt{Results and Limitations}: Rate of reclassification in PRIAS was 50\% in 10 years of follow-up. PSA velocity was a stronger predictor of reclassification (Hazard~Ratio:~2.47, 95\%CI:~1.93--2.99), than PSA value (Hazard~Ratio:~0.99, 95\%CI:~0.89--1.11). Internal validation: Time varying area under ROC curve for reclassification prediction between 0.62 and 0.69, and prediction error between 0.23 and 0.37. External validation: Results similar to internal validation only for Toronto, Memorial Sloan Kettering, and Johns Hopkins AS cohorts.\\
+
+\texttt{Conclusions}: We developed personalized biopsy schedules as alternative to fixed schedules for AS patients. To assist patients/doctors in biopsy decisions, we provided them expected time delay in detection of reclassification, for both personalized and fixed schedules. We implemented our methodology in a web-application.\\
+
+\texttt{Patient Summary}: Personalized biopsy schedules are a novel alternative to fixed biopsy schedules (e.g., yearly biopsies). They rely on patient-specific risk of reclassification.  Personalized schedules can offer a better balance between number of biopsies and delay in detection of Gleason upgrade than yearly biopsies.
 \end{abstract}

@@ -14,7 +14,7 @@ npmle_plotdf_all=do.call('rbind',
                            
                            return(data.frame('Cohort'=name,timePoints=timePoints, riskProbs=1-survProbs))
                          }))
-levels(npmle_plotdf_all$Cohort)[1:2] = c("JHAS", "KCL")
+levels(npmle_plotdf_all$Cohort)[2] = c("KCL")
 
 cohort_names = unique(npmle_plotdf_all$Cohort)
 cohort_labpos_x = c(8.75, 10, 9.375, 10, 8.5, 4.5)
@@ -45,8 +45,3 @@ npmle_plot_all = ggplot() +
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",
        plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
-
-library(survminer)
-ggsurvplot(survfit(Surv(right_cens_time, reclassification) ~ 1, 
-                   data = prias_final.id), pval = TRUE, conf.int = TRUE,
-           risk.table = TRUE, risk.table.y.text.col = TRUE)

@@ -20,17 +20,17 @@ survModel = survreg(Surv(latest_survival_time, earliest_failure_time, type = "in
 
 startTime_mvglmer = Sys.time()
 mvglmer_psa_time_scaled = mvglmer(list(log2psaplus1 ~ age +
-                                         ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2) + 
-                                         (ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)|P_ID)),
+                                         ns(I((year_visit-1)/2), knots=(c(0.33, 1.15)-1)/2, Boundary.knots=(c(0, 3.38)-1)/2) + 
+                                         (ns(I((year_visit-1)/2), knots=(c(0.33, 1.15)-1)/2, Boundary.knots=(c(0, 3.38)-1)/2)|P_ID)),
                                   data=longds, families = list(gaussian), engine = "JAGS",
                                   control = list(n.iter=60000, n.burnin = 10000))
 endTime_mvglmer = Sys.time()
 print(endTime_mvglmer - startTime_mvglmer)
 
 forms_psa = list("log2psaplus1" = "value",
-                 "log2psaplus1" = list(fixed = ~ 0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
-                                       random=~0 + dns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2),
-                                       indFixed = 3:6, indRandom=2:5, name = "slope"))
+                 "log2psaplus1" = list(fixed = ~ 0 + dns(I((year_visit-1)/2), knots=(c(0.33, 1.15)-1)/2, Boundary.knots=(c(0, 3.38)-1)/2),
+                                       random=~0 + dns(I((year_visit-1)/2), knots=(c(0.33, 1.15)-1)/2, Boundary.knots=(c(0, 3.38)-1)/2),
+                                       indFixed = 3:5, indRandom=2:4, name = "slope"))
 
 startTime_mvJoint = Sys.time()
 mvJoint_psa_time_scaled = mvJointModelBayes(mvglmer_psa_time_scaled, survModel, 

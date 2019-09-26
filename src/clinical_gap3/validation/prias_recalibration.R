@@ -15,7 +15,7 @@ longdata.id$right_cens_time = longdata.id$latest_survival_time
 longdata.id$right_cens_time[longdata.id$earliest_failure_time!=Inf] = (0.5 * (longdata.id$latest_survival_time + longdata.id$earliest_failure_time))[longdata.id$earliest_failure_time!=Inf]
 longdata.id$reclassification = longdata.id$earliest_failure_time!=Inf
 
-nr_knots = 6
+nr_knots = 3
 cohort_model_ordSpline = cohort_model$control$ordSpline
 
 tt = longdata.id$right_cens_time[longdata.id$reclassification==T]
@@ -137,5 +137,11 @@ prias_model_recalib$control$ordSpline = cohort_model_ordSpline
 prias_model_recalib$mcmc$Bs_gammas = MASS::mvrnorm(n=nrow(prias_model_recalib$mcmc$Bs_gammas),
                                                    mu = mle_bs_gammas$par,
                                                    Sigma = 1.6*solve(mle_bs_gammas$hessian))
+
+a=splineDesign(knots = cohort_model$control$knots, x = calib_pred_times, ord = 4, outer.ok = T) %*% cohort_model$statistics$postMeans$Bs_gammas
+
+b=splineDesign(knots = prias_model_recalib$control$knots, x = calib_pred_times, ord = 4, outer.ok = T) %*% prias_model_recalib$statistics$postMeans$Bs_gammas
+
+ggplot() + geom_line(aes(x=calib_pred_times, y=a)) + geom_line(aes(x=calib_pred_times, y=b))
 
 save(prias_model_recalib, file="Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_priasMUSIC.Rdata")
