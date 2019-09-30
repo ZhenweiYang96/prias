@@ -86,12 +86,12 @@ calib_df = data.frame(pred_time=calib_pred_times,
                       Cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", "MUSIC", "PRIAS"), each=length(calib_pred_times)))
 
 calib_df$max_time = sapply(calib_df$Cohort, function(x){
-  max(npmle_plotdf_all$timePoints[npmle_plotdf_all$Cohort==x])
+  max(kmdf$timePoints[kmdf$cohort==x])
 })
 
 calib_df = calib_df[calib_df$pred_time <= calib_df$max_time,]
 
-calib_plot = npmle_plot_all +
+calib_plot = km_plot_all +
   geom_line(data=calib_df, aes(x=pred_time, y=cum_risk, color=Cohort), 
             linetype="dashed")+
   geom_label(aes(x=cohort_labpos_x, 

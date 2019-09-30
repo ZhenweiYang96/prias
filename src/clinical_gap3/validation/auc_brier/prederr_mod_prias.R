@@ -165,6 +165,3 @@ prederrJM.mvJMbayes_mod <- function (object, newdata, Tstart, Thoriz, lossFun = 
 }
 
 environment(prederrJM.mvJMbayes_mod) <- asNamespace('JMbayes')
-
-# prias_long$high_dre = ifelse(prias_long$dre=="T1c", 0, 1)
-# prederrJM.mvJMbayes_mod(mvJoint_dre_psa_dre_value, prias_long[1:5000,], Tstart = 1, Thoriz = 2, idVar = "P_ID")

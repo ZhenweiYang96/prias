@@ -10,15 +10,7 @@ seed = 2019 + iteration
 
 load("Rdata/gap3/PRIAS_2019/motherdata.Rdata")
 load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
-source("src/clinical_gap3/validation/auc_brier/auc_mod_prias.R")
-
-#For recalibrated
-load(paste0("Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_prias",
-            cohort,".Rdata"))
-mvJoint_psa_time_scaled$mcmc$Bs_gammas = prias_model_recalib$mcmc$Bs_gammas
-mvJoint_psa_time_scaled$statistics$postMeans$Bs_gammas = prias_model_recalib$statistics$postMeans$Bs_gammas
-mvJoint_psa_time_scaled$control$knots = prias_model_recalib$control$knots
-#
+source("src/clinical_gap3/validation/auc_brier/prederr_mod_prias.R")
 
 M = 750
 max_thoriz = round(reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==cohort])
@@ -43,17 +35,29 @@ if(iteration > 1){
   print('original dataset iteration')
 }
 
-auc_list = vector("list", length(t_horizs))
+mspe_list = vector("list", length(t_horizs))
+mape_list = vector("list", length(t_horizs))
 
-for(k in 1:length(auc_list)){
+for(k in 1:length(mspe_list)){
   print(paste("Calculations started for thoriz:", t_horizs[k]))
   
-  auc_list[[k]] = aucJM.mvJMbayes_mod(mvJoint_psa_time_scaled,
+  print('Calculating MSPE')
+  mspe_list[[k]] = prederrJM.mvJMbayes_mod(mvJoint_psa_time_scaled,
                                       newdata = longdata,
                                       Tstart = t_horizs[k]-1,
                                       Thoriz = t_horizs[k],
                                       idVar = "P_ID", M = M)
   
-  print(paste0('AUC for ', t_horizs[k]-1,"--", t_horizs[k], ": ", auc_list[[k]]$auc))
-  save(auc_list, file = paste0("Rdata/gap3/PRIAS_2019/auc/",cohort,"_",seed,".Rdata"))
+  print(paste0('MSPE for ', t_horizs[k]-1,"--", t_horizs[k], ": ", mspe_list[[k]]$prederr))
+  save(mspe_list, file = paste0("Rdata/gap3/PRIAS_2019/mspe/",cohort,"_",seed,".Rdata"))
+  
+  print('Calculating MAPE')
+  mape_list[[k]] = prederrJM.mvJMbayes_mod(mvJoint_psa_time_scaled,
+                                           newdata = longdata,
+                                           Tstart = t_horizs[k]-1,
+                                           Thoriz = t_horizs[k],
+                                           idVar = "P_ID", M = M, lossFun='absolute')
+  
+  print(paste0('MAPE for ', t_horizs[k]-1,"--", t_horizs[k], ": ", mape_list[[k]]$prederr))
+  save(mape_list, file = paste0("Rdata/gap3/PRIAS_2019/mape/",cohort,"_",seed,".Rdata"))
 }

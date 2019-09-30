@@ -1,36 +1,23 @@
-library(JMbayes)
-load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
+load("Rdata/gap3/PRIAS_2019/km_all.Rdata")
 
-npmle_plotdf_all=do.call('rbind', 
-                         lapply(c("Hopkins", "London-KCL", "MSKCC", "PRIAS", "Toronto", "MUSIC"), FUN = function(name){
-                           survProb = 1 - cumsum(npmle_all[[name]]$pf)
-                           survProb = c(1, survProb)
-                           
-                           survIntervals = npmle_all[[name]]$intmap
-                           survIntervals = cbind(c(0,0), survIntervals)
-                           
-                           timePoints = as.numeric(survIntervals)
-                           survProbs = c(1,as.numeric(rep(survProb, each=2)))[1:length(timePoints)]
-                           
-                           return(data.frame('Cohort'=name,timePoints=timePoints, riskProbs=1-survProbs))
-                         }))
-levels(npmle_plotdf_all$Cohort)[2] = c("KCL")
+kmdf = data.frame(cohort=unlist(lapply(names(km_all), FUN = function(name){rep(name, length(km_all[[name]]$time))})),
+                  timePoints=unlist(lapply(km_all, "[[", "time")),
+                  cumrisk = 1-unlist(lapply(km_all, "[[", "surv")))
+kmdf = kmdf[order(kmdf$cohort, kmdf$timePoints),]
 
-npmle_plotdf_all$time_10pat_risk_set = sapply(npmle_plotdf_all$Cohort, function(x){
-  reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
-})
-npmle_plotdf_all = npmle_plotdf_all[npmle_plotdf_all$timePoints <= npmle_plotdf_all$time_10pat_risk_set,]
+kmdf$time_10pat_risk_set = rep(reclassification_df$time_10pat_risk_set[order(reclassification_df$Cohort)], table(kmdf$cohort))
+kmdf = kmdf[kmdf$timePoints <= kmdf$time_10pat_risk_set,]
 
-cohort_names = unique(npmle_plotdf_all$Cohort)
-cohort_labpos_x = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$timePoints, max))
-cohort_labpos_y = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$riskProbs, max))
+cohort_names = levels(kmdf$cohort)
+cohort_labpos_x = as.numeric(by(kmdf$cohort, data = kmdf$timePoints, max))
+cohort_labpos_y = as.numeric(by(kmdf$cohort, data = kmdf$cumrisk, max))
 
 FONT_SIZE=13
-npmle_plot_all = ggplot() + 
-  geom_line(aes(x=npmle_plotdf_all$timePoints, 
-                y=npmle_plotdf_all$riskProbs, 
-                group=npmle_plotdf_all$Cohort, 
-                color=npmle_plotdf_all$Cohort)) +  
+km_plot_all = ggplot() + 
+  geom_line(aes(x=kmdf$timePoints, 
+                y=kmdf$cumrisk, 
+                group=kmdf$cohort, 
+                color=kmdf$cohort)) +  
   geom_label(aes(x=cohort_labpos_x, 
                  y=cohort_labpos_y, 
                  label=cohort_names,
@@ -48,5 +35,7 @@ npmle_plot_all = ggplot() +
   ylab("Cumulative risk of reclassification (%)") +
   xlab("Follow-up time (years)")
 
-ggsave(filename = "report/clinical/images/npmle_plot.eps",
-       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
+ggsave(filename = "report/clinical/images/km_plot.eps",
+       plot=km_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
+
+
