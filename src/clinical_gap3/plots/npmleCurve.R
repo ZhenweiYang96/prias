@@ -2,7 +2,7 @@ library(JMbayes)
 load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
 
 npmle_plotdf_all=do.call('rbind', 
-                         lapply(c("Hopkins", "London-KCL", "MSKCC", "PRIAS", "Toronto", "MUSIC"), FUN = function(name){
+                         lapply(c("Hopkins", "KCL", "MSKCC", "PRIAS", "Toronto", "MUSIC"), FUN = function(name){
                            survProb = 1 - cumsum(npmle_all[[name]]$pf)
                            survProb = c(1, survProb)
                            
@@ -14,7 +14,6 @@ npmle_plotdf_all=do.call('rbind',
                            
                            return(data.frame('Cohort'=name,timePoints=timePoints, riskProbs=1-survProbs))
                          }))
-levels(npmle_plotdf_all$Cohort)[2] = c("KCL")
 
 npmle_plotdf_all$time_10pat_risk_set = sapply(npmle_plotdf_all$Cohort, function(x){
   reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
@@ -35,14 +34,15 @@ npmle_plot_all = ggplot() +
                  y=cohort_labpos_y, 
                  label=cohort_names,
                  fill=cohort_names), color='white')+
+  scale_color_manual(values=colormap)+
+  scale_fill_manual(values=colormap)+
   coord_cartesian(xlim=c(0,8)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
         axis.text=element_text(size=FONT_SIZE),
         legend.position = "none",
         legend.text = element_text(size=FONT_SIZE-4),
-        axis.line = element_line(), 
-        plot.margin = margin(0, 0, 0, 0, "pt")) + 
+        axis.line = element_line())+
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
   ylab("Cumulative risk of reclassification (%)") +

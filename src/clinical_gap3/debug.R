@@ -1,42 +1,57 @@
-longdata = mvJoint_psa_time_scaled$model_info$mvglmer_components$data
-longdata.id = longdata[!duplicated(longdata$P_ID),]
-longdata.id$right_cens_time = longdata.id$latest_survival_time
-longdata.id$right_cens_time[longdata.id$earliest_failure_time!=Inf] = (0.5 * (longdata.id$latest_survival_time + longdata.id$earliest_failure_time))[longdata.id$earliest_failure_time!=Inf]
-longdata.id$reclassification = longdata.id$earliest_failure_time!=Inf
+# ggplot(mape_df) + geom_line(aes(x=t_horiz, y=mean, color=cohort)) +
+#   geom_ribbon(aes(x=t_horiz, ymin=lower, ymax=upper), alpha=0.5) +
+#   facet_grid(model~cohort) + ylim(0,1) + xlim(0,10)
 
-calib_pred_times = seq(0, 10, 0.1)
+# 
+# pe_bootstrap_df = do.call('rbind', lapply(cohortnames[-6], function(cohort){
+#   t_horizs = seq(1, round(reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==cohort]), 0.5)
+#    
+#   cohort_df = lapply(1:30, function(iter){
+#     seed = 2019 + iter
+#     load(paste0("Rdata/gap3/PRIAS_2019/pe/", cohort, "_", seed, ".Rdata"))
+#     for(i in 1:length(t_horizs)){
+#       pe_list[[i]]$t_start = t_horizs[i] - 1
+#       pe_list[[i]]$t_horiz = t_horizs[i]
+#       pe_list[[i]]$bs_iter = iter
+#       pe_list[[i]]$center = cohort
+#     }
+#     return(do.call('rbind', pe_list))
+#   })
+#   
+#   return(do.call('rbind', cohort_df))
+# }))
+# 
+# save(pe_bootstrap_df, file="Rdata/gap3/PRIAS_2019/validation/pe_bootstrap_df.Rdata")
 
-cumrisk = lapply(split(longdata, f = longdata$P_ID), function(pat_data){
-  set.seed(2019)
-  
-  latest_survival_time = pat_data$latest_survival_time[1]
-  earliest_failure_time = pat_data$earliest_failure_time[1]
-  patient_age = pat_data$age[1]
-  
-  M=500
-  
-  surv_probs = rep(NA, length(calib_pred_times))
-  surv_probs[calib_pred_times<=latest_survival_time] = 1
-  surv_probs[calib_pred_times>=earliest_failure_time] = 0
-  
-  if(nrow(pat_data) > 1 & any(is.na(surv_probs))){
-    temp = getExpectedFutureOutcomes(object = model,
-                                     patient_data = pat_data,
-                                     latest_survival_time = latest_survival_time,
-                                     earliest_failure_time = earliest_failure_time,
-                                     survival_predict_times = calib_pred_times,
-                                     psaDist = "Tdist", M = M)
-    if(any(is.na(surv_probs))){
-      surv_probs[calib_pred_times > latest_survival_time &
-                   calib_pred_times < earliest_failure_time] = rowMeans(temp$predicted_surv_prob)
-    }
-  }
-  return(1-surv_probs)
-})
 
-cumrisk = do.call('cbind', cumrisk)
-rownames(cumrisk) = calib_pred_times
+pe_bootstrap_df2 = do.call('rbind', by(pe_bootstrap_df$center, data = pe_bootstrap_df, FUN = function(cohort_df){
+  cohort_df_list = by(cohort_df$t_horiz, data=cohort_df, FUN = function(t_horiz_df){
+    mape_t_horiz = by(t_horiz_df$bs_iter, data=t_horiz_df, FUN = function(bs_iter_df){
+      mape = sum(bs_iter_df$ape)/nrow(bs_iter_df)
+      mspe = sum(bs_iter_df$spe)/nrow(bs_iter_df)
+      return(data.frame(cohort = bs_iter_df$center[1],
+                        t_start = bs_iter_df$t_start[1],
+                        t_horiz = bs_iter_df$t_horiz[1],
+                        bs_iter = bs_iter_df$bs_iter[1],
+                        mape = mape,
+                        mspe = mspe))
+    })
+    mape_t_horiz = do.call('rbind', mape_t_horiz)
+    return(mape_t_horiz)
+  })
+  return(do.call('rbind', cohort_df_list))
+}))
 
-cumrisk_models[[2]] = cumrisk
-
-save(cumrisk_models, file="Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/PRIAS.Rdata")
+pe_df = do.call('rbind',by(pe_bootstrap_df$cohort, data=pe_bootstrap_df, FUN = function(x){
+  return(do.call('rbind',by(x$t_horiz, data = x, FUN = function(y){
+    z = y[1,1:3]
+    z$mean_mape = mean(y$mape, na.rm = T)
+    z$lower_mape = quantile(y$mape, probs = 0.025, na.rm = T)
+    z$upper_mape = quantile(y$mape, probs = 0.975, na.rm = T)
+    
+    z$mean_mspe = mean(y$mspe,na.rm = T)
+    z$lower_mspe = quantile(y$mspe, probs = 0.025,na.rm = T)
+    z$upper_mspe = quantile(y$mspe, probs = 0.975,na.rm = T)
+    return(z)
+  })))
+}))

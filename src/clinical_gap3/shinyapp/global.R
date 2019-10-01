@@ -1,4 +1,5 @@
 load("models.Rdata")
+load("reclassification_df.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
@@ -35,7 +36,7 @@ COHORT_MAPPING = c("PRIAS" = "PRIAS",
                    "Johns Hopkins AS" = "Hopkins",
                    "MSKCC AS" = "MSKCC",
                    "MUSIC AS" = "MUSIC",
-                   "KCL London AS" = "LondonKCL")
+                   "KCL (London) AS" = "KCL")
 
 mvJoint_psa_time_scaled = models$PRIAS
 
