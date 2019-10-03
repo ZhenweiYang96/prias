@@ -1,20 +1,38 @@
+library(JMbayes)
+library(splines)
+library(ggplot2)
+library(ggpubr)
+
+load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
+load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
+source("src/clinical_gap3/prediction_only_psa.R")
+#this is needed to load the function which makes a plot for dynamic risk
 source('src/clinical_gap3/plots/dynriskPlot.R')
-source('src/clinical_gap3/compareSchedules.R')
+source('src/clinical_gap3/scheduleCreator.R')
+
+SUCCESS_COLOR = 'forestgreen'
+DANGER_COLOR = 'red'
+THEME_COLOR = 'dodgerblue4'
+MAX_FOLLOW_UP = 6
+
+DANGER_COLOR = 'red'
+WARNING_COLOR = 'darkorange'
+SUCCESS_COLOR = 'forestgreen'
+
+POINT_SIZE = 2
+FONT_SIZE = 11
+LABEL_SIZE = 2.75
 
 FONT_SIZE = 14
 
-schedulePlotSupp = function(object, pat_df, latest_survival_time=NA, 
+schedulePlotSupp = function(object, pat_df, latest_survival_time, 
                             xbreaks, xlabs, psa_breaks = NA,
-                            max_follow_up, title=""){
+                            max_follow_up, title="", M=750){
   set.seed(2019)
   
-  if(is.na(latest_survival_time)){
-    latest_survival_time = max(pat_df$year_visit[!is.na(pat_df$gleason_sum)])
-  }
+  max_psa_time = max(pat_df$year_visit)
   
-  max_psa_time = max(pat_df$year_visit)   
-  
-  A = dynamicRiskPlot(mvJoint_psa_time_scaled, 
+  A = dynamicRiskPlot(object, 
                       pat_df, latest_survival_time, 
                       xbreaks, xlabs, psa_breaks,
                       max_follow_up) + theme(axis.title.x = element_blank())
@@ -33,17 +51,47 @@ schedulePlotSupp = function(object, pat_df, latest_survival_time=NA,
     theme_bw() +
     theme(text = element_text(size = FONT_SIZE)) 
   
-  biopsy_schedules = compareSchedules(pat_df,cur_visit_time = max_psa_time, 
-                                      latest_survival_time = latest_survival_time)
-  
+  schedule_5perc = getRiskBasedSchedule(object = object, patient_data = pat_df,
+                       cur_visit_time = max_psa_time, 
+                       latest_survival_time = latest_survival_time,
+                       risk_threshold = 0.05, min_biopsy_gap = 1, M = M,
+                       horizon = max_follow_up)
+  schedule_10perc = getRiskBasedSchedule(object = object, patient_data = pat_df,
+                                       cur_visit_time = max_psa_time, 
+                                       latest_survival_time = latest_survival_time,
+                                       risk_threshold = 0.1, min_biopsy_gap = 1, M = M,
+                                       horizon = max_follow_up)
+  schedule_15perc = getRiskBasedSchedule(object = object, patient_data = pat_df,
+                                       cur_visit_time = max_psa_time, 
+                                       latest_survival_time = latest_survival_time,
+                                       risk_threshold = 0.15, min_biopsy_gap = 1, M = M,
+                                       horizon = max_follow_up)
+  schedule_prias = getPRIASSchedule(object = object, patient_data = pat_df,
+                                    cur_visit_time = max_psa_time, latest_survival_time = latest_survival_time,
+                                    min_biopsy_gap = 1, M = M,horizon = max_follow_up)
+  schedule_annual = getFixedSchedule(cur_visit_time = max_psa_time, 
+                                     latest_survival_time = latest_survival_time,
+                                     min_biopsy_gap = 1, biopsy_frequency = 1, horizon = max_follow_up)
+  schedule_biennial = getFixedSchedule(cur_visit_time = max_psa_time, 
+                                     latest_survival_time = latest_survival_time,
+                                     min_biopsy_gap = 1, biopsy_frequency = 2, horizon = max_follow_up)
+    
   schedules = c("5% Risk", "10% Risk", "15% Risk", 
                 "PRIAS", "Yearly", "Every 2 Years")
-  expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay")
-  total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
   
-  biopsy_times = do.call('c', lapply(biopsy_schedules$schedules, "[[", "biopsy_times"))
+  consequences_list = lapply(list(schedule_5perc, schedule_10perc, schedule_15perc,
+                                  schedule_prias, schedule_annual, schedule_biennial),
+                             FUN = getConsequences, object=object, patient_data=pat_df,
+                             cur_visit_time = max_psa_time, 
+                             latest_survival_time = latest_survival_time, M=M,
+                             horizon=max_follow_up)
+  
+  expected_delays = sapply(consequences_list, "[[", "expected_delay")
+  practical_biopsy_times = lapply(consequences_list, "[[", "practical_biopsy_times")
+  total_biopsies = sapply(practical_biopsy_times, length)
+  
   plotDf = data.frame(Schedule=rep(schedules, total_biopsies), 
-                      biopsy_times)
+                      biopsy_times=unlist(practical_biopsy_times))
   
   B = common +
     geom_line(data = plotDf, aes(x=biopsy_times, 
@@ -91,13 +139,14 @@ schedulePlotSupp = function(object, pat_df, latest_survival_time=NA,
 pat1_data = prias_long_final[prias_long_final$P_ID==956 & prias_long_final$year_visit<=2,]
 psa_breaks = getpsaBreaks(pat1_data)
 
-schedule_plot_pat1 = schedulePlotSupp(mvJoint_psa_time_scaled, pat1_data,
-                                      latest_survival_time = 0,
+schedule_plot_pat1 = schedulePlotSupp(object = mvJoint_psa_time_scaled, 
+                                      pat_df = pat1_data,
+                                      latest_survival_time = 1,
                                       xbreaks = c(0, 1.9780822, 5, 7.5, 10),
                                       xlabs = c("0\n(Latest\nbiopsy)", "2\n (Current\nvisit)",
                                                 "5","7.5", "10"),
                                       psa_breaks = psa_breaks,
-                                      max_follow_up = 10, title = "Real Patient 1") + theme(axis.title.x = element_blank())
+                                      max_follow_up = 6, title = "Real Patient 1") + theme(axis.title.x = element_blank())
 ggsave(schedule_plot_pat1, filename = "report/clinical/images/demo_pat1_supp.eps",
        device = cairo_ps, height = 8, width = 7)
 

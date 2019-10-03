@@ -24,7 +24,7 @@ cohort_names = unique(npmle_plotdf_all$Cohort)
 cohort_labpos_x = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$timePoints, max))
 cohort_labpos_y = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$riskProbs, max))
 
-FONT_SIZE=13
+FONT_SIZE=14
 npmle_plot_all = ggplot() + 
   geom_line(aes(x=npmle_plotdf_all$timePoints, 
                 y=npmle_plotdf_all$riskProbs, 
@@ -39,7 +39,6 @@ npmle_plot_all = ggplot() +
   coord_cartesian(xlim=c(0,8)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
-        axis.text=element_text(size=FONT_SIZE),
         legend.position = "none",
         legend.text = element_text(size=FONT_SIZE-4),
         axis.line = element_line())+

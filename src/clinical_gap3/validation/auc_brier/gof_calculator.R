@@ -50,5 +50,5 @@ for(k in 1:length(pe_list)){
                                    T_horiz = t_horizs[k],
                                    M = M)
   
-  save(pe_list, file = paste0("Rdata/gap3/PRIAS_2019/pe/",cohort,"_",seed,".Rdata"))
+  #save(pe_list, file = paste0("Rdata/gap3/PRIAS_2019/pe/",cohort,"_",seed,".Rdata"))
 }
