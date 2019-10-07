@@ -26,7 +26,7 @@ set.seed(2019)
 pat_data$log2psaplus1 = pat_data$log2psaplus1 - 2
 
 pat_data$log2psaplus1[pat_data$year_visit > 2] = pat_data$log2psaplus1[pat_data$year_visit > 2] + 
-  rnorm(n = length(pat_data$log2psaplus1[pat_data$year_visit > 2]), 2.25, 1)
+   rnorm(n = length(pat_data$log2psaplus1[pat_data$year_visit > 2]), 2.25, 1)
 
 pat_data$psa = 2^pat_data$log2psaplus1 - 1
 
@@ -56,7 +56,7 @@ B_y_breaks = seq(min(mean_psa_velocity, na.rm = T),
 
 common = ggplot() +  
   scale_x_continuous(breaks = 0:MAX_FOLLOW_UP,
-                     limits = c(-0.3, 6)) +
+                     limits = c(-0.3, MAX_FOLLOW_UP)) +
   geom_vline(xintercept = cur_visit_time, linetype="dashed") +
   geom_vline(xintercept = latest_survival_time, color=SUCCESS_COLOR) +
   xlab("Follow-up time (years)")+
@@ -123,7 +123,7 @@ jm_explanation_plot = ggarrange(A,B, C, D, ncol=1, nrow=4, align = "v",
                                 legend = "top", labels = c("A","B", "C", ""))
 
 ggsave(jm_explanation_plot, filename = "report/clinical/images/jmExplanationPlot_113.eps",
-       device = cairo_ps, height = 6)
+       device = cairo_ps, height = 6, width=6)
 
 
 ################
@@ -189,7 +189,7 @@ F_ = common +
 
 H = ggplot() + geom_col(aes(x=rep(schedules,2), 
                             y=c(12*expected_delays, 12 - 12*expected_delays)),
-                        color='black', fill=c(rep(c('darkgrey','white'), 4)),
+                        color='black', fill=c(rep(c('darkgrey','white'), length(schedules))),
                         width=0.5)+
   ylab("Expected delay (months) in detecting reclassification") + 
   xlab("Biopsy schedule") +
@@ -204,4 +204,4 @@ demo_pat_plot = ggarrange(E, F_, D, H , ncol=1, nrow=4, align = "v",
                           labels=c("A", "B", "", "C"), heights = c(1,1,0.5,1))
 
 ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
-       device = cairo_ps, height = 6)
+       device = cairo_ps, height = 6, width=6)

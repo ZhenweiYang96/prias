@@ -2,10 +2,8 @@ load("models.Rdata")
 load("reclassification_df.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
-source("scheduleCreator.R")
+source("oldScheduleCreator.R")
 
-#load("appdata.Rdata")
-MAX_FOLLOW_UP = 10
 YEAR_DIVIDER = 24 * 60 * 60 * 365
 SPSS_ORIGIN_DATE = "1582-10-14"
 DATE_PRINT_FORMAT = "%b %e, %Y"
@@ -37,6 +35,17 @@ COHORT_MAPPING = c("PRIAS" = "PRIAS",
                    "MSKCC AS" = "MSKCC",
                    "MUSIC AS" = "MUSIC",
                    "KCL (London) AS" = "KCL")
+
+MAX_FOLLOW_UP_MAPPING = c("PRIAS"=6,
+                          "Hopkiins"=7,
+                          "Toronto"=8,
+                          "MSKCC"=6,
+                          "MUSIC"=2,
+                          "KCL"=3)
+
+CURRENT_COHORT_NAME = "PRIAS"
+
+MAX_FOLLOW_UP = MAX_FOLLOW_UP_MAPPING["PRIAS"]
 
 mvJoint_psa_time_scaled = models$PRIAS
 

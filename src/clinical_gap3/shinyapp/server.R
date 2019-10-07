@@ -32,12 +32,12 @@ shinyServer(function(input, output, session) {
     total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
     
     #some schedules never schedule a biopsy because risk threshold is too high
-    #...we show a biopsy at year 10 for them
+    #...we show a biopsy at year MAX_FOLLOW_UP for them
     total_biopsies[total_biopsies == 0] = 1
     biopsy_times = lapply(biopsy_schedules$schedules, "[[", "biopsy_times")
     empty_schedules = sapply(biopsy_times, is.null)
     if(any(empty_schedules)){
-      biopsy_times[which(empty_schedules)] = 10
+      biopsy_times[which(empty_schedules)] = MAX_FOLLOW_UP
     }
     
     biopsy_times = do.call('c', biopsy_times)
@@ -120,6 +120,56 @@ shinyServer(function(input, output, session) {
   pleaseWaitModal = modalDialog(title = "Please wait", "Analyzing patient data.", 
                                 footer = NULL,size = "s", fade = F)
   
+  #modal to show cohort change
+  cohort_change_modal_PRIAS = modalDialog(
+    title="Selected Cohort: PRIAS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 6 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  cohort_change_modal_Toronto = modalDialog(
+    title="Selected Cohort: Toronto AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 8 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  cohort_change_modal_Hopkins = modalDialog(
+    title="Selected Cohort: Johns Hopkins AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 7 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  cohort_change_modal_MSKCC = modalDialog(
+    title="Selected Cohort: MSKCC AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 6 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  cohort_change_modal_KCL = modalDialog(
+    title="Selected Cohort: KCL (London) AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 3 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  cohort_change_modal_MUSIC = modalDialog(
+    title="Selected Cohort: MUSIC AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 2 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+  )
+  
+  MODAL_MAPPING = list("PRIAS"=cohort_change_modal_PRIAS,
+                       "Toronto"=cohort_change_modal_Toronto,
+                       "Hopkins"=cohort_change_modal_Hopkins,
+                       "MSKCC"=cohort_change_modal_MSKCC,
+                       "MUSIC"=cohort_change_modal_MUSIC,
+                       "KCL"=cohort_change_modal_KCL)
+  
   #modal for manual entry
   manual_entry_modal = modalDialog(
     tags$h3("Patient Data Manual Entry Form"),
@@ -193,6 +243,9 @@ shinyServer(function(input, output, session) {
   ################################
   observeEvent(input$cohort, {
     mvJoint_psa_time_scaled <<- models[[input$cohort]]
+    MAX_FOLLOW_UP <<- MAX_FOLLOW_UP_MAPPING[input$cohort]
+    CURRENT_COHORT_NAME <<- names(COHORT_MAPPING[which(COHORT_MAPPING==input$cohort)])
+    showModal(MODAL_MAPPING[[input$cohort]])
     resetPatientCache()
     patientCounter(patientCounter() + 1)
   })

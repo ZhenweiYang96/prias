@@ -7,7 +7,7 @@ load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 source("src/clinical_gap3/prediction_only_psa.R")
 
-SUCCESS_COLOR = 'green'
+SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
 THEME_COLOR = 'dodgerblue4'
 MAX_FOLLOW_UP = 10
@@ -55,9 +55,7 @@ dynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
                        limits = c(0, max_follow_up), 
                        minor_breaks = seq(0, max_follow_up, 1)) +
     xlab("Follow-up time (years)")+
-    geom_ribbon(aes(x=c(0,latest_survival_time), ymin=-c(Inf,Inf),
-                    ymax=c(Inf, Inf)), alpha=0.15, fill=SUCCESS_COLOR) + 
-    geom_vline(xintercept = latest_survival_time) + 
+    geom_vline(xintercept = latest_survival_time, color=SUCCESS_COLOR) + 
     geom_vline(xintercept = max_psa_time, linetype="dashed") +
     geom_point(aes(x=pat_df$year_visit,y=pat_df$log2psaplus1),
                size=POINT_SIZE, color=THEME_COLOR) +
@@ -72,9 +70,7 @@ dynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
                                            breaks= riskAxisBreaks,
                                            labels = riskAxisLabels,
                                            name = "Cumulative risk of\n reclassification")) +
-    geom_ribbon(aes(x=c(-1,-10),ymin=-Inf, ymax=Inf, fill="Region with Gleason grade 1"), alpha=0.15) +
     geom_point(aes(x=-5,y=-5, color="Observed PSA"), size=POINT_SIZE) +
-    scale_fill_manual(values = c(SUCCESS_COLOR))+
     scale_color_manual(values = c(THEME_COLOR), labels=expression('Observed log'[2]*'(PSA + 1)'))+
     ylab(expression('log'[2]*'(PSA + 1)')) + 
     theme_bw() + theme(text = element_text(size = FONT_SIZE), 
@@ -129,4 +125,4 @@ dynrisk_plot = ggarrange(dynrisk_plot_1, dynrisk_plot_2, dynrisk_plot_3,
           nrow = 3, ncol=1, legend = "bottom", common.legend = T)
 
 ggsave(dynrisk_plot, filename = "report/clinical/images/dynrisk_plot_102.eps",
-       device = cairo_ps, height = 9)
+       device = cairo_ps, height = 8, width=6)

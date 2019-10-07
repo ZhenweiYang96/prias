@@ -69,7 +69,7 @@ With regards to the choice of the distribution for the error term $\varepsilon$ 
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/qqplot.eps}}
-\caption{Quantile-quantile plot of subject-specific residuals from the joint models fitted to the PRIAS dataset. \textbf{Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon$ (see Equation \ref{eq:long_model_psa}). \textbf{Panel B}: model assuming a normal distribution for the error term $\varepsilon$.}
+\caption{\textbf{Quantile-quantile plot} of subject-specific PSA residuals from two different joint models fitted to the PRIAS dataset. \textbf{Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon$ (see Equation \ref{eq:long_model_psa}). \textbf{Panel B}: model assuming a normal distribution for the error term $\varepsilon$.}
 \label{fig:qqplot}
 \end{figure}
 
@@ -85,7 +85,7 @@ With regards to the choice of the distribution for the error term $\varepsilon$ 
 The joint model was fitted using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. This package utilizes the Bayesian methodology to estimate model parameters. The corresponding posterior parameter estimates are shown in Table~\ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and Table~\ref{tab:PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model for PSA are shown in the following Table~\ref{tab:D_matrix}:
 \begin{table}
 \small\sf\centering
-\caption{Estimated variance-covariance matrix $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0}, b_{1}, b_{2}, b_{3}, b_{4})}$ from the joint model fitted to the PRIAS dataset. The variances of the random effects are highlighted along the diagonal of the variance-covariance matrix.}
+\caption{\textbf{Estimated variance-covariance matrix} $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0}, b_{1}, b_{2}, b_{3}, b_{4})}$ from the joint model fitted to the PRIAS dataset. The variances of the random effects are highlighted along the diagonal of the variance-covariance matrix.}
 \label{tab:D_matrix}
 \begin{tabular}{lrrrrr}
 \hline
@@ -103,7 +103,7 @@ $b_{4}$ & 0.007 & 0.085 & 0.236 & 0.359 & \textbf{0.351} \\
 For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:long_model_psa}), in Table~\ref{tab:PSA_long} we can see that the age of the patient trivially affects the baseline ${\log_2(\mbox{PSA} + 1)}$ measurement. Since the longitudinal evolution of ${\log_2 (\mbox{PSA} + 1)}$ measurements is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Figure~\ref{fig:fitted_9subject_psa} we present plots of observed versus fitted PSA profiles for nine randomly selected patients. 
 \begin{table}
 \small\sf\centering
-\caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_psa}) for the PSA outcome.}
+\caption{\textbf{Parameters of the longitudinal sub-model}: Estimated mean and 95\% credible interval for parameters in Equation (\ref{eq:long_model_psa}).}
 \label{tab:PSA_long}
 \begin{tabular}{lrrrrr}
 \hline
@@ -122,7 +122,7 @@ $\sigma$ & 0.139    & 0.001 & 0.138 & 0.140  & \\
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/fitted_9subject_psa.eps}}
-\caption{Fitted versus observed ${\log_2 (\mbox{PSA} + 1)}$ profiles for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed PSA measurements, and time of the latest biopsy.}
+\caption{\textbf{Fitted versus observed ${\log_2 (\mbox{PSA} + 1)}$ profiles} for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed PSA measurements, and time of the latest biopsy.}
 \label{fig:fitted_9subject_psa}
 \end{figure}
 
@@ -130,7 +130,7 @@ For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the para
 
 \begin{table}
 \small\sf\centering
-\caption{Estimated mean and 95\% credible interval for the parameters of the relative risk sub-model (see Equation \ref{eq:rel_risk_model}) of the joint model fitted to the PRIAS dataset.}
+\caption{\textbf{Parameters of the relative risk sub-model}: Estimated mean and 95\% credible interval for the parameters in Equation (\ref{eq:rel_risk_model}).}
 \label{tab:PSA_survival}
 \begin{tabular}{lrrrrr}
 \hline
@@ -147,7 +147,7 @@ It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value an
 
 \begin{table}
 \small\sf\centering
-\caption{Hazard (of reclassification) ratio and 95\% credible interval (CI), for an increase in the variables of relative risk sub-model, from their 25-th percentile ($\mbox{P}_{25}$) to their 75-th percentile ($\mbox{P}_{75}$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
+\caption{\textbf{Hazard ratio and 95\% credible interval (CI) for reclassification}: Variables are on different scale and hence we compare an increase in the variables of relative risk sub-model from their 25-th percentile ($\mbox{P}_{25}$) to their 75-th percentile ($\mbox{P}_{75}$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
 \label{tab:PSA_survival_easy}
 \begin{tabular}{lrrr}
 \hline
