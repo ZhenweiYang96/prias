@@ -1,8 +1,8 @@
 getFixedSchedule = function(cur_visit_time, latest_survival_time=NA,
                             min_biopsy_gap = 1, biopsy_frequency=1, horizon=10){
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
   
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time])
+  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
   
   proposed_biopsy_times = c()
   min_biopsy_gap = max(min_biopsy_gap, biopsy_frequency)
@@ -38,8 +38,8 @@ getPRIASSchedule = function(object, patient_data, cur_visit_time=NA,
   }
   
   #making schedule now
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time])
+  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
+  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
   future_log2psaplus1_matrix = getExpectedFutureOutcomes(object, patient_data, latest_survival_time, 
                                                          psa_predict_times = visit_schedule, 
                                                          psaDist = "Tdist", M = M, addRandomError = T)$predicted_psa
@@ -113,8 +113,8 @@ getRiskBasedSchedule = function(object, patient_data, cur_visit_time=NA,
   }
   
   #making schedule now
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time])
+  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
+  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
   proposed_biopsy_times = c()
   
   latest_biopsy_time = latest_survival_time

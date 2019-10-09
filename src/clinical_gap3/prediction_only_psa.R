@@ -336,83 +336,86 @@ getExpectedFutureOutcomes = function(object, patient_data,
   log_baseline_hazard = NULL
   if(!is.null(survival_predict_times)){
     survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
-    
-    patient_age = patient_data$age[1]
-    baseline_hazard_knots=object$control$knots
-    baseline_hazard_ordSpline=object$control$ordSpline
-    
-    log_baseline_hazard = splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
-                                 x = survival_predict_times, outer.ok = T) %*% mcmc_Bs_gammas
-    
-    W_gammas = model.matrix(survivalFormula, data = data.frame(age = rep(patient_age, length(survival_predict_times)))) %*% mcmc_gammas
-    
-    alpha_psa_matrix = matrix(mcmc_alphas[1,], nrow = length(survival_predict_times), ncol=M, byrow = T)
-    alpha_psa_slope_matrix = matrix(mcmc_alphas[2,], nrow = length(survival_predict_times), ncol=M, byrow = T)
-    
-    fitted_psa_alpha = psaXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa, posterior_b) * alpha_psa_matrix
-    fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa[-c(1:2),], posterior_b[-1,]) * alpha_psa_slope_matrix
-    predicted_loghazard = log_baseline_hazard + W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha
-    
-    rownames(predicted_loghazard) = survival_predict_times
+    if(length(survival_predict_times)>0){
+      patient_age = patient_data$age[1]
+      baseline_hazard_knots=object$control$knots
+      baseline_hazard_ordSpline=object$control$ordSpline
+      
+      log_baseline_hazard = splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
+                                         x = survival_predict_times, outer.ok = T) %*% mcmc_Bs_gammas
+      
+      W_gammas = model.matrix(survivalFormula, data = data.frame(age = rep(patient_age, length(survival_predict_times)))) %*% mcmc_gammas
+      
+      alpha_psa_matrix = matrix(mcmc_alphas[1,], nrow = length(survival_predict_times), ncol=M, byrow = T)
+      alpha_psa_slope_matrix = matrix(mcmc_alphas[2,], nrow = length(survival_predict_times), ncol=M, byrow = T)
+      
+      fitted_psa_alpha = psaXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa, posterior_b) * alpha_psa_matrix
+      fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, survival_predict_times, mcmc_betas_psa[-c(1:2),], posterior_b[-1,]) * alpha_psa_slope_matrix
+      predicted_loghazard = log_baseline_hazard + W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha
+      
+      rownames(predicted_loghazard) = survival_predict_times
+    }
   }
   
   predicted_surv_prob = NULL
   if(!is.null(survival_predict_times)){
     survival_predict_times = survival_predict_times[survival_predict_times > latest_survival_time & survival_predict_times < earliest_failure_time]
     
-    integration_time_pairs = rep(c(latest_survival_time, survival_predict_times, earliest_failure_time), each=2)
-    integration_time_pairs = integration_time_pairs[!integration_time_pairs %in% c(0, Inf)]
-    integration_time_pairs = c(0, integration_time_pairs[-length(integration_time_pairs)])
-    
-    integration_time_pairs = split(integration_time_pairs, rep(1:(length(integration_time_pairs)/2), each=2))
-    
-    patient_age = patient_data$age[1]
-    baseline_hazard_knots=object$control$knots
-    baseline_hazard_ordSpline=object$control$ordSpline
-    
-    #here c(0,1) is just an arbitrary choice to check how many Quad points are used
-    n_quad_points = length(getGaussianQuadWeightsPoints(c(0,1))$points)
-    alpha_psa_matrix = matrix(mcmc_alphas[1,], nrow = n_quad_points, ncol=M, byrow = T)
-    alpha_psa_slope_matrix = matrix(mcmc_alphas[2,], nrow = n_quad_points, ncol=M, byrow = T)
-    W_gammas = model.matrix(survivalFormula, data = data.frame(age = rep(patient_age,n_quad_points))) %*% mcmc_gammas
-    
-    cum_hazard_M = rep(0, M)
-    surv_prob_M = list()
-    for(i in 1:length(integration_time_pairs)){
-      wp = getGaussianQuadWeightsPoints(integration_time_pairs[[i]])
-      GQ_h0_matrix =  splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
-                                   x = wp$points, outer.ok = T)
+    if(length(survival_predict_times)>0){
+      integration_time_pairs = rep(c(latest_survival_time, survival_predict_times, earliest_failure_time), each=2)
+      integration_time_pairs = integration_time_pairs[!integration_time_pairs %in% c(0, Inf)]
+      integration_time_pairs = c(0, integration_time_pairs[-length(integration_time_pairs)])
       
-      GQ_h0 = exp(GQ_h0_matrix %*% mcmc_Bs_gammas)
-      fitted_psa_alpha = psaXbetaZb(patient_age, wp$points, mcmc_betas_psa, posterior_b) * alpha_psa_matrix
-      fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, wp$points, mcmc_betas_psa[-c(1:2),], posterior_b[-1,]) * alpha_psa_slope_matrix
-      total_hazard = GQ_h0 * exp(W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha)
+      integration_time_pairs = split(integration_time_pairs, rep(1:(length(integration_time_pairs)/2), each=2))
       
-      cum_hazard_M = cum_hazard_M + apply(total_hazard, 2, FUN = function(x){sum(x * wp$weights)})
-      surv_prob_M[[i]] = exp(-cum_hazard_M)
+      patient_age = patient_data$age[1]
+      baseline_hazard_knots=object$control$knots
+      baseline_hazard_ordSpline=object$control$ordSpline
+      
+      #here c(0,1) is just an arbitrary choice to check how many Quad points are used
+      n_quad_points = length(getGaussianQuadWeightsPoints(c(0,1))$points)
+      alpha_psa_matrix = matrix(mcmc_alphas[1,], nrow = n_quad_points, ncol=M, byrow = T)
+      alpha_psa_slope_matrix = matrix(mcmc_alphas[2,], nrow = n_quad_points, ncol=M, byrow = T)
+      W_gammas = model.matrix(survivalFormula, data = data.frame(age = rep(patient_age,n_quad_points))) %*% mcmc_gammas
+      
+      cum_hazard_M = rep(0, M)
+      surv_prob_M = list()
+      for(i in 1:length(integration_time_pairs)){
+        wp = getGaussianQuadWeightsPoints(integration_time_pairs[[i]])
+        GQ_h0_matrix =  splineDesign(knots = baseline_hazard_knots, ord = baseline_hazard_ordSpline,
+                                     x = wp$points, outer.ok = T)
+        
+        GQ_h0 = exp(GQ_h0_matrix %*% mcmc_Bs_gammas)
+        fitted_psa_alpha = psaXbetaZb(patient_age, wp$points, mcmc_betas_psa, posterior_b) * alpha_psa_matrix
+        fitted_psa_slope_alpha = psaSlopeXbetaZb(patient_age, wp$points, mcmc_betas_psa[-c(1:2),], posterior_b[-1,]) * alpha_psa_slope_matrix
+        total_hazard = GQ_h0 * exp(W_gammas + fitted_psa_alpha + fitted_psa_slope_alpha)
+        
+        cum_hazard_M = cum_hazard_M + apply(total_hazard, 2, FUN = function(x){sum(x * wp$weights)})
+        surv_prob_M[[i]] = exp(-cum_hazard_M)
+      }
+      
+      if(latest_survival_time==0){
+        denominator_left = rep(1, M)
+      }else{
+        denominator_left = surv_prob_M[[1]]
+        surv_prob_M = surv_prob_M[2:length(surv_prob_M)]
+      }
+      
+      if(earliest_failure_time==Inf){
+        denominator_right = rep(0,M)
+      }else{
+        denominator_right = surv_prob_M[[length(surv_prob_M)]]
+        surv_prob_M = surv_prob_M[-length(surv_prob_M)]
+      }
+      
+      denominator = denominator_left - denominator_right
+      if(M==1){
+        predicted_surv_prob = matrix(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}), byrow = F)
+      }else{
+        predicted_surv_prob = t(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}))
+      }
+      rownames(predicted_surv_prob) = survival_predict_times
     }
-    
-    if(latest_survival_time==0){
-      denominator_left = rep(1, M)
-    }else{
-      denominator_left = surv_prob_M[[1]]
-      surv_prob_M = surv_prob_M[2:length(surv_prob_M)]
-    }
-    
-    if(earliest_failure_time==Inf){
-      denominator_right = rep(0,M)
-    }else{
-      denominator_right = surv_prob_M[[length(surv_prob_M)]]
-      surv_prob_M = surv_prob_M[-length(surv_prob_M)]
-    }
-    
-    denominator = denominator_left - denominator_right
-    if(M==1){
-      predicted_surv_prob = matrix(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}), byrow = F)
-    }else{
-      predicted_surv_prob = t(sapply(surv_prob_M, function(x){(x-denominator_right)/denominator}))
-    }
-    rownames(predicted_surv_prob) = survival_predict_times
   }
   
   return(list(predicted_surv_prob=predicted_surv_prob, 

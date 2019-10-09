@@ -2,7 +2,7 @@ load("models.Rdata")
 load("reclassification_df.Rdata")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
-source("oldScheduleCreator.R")
+source("scheduleCreator.R")
 
 YEAR_DIVIDER = 24 * 60 * 60 * 365
 SPSS_ORIGIN_DATE = "1582-10-14"
@@ -10,11 +10,11 @@ DATE_PRINT_FORMAT = "%b %e, %Y"
 DATE_PRINT_FORMAT_ABBREVIATED = "%b %Y"
 FONT_SIZE=15
 POINT_SIZE=4
-M=500
-CACHE_SIZE=200
+M=750
 SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
               "Yearly", "Every 2 Years", "PRIAS")
 DELAY_GAUGE_MAX = 24
+STEP_CUMRISK_SLIDER = 0.5
 
 DANGER_COLOR = "red"
 THEME_COLOR = "#2fa4e7"
@@ -307,7 +307,7 @@ riskGaugeGraph = function(mean_risk_prob, date="", danger_color_threshold = 0.25
     gauge_color = rgb(gauge_color[1], gauge_color[2], gauge_color[3], maxColorValue = 255)
   }
   
-  risk_label = paste0("\n\n\nCumulative-risk: ", round(mean_risk_prob*100),"%\n on ",date)
+  risk_label = paste0("\n\n\nCumulative-risk of reclassification: ", round(mean_risk_prob*100),"%\n on ",date)
   
   gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
     if(prop > danger_color_threshold){

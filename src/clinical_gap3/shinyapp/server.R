@@ -8,6 +8,7 @@ library(xlsx)
 
 shinyServer(function(input, output, session) {
   
+  options(warn = -1)
   #####################
   #Functions related to patient cache
   #####################
@@ -15,35 +16,68 @@ shinyServer(function(input, output, session) {
   patientCounter <- reactiveVal(0)
   biopsyCounter <- reactiveVal(0)
   
+  first_time <<- TRUE
+  
   resetPatientCache = function(){
     patient_cache <<- list(P_ID = -1, patient_data=NULL)
   }
   
   recalculateBiopsySchedules = function(){
-    patient_data = patient_cache$patient_data
-    biopsy_schedules = createSchedules(patient_data, patient_cache$current_visit_time,
-                                       patient_cache$latest_survival_time,
-                                       risk_thresholds = c(0.05, 0.1, 0.15),
-                                       input$month_gap_biopsy/12,
-                                       patient_cache$SURV_CACHE_TIMES, patient_cache$PSA_CACHE_TIMES,
-                                       patient_cache$SURV_CACHE_FULL, patient_cache$PSA_CACHE_FULL)
+    pat_data = patient_cache$patient_data
+    cur_visit_time = patient_cache$current_visit_time
+    latest_survival_time = patient_cache$latest_survival_time
+    min_biosy_gap = input$month_gap_biopsy/12
     
-    expected_delays = sapply(biopsy_schedules$schedules, "[[", "expected_delay") * 12
-    total_biopsies = sapply(biopsy_schedules$schedules, "[[", "total_biopsies")
+    set.seed(2019)
+    schedule_5perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
+                                          cur_visit_time = cur_visit_time, 
+                                          latest_survival_time = latest_survival_time,
+                                          risk_threshold = 0.05, min_biopsy_gap = min_biosy_gap, M = M,
+                                          horizon = MAX_FOLLOW_UP)
+    schedule_10perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
+                                           cur_visit_time = cur_visit_time, 
+                                           latest_survival_time = latest_survival_time,
+                                           risk_threshold = 0.1, min_biopsy_gap = min_biosy_gap, M = M,
+                                           horizon = MAX_FOLLOW_UP)
+    schedule_15perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
+                                           cur_visit_time = cur_visit_time, 
+                                           latest_survival_time = latest_survival_time,
+                                           risk_threshold = 0.15, min_biopsy_gap = min_biosy_gap, M = M,
+                                           horizon = MAX_FOLLOW_UP)
     
-    #some schedules never schedule a biopsy because risk threshold is too high
-    #...we show a biopsy at year MAX_FOLLOW_UP for them
-    total_biopsies[total_biopsies == 0] = 1
-    biopsy_times = lapply(biopsy_schedules$schedules, "[[", "biopsy_times")
-    empty_schedules = sapply(biopsy_times, is.null)
-    if(any(empty_schedules)){
-      biopsy_times[which(empty_schedules)] = MAX_FOLLOW_UP
-    }
+    schedule_annual = getFixedSchedule(cur_visit_time = cur_visit_time, 
+                                       latest_survival_time = latest_survival_time,
+                                       min_biopsy_gap = min_biosy_gap, biopsy_frequency = 1, 
+                                       horizon = MAX_FOLLOW_UP)
+    schedule_biennial = getFixedSchedule(cur_visit_time = cur_visit_time, 
+                                         latest_survival_time = latest_survival_time,
+                                         min_biopsy_gap = min_biosy_gap, biopsy_frequency = 2, 
+                                         horizon = MAX_FOLLOW_UP)
     
-    biopsy_times = do.call('c', biopsy_times)
+    
+    schedule_prias = getPRIASSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
+                                      cur_visit_time = cur_visit_time, latest_survival_time = latest_survival_time,
+                                      min_biopsy_gap = 1, M = M, horizon = MAX_FOLLOW_UP)
+    
+    consequences_list = lapply(list(schedule_5perc, schedule_10perc,schedule_15perc,
+                                    schedule_annual,schedule_biennial, schedule_prias),
+                               FUN = function(x){
+                                 set.seed(2019);
+                                 getConsequences(object=mvJoint_psa_time_scaled, 
+                                                 patient_data=pat_data,
+                                                 cur_visit_time = cur_visit_time, 
+                                                 proposed_biopsy_times = x,
+                                                 latest_survival_time = latest_survival_time, M=M,
+                                                 horizon=MAX_FOLLOW_UP)
+                               })
+    
+    expected_delays = sapply(consequences_list, "[[", "expected_delay")*12
+    practical_biopsy_times = lapply(consequences_list, "[[", "practical_biopsy_times")
+    total_biopsies = sapply(practical_biopsy_times, length)
+    
     patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
-                                                        Schedule=rep(SCHEDULES, total_biopsies),
-                                                        biopsy_times)
+                                                        Schedule=rep(SCHEDULES, total_biopsies), 
+                                                        biopsy_times=unlist(practical_biopsy_times))  
     
     patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
                                                            schedule=SCHEDULES,
@@ -73,39 +107,39 @@ shinyServer(function(input, output, session) {
                            latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)]),
                            current_visit_time = max(patient_data$year_visit))
     
-    set.seed(2019)
-    latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
-    
-    patient_cache$SURV_CACHE_TIMES <<- c(patient_cache$latest_survival_time, 
-                                         seq(patient_cache$latest_survival_time+1/365, MAX_FOLLOW_UP, length.out = CACHE_SIZE-1))
-    patient_cache$PSA_CACHE_TIMES <<- c(seq(0, patient_cache$latest_survival_time - 1/365, length.out = 20), patient_cache$SURV_CACHE_TIMES)
-    
-    pred_res = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, patient_data, 
-                                         latest_survival_time, 
-                                         survival_predict_times = patient_cache$SURV_CACHE_TIMES[-1],
-                                         psa_predict_times = patient_cache$PSA_CACHE_TIMES, 
-                                         psaDist = "Tdist", M = M, addRandomError = T)
-    
-    patient_cache$PSA_CACHE_FULL <<- pred_res$predicted_psa
-    patient_cache$SURV_CACHE_MEAN <<- c(1,rowMeans(pred_res$predicted_surv_prob))
-    patient_cache$SURV_CACHE_FULL <<- rbind(rep(1, M), pred_res$predicted_surv_prob)
-    
-    #slider on tab 2
     cur_visit_time_in_secs = patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER
     max_visit_time_in_secs = patient_cache$dom_diagnosis + MAX_FOLLOW_UP * YEAR_DIVIDER
     
-    sliderLabel = paste0("Follow-up time since current visit on ", 
-                         getHumanReadableDate(cur_visit_time_in_secs, abbreviated = F),":")
+    set.seed(2019)
+    latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
     
-    max_slider = round_any(MAX_FOLLOW_UP - patient_cache$current_visit_time, accuracy=0.5)
-    # updateSliderInput(session, "risk_pred_time", value = 0,
-    #                   max = max_slider, label = sliderLabel)
+    patient_cache$SURV_CACHE_TIMES <<- unique(c(seq(patient_cache$current_visit_time, MAX_FOLLOW_UP, STEP_CUMRISK_SLIDER),MAX_FOLLOW_UP))
+    patient_cache$PSA_CACHE_TIMES <<- seq(0, MAX_FOLLOW_UP, length.out = 50)
+    
+    pred_res = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, patient_data, 
+                                         latest_survival_time, 
+                                         survival_predict_times = patient_cache$SURV_CACHE_TIMES,
+                                         psa_predict_times = patient_cache$PSA_CACHE_TIMES, 
+                                         psaDist = "Tdist", M = M, addRandomError = F)
+    
+    patient_cache$PSA_CACHE_FULL <<- pred_res$predicted_psa
+    if(latest_survival_time == MAX_FOLLOW_UP){
+      patient_cache$SURV_CACHE_MEAN = 1
+    }else{
+      patient_cache$SURV_CACHE_MEAN <<- rowMeans(pred_res$predicted_surv_prob, na.rm = T)
+      if(patient_cache$current_visit_time == latest_survival_time){
+        patient_cache$SURV_CACHE_MEAN <<- c(1, patient_cache$SURV_CACHE_MEAN)
+      }
+    }
+    
+    #slider on tab 2
     updateSliderInput(session, "risk_pred_time", value = as.POSIXct(cur_visit_time_in_secs, origin = SPSS_ORIGIN_DATE),
                       max = as.POSIXct(max_visit_time_in_secs, origin = SPSS_ORIGIN_DATE), 
                       min = as.POSIXct(cur_visit_time_in_secs, origin = SPSS_ORIGIN_DATE),
                       step = NULL,
-                      label = sliderLabel,
+                      label = "Choose a time to predict cumulative-risk of reclassification:",
                       timeFormat = "%b %Y")
+    
     recalculateBiopsySchedules()
     
     patientCounter(patientCounter() + 1)
@@ -125,42 +159,42 @@ shinyServer(function(input, output, session) {
     title="Selected Cohort: PRIAS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 6 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   cohort_change_modal_Toronto = modalDialog(
     title="Selected Cohort: Toronto AS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 8 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   cohort_change_modal_Hopkins = modalDialog(
     title="Selected Cohort: Johns Hopkins AS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 7 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   cohort_change_modal_MSKCC = modalDialog(
     title="Selected Cohort: MSKCC AS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 6 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   cohort_change_modal_KCL = modalDialog(
     title="Selected Cohort: KCL (London) AS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 3 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   cohort_change_modal_MUSIC = modalDialog(
     title="Selected Cohort: MUSIC AS",
     tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 2 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
-    footer = modalButton("Dismiss"),size = "m", fade = F, easyClose = T
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
   MODAL_MAPPING = list("PRIAS"=cohort_change_modal_PRIAS,
@@ -245,7 +279,13 @@ shinyServer(function(input, output, session) {
     mvJoint_psa_time_scaled <<- models[[input$cohort]]
     MAX_FOLLOW_UP <<- MAX_FOLLOW_UP_MAPPING[input$cohort]
     CURRENT_COHORT_NAME <<- names(COHORT_MAPPING[which(COHORT_MAPPING==input$cohort)])
-    showModal(MODAL_MAPPING[[input$cohort]])
+    
+    if(!first_time){
+      showModal(MODAL_MAPPING[[input$cohort]])
+    } else{
+      first_time <<- FALSE
+    }
+    
     resetPatientCache()
     patientCounter(patientCounter() + 1)
   })
@@ -338,12 +378,6 @@ shinyServer(function(input, output, session) {
         latest_gleason_grade = "1 (Gleason 3+3)"
       } 
       
-      # return(data.frame("Data"=c("ID", "Age (years)", 
-      #                            "First Visit", "Current Visit", "Total Visits", 
-      #                            "Latest Biopsy", "Latest Gleason","Total Biopsies"),
-      #                   "Value"=c(patient_cache$P_ID, age,
-      #                             first_visit_date,current_visit_date, nr_visits,
-      #                             last_biopsy_date, latest_gleason,nr_biopsies)))
       return(data.frame("Data"=c("Age (years)", 
                                  "First Visit", "Current Visit", "Total Visits", 
                                  "Latest Biopsy", "Latest Gleason Grade","Total Biopsies"),
@@ -358,13 +392,12 @@ shinyServer(function(input, output, session) {
   
   output$graph_obs_psa <- renderPlot({
     if(patientCounter()>0 & !is.null(patient_cache$patient_data)){
-      sampled_psa_indices = c(1:20, seq(22, length(patient_cache$PSA_CACHE_TIMES), by = 7))
       return(psaObsDataGraph(patient_cache$patient_data,
                              patient_cache$dom_diagnosis,
                              patient_cache$current_visit_time,
                              patient_cache$latest_survival_time,
-                             patient_cache$PSA_CACHE_TIMES[sampled_psa_indices],
-                             patient_cache$PSA_CACHE_FULL[sampled_psa_indices,]))
+                             patient_cache$PSA_CACHE_TIMES,
+                             patient_cache$PSA_CACHE_FULL))
     }else{
       return(NULL)
     }
@@ -373,6 +406,34 @@ shinyServer(function(input, output, session) {
   #############################
   # Output on Tab 2 showing patient risk
   #############################
+  output$table_obs_data_cumrisk <- renderTable({
+    if(patientCounter()>0 & !is.null(patient_cache$patient_data)){
+      patient_data = patient_cache$patient_data
+      
+      first_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis)
+      last_biopsy_date = getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$latest_survival_time*YEAR_DIVIDER)
+      current_visit_date = getHumanReadableDate(patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER)
+      nr_biopsies = sum(!is.na(patient_data$gleason_sum))
+      nr_visits = nrow(patient_data)
+      age = round(patient_data$age[1])
+      latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
+      
+      if(latest_gleason <= 6){
+        latest_gleason_grade = "1 (Gleason 3+3)"
+      } 
+      
+      return(data.frame("Data"=c("Age (years)", 
+                                 "First Visit", "Current Visit", "Total Visits", 
+                                 "Latest Biopsy", "Latest Gleason Grade", "Total Biopsies"),
+                        "Value"=c(age,
+                                  first_visit_date,current_visit_date, nr_visits,
+                                  last_biopsy_date, latest_gleason_grade, nr_biopsies)))
+      
+    }else{
+      return(NULL)
+    }
+  })
+  
   output$cum_risk_gauge = renderPlot({
     if(patientCounter()>0 & input$risk_pred_time!=0 & !is.null(patient_cache$patient_data)){
       futureTime = as.numeric((difftime(input$risk_pred_time, SPSS_ORIGIN_DATE, units='secs') - patient_cache$dom_diagnosis)/YEAR_DIVIDER)
@@ -391,7 +452,9 @@ shinyServer(function(input, output, session) {
   #############################
   observeEvent(input$month_gap_biopsy,{
     if(patientCounter()>0 & is.numeric(input$month_gap_biopsy) & !is.null(patient_cache$patient_data)){
+      showModal(pleaseWaitModal)
       recalculateBiopsySchedules()
+      removeModal()
     }
   })
   
