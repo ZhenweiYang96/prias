@@ -1,16 +1,16 @@
 % !TEX root =  ../main_manuscript.tex 
 \begin{abstract}
-\texttt{Background}: Prostate cancer patients enrolled in active surveillance (AS) undergo repeat biopsies. When biopsy Gleason~grade~$\geq$~2 (reclassification), treatment is commonly advised. Many patients never experience reclassification, yet undergo biopsies frequently.\\
+\texttt{Background}: Prostate cancer active surveillance (AS) patients undergo repeat biopsies. Treatment commonly advised when biopsy Gleason~grade~$\geq$~2 (reclassification). Many patients never experience reclassification, yet undergo biopsies frequently. Reclassification risk based personalized biopsy schedules may reduce patient burden.\\
 
-\texttt{Objective}: Better balance the number of biopsies and time delay in detection of reclassification.\\
+\texttt{Objective}: Develop web-application to assist patients/doctors make better biopsy decisions than fixed biopsies.\\
 
-\texttt{Design, Setting, and Participants}: World's largest AS study, PRIAS; 7813 patients, 1134 experienced reclassification; prostate-specific antigen (PSA) and repeat biopsy data available.\\
+\texttt{Design, Setting, and Participants}: Model development: World's largest AS study PRIAS, 7813 patients, 1134 experienced reclassification; External validation: largest five GAP3 database cohorts; Data: prostate-specific antigen (PSA), repeat biopsy Gleason grade.\\
 
-\texttt{Outcome Measurements, and Statistical Analysis}: Bayesian joint model based on accumulated clinical data used to predict patient-specific risk of reclassification. This risk was utilized to schedule personalized biopsies. Personalized and fixed schedules compared on number of biopsies and model estimated time delay in detection of reclassification for each schedule. Model validated externally in largest five AS cohorts of GAP3 database. Methodology implemented in a web-application.\\
+\texttt{Outcome Measurements, and Statistical Analysis}: Bayesian joint model fitted to PRIAS dataset. Model predicted patient-specific reclassification risk utilized for personalized biopsy decisions. Model validated in GAP3 cohorts using risk prediction error, calibration, area under ROC (AUC). Risk calculator, personalized schedules implemented in web-application, for PRIAS and validated GAP3 cohorts.\\
 
-\texttt{Results and Limitations}: Rate of reclassification in PRIAS was 35\% at year 5 of follow-up. PSA velocity stronger predictor of reclassification (Hazard~Ratio:~2.47, 95\%CI:~1.93--2.99), than PSA value (Hazard~Ratio:~0.99, 95\%CI:~0.89--1.11). Validation: Area under ROC curve for risk predictions between 0.55 and 0.75 for PRIAS, Johns Hopkins, Toronto, and Memorial Sloan Kettering AS cohorts. Model required recalibration for all external cohorts except Johns Hopkins cohort.\\
+\texttt{Results and Limitations}: Reclassification rate at year five of follow-up: 35\% in PRIAS, at most 50\% in GAP3 cohorts. PSA velocity stronger predictor of reclassification (Hazard~Ratio:~2.47, 95\%CI:~1.93--2.99), than PSA value (Hazard~Ratio:~0.99, 95\%CI:~0.89--1.11). Validation: Moderate AUC (0.55--0.75) in PRIAS and GAP3 cohorts. Moderate prediction error (0.1--0.3) in GAP3 cohorts with Reclassification rate similar to PRIAS, large (0.3--0.45) otherwise. Model recalibrated for external GAP3 cohorts.\\
 
-\texttt{Conclusions}: We used risk predictions of reclassification to schedule personalized biopsies for AS patients. To assist patients/doctors in shared decision making of appropriate biopsy schedule, we provided them expected time delay in detection of reclassification, for personalized/fixed schedules. Our model is externally validated, and our methodology is available for multiple AS cohorts as a web-application.\\
+\texttt{Conclusions}: We successfully developed and validated web-application for predicting reclassification risks, and risk based personalized biopsy decisions, in prostate cancer AS. Available for PRIAS, and largest five GAP3 database cohorts. Enables shared decision making of biopsy schedules by comparing fixed and personalized schedules on total biopsies and expected time delay in detection of reclassification.\\
 
-\texttt{Patient Summary}: Personalized biopsy schedules are a novel alternative to fixed biopsy schedules. They rely on patient-specific risk of reclassification and can offer better balance between number of biopsies and time delay in detection of reclassification than current schedules.
+\texttt{Patient Summary}: Reclassification risk based personalized biopsy schedules are novel alternative to fixed biopsy schedules. They are implemented in our web-application. May offer better balance between total biopsies and time delay in detection of reclassification than fixed schedules.
 \end{abstract}

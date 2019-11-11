@@ -44,27 +44,39 @@ prias_final.id$latest_survival_time[prias_final.id$latest_survival_time==0] = 0.
 survModel = survreg(Surv(latest_survival_time, earliest_failure_time, type = "interval2") ~ 
                       age, x = T,
                     data = prias_final.id, model = TRUE)
-save(survModel, file="Rdata/gap3/PRIAS_2019/survModel.Rdata", version = 2)
+save(survModel, file="Rdata/lastpaper/survModel.Rdata", version = 2)
 
-prias_psa_dre = droplevels(prias_long_final[!(is.na(prias_long_final$psa) & is.na(prias_long_final$palpable_dre)),])
+
 startTime_mvglmer = Sys.time()
-mvglmer_psa_dre_time_scaled = mvglmer(list(palpable_dre ~ age + I((year_visit-2)/2)  + 
-                                         (I((year_visit-2)/2)|P_ID),
-                                       
-                                       log2psaplus1 ~ age +
-                                         ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2) + 
-                                         (ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)|P_ID)),
-                                  data=prias_psa_dre, families = list(binomial, gaussian), engine = "STAN")
-
-mvglmer_dre_psa = mvglmer(list(palpable_dre~age + year_visit  + 
+mvglmer_dre_psa = mvglmer(list(palpable_dre~I(age-65) +  I((age-65)^2) + year_visit  + 
                                  (year_visit|P_ID),
                                
-                               log2psaplus1 ~ age + 
+                               log2psaplus1 ~ I(age-65) +  I((age-65)^2) +
                                  ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)) + 
                                  (ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID)),
                           
                           data=prias_psa_dre, families = list(binomial, gaussian), engine = "STAN",
-                          control = list(n.iter=10000))
+                          control = list(n.iter=1000))
+endTime_mvglmer = Sys.time()
+
+prias_psa_dre = droplevels(prias_long_final[!(is.na(prias_long_final$psa) & is.na(prias_long_final$palpable_dre)),])
+startTime_mvglmer = Sys.time()
+mvglmer_psa_dre_time_scaled = mvglmer(list(palpable_dre ~ I(age-65) + I((year_visit-2)/2)  + 
+                                         (I((year_visit-2)/2)|P_ID),
+                                       
+                                       log2psaplus1 ~ I(age-65) +
+                                         ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2) + 
+                                         (ns(I((year_visit-2)/2), knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)|P_ID)),
+                                  data=prias_psa_dre, families = list(binomial, gaussian), engine = "STAN")
+
+mvglmer_dre_psa = mvglmer(list(palpable_dre~I(age-65) + year_visit  + 
+                                 (year_visit|P_ID),
+                               
+                               log2psaplus1 ~ I(age-65) + 
+                                 ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3)) + 
+                                 (ns(year_visit, knots=c(0.5, 1.3, 3), Boundary.knots=c(0, 6.3))|P_ID)),
+                          
+                          data=prias_psa_dre, families = list(binomial, gaussian), engine = "STAN", control = list(n.iter=3000))
 
 endTime_mvglmer = Sys.time()
 print(endTime_mvglmer - startTime_mvglmer)

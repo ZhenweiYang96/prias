@@ -2,7 +2,7 @@ compareSchedules = function(object, patient_data, cur_visit_time=NA, latest_surv
                             risk_thresholds = c(0.05, 0.1, 0.15), 
                             weight_by_horizon_risk=T,
                             min_biopsy_gap = 1,
-                            M=500, CACHE_SIZE=200, no_fixed=F){
+                            M=750, CACHE_SIZE=200, no_fixed=F){
   
   if(is.na(cur_visit_time)){
     cur_visit_time = min(max(patient_data$year_visit), MAX_FOLLOW_UP)
@@ -17,7 +17,6 @@ compareSchedules = function(object, patient_data, cur_visit_time=NA, latest_surv
   if(cur_visit_time < latest_survival_time){
     stop("Current visit time should be more than latest survival time")
   }
-  
   
   SURV_CACHE_TIMES = c(latest_survival_time, seq(latest_survival_time+1/365, MAX_FOLLOW_UP, length.out = CACHE_SIZE-1))
   pred_res=getExpectedFutureOutcomes(object, patient_data, latest_survival_time, 

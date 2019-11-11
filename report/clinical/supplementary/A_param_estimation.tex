@@ -24,11 +24,11 @@ To model the impact of PSA measurements on the risk of reclassification, our joi
 \begin{equation}
 \label{eq:rel_risk_model}
 \begin{split}
-    h_i(t) &= h_0(t) \exp\Big(\gamma \mbox{age}_i +\alpha_{1} m_{i}(t) + \alpha_{2} \frac{\partial m_{i}(t)}{\partial {t}}\Big),\\
+    h_i(t) &= h_0(t) \exp\Big(\gamma \mbox{age}_i +\alpha_{1} m_{i}(t) + \alpha_{2} \frac{\mathrm{d}m_{i}(t)}{\mathrm{d}{t}}\Big),\\
     R_i(t) &= \exp\Big\{-\int_0^{t} h_i(s)\mathrm{d}{s}\Big\},
     \end{split}
 \end{equation}
-where, $\gamma$ is the parameter for the effect of age. The impact of PSA on the hazard of reclassification is modeled in two ways, namely the impact of the error free underlying PSA value $m_{i}(t)$ (see Panel~A, Figure~\ref{fig:jmExplanationPlot_113}), and the impact of the underlying PSA velocity $\partial m_{i}(t)/\partial {t}$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_113}). The corresponding parameters are $\alpha_{1}$ and $\alpha_{2}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}. More specifically:
+where, $\gamma$ is the parameter for the effect of age. The impact of PSA on the hazard of reclassification is modeled in two ways, namely the impact of the error free underlying PSA value $m_{i}(t)$ (see Panel~A, Figure~\ref{fig:jmExplanationPlot_113}), and the impact of the underlying PSA velocity $\mathrm{d}m_{i}(t)/\mathrm{d}{t}$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_113}). The corresponding parameters are $\alpha_{1}$ and $\alpha_{2}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}. More specifically:
 \begin{equation*}
 \log{h_0(t)} = \gamma_{h_0,0} + \sum_{q=1}^Q \gamma_{h_0,q} B_q(t, \boldsymbol{v}),
 \end{equation*}
@@ -48,18 +48,18 @@ We estimate the parameters of the joint model using Markov chain Monte Carlo (MC
 \begin{align*}
 p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \boldsymbol{y}_{i}, \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})\\
 & \propto \prod_{i=1}^n p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_{i} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta}),\\
-p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) &= \frac{1}{\sqrt{(2 \pi)^q \text{det}(\boldsymbol{D})}} \exp(\boldsymbol{b}_i^T \boldsymbol{D}^{-1} \boldsymbol{b}_i),
+p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) &= \frac{1}{\sqrt{(2 \pi)^q \text{det}(\boldsymbol{D})}} \exp\bigg\{-\dfrac{1}{2}(\boldsymbol{b}_i^T \boldsymbol{D}^{-1} \boldsymbol{b}_i)\bigg\},
 \end{align*}
 where, the likelihood contribution of the PSA outcome, conditional on the random effects is:
 \begin{equation*}
-p(\boldsymbol{y}_{i} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) = \frac{1}{\big(\sqrt{2 \pi \sigma^2}\big)^{n_{i}}} \exp\bigg(-\frac{{\lVert{\boldsymbol{y}_{i} - \boldsymbol{m}_{i}}\rVert}^2}{\sigma^2}\bigg),
+p(\boldsymbol{y}_{i} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) = \frac{1}{\big(\sqrt{2 \pi \sigma^2}\big)^{n_{i}}} \exp\bigg\{-\frac{\sum_{j=1}^{n_i}{({y}_{ij} - {m}_{ij})}^2}{2\sigma^2}\bigg\},
 \end{equation*}
-The likelihood contribution of the time of reclassification outcome is given by:
+where $n_i$ is the number of PSA measurements of the $i$-th patient. The likelihood contribution of the time of reclassification outcome is given by:
 \begin{equation}
 \label{web_eq : likelihood_contribution_survival}
 p(l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}) = \exp\Big\{-\int_0^{l_i} h_i(s)\mathrm{d}{s}\Big\} - \exp\Big\{-\int_0^{r_i}h_i(s)\mathrm{d}{s}\Big\}.
 \end{equation}
-The integral in (\ref{web_eq : likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate it.
+The integrals in (\ref{web_eq : likelihood_contribution_survival}) do not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate them.
 
 We use independent normal priors with zero mean and variance 100 for the fixed effects $\{\beta_{0},\ldots,\beta_{5}\}$, and inverse Gamma prior with shape and rate both equal to 0.01 for the parameter $\sigma^2$. For the variance-covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to 5 (number of random effects). For the relative risk model's parameter $\gamma$ and the association parameters $\alpha_{1}, \alpha_{2}$, we use independent normal priors with zero mean and variance 100.
 

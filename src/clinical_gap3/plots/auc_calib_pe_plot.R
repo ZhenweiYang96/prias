@@ -11,31 +11,25 @@ auc_recalibdf = auc_df[auc_df$model=="Recalibrated",]
 
 auc_origplot = ggplot(data=auc_origdf) + 
   geom_line(aes(x=t_horiz, y=mean, group=cohort, color=cohort)) + 
-  scale_y_continuous(breaks = seq(0,1,0.25), limits=c(0,1)) + 
   scale_color_manual(values = colormap)+
-  geom_hline(yintercept = 0.5, linetype='dashed') + 
-  geom_label(aes(x=4.5, y=0.4), label="0.5 is the AUC\nfor random discrimination", 
-             size=3.5) +
-  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8)) + 
+  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8.1)) + 
   theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
-  ylab("AUC (higher is better)") + xlab("Follow-up time (years)")
+  ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
+  ylim(0.5,1)
 
 auc_recalibplot = ggplot(data=auc_recalibdf) + 
   geom_line(aes(x=t_horiz, y=mean, group=cohort, color=cohort)) + 
-  scale_y_continuous(breaks = seq(0,1,0.25), limits=c(0,1)) + 
   scale_color_manual(values = colormap)+
-  geom_hline(yintercept = 0.5, linetype='dashed') + 
-  geom_label(aes(x=4.5, y=0.4), label="0.5 is the AUC\nfor random discrimination", 
-             size=3.5) +
-  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8)) + 
+  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8.1)) + 
   theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
-  ylab("AUC (higher is better)") + xlab("Follow-up time (years)")
+  ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
+  ylim(0.5,1)
 
 mapeplot = ggplot(data=pe_df) + 
   geom_line(aes(x=t_horiz, y=mean_mape, group=cohort, color=cohort)) + 
   scale_color_manual(values = colormap)+
   scale_y_continuous(breaks = seq(0,1,0.25), limits=c(0,1)) + 
-  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8)) + 
+  scale_x_continuous(breaks = seq(1,8, by=1), limits = c(1,8.1)) + 
   theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
   ylab("MAPE (lower is better)") + xlab("Follow-up time (years)")
 

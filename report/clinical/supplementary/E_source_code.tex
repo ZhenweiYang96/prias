@@ -4,7 +4,7 @@ The R code for fitting the joint model to the PRIAS dataset, is at \url{https://
 
 \subsection{Fitting the Joint Model to the PRIAS dataset}
 \textbf{Accessing the dataset:}
-The PRIAS dataset is not openly accessible. However, access to the database can be requested via the contact links at \url{www.prias-project.org}.\\
+The PRIAS dataset is not openly accessible. However, access to the database can be requested via the contact links at \url{https://www.prias-project.org}.\\
 
 \textbf{Formatting the dataset:}
 This dataset however is in the so-called wide format and also requires removal of incorrect entries. This can be done via the R script \url{R_HOME/dataset_cleaning.R}. This will lead to two R objects, namely `prias\_final.id' and `prias\_long\_final'. The `prias\_final.id' object contains information about time of reclassification for PRIAS patients. The `prias\_long\_final' object contains longitudinal PSA measurements, the time of biopsies and results of biopsies.\\

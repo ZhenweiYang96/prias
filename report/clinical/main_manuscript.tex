@@ -12,6 +12,7 @@
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[R]{\thepage}
 
+\usepackage{fig2vect}
 \usepackage{graphicx}
 \usepackage{svg}
 \usepackage{booktabs}
@@ -53,8 +54,8 @@
 
 \begin{frontmatter}
 
-\title{Personalized Biopsies in Prostate Cancer Active Surveillance\tnoteref{wordcount}}
-\tnotetext[wordcount]{Word Count Abstract: 300; Word Count Text: 2509}
+\title{A Ready To Use Web-Application Providing a Personalized Biopsy Schedule for Men With Low-Risk PCa Under Active Surveillance\tnoteref{wordcount}}
+\tnotetext[wordcount]{Word Count Abstract: 300; Word Count Text: 2500}
 
 %% Group authors per affiliation:
 \author[1]{Anirudh Tomer\corref{corauthor}, MSc} 
@@ -67,7 +68,7 @@
 \author[3]{Monique J. Roobol, PhD}
 \ead{m.roobol@erasmusmc.nl}
 
-\author[4]{Anders Bjartell, PhD}
+\author[4]{Anders Bjartell, MD, PhD}
 \ead{anders.bjartell@med.lu.se}
 
 \author[2,5]{Ewout W. Steyerberg, PhD}
@@ -98,27 +99,29 @@ Active Surveillance\sep Biopsies \sep Personalized Medicine\sep Prostate Cancer 
 
 \linenumbers
 
-\include{mainmatter/introduction}
-%Intro: 492 words
-%Cumsum: 492 words
-\include{mainmatter/study_cohort}
-%Study cohort: 180 words
-%Cumsum: 672 words
-\include{mainmatter/stat_analysis}
-%Stat analysis: 727 words
-%Cumsum: 1399 words
-\include{mainmatter/result}
-%Stat analysis: 349 words
-%Cumsum: 1748 words
-\include{mainmatter/discussion}
-%Stat analysis: 631 words
-%Cumsum: 2379 words
-\include{mainmatter/conclusion}
-%Conclusion: 128 words
-%Cumsum: 2507 words
+\input{mainmatter/introduction}
+%Intro: 479 words
+%Cumsum: 479 words
+\input{mainmatter/study_cohort}
+%Study cohort: 194 words
+%Cumsum: 673 words
+\input{mainmatter/stat_analysis}
+%Stat analysis: 710 words
+%Cumsum: 1383 words
+\input{mainmatter/result}
+%Stat analysis: 363 words
+%Cumsum: 1746 words
+\input{mainmatter/discussion}
+%Stat analysis: 646 words
+%Cumsum: 2392 words
+\input{mainmatter/conclusion}
+%Conclusion: 108 words
+%Cumsum: 2500 words
 
-\include{mainmatter/author_contrib}
-\include{mainmatter/acknowledment}
+\input{mainmatter/author_contrib}
+\input{mainmatter/acknowledment}
+\section*{Appendix A. Members of The Movember Foundation’s Global Action Plan Prostate Cancer Active Surveillance (GAP3) consortium}
+\input{mainmatter/gap3members}
 
 \bibliography{bibliography}
 
