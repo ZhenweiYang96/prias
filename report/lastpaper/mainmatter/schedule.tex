@@ -1,0 +1,53 @@
+% !TEX root =  ../main_manuscript.tex 
+\section{Personalized Schedule for Biopsies}
+\label{sec:schedule}
+We intend to develop a personalized schedule of biopsies for a new patient $j$ not present in training dataset $\mathcal{D}_n$. The schedule of longitudinal measurements remains fixed. Let $T^*_j$ be the true time of his Gleason upgrade, ${t < T^*_j}$ be the time of his latest negative biopsy, and ${s > t}$ be the time of his latest visit for longitudinal measurements.
+
+\subsection{Cumulative-risk of Gleason Upgrade}
+\label{subsec:cum_risk}
+The first step is to consolidate his observed clinical data, namely all longitudinal PSA $\mathcal{Y}_{pj}(s)$ and DRE $\mathcal{Y}_{dj}(s)$ measurements, and previous biopsy results ${T^*_j > t}$, into a patient-specific cumulative risk of Gleason upgrade. Since the current follow-up period of PRIAS is limited, we are able to estimate this risk only for the first ten years of follow-up. It is given by:
+\begin{equation}
+\label{eq:cumulative_risk}
+R_j(u \mid t, s) = p\Big\{T^*_j \leq u \mid T^*_j > t, \mathcal{Y}_{pj}(s), \mathcal{Y}_{dj}(s), \mathcal{D}_n\Big\}, \quad s \leq u \leq 10.
+\end{equation}
+An advantage of this cumulative-risk is that it updates as more longitudinal or biopsy data becomes available over follow-up.
+
+\subsection{Schedule of Biopsies}
+Our aim is to employ this cumulative-risk function in the personalized biopsy schedule. However, in line with the protocols of most AS cohorts~\citep{nieboer2018active}, we first schedule a compulsory biopsy at year one of follow-up. This promises early detection of Gleason upgrade for patients misdiagnosed as low-grade cancer patients, or patients who chose AS despite having a higher grade at diagnosis. We also maintain a recommended minimum gap of one year between consecutive biopsies~\citep{bokhorst2016decade}. Consequently, we schedule personalized biopsies starting from year two until year ten (Equation~\ref{eq:cumulative_risk}) of follow-up. The added benefit of this approach is that due to the longitudinal measurements accumulated over two years, and year one biopsy results, we are able to make reasonably accurate predictions of the cumulative-risk of Gleason upgrade.
+
+We exploit PRIAS cohort's fixed schedule of longitudinal measurements ${L=\{2, 2.5 \ldots 10\}}$ between year two and ten, for the personalized biopsy schedule. More specifically, we schedule a biopsy at all those future visits where the conditional cumulative-risk of Gleason upgrade is larger than a certain threshold $0 \leq \kappa \leq 1$ (e.g., 10\% risk). The resulting personalized schedule of biopsies $B_j^{\kappa}$ is given by:
+\begin{equation}
+\label{eq:personalized_schedule}
+\begin{split}
+B_j^{\kappa} &= \Big\{b_{jk} \epsilon L \mid R_j(b_{jk} \mid b_{jk-1}, s) \geq \kappa \land (b_{jk}-b_{jk-1}\geq 1) \Big\},
+\end{split}
+\end{equation}
+where $b_{jk}$ is the time of the $k$-th biopsy for the $j$-th patient. The conditional cumulative-risk of Gleason upgrade denoted by $R_j(b_{jk} \mid b_{jk-1}, s)$ is defined as in Equation~(\ref{eq:cumulative_risk}). In this risk the contribution of the observed longitudinal data $\mathcal{Y}_{pj}(s)$ and $\mathcal{Y}_{dj}(s)$ does not change while scheduling subsequent biopsies. However, the `conditional' part here is that successive $k$-th biopsy at time $b_{jk}$ is scheduled by accounting for the possibility that Gleason upgrade may not have occurred until the previously scheduled biopsy $T^*_j > b_{jk-1}$.
+
+The personalized schedule Equation~\ref{eq:personalized_schedule} is updated as more patient data becomes available over follow-up.
+
+\subsection{Risk Threshold $\kappa$}
+The risk threshold $\kappa$ controls the timing and total number of biopsies in the schedule $B_j^{\kappa}$. Through the timing of biopsies, $\kappa$ also indirectly affects the time delay that may occur in detection of Gleason upgrade. Hence, $\kappa$ should be chosen while balancing both the number of biopsies (burden), and the delay in detection of Gleason upgrade (less is beneficial).
+
+Consider the bi-dimensional Euclidean space of the total number of biopsies (x-axis) and the corresponding expected time delay in detection of Gleason upgrade (y-axis) for schedules associated with various $\kappa$ (Figure...). An ideal schedule of biopsies will have only one biopsy planned exactly at the true time of Gleason upgrade $T^*_j$ of a patient. In other words it will lead to a zero time delay. This schedule is shown at point (1, 0) in Figure. Subsequently, an appropriate threshold $\kappa_a$ can be chosen by minimizing the Euclidean distance between the point (1,0) and the set of points representing various schedules corresponding to each $\kappa \epsilon [0, 1]$. That is:
+\begin{equation}
+\label{eq:kappa_choice}
+\kappa_a = \argmin_{\kappa} \sqrt{\big(\vert B_j^\kappa \vert - 1\big)^2 + \big\{D_j(B_j^{\kappa} \mid t, s) - 0\big\}^2} , \quad 0 \leq \kappa \leq 1,
+\end{equation}
+where, $D_j(B_j^{\kappa} \mid t, s)$ denotes the expected time delay in detection of Gleason upgrade (estimation in Section~\ref{subsec:exp_delay_estimation}) if schedule $B_j^{\kappa}$ is followed. 
+
+Certain patients may have preferences for the maximum number of biopsies conducted upon them. Others may be apprehensive to have an expected delay higher than a certain number of months. In this regard, the Euclidean distance in Equation~(\ref{eq:kappa_choice}) can be minimized under constraints on the aforementioned criteria (see Figure..). For example, a reasonable constraint on expected time delay is one year, as it is also the maximum possible delay with the commonly used yearly schedule.
+
+\subsection{Expected Time Delay in Detection of Gleason Upgrade}
+\label{subsec:exp_delay_estimation}
+We estimate the expected time delay $D_j(B_j^{\kappa} \mid t, s)$ in Equation~\ref{eq:kappa_choice} in a patient-specific manner using personalized cumulative-risk profile estimated in Equation~(\ref{eq:cumulative_risk}). That is, two patients may opt to follow the same schedule, but they will expect different time delays. The calculation of delay is not limited to personalized schedules. In general, for any schedule of biopsies $B$, the personalized expected delay for $j$-th patient is given by $D_j(B, t, s)$:
+\begin{equation}
+\label{eq:expected_delay}
+\begin{split}
+D_j(B, t, s) &= \sum_{k=1}^{\vert B \vert} R_j(b_k \mid b_{k-1}, s) \times \Big\{b_k - b_{k-1} - \int_{b_{k-1}}^{b_k} 1 - R_j(u \mid b_k, b_{k-1}, s) \mathrm{d}u \Big\},\\
+R_j(u \mid b_k, b_{k-1}, s) &= p\Big\{T^*_j \leq u \mid b_{k-1} < T^*_j \leq b_k, \mathcal{Y}_{pj}(s), \mathcal{Y}_{dj}(s), \mathcal{D}_n\Big\},
+\end{split}
+\end{equation}
+where $b_k$ is the $k$-th biopsy in schedule $B$. 
+
+Personalized expected delay can assist patients and doctors in shared decision making of an appropriate biopsy schedule. Although, this delay should only be interpreted as the expected delay if the patient obtains Gleason upgrade before the last biopsy in the schedule. In order to have a fair comparison of expected delay between different schedules for the same patient, we schedule a compulsory biopsy at year ten (see Section~\ref{subsec:cum_risk}) in all schedules, personalized or fixed.

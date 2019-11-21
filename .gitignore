@@ -2,3 +2,5 @@
 .Rhistory
 *.stan
 *.txt
+*.Rdata
+*.RData
