@@ -22,7 +22,7 @@ We exploit PRIAS cohort's fixed schedule of longitudinal measurements ${L=\{2, 2
 B_j^{\kappa} &= \Big\{b_{jk} \epsilon L \mid R_j(b_{jk} \mid b_{jk-1}, s) \geq \kappa \land (b_{jk}-b_{jk-1}\geq 1) \Big\},
 \end{split}
 \end{equation}
-where $b_{jk}$ is the time of the $k$-th biopsy for the $j$-th patient. The conditional cumulative-risk of Gleason upgrade denoted by $R_j(b_{jk} \mid b_{jk-1}, s)$ is defined as in Equation~(\ref{eq:cumulative_risk}). In this risk the contribution of the observed longitudinal data $\mathcal{Y}_{pj}(s)$ and $\mathcal{Y}_{dj}(s)$ does not change while scheduling subsequent biopsies. However, the `conditional' part here is that successive $k$-th biopsy at time $b_{jk}$ is scheduled by accounting for the possibility that Gleason upgrade may not have occurred until the previously scheduled biopsy $T^*_j > b_{jk-1}$.
+where $b_{jk}$ is the time of the ${k\mbox{-th}}$ biopsy for the ${j\mbox{-th}}$ patient. The conditional cumulative-risk of Gleason upgrade denoted by $R_j(b_{jk} \mid b_{jk-1}, s)$ is defined as in Equation~(\ref{eq:cumulative_risk}). In this risk the contribution of the observed longitudinal data $\mathcal{Y}_{pj}(s)$ and $\mathcal{Y}_{dj}(s)$ does not change while scheduling subsequent biopsies. However, the `conditional' part here is that successive ${k\mbox{-th}}$ biopsy at time $b_{jk}$ is scheduled by accounting for the possibility that Gleason upgrade may not have occurred until the previously scheduled biopsy $T^*_j > b_{jk-1}$.
 
 The personalized schedule Equation~\ref{eq:personalized_schedule} is updated as more patient data becomes available over follow-up.
 
@@ -40,7 +40,7 @@ Certain patients may have preferences for the maximum number of biopsies conduct
 
 \subsection{Expected Time Delay in Detection of Gleason Upgrade}
 \label{subsec:exp_delay_estimation}
-We estimate the expected time delay $D_j(B_j^{\kappa} \mid t, s)$ in Equation~\ref{eq:kappa_choice} in a patient-specific manner using personalized cumulative-risk profile estimated in Equation~(\ref{eq:cumulative_risk}). That is, two patients may opt to follow the same schedule, but they will expect different time delays. The calculation of delay is not limited to personalized schedules. In general, for any schedule of biopsies $B$, the personalized expected delay for $j$-th patient is given by $D_j(B, t, s)$:
+We estimate the expected time delay $D_j(B_j^{\kappa} \mid t, s)$ in Equation~\ref{eq:kappa_choice} in a patient-specific manner using personalized cumulative-risk profile estimated in Equation~(\ref{eq:cumulative_risk}). That is, two patients may opt to follow the same schedule, but they will expect different time delays. The calculation of delay is not limited to personalized schedules. In general, for any schedule of biopsies $B$, the personalized expected delay for ${j\mbox{-th}}$ patient is given by $D_j(B, t, s)$:
 \begin{equation}
 \label{eq:expected_delay}
 \begin{split}
@@ -48,6 +48,6 @@ D_j(B, t, s) &= \sum_{k=1}^{\vert B \vert} R_j(b_k \mid b_{k-1}, s) \times \Big\
 R_j(u \mid b_k, b_{k-1}, s) &= p\Big\{T^*_j \leq u \mid b_{k-1} < T^*_j \leq b_k, \mathcal{Y}_{pj}(s), \mathcal{Y}_{dj}(s), \mathcal{D}_n\Big\},
 \end{split}
 \end{equation}
-where $b_k$ is the $k$-th biopsy in schedule $B$. 
+where $b_k$ is the ${k\mbox{-th}}$ biopsy in schedule $B$. 
 
 Personalized expected delay can assist patients and doctors in shared decision making of an appropriate biopsy schedule. Although, this delay should only be interpreted as the expected delay if the patient obtains Gleason upgrade before the last biopsy in the schedule. In order to have a fair comparison of expected delay between different schedules for the same patient, we schedule a compulsory biopsy at year ten (see Section~\ref{subsec:cum_risk}) in all schedules, personalized or fixed.

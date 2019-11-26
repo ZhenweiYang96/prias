@@ -3,7 +3,7 @@ load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 prias_final.id$latest_survival_time[prias_final.id$latest_survival_time==0] = 0.0001
 prias_psa_dre = droplevels(prias_long_final[!(is.na(prias_long_final$psa) & is.na(prias_long_final$palpable_dre)),])
 
-N_Cores = 2
+N_Cores = 6
 
 library(JMbayes)
 
