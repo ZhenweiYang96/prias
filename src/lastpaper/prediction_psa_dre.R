@@ -12,6 +12,21 @@ IND_RANDOM_PSA = 3:7
 IND_RANDOM_PSA_SLOPE = IND_RANDOM_PSA[-1]
 IND_FIXED_PSA_SLOPE = 4:7
 
+#################################
+fixed_psaFormula = ~ 1 + I(age - 65) +  I((age - 65)^2) + ns(year_visit, knots=c(0.75, 2.12), Boundary.knots=c(0, 6.4))
+random_psaFormula = ~ 1 + ns(year_visit, knots=c(0.75, 2.12), Boundary.knots=c(0, 6.4))
+fixed_random_psaSlopeFormula = ~ 0 + dns(year_visit, knots=c(0.75, 2.12), Boundary.knots=c(0, 6.4))
+
+fixed_dreFormula = ~ 1 + I(age - 65) +  I((age - 65)^2) + year_visit
+random_dreFormula = ~ 1 + year_visit
+
+survivalFormula = ~ 0 + I(age - 65) + I((age - 65)^2)
+
+IND_RANDOM_DRE = 1:2
+IND_RANDOM_PSA = 3:6
+IND_RANDOM_PSA_SLOPE = IND_RANDOM_PSA[-1]
+IND_FIXED_PSA_SLOPE = 4:6
+
 wk = JMbayes:::gaussKronrod()$wk
 sk = JMbayes:::gaussKronrod()$sk
 
@@ -72,12 +87,12 @@ log_numerator_bayesrule = function(b, data){
   randomEff_prior_Contrib = -0.5 * (b %*% data$inv_D %*% b)
   
   #Longitudinal DRE contribution
-  fitted_probHighDre = plogis(data$Xbeta_Wgamma_h0BsGamma$obsDre_Xbeta + data$obsDre_Z %*% b[1:2])
+  fitted_probHighDre = plogis(data$Xbeta_Wgamma_h0BsGamma$obsDre_Xbeta + data$obsDre_Z %*% b[IND_RANDOM_DRE])
   dre_contrib = sum(data$obs_palpable_dre * log(fitted_probHighDre) + 
                       (1 - data$obs_palpable_dre) * log(1 - fitted_probHighDre))
   
   #Longitudinal PSA contribution
-  Y_fitted_psa = c(data$Xbeta_Wgamma_h0BsGamma$obsPsa_Xbeta + data$obsPsa_Z %*% b)
+  Y_fitted_psa = c(data$Xbeta_Wgamma_h0BsGamma$obsPsa_Xbeta + data$obsPsa_Z %*% b[IND_RANDOM_PSA])
   Y_psa_meanShift=data$obs_log2psaplus1 - Y_fitted_psa
   
   psa_contrib = if(data$psaDist=="normal"){
@@ -227,7 +242,7 @@ get_b_fullBayes = function(object, patient_data, latest_survival_time, earliest_
   }
   
   #This has M elements
-  postMCMC_theta_indices = sample(1:length(object$mcmc$sigma2), size = M)
+  postMCMC_theta_indices = sample(nrow(object$mcmc$betas1), size = M)
   #Sample b from a proposal distribution
   #invVars_b <- opt$hessian / scale
   proposed_b = rmvt(n = M, mu=empiricalbayes_b$par, Sigma = scale * solve(empiricalbayes_b$hessian), df=4)
@@ -358,20 +373,18 @@ getExpectedFutureOutcomes = function(object, patient_data,
   predicted_psa = predicted_psa_slope = NULL
   predicted_dre_prob = predicted_surv_prob = NULL
   
-  if(!is.null(psa_predict_times)){
-    predicted_psa = psaXbetaZb(patient_data$age[1], psa_predict_times, mcmc_betas_psa, posterior_b[IND_RANDOM_PSA,])
-    predicted_psa_slope = psaSlopeXbetaZb(patient_data$age[1], psa_predict_times, mcmc_betas_psa[IND_FIXED_PSA_SLOPE,], posterior_b[IND_RANDOM_PSA_SLOPE,])
+  if(!is.null(long_predict_times)){
+    predicted_psa = psaXbetaZb(patient_data$age[1], long_predict_times, mcmc_betas_psa, posterior_b[IND_RANDOM_PSA,])
+    predicted_psa_slope = psaSlopeXbetaZb(patient_data$age[1], long_predict_times, mcmc_betas_psa[IND_FIXED_PSA_SLOPE,], posterior_b[IND_RANDOM_PSA_SLOPE,])
     
     if(addRandomError==T){
-      predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(psa_predict_times), mean=0)
+      predicted_psa = predicted_psa + sapply(mcmc_sigma_psa, rnorm, n=length(long_predict_times), mean=0)
     }
+    rownames(predicted_psa) = rownames(predicted_psa_slope) = long_predict_times
     
-    rownames(predicted_psa) = rownames(predicted_psa_slope) = psa_predict_times
-  }
-  
-  if(!is.null(dre_predict_times)){
-    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$age[1], dre_predict_times, mcmc_betas_dre, posterior_b[IND_RANDOM_DRE,]))
-    rownames(predicted_dre_prob) = dre_predict_times
+    predicted_dre_prob = plogis(dreLogOddsXbetaZb(patient_data$age[1], long_predict_times, 
+                                                  mcmc_betas_dre, posterior_b[IND_RANDOM_DRE,]))
+    rownames(predicted_dre_prob) = long_predict_times
   }
   
   predicted_surv_prob = NULL
