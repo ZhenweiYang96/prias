@@ -1,3 +1,8 @@
+# setwd("C:/Users/838035/Google Drive/PhD/src/prias/")
+# library(devtools)
+# Sys.setenv(PATH = paste("C:/Rtools/bin", Sys.getenv("PATH"), sep=";"))
+# Sys.setenv(BINPREF = "C:/Rtools/mingw_$(WIN)/bin/")
+
 args = commandArgs(trailingOnly=TRUE)
 
 seed = as.numeric(args[1])

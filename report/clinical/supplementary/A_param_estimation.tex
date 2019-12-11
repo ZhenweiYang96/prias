@@ -1,12 +1,12 @@
 % !TEX root =  ../supplementary.tex
-\section{A Joint Model for the Longitudinal PSA, and Time to Gleason Reclassification}
+\section{A Joint Model for the Longitudinal PSA, and Time to Gleason Upgrading}
 \label{sec:jm_framework}
 
-Let $T_i^*$ denote the true time of reclassification (increase in biopsy Gleason grade from 1 to 2 or higher) for the ${i\mbox{-th}}$ patient included in PRIAS. Since biopsies are conducted periodically, $T_i^*$ is observed with interval censoring ${l_i < T_i^* \leq r_i}$. When reclassification is observed for the patient at his latest biopsy time $r_i$, then $l_i$ denotes the time of the second latest biopsy. Otherwise, $l_i$ denotes the time of the latest biopsy and ${r_i=\infty}$. Let $\boldsymbol{y}_{i}$ denote his observed PSA longitudinal measurements. The observed data of all $n$ patients is denoted by ${\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_{i}; i = 1, \ldots, n\}}$.
+Let $T_i^*$ denote the true time of upgrading (increase in biopsy Gleason grade group from~1 to 2 or higher) for the ${i\mbox{-th}}$ patient included in PRIAS. Since biopsies are conducted periodically, $T_i^*$ is observed with interval censoring ${l_i < T_i^* \leq r_i}$. When upgrading is observed for the patient at his latest biopsy time $r_i$, then $l_i$ denotes the time of the second latest biopsy. Otherwise, $l_i$ denotes the time of the latest biopsy and ${r_i=\infty}$. Let $\boldsymbol{y}_{i}$ denote his observed PSA longitudinal measurements. The observed data of all $n$ patients is denoted by ${\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_{i}; i = 1, \ldots, n\}}$.
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/jmExplanationPlot_113.eps}}
-\caption{\textbf{Illustration of the joint model on a real PRIAS dataset patient}. \textbf{Panel~A:} Observed (blue dots) and fitted PSA (solid blue line) measurements, log-transformed. \textbf{Panel~B:} Estimated instantaneous velocity of PSA (log-transformed). \textbf{Panel~C}: Predicted cumulative-risk of reclassification (95\% credible interval shaded). Reclassification is defined as increase in Gleason grade \citep{epsteinGG2014} from grade~1 to 2 or higher. This risk of reclassification is available starting from the time of the latest negative biopsy (vertical green line at year 1 of follow-up). Joint model estimated it by combining the fitted PSA value and velocity (both on log scale of PSA) and time of latest negative biopsy. Black dashed line at year 4 denotes time of current visit.}
+\caption{\textbf{Illustration of the joint model on a real PRIAS dataset patient}. \textbf{Panel~A:} Observed (blue dots) and fitted PSA (solid blue line) measurements, log-transformed. \textbf{Panel~B:} Estimated instantaneous velocity of PSA (log-transformed). \textbf{Panel~C}: Predicted cumulative-risk of upgrading (95\% credible interval shaded). Upgrading is defined as increase in Gleason grade group \citep{epsteinGG2014} from grade group~1 to 2 or higher. This risk of upgrading is available starting from the time of the latest negative biopsy (vertical green line at year 1 of follow-up). Joint model estimated it by combining the fitted PSA value and velocity (both on log scale of PSA) and time of latest negative biopsy. Black dashed line at year 4 denotes time of current visit.}
 \label{fig:jmExplanationPlot_113}
 \end{figure}
 
@@ -20,7 +20,7 @@ In our joint model, the patient-specific PSA measurements over time are modeled 
 \end{equation}
 where, $m_{i}(t)$ denotes the measurement error free value of $\log_2 (\mbox{PSA} + 1)$ transformed \citep{pearson1994mixed,lin2000latent} measurements at time $t$. We model it non-linearly over time using B-splines \citep{de1978practical}. To this end, our B-spline basis function $B_k\{(t-2)/2,(\mathcal{K}-2)/2\}$ has 3 internal knots at $\mathcal{K} = \{0.5, 1.3, 3\}$ years, which are the three quartiles of the observed follow-up times. The boundary knots of the spline are at 0 and 6.3 years (95-th percentile of the observed follow-up times). We mean centered (mean 2 years) and standardized (standard deviation 2 years) the follow-up time $t$ and the knots of the B-spline $\mathcal{K}$ during parameter estimation for better convergence. The fixed effect parameters are denoted by ${\{\beta_{0},\ldots,\beta_{5}\}}$, and ${\{b_{0i}, \ldots, b_{4i}\}}$ are the patient specific random effects. The random effects follow a multivariate normal distribution with mean zero and variance-covariance matrix $\boldsymbol{D}$. The error $\varepsilon_{i}(t)$ is assumed to be t-distributed with three degrees of freedom (see Appendix~B.1) and scale $\sigma$, and is independent of the random effects. 
 
-To model the impact of PSA measurements on the risk of reclassification, our joint model uses a relative risk sub-model. More specifically, the hazard of reclassification denoted as $h_i(t)$, and the cumulative risk of reclassification denoted as $R_i(t)$, at a time $t$ are (see Panel~C, Figure~\ref{fig:jmExplanationPlot_113}):
+To model the impact of PSA measurements on the risk of upgrading, our joint model uses a relative risk sub-model. More specifically, the hazard of upgrading denoted as $h_i(t)$, and the cumulative risk of upgrading denoted as $R_i(t)$, at a time $t$ are (see Panel~C, Figure~\ref{fig:jmExplanationPlot_113}):
 \begin{equation}
 \label{eq:rel_risk_model}
 \begin{split}
@@ -28,23 +28,23 @@ To model the impact of PSA measurements on the risk of reclassification, our joi
     R_i(t) &= \exp\Big\{-\int_0^{t} h_i(s)\mathrm{d}{s}\Big\},
     \end{split}
 \end{equation}
-where, $\gamma$ is the parameter for the effect of age. The impact of PSA on the hazard of reclassification is modeled in two ways, namely the impact of the error free underlying PSA value $m_{i}(t)$ (see Panel~A, Figure~\ref{fig:jmExplanationPlot_113}), and the impact of the underlying PSA velocity $\mathrm{d}m_{i}(t)/\mathrm{d}{t}$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_113}). The corresponding parameters are $\alpha_{1}$ and $\alpha_{2}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}. More specifically:
+where, $\gamma$ is the parameter for the effect of age. The impact of PSA on the hazard of upgrading is modeled in two ways, namely the impact of the error free underlying PSA value $m_{i}(t)$ (see Panel~A, Figure~\ref{fig:jmExplanationPlot_113}), and the impact of the underlying PSA velocity $\mathrm{d}m_{i}(t)/\mathrm{d}{t}$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_113}). The corresponding parameters are $\alpha_{1}$ and $\alpha_{2}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}. More specifically:
 \begin{equation*}
 \log{h_0(t)} = \gamma_{h_0,0} + \sum_{q=1}^Q \gamma_{h_0,q} B_q(t, \boldsymbol{v}),
 \end{equation*}
 where $B_q(t, \boldsymbol{v})$ denotes the $q$-th basis function of a B-spline with knots $\boldsymbol{v} = v_1, \ldots, v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}.
 
-%\subsection{Issue of PSA Dependent Interval Censored Time of reclassification in PRIAS}
+%\subsection{Issue of PSA Dependent Interval Censored Time of upgrading in PRIAS}
 %\label{subsec:ascertainment_bias}
-%The true time $T^*_i$ of reclassification is not known for any of the patients in PRIAS. In order to detect reclassification, PRIAS uses a fixed schedule of biopsies wherein biopsies are conducted at year one, year four, year seven and year ten of follow-up, and every five years thereafter. However, PRIAS switches to a more frequent annual biopsy schedule for faster-progressing patients. These are patients with PSA doubling time (PSA-DT) between zero and ten years, which is measured as the inverse of the slope of the regression line through the base two logarithm of PSA values. Thus, the interval $l_i < T_i^* \leq r_i$ in which reclassification is detected depends on the observed PSA values. 
+%The true time $T^*_i$ of upgrading is not known for any of the patients in PRIAS. In order to detect upgrading, PRIAS uses a fixed schedule of biopsies wherein biopsies are conducted at year one, year four, year seven and year ten of follow-up, and every five years thereafter. However, PRIAS switches to a more frequent annual biopsy schedule for faster-progressing patients. These are patients with PSA doubling time (PSA-DT) between zero and ten years, which is measured as the inverse of the slope of the regression line through the base two logarithm of PSA values. Thus, the interval $l_i < T_i^* \leq r_i$ in which upgrading is detected depends on the observed PSA values. 
 
-%Given the issue of PSA dependent interval censoring it is natural to question in this scenario if the parameters of the joint model are affected by these two. However, because the parameters of the joint model are estimated using a full likelihood approach \citep{tsiatis2004joint}, the joint model allows the schedule of biopsies, as well as censoring to depend upon the observed PSA measurements (e.g., via PSA-DT), under the condition that the model is correctly specified. To show this, consider the following full general specification of the joint model that we use. Let $\boldsymbol{y}_{i}$ denote the observed DRE and PSA measurements for the $i$-th patient, and $l_i, r_i$ denote the two time points of the interval in which GR occurs for the $i$-th patient. In addition let $T_i^S$ and $\mathcal{V}_{i}$ denote the schedule of biopsies, and the schedule of DRE and PSA measurements, respectively. Let $G^*_i$ denote the time of removal from AS without observing reclassification. Under the assumption that $T_i^S, G^*_i, \mathcal{V}_{i}$ may depend upon only the observed data $\boldsymbol{y}_{i}$, the joint likelihood of the various processes is given by:
+%Given the issue of PSA dependent interval censoring it is natural to question in this scenario if the parameters of the joint model are affected by these two. However, because the parameters of the joint model are estimated using a full likelihood approach \citep{tsiatis2004joint}, the joint model allows the schedule of biopsies, as well as censoring to depend upon the observed PSA measurements (e.g., via PSA-DT), under the condition that the model is correctly specified. To show this, consider the following full general specification of the joint model that we use. Let $\boldsymbol{y}_{i}$ denote the observed DRE and PSA measurements for the $i$-th patient, and $l_i, r_i$ denote the two time points of the interval in which GR occurs for the $i$-th patient. In addition let $T_i^S$ and $\mathcal{V}_{i}$ denote the schedule of biopsies, and the schedule of DRE and PSA measurements, respectively. Let $G^*_i$ denote the time of removal from AS without observing upgrading. Under the assumption that $T_i^S, G^*_i, \mathcal{V}_{i}$ may depend upon only the observed data $\boldsymbol{y}_{i}$, the joint likelihood of the various processes is given by:
 %\begin{align*}
 %p( l_i, r_i, T_i^S, G^*_i, \boldsymbol{y}_{i}, \mathcal{V}_{i} \mid \boldsymbol{\theta}, \boldsymbol{\psi}) &= p(\boldsymbol{y}_{i}, l_i, r_i \mid \boldsymbol{\theta}) \times p(T_i^S, G^*_i, \mathcal{V}_{i} \mid \boldsymbol{y}_{i}, \boldsymbol{\psi}).
 %\end{align*}
 %From this decomposition we can see that even if the processes $T_i^S, G^*_i, \mathcal{V}_{i}$ may be determined from $\boldsymbol{y}_{i}$, if we are interested in the parameters $\boldsymbol{\theta}$ of the joint distribution of longitudinal and event outcomes, we can maximize the likelihood based on the first term and ignore the second term. In other words, the second term will not carry information for $\boldsymbol{\theta}$. Lastly, since we use a full likelihood approach with an interval censoring specification, the estimates that we obtain are consistent and asymptotically unbiased \citep{gentleman1994maximum}, despite the interval censoring observed. 
 
-We estimate the parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of all of the parameters of the joint model. The joint model postulates that given the random effects, the time of reclassification, and the PSA measurements taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
+We estimate the parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of all of the parameters of the joint model. The joint model postulates that given the random effects, the time of upgrading, and the PSA measurements taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
 \begin{align*}
 p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \boldsymbol{y}_{i}, \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})\\
 & \propto \prod_{i=1}^n p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{y}_{i} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta}),\\
@@ -54,7 +54,7 @@ where, the likelihood contribution of the PSA outcome, conditional on the random
 \begin{equation*}
 p(\boldsymbol{y}_{i} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) = \frac{1}{\big(\sqrt{2 \pi \sigma^2}\big)^{n_{i}}} \exp\bigg\{-\frac{\sum_{j=1}^{n_i}{({y}_{ij} - {m}_{ij})}^2}{2\sigma^2}\bigg\},
 \end{equation*}
-where $n_i$ is the number of PSA measurements of the $i$-th patient. The likelihood contribution of the time of reclassification outcome is given by:
+where $n_i$ is the number of PSA measurements of the $i$-th patient. The likelihood contribution of the time of upgrading outcome is given by:
 \begin{equation}
 \label{web_eq : likelihood_contribution_survival}
 p(l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}) = \exp\Big\{-\int_0^{l_i} h_i(s)\mathrm{d}{s}\Big\} - \exp\Big\{-\int_0^{r_i}h_i(s)\mathrm{d}{s}\Big\}.
@@ -78,7 +78,7 @@ With regards to the choice of the distribution for the error term $\varepsilon$ 
 
 \begin{figure}
 \centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
-\caption{\textbf{Nonparametric estimate \citep{turnbull1976empirical} of cumulative risk of reclassification} in the world's largest AS cohort PRIAS, and largest five AS cohorts from the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
+\caption{\textbf{Nonparametric estimate \citep{turnbull1976empirical} of cumulative risk of upgrading} in the world's largest AS cohort PRIAS, and largest five AS cohorts from the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
 \label{fig:npmle_plot}
 \end{figure}
 
@@ -126,7 +126,7 @@ $\sigma$ & 0.139    & 0.001 & 0.138 & 0.140  & \\
 \label{fig:fitted_9subject_psa}
 \end{figure}
 
-For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in Table~\ref{tab:PSA_survival} show that ${\log_2 (\mbox{PSA} + 1)}$ velocity and age of the patient were significantly associated with the hazard of reclassification.
+For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in Table~\ref{tab:PSA_survival} show that ${\log_2 (\mbox{PSA} + 1)}$ velocity and age of the patient were significantly associated with the hazard of upgrading.
 
 \begin{table}
 \small\sf\centering
@@ -143,11 +143,11 @@ Fitted $\log_2 (\mbox{PSA} + 1)$ velocity             & 2.266    & 0.299 & 1.613
 \end{tabular}
 \end{table}
 
-It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value and velocity are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:PSA_survival_easy}, we present the hazard ratio of reclassification, for an increase in the aforementioned variables from their 25-th to the 75-th percentile. For example, an increase in fitted $\log_2 (\mbox{PSA} + 1)$ velocity from -0.085 to 0.308 (fitted 25-th and 75-th percentiles) corresponds to a hazard ratio of 2.433. The interpretation for the rest is similar.
+It is important to note that since age, and ${\log_2 (\mbox{PSA} + 1)}$ value and velocity are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:PSA_survival_easy}, we present the hazard ratio of upgrading, for an increase in the aforementioned variables from their 25-th to the 75-th percentile. For example, an increase in fitted $\log_2 (\mbox{PSA} + 1)$ velocity from -0.085 to 0.308 (fitted 25-th and 75-th percentiles) corresponds to a hazard ratio of 2.433. The interpretation for the rest is similar.
 
 \begin{table}
 \small\sf\centering
-\caption{\textbf{Hazard ratio and 95\% credible interval (CI) for reclassification}: Variables are on different scale and hence we compare an increase in the variables of relative risk sub-model from their 25-th percentile ($\mbox{P}_{25}$) to their 75-th percentile ($\mbox{P}_{75}$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
+\caption{\textbf{Hazard ratio and 95\% credible interval (CI) for upgrading}: Variables are on different scale and hence we compare an increase in the variables of relative risk sub-model from their 25-th percentile ($\mbox{P}_{25}$) to their 75-th percentile ($\mbox{P}_{75}$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
 \label{tab:PSA_survival_easy}
 \begin{tabular}{lrrr}
 \hline
@@ -160,4 +160,21 @@ Fitted $\log_2 (\mbox{PSA} + 1)$ velocity & -0.085 & 0.308 & 2.433 [1.883, 2.962
 \end{tabular}
 \end{table}
 
+\begin{table}
+\small\sf\centering
+\caption{\textbf{Effect of $\log_2 (\mbox{PSA} + 1)$ value and velocity on hazard of upgrading in different cohorts}. We fitted separate joint models for each of the five GAP3 validation cohorts. The specification of these joint models was same as that of the model for PRIAS. Two important parameters of the relative-risk sub-model, namely, the $\log_2 (\mbox{PSA} + 1)$ value and velocity differ between the cohorts. The mean estimate of these parameters with 95\% credible interval in brackets is given below. Strongest average effect of PSA velocity is in PRIAS cohort, whereas the weakest is in KCL cohort. The strongest average effect of PSA value is in the Toronto cohort whereas the weakest is in PRIAS cohort.}
+\label{tab:PSA_survival_all}
+\begin{tabular}{lrr}
+\hline
+Cohort & Fitted $\log_2 (\mbox{PSA} + 1)$ value & Fitted $\log_2 (\mbox{PSA} + 1)$ velocity\\
+\hline
+PRIAS & -0.012 [-0.164, 0.135] & 2.266 [ 1.613, 2.767]\\
+Hopkins & 0.061 [-0.323, 0.329] & 1.839 [ 0.761, 4.378]\\
+MSKCC & 0.336 [ 0.081, 0.583] & 1.122 [ 0.421, 1.980]\\
+Toronto & 0.572 [ 0.347, 0.794] & 0.943 [ 0.464, 1.554]\\
+MUSIC & 0.441 [ 0.092, 0.767] & 0.029 [-0.552, 0.512]\\
+KCL &  0.194 [-0.104, 0.540] & 0.840 [-0.087, 1.665]\\
+\hline
+\end{tabular}
+\end{table}
 

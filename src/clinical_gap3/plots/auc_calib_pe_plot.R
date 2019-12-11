@@ -170,10 +170,11 @@ diff_df$max_time = sapply(diff_df$cohort, function(x){
 diff_df = diff_df[diff_df$time <= diff_df$max_time,]
 
 diff_plot = ggplot(diff_df) + geom_boxplot(aes(y=diff,x=cohort), outlier.shape = NA) +
-  scale_y_continuous(breaks = seq(-1,1,by=0.25), limits = c(-1,1),
-                     labels = paste0(seq(-1,1,by = 0.25)*100, "%")) + theme_bw() +
-  theme(text=element_text(size=15)) +
-  xlab("Cohort") + ylab("Difference in predicted cumulative-risk")
+  scale_y_continuous(breaks = seq(-0.5,0.5,by=0.1), 
+                     limits = c(-0.5,0.5),
+                     labels = paste0(seq(-0.5,0.5,by = 0.1)*100, "%")) + theme_bw() +
+  theme(text=element_text(size=18)) +
+  xlab("Cohort") + ylab("Difference in predicted \ncumulative-risk")
 
 ggsave(diff_plot, device = cairo_ps,
        file="report/clinical/images/calib_insmall_after.eps")

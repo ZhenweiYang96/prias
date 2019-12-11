@@ -233,6 +233,10 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   
   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
   
+  SURV_CACHE_FULL = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-SURV_CACHE_FULL[CACHE_SIZE,])
+  }))
+  
   #Decision epochs in years
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
   

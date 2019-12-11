@@ -1,8 +1,8 @@
 setwd("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/")
 args = commandArgs(trailingOnly=TRUE)
 
-seed = as.numeric(args[1])
-max_cores = as.numeric(args[2])
+seed = 2015
+max_cores = 6
 
 library(JMbayes)
 library(splines)
