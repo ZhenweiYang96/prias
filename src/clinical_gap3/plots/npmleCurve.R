@@ -44,7 +44,7 @@ npmle_plot_all = ggplot() +
         axis.line = element_line())+
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
-  ylab("Cumulative risk of reclassification (%)") +
+  ylab("Cause-specific cumulative upgrading-risk (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/clinical/images/npmle_plot.eps",

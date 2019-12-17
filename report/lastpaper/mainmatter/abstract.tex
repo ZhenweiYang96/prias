@@ -1,4 +1,6 @@
 \begin{abstract}
-% 225 words maximum
-This is the summary for this paper.
+% 225 words maximum. Currently 220 words
+Patients diagnosed with early stage chronic non-communicable diseases (cancer, cardiovascular, etc.) undergo invasive medical tests (biopsies, endoscopies, etc.), repeatedly for timely detection of disease \textit{progression}. Commonly, a fixed one-size-fits-all test schedule is employed for all patients. Consequently, many slow/non-progressing patients experience numerous unnecessary burdensome tests over their lifetime. Motivated by this problem in the world's largest prostate cancer surveillance study PRIAS, we present personalized test schedules to better balance the number of invasive tests (burden), and time delay in detection of progression (less is beneficial) than fixed schedules. 
+
+Using joint models for time-to-event and longitudinal data, we first combine results of previous invasive tests, and auxiliary longitudinal data (e.g., biomarkers) to calculate patient-specific cumulative-risk of \textit{progression}. We then minimize a utility function of the number of tests and time delay in detection of progression under this cumulative-risk function to obtain a personalized schedule of invasive test. This personalized schedule updates as more patient data becomes available over follow-up. We assist patients/doctors to objectively compare consequences of opting for personalized versus fixed schedules. For this we exploit a patient's cumulative-risk of progression to estimate the expected time delay in detection of progression for following both personalized and fixed schedules, in a patient-specific manner. We implement our methodology in a web-application for real prostate cancer patients of the PRIAS study.
 \end{abstract}

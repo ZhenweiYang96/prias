@@ -26,7 +26,7 @@ delay_explanation_plot_a = ggplot() + geom_ribbon(aes(x=c(TRUE_TIME_GS7, 4), ymi
                            "4th Biopsy\nGleason\ngrade \u2265 2")),
              size=LABEL_SIZE, color='white',
              fill=c(WARNING_COLOR, rep(SUCCESS_COLOR,3), DANGER_COLOR)) +
-  geom_text(aes(x=0.5 * (TRUE_TIME_GS7 + 4), y=0.2, label="6 months delay\n in detecting reclassification"), size=LABEL_SIZE) + 
+  geom_text(aes(x=0.5 * (TRUE_TIME_GS7 + 4), y=0.2, label="6 months delay\n in detecting upgrading"), size=LABEL_SIZE) + 
   geom_segment(aes(x=TRUE_TIME_GS7, xend = 4, y=0.09, yend = 0.09),
                arrow = arrow(length = unit(2.5,"mm"), ends="both", type="closed"))+
   
@@ -59,7 +59,7 @@ delay_explanation_plot_b = ggplot() + geom_ribbon(aes(x=c(TRUE_TIME_GS7, 5), ymi
                            "3rd Biopsy\nGleason\ngrade \u2265 2")),
              size=LABEL_SIZE, color='white',
              fill=c(WARNING_COLOR, rep(SUCCESS_COLOR,2), DANGER_COLOR)) +
-  geom_text(aes(x=0.5 * (TRUE_TIME_GS7 + 5), y=0.2, label="18 months delay\n in detecting reclassification"), size=LABEL_SIZE) + 
+  geom_text(aes(x=0.5 * (TRUE_TIME_GS7 + 5), y=0.2, label="18 months delay\n in detecting upgrading"), size=LABEL_SIZE) + 
   geom_segment(aes(x=TRUE_TIME_GS7, xend = 5, y=0.09, yend = 0.09),
                arrow = arrow(length = unit(2.5,"mm"), ends="both", type="closed"))+
   xlab("Time of biopsy visits") + 
@@ -81,4 +81,4 @@ delay_explanation_plot = ggpubr::ggarrange(delay_explanation_plot_a, delay_expla
 
 ggsave(delay_explanation_plot, 
        file="report/clinical/images/delay_explanation.eps", 
-       device = cairo_ps, height = 5.5)
+       device = cairo_ps, height = 5.5, width = 6)

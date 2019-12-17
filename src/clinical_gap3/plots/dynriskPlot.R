@@ -69,7 +69,7 @@ dynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
                        sec.axis = sec_axis(trans=~., 
                                            breaks= riskAxisBreaks,
                                            labels = riskAxisLabels,
-                                           name = "Cumulative risk of\n reclassification")) +
+                                           name = "Cause-specific cumulative\nupgrading-risk")) +
     geom_point(aes(x=-5,y=-5, color="Observed PSA"), size=POINT_SIZE) +
     scale_color_manual(values = c(THEME_COLOR), labels=expression('Observed log'[2]*'(PSA + 1)'))+
     ylab(expression('log'[2]*'(PSA + 1)')) + 

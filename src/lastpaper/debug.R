@@ -1,22 +1,54 @@
-seed = c(2021:2030, 2041:2044)
+seed = 2021
+testId = 751
 
-year_visit = seq(0.1, 10, length.out = 100)
+library(JMbayes)
+library(splines)
+library(survival)
+library(MASS)
 
-load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age_light.Rdata")
+load(paste0("Rdata/lastpaper/simulation/light/jointModelData_seed_", seed, "_t3.Rdata"))
+source("src/lastpaper/prediction_psa_dre.R")
+#source("src/lastpaper/scheduleCreator.R")
 
-baselinehazard = exp(splineDesign(mvJoint_dre_psa_2knots_quad_age_light$control$knots, year_visit, 
-                                  ord = mvJoint_dre_psa_2knots_quad_age_light$control$ordSpline, outer.ok = T) %*% mvJoint_dre_psa_2knots_quad_age_light$statistics$postMeans$Bs_gammas)
+M=500
+MAX_FAIL_TIME = 10
+FIRST_DECISION_VISIT_NR = 9
+MIN_BIOPSY_GAP = 1
 
-tt = sapply(seed, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/light/jointModelData_seed_", seed, "_t3.Rdata"))
-  baselinehazard = exp(splineDesign(jointModelData$mvJoint_dre_psa_simDs$control$knots, year_visit, 
-                                    ord = jointModelData$mvJoint_dre_psa_simDs$control$ordSpline, outer.ok = T) %*% jointModelData$mvJoint_dre_psa_simDs$statistics$postMeans$Bs_gammas)
-  return(baselinehazard)
-})
+testDs = jointModelData$testData$testDs[jointModelData$testData$testDs$P_ID == testId,]
+testDs.id = jointModelData$testData$testDs.id[jointModelData$testData$testDs.id$P_ID == testId,]
+progression_time = testDs.id$progression_time
 
-library(ggplot2)
+set.seed(seed)
 
-ggplot() + geom_line(aes(x=year_visit, y=baselinehazard), color='red') +
-  geom_line(aes(x=year_visit, y=rowMeans(tt))) + 
-  geom_ribbon(aes(x=year_visit, ymin=apply(tt,1, quantile, probs=0.025),
-                  ymax=apply(tt,1,quantile, probs=0.975)), alpha=0.15)
+print(paste("**** Patient ID: ", testId, 
+            " with progression time: ", progression_time,
+            " from simulation with seed: ", seed))
+
+
+#automatically selected risk threshold
+delay = Inf
+automatic_kappa_biopsies = c(1)
+for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
+  patient_df = testDs[1:row_num,]
+  cur_visit_time = testDs$year_visit[row_num]
+  
+  if(ifAutomaticRiskBasedBiopsy(object = jointModelData$mvJoint_dre_psa_simDs,
+                                patient_data = patient_df, 
+                                cur_visit_time = cur_visit_time, 
+                                last_biopsy_time = tail(automatic_kappa_biopsies,1),
+                                min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay,
+                                M = M, horizon = MAX_FAIL_TIME)){
+    automatic_kappa_biopsies = c(automatic_kappa_biopsies, cur_visit_time)
+  }
+  
+  if(tail(automatic_kappa_biopsies,1) >= progression_time){
+    break
+  }
+}
+if(tail(automatic_kappa_biopsies,1) < progression_time){
+  automatic_kappa_biopsies = c(automatic_kappa_biopsies, MAX_FAIL_TIME)
+}
+print(paste0('done automatic risk biopsy with delay: ', delay, " years"))
+return(automatic_kappa_biopsies)
+

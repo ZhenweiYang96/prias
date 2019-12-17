@@ -23,6 +23,7 @@ The personalized cumulative-risk function $R_j(\cdot)$ depends on the observed l
 \end{figure}
 
 \subsection{Schedule of Invasive Tests}
+\label{subsec:pers_schedule}
 Our aim is to employ the cumulative-risk function in Equation~(\ref{eq:cumulative_risk}) to develop a personalized schedule of invasive tests, starting from the current visit time $v$ until a maximum horizon time $h$. For this purpose we utilize a simple and straightforward approach of scheduling invasive tests on all those time points where the conditional cumulative-risk of progression is above a certain threshold $0 \leq \kappa \leq 1$, (e.g., 15\% risk in Figure~\ref{fig:schedule_explanation}). More specifically,
 \begin{equation}
 \label{eq:personalized_schedule}
@@ -30,7 +31,7 @@ Our aim is to employ the cumulative-risk function in Equation~(\ref{eq:cumulativ
 S_j^{\kappa} &= \big\{s_1, \ldots, s_{N} \mid R_j(s_n \mid s_{n-1}, v) = \kappa, s_0 = t \big\}, \quad 1 \leq n \leq N,
 \end{split}
 \end{equation}
-where $s_n$ is the time of the ${n\mbox{-th}}$ test in the personalized test schedule $S_j^{\kappa}$. The conditional cumulative-risk of progression denoted by $R_j(s_n \mid s_{n-1}, v)$ is defined as in Equation~(\ref{eq:cumulative_risk}). It is called `conditional' because each successive ${n\mbox{-th}}$ test at future time $s_{n}$ is scheduled by accounting for the possibility that progression (true time $T^*_j$) may not have occurred until the time of the previously scheduled test $s_{n-1} < T^*_j$. However, the contribution of the observed longitudinal data $\{\mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v)\}$ does not change while scheduling subsequent tests. Since the schedule is risk based, it is also updated as more patient data becomes available over follow-up.
+where $s_n$ is the time of the ${n\mbox{-th}}$ test in the personalized test schedule $S_j^{\kappa}$. The conditional cumulative-risk of progression at time $s_n$ denoted by $R_j(s_n \mid s_{n-1}, v)$ is defined as in Equation~(\ref{eq:cumulative_risk}). It is called `conditional' because each successive ${n\mbox{-th}}$ test at future time $s_{n}$ is scheduled by accounting for the possibility that progression (true time $T^*_j$) may not have occurred until the time of the previously scheduled test $s_{n-1} < T^*_j$. However, the contribution of the observed longitudinal data $\{\mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v)\}$ does not change while scheduling subsequent tests. Since the schedule is risk based, it is also updated as more patient data becomes available over follow-up.
 
 \begin{figure}
 \centerline{\includegraphics{images/schedule_explanation_102.eps}}
@@ -52,13 +53,13 @@ Certain patients may have preferences for the maximum number of invasive tests c
 
 \begin{figure}
 \centerline{\includegraphics{images/kappa_choice_102.eps}}
-\caption{\textbf{Automatic choice of risk threshold $0 \leq \kappa \leq 1$ using Equation~(\ref{eq:kappa_choice})}. The ideal schedule of tests at point (1,0) is shown as a blue square. It plans exactly one biopsy at the true time of progression $T^*_j$ of a patient and hence leads to a zero time delay in detection of progression. Personalized schedules based on a grid of thresholds chosen between $0 \leq \kappa \leq 1$ are shown with black circles. Higher thresholds lead to fewer biopsies, but also higher expected time delay. We propose to choose the personalized schedule based on $\kappa_a=21.2\%$ threshold (green triangle). This is because it has the least Euclidean distance (shown with a green line) to the ideal schedule. It is also possible to find the least distance under a certain clinically acceptable threshold on time delay (orange dashed line), or number of biopsies.}
+\caption{\textbf{Automatic choice of risk threshold $0 \leq \kappa \leq 1$ using Equation~(\ref{eq:kappa_choice})}. The ideal schedule of tests at point (1,0) is shown as a blue square. It plans exactly one biopsy at the true time of progression $T^*_j$ of a patient and hence leads to a zero time delay in detection of progression. Personalized schedules based on a grid of thresholds chosen between $0 \leq \kappa \leq 1$ are shown with black circles. Higher thresholds lead to fewer biopsies, but also higher expected time delay. We propose to choose the personalized schedule based on $\kappa_a=21.2\%$ threshold (green triangle). This is because it has the least Euclidean distance (shown with a green line) to the ideal schedule. It is also possible to find the least distance under a certain clinically acceptable limit on time delay (orange dashed line), or number of biopsies.}
 \label{fig:kappa_choice}
 \end{figure}
 
 \subsection{Expected Time Delay in Detection of Progression}
 \label{subsec:exp_delay_estimation}
-We estimate the expected time delay $D_j(S_j^{\kappa} \mid t, v)$ in Equation~\ref{eq:kappa_choice} in a patient-specific manner as well. That is, two patients may opt to follow the same schedule, but they will expect different time delays. To this end, we utilize the personalized cumulative-risk profile estimated in Equation~(\ref{eq:cumulative_risk}). Furthermore, the calculation of time delay is not limited to personalized schedules (Equation~\ref{eq:personalized_schedule}) only. Rather, for any schedule $S$ of $N$ invasive tests, the personalized expected delay for the ${j\mbox{-th}}$ patient is given by,
+We estimate the expected time delay $D_j(S_j^{\kappa} \mid t, v)$ in Equation~\ref{eq:kappa_choice} in a patient-specific manner as well. That is, two patients may opt to follow the same schedule, but they will expect different time delays. To this end, we utilize the personalized cumulative-risk profile estimated in Equation~(\ref{eq:cumulative_risk}). Furthermore, the calculation of time delay is not limited to personalized schedules (Equation~\ref{eq:personalized_schedule}) only. Rather, for any schedule $S$ consisting of $N$ invasive tests, the personalized expected delay for the ${j\mbox{-th}}$ patient is given by,
 \begin{equation}
 \label{eq:expected_delay}
 \begin{split}

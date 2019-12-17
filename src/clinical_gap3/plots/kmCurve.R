@@ -32,7 +32,7 @@ km_plot_all = ggplot() +
         plot.margin = margin(0, 0, 0, 0, "pt")) + 
   scale_y_continuous(breaks = seq(0, 1, 0.25), labels = paste0(seq(0, 1, 0.25)*100, "%"),
                      limits = c(0,1)) + 
-  ylab("Cumulative risk of reclassification (%)") +
+  ylab("Cause-specific cumulative upgrading-risk (%)") +
   xlab("Follow-up time (years)")
 
 ggsave(filename = "report/clinical/images/km_plot.eps",

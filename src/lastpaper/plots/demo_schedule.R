@@ -72,8 +72,8 @@ scaled_mean_risk_probs = mean_risk_probs * (maxYleft - minYLeft) + minYLeft
 scaled_upper_risk_probs = upper_risk_probs * (maxYleft - minYLeft) + minYLeft
 scaled_lower_risk_probs = lower_risk_probs * (maxYleft - minYLeft) + minYLeft
 
-riskAxisBreaks = c(0, 0.5, 1) * (maxYleft - minYLeft) + minYLeft
-riskAxisLabels = c("0%", "50%", "100%")
+riskAxisBreaks = c(0, 0.25, 0.5, 0.75, 1) * (maxYleft - minYLeft) + minYLeft
+riskAxisLabels = c("0%", "25%", "50%", "75%", "100%")
 
 baseggplot = ggplot() + 
   theme_bw() + 
@@ -115,7 +115,7 @@ risk_plot = baseggplot_no_xticks +
   scale_linetype_manual(name="",
                         labels= c(expression(atop('Fitted', 'Pr (Palpable DRE)')), expression(atop('Fitted', 'log'[2]*'(PSA + 1)'))),
                         values = c("dotted", "dashed")) +
-  ylab(expression('Pr (DRE > T1c)    '*'log'[2]*'(PSA + 1)')) +
+  ylab(expression('Pr (DRE Palpable)   '*'log'[2]*'(PSA + 1)')) +
   #ylab('DRE              PSA') +
   xlab("Follow-up time (years)") + 
   xlim(min_x,MAX_FOLLOW_UP) +

@@ -32,7 +32,7 @@ total_schedules = length(schedules$dist)
 
 kappa_choice = ggplot() + 
   geom_hline(yintercept = 1.5, linetype='dashed', color=WARNING_COLOR) +
-  geom_label(aes(x=6, y=1.5, label="Clinically acceptable threshold for maximum time delay"), color=WARNING_COLOR, size=LABEL_SIZE) +
+  geom_label(aes(x=6, y=1.5, label="Clinically acceptable limit for maximum time delay"), color=WARNING_COLOR, size=LABEL_SIZE) +
   geom_segment(aes(x=1,xend=schedules$total_biopsies[-min_dist_schedule_index], 
                    y=0,yend=schedules$expected_delays[-min_dist_schedule_index]), 
                alpha=0.125, color='gray') +

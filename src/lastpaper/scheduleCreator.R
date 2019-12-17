@@ -11,7 +11,7 @@ getFixedSchedule = function(cur_visit_time, biopsy_frequency=1, horizon=10){
 #here we check if minimum gap is maintained
 ifPRIASBiopsy = function(patient_data, cur_visit_time, last_biopsy_time){
   
-  if(cur_visit_time - last_biopsy_time<1){
+  if(cur_visit_time - last_biopsy_time < 1){
     return(FALSE)
   }else{
     fixed_schedule = c(1, 4, 7, 10, 15)
@@ -233,10 +233,6 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   
   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
   
-  SURV_CACHE_FULL = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
-    x / (1-SURV_CACHE_FULL[CACHE_SIZE,])
-  }))
-  
   #Decision epochs in years
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
   
@@ -246,8 +242,12 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   })
   surv_schedule = SURV_CACHE_FULL[visit_nearest_indices,, drop=F]
   
+  SURV_CACHE_FULL = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-SURV_CACHE_FULL[CACHE_SIZE,])
+  }))
+  
   #Every 0.5% 
-  risk_thresholds = seq(0, 1, length.out = 200)
+  risk_thresholds = seq(0, 1, length.out = 1000)
   res = vector("list", length=length(risk_thresholds))
   names(res) = c(paste("Risk:", risk_thresholds))
   

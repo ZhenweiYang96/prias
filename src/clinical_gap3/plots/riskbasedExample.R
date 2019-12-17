@@ -14,7 +14,7 @@ riskGaugeGraph = function(mean_risk_prob, danger_color_threshold = 0.2, gauge_co
   
   LABEL_SIZE = 3
   
-  risk_label = paste0("\n\n\nReclassification risk\n at current visit: ", round(mean_risk_prob*100), "%")
+  risk_label = paste0("\n\n\nUpgrading-risk\n at current visit: ", round(mean_risk_prob*100), "%")
   
   gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
     if(prop > danger_color_threshold){
@@ -134,5 +134,5 @@ final_plot = ggpubr::ggarrange(psa_plot, risk_plot, widths = c(2,1))
 print(final_plot)
 
 ggsave(final_plot, device = cairo_ps,
-       height = 5.5,
+       height = 5.5, width=7,
        filename = "report/clinical/images/riskBasedExample.eps")

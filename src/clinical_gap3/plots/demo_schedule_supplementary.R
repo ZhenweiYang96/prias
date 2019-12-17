@@ -135,7 +135,7 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
                               y=c(12*expected_delays, 12 - 12*expected_delays)),
                           color='black', fill=c(rep(c('darkgrey','white'), length(schedules))),
                           width=0.5)+
-    ylab("Expected delay (months) in detecting reclassification") + 
+    ylab("Expected time delay (months) in detecting upgrading") + 
     xlab("Biopsy schedule") +
     scale_y_continuous(breaks = seq(0,12, length.out = 7),
                        labels = round(seq(0,12, length.out = 7),1),

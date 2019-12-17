@@ -95,7 +95,7 @@ C = common + geom_line(aes(x=survival_predict_times, y=mean_cum_risk), color=DAN
                   ymax=upper_cum_risk), alpha=0.15, fill=DANGER_COLOR) + 
   scale_y_continuous(breaks = seq(0,1, 0.5), 
                      labels = c("0%", "50%", "100%"), 
-                     limits = c(0,1)) + ylab("Cumulative risk\nof reclassification") +
+                     limits = c(0,1)) + ylab("Cause-specific\ncumulative upgrading-risk") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(color=DANGER_COLOR, size=FONT_SIZE),
         axis.text.y = element_text(color=DANGER_COLOR, size=FONT_SIZE),
@@ -106,7 +106,7 @@ D = common +
                  label = c("Start AS\nGleason\ngrade 1", 
                            "Biopsy\nGleason\ngrade 1",
                            "Current\nVisit")), color='white',
-             size= LABEL_SIZE, nudge_x = c(-0.17, 0.17,0),
+             size= LABEL_SIZE, nudge_x = c(-0.1, 0, 0),
              fill=c(WARNING_COLOR, SUCCESS_COLOR, 'black')) +
   theme(text = element_text(size = FONT_SIZE),
         panel.background = element_blank(),
@@ -123,7 +123,7 @@ jm_explanation_plot = ggarrange(A,B, C, D, ncol=1, nrow=4, align = "v",
                                 legend = "top", labels = c("A","B", "C", ""))
 
 ggsave(jm_explanation_plot, filename = "report/clinical/images/jmExplanationPlot_113.eps",
-       device = cairo_ps, height = 6, width=6)
+       device = cairo_ps, height = 6.5, width=6)
 
 
 ################
@@ -191,7 +191,7 @@ H = ggplot() + geom_col(aes(x=rep(schedules,2),
                             y=c(12*expected_delays, 12 - 12*expected_delays)),
                         color='black', fill=c(rep(c('darkgrey','white'), length(schedules))),
                         width=0.5)+
-  ylab("Expected delay (months) in detecting reclassification") + 
+  ylab("Expected time delay (months) in detecting upgrading") + 
   xlab("Biopsy schedule") +
   scale_y_continuous(breaks = seq(0,12, length.out = 7),
                      labels = round(seq(0,12, length.out = 7),1),
@@ -204,4 +204,4 @@ demo_pat_plot = ggarrange(E, F_, D, H , ncol=1, nrow=4, align = "v",
                           labels=c("A", "B", "", "C"), heights = c(1,1,0.5,1))
 
 ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
-       device = cairo_ps, height = 6, width=6)
+       device = cairo_ps, height = 6.5, width=6)

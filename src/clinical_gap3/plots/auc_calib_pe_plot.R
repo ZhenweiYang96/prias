@@ -174,7 +174,7 @@ diff_plot = ggplot(diff_df) + geom_boxplot(aes(y=diff,x=cohort), outlier.shape =
                      limits = c(-0.5,0.5),
                      labels = paste0(seq(-0.5,0.5,by = 0.1)*100, "%")) + theme_bw() +
   theme(text=element_text(size=18)) +
-  xlab("Cohort") + ylab("Difference in predicted \ncumulative-risk")
+  xlab("Cohort") + ylab("Difference in predicted\ncumulative-risk")
 
 ggsave(diff_plot, device = cairo_ps,
        file="report/clinical/images/calib_insmall_after.eps")

@@ -1,3 +1,5 @@
+library(JMbayes)
+load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 
 fixed_random_psaSlopeFormula = ~ 0 + dns(I(year_visit-2)/2, knots=(c(0.5, 1.3, 3)-2)/2, Boundary.knots=(c(0, 6.3)-2)/2)
