@@ -1,7 +1,8 @@
 library(ggplot2)
+library(ggpubr)
 FONT_SIZE = 12
 
-seeds = 2001:2010
+seeds = 2101:2103
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results/seed_", seed, ".Rdata"))

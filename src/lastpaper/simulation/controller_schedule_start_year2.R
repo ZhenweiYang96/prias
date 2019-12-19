@@ -22,8 +22,13 @@ KAPPApt15 = "Risk: 15%"
 
 KAPPA_auto_pt5 = "Risk: Auto (0.5)"
 KAPPA_auto_1 = "Risk: Auto (1)"
-KAPPA_auto_2 = "Risk: Auto (2)"
+KAPPA_auto_1pt5 = "Risk: Auto (1.5)"
 KAPPA_auto_Inf = "Risk: Auto (Inf)"
+
+FULL_TREE_pt5 = "Tree: 0.5"
+FULL_TREE_1 = "Tree: 1"
+FULL_TREE_1pt5 = "Tree: 1.5"
+FULL_TREE_Inf = "Tree: Inf"
 
 M=500
 MAX_FAIL_TIME = 10
@@ -46,6 +51,7 @@ if(progression_time<=1){
   annual_biopsies = biennial_biopsies = prias_biopsies = 1
   fixed_risk_biopsies = list(1,1,1)
   auto_risk_biopsies = list(1,1,1,1)
+  full_tree_biopsies = list(1,1,1,1)
 }else{
   #annual and biennial biopsies
   annual_biopsies = seq(1, ceiling(progression_time), by = 1)
@@ -60,16 +66,16 @@ if(progression_time<=1){
     patient_df = testDs[1:row_num,]
     cur_visit_time = testDs$year_visit[row_num]
     
-    if(ifPRIASBiopsy(patient_df, cur_visit_time, tail(prias_biopsies,1))){
+    if(ifPRIASBiopsy(patient_df, cur_visit_time, max(prias_biopsies,0))){
       prias_biopsies = c(prias_biopsies, cur_visit_time)
     }
     
-    if(tail(prias_biopsies,1) >= progression_time){
+    if(max(prias_biopsies, 0) >= progression_time){
       break
     }
   }
   #check if progression could not be detected within 10 years despite being progressed
-  if(tail(prias_biopsies,1) < progression_time){
+  if(max(prias_biopsies, 0) < progression_time){
     prias_biopsies = c(prias_biopsies, MAX_FAIL_TIME)
   }
   print('done PRIAS')
@@ -84,18 +90,18 @@ if(progression_time<=1){
       if(ifFixedRiskBasedBiopsy(object = jointModelData$mvJoint_dre_psa_simDs,
                                 patient_data = patient_df, 
                                 cur_visit_time = cur_visit_time, 
-                                last_biopsy_time = tail(risk_biopsies,1),
+                                last_biopsy_time = max(risk_biopsies, 0),
                                 min_biopsy_gap = MIN_BIOPSY_GAP,
                                 threshold = threshold,
                                 M = M)){
         risk_biopsies = c(risk_biopsies, cur_visit_time)
       }
       
-      if(tail(risk_biopsies,1) >= progression_time){
+      if(max(risk_biopsies, 0) >= progression_time){
         break
       }
     }
-    if(tail(risk_biopsies,1) < progression_time){
+    if(max(risk_biopsies, 0) < progression_time){
       risk_biopsies = c(risk_biopsies, MAX_FAIL_TIME)
     }
     
@@ -104,7 +110,7 @@ if(progression_time<=1){
   })
   
   #automatically selected risk threshold
-  auto_risk_biopsies = lapply(c(0.5, 1, 2, Inf), function(delay){
+  auto_risk_biopsies = lapply(c(0.5, 1, 1.5, Inf), function(delay_limit){
     automatic_kappa_biopsies = c(1)
     for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
       patient_df = testDs[1:row_num,]
@@ -113,31 +119,64 @@ if(progression_time<=1){
       if(ifAutomaticRiskBasedBiopsy(object = jointModelData$mvJoint_dre_psa_simDs,
                                     patient_data = patient_df, 
                                     cur_visit_time = cur_visit_time, 
-                                    last_biopsy_time = tail(automatic_kappa_biopsies,1),
-                                    min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay,
+                                    last_biopsy_time = max(automatic_kappa_biopsies, 0),
+                                    min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay_limit,
                                     M = M, horizon = MAX_FAIL_TIME)){
         automatic_kappa_biopsies = c(automatic_kappa_biopsies, cur_visit_time)
       }
       
-      if(tail(automatic_kappa_biopsies,1) >= progression_time){
+      if(max(automatic_kappa_biopsies, 0) >= progression_time){
         break
       }
     }
-    if(tail(automatic_kappa_biopsies,1) < progression_time){
+    if(max(automatic_kappa_biopsies, 0) < progression_time){
       automatic_kappa_biopsies = c(automatic_kappa_biopsies, MAX_FAIL_TIME)
     }
-    print(paste0('done automatic risk biopsy with delay: ', delay, " years"))
+    print(paste0('done automatic risk biopsy with delay: ', delay_limit, " years"))
     return(automatic_kappa_biopsies)
+  })
+  
+  full_tree_biopsies = lapply(c(0.5, 1, 1.5, Inf), function(delay_limit){
+    tree_biopsies = c(1)
+    for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
+      patient_df = testDs[1:row_num,]
+      cur_visit_time = testDs$year_visit[row_num]
+      
+      if(ifAutomaticFullTreeBasedBiopsy(object = jointModelData$mvJoint_dre_psa_simDs,
+                                        patient_data = patient_df, 
+                                        cur_visit_time = cur_visit_time, 
+                                        last_biopsy_time = max(tree_biopsies, 0),
+                                        min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay_limit,
+                                        M = M, horizon = MAX_FAIL_TIME)){
+        tree_biopsies = c(tree_biopsies, cur_visit_time)
+      }
+      
+      if(max(tree_biopsies,0) >= progression_time){
+        break
+      }
+    }
+    
+    if(max(tree_biopsies, 0) < progression_time){
+      tree_biopsies = unique(c(tree_biopsies, MAX_FAIL_TIME))
+    }
+    print(paste0('done tree biopsy with delay: ', delay_limit, " years"))
+    return(tree_biopsies)
   })
 }
 
 scheduleNames = c(ANNUAL, BIENNIAL, PRIAS, 
                   KAPPApt05, KAPPApt1, KAPPApt15, 
-                  KAPPA_auto_pt5, KAPPA_auto_1, KAPPA_auto_2, KAPPA_auto_Inf)
+                  KAPPA_auto_pt5, KAPPA_auto_1, KAPPA_auto_1pt5, KAPPA_auto_Inf,
+                  FULL_TREE_pt5, FULL_TREE_1, FULL_TREE_1pt5, FULL_TREE_Inf)
+
 scheduleLengths = c(length(annual_biopsies), length(biennial_biopsies), length(prias_biopsies),
-                    sapply(fixed_risk_biopsies, length), sapply(auto_risk_biopsies, length))
+                    sapply(fixed_risk_biopsies, length), sapply(auto_risk_biopsies, length),
+                    sapply(full_tree_biopsies, length))
+
 biopsy_time = c(annual_biopsies, biennial_biopsies, prias_biopsies,
-                do.call('c', fixed_risk_biopsies), do.call('c', auto_risk_biopsies))
+                do.call('c', fixed_risk_biopsies), 
+                do.call('c', auto_risk_biopsies),
+                do.call('c', full_tree_biopsies))
 
 #Now we combine all of these into a data frame for this patient
 biopsyDf = data.frame(seed = seed, P_ID = testId, 

@@ -1,26 +1,21 @@
 % !TEX root =  ../main_manuscript.tex 
 \section{Discussion}
 \label{sec:discussion}
+In this paper, we presented a methodology to create personalized schedules for burdensome surveillance \textit{tests}, to detect disease \textit{progression} in early-stage chronic non-communicable diseases. To this end, we utilized the framework of joint models for time-to-event and longitudinal data. Our approach first combines a patient's auxiliary longitudinal data (e.g., biomarkers) and results from previous invasive tests to estimate the patient-specific cumulative-risk of disease progression over his current and future follow-up time period. Then, using this risk profile, we schedule future invasive tests whenever the patient's conditional cumulative-risk of progression is predicted to be above a certain threshold. We select this risk threshold automatically in a personalized manner, by optimizing a utility function of the patient-specific consequences of choosing a particular risk threshold based schedule. These consequences are namely, the number of invasive tests for a particular schedule, and the expected time delay in detection of progression if that schedule is followed. Last, we calculate this expected time delay in a personalized manner for both personalized and fixed schedules, to assist patients/doctors in making a more informed decision of choosing a test schedule.
 
-Put your final comments here. 
-Key points:
+The use of joint models gives our schedules certain advantages. First, joint models utilize individualized random-effects, making our schedules inherently personalized. Second, the patient-specific risk of progression employed by the proposed personalized schedules is estimated by utilizing all observed longitudinal and clinical data of a patient. In addition, the continuous longitudinal outcomes are not discritized which is commonly a case in Markov Decision Process based~\citep{alagoz2010operations, steimle2017markov}, and flowchart based test schedules. The third and biggest advantage of our schedules, however, is that they update as more patient data becomes available over follow-up. Last, although we specifically discuss the use of personalized schedules in disease surveillance, they are generic for use under a screening setting as well.
 
-1. heuristic schedules are burdensome
-2. they do not account for cohort to cohort variation
-3. doctors want to utilize information
-4. new MRI is coming up....biopsies are still needed though
-5. we need to combine information and use it rather than use single items such as flowchart
-6. decisions need to be more informative: 
-7. refer to what we did earlier
+Since our schedules are risk based, we proposed a utility function to automate the choice of a risk threshold based schedule. The utility function that we proposed focused only on two aspects of a schedule, namely the burden and the benefit. In this regard, we chose the number of invasive tests in a schedule (burden), and expected time delay in detection of progression (less is beneficial) because they are easy to interpret and are critical in making decision of an invasive test. Since we calculate the expected time delay in a patient-specific manner for both personalized and fixed schedules, patients/doctors can compare and choose schedules according to their preferences for the burden-benefit ratio. Additional measures such as (quality adjusted) life years saved can also be easily added in our utility function. 
 
-Metholodology key points:
-1. simple rule is threshold based biopsy
-2. how to choose that threshold
-3. minimize squared distance
-4. constrain time delay to one year
-5. or just go by threshold: do not take too much risk
-6. or stick to a fixed threshold
-7. interpret each threshold by the two pieces of information
-8. issues with cutoff choice methods
+%In this work we demonstrated the efficacy of our schedules via a simulations study....This paragraph will talk about how the patients who may progress slowly find schedules most useful...cite example from simualtion study...
+I am yet to add a paragraph discussing simulation study quickly. This discussion is useful because it shows the extent to which personalized schedules can benefit patients.
 
-link to web-application
+There are certain limitations of our work. First, in practice, most cohorts observe Type-I right censoring. Hence, the cumulative-risk profiles of patients, and calculation of expected time delay in detection of progression is only possible up to the time of Type-I censoring. This problem can only be resolved as more follow-up data becomes available over time. We proposed a joint model which assumes all events other than progression to be non-informative censoring. Alternative models that account for competing risks may lead to better results as they estimate absolute, and not cause-specific, risk of progression. However, the methodology for scheduling biopsies need not change. Many surveillance tests are imperfect and prone to inter-observer variation (e.g.,~biopsy Gleason grade). Models which account for inter-observer variation in diagnostic tests~\citep{balasubramanian2003estimation} will be interesting to investigate further.
+
+
+
+
+
+
+
+
