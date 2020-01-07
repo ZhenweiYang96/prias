@@ -1,90 +1,166 @@
 % !TEX root =  ../supplementary.tex
-
-\section{Parameter Estimates from the Joint Model Fitted to the PRIAS Dataset}
+\section{Joint Model for the PRIAS Dataset}
 \label{sec:param_estimates_jm_fit_prias}
+\subsection{Dataset}
+We first provide an introduction to the world's largest active surveillance (AS) program called Prostate Cancer Research International Active Surveillance, abbreviated as PRIAS \citep{bokhorst2016decade}, that we use to illustrate our methodology. We then outline the joint model that we fit to the PRIAS dataset. We then present the parameter estimates of our model.
 
-We fit a joint model to the PRIAS dataset using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. The corresponding posterior parameter estimates are shown in Table~\ref{tab:DRE_long} (longitudinal sub-model for DRE outcome), Table~\ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and Table~\ref{tab:DRE_PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model are shown in the following Table~\ref{tab:D_matrix}:
+\subsection{PRIAS Dataset}
+We use the data of prostate cancer patients (see~\ref{table:prias_summary}) from the world's largest AS study called PRIAS \citep{bokhorst2016decade}. More than 100 medical centers from 17 countries worldwide contribute to the collection of data, utilizing a common study protocol and a web-based tool, both available at \url{www.prias-project.org}. We use data collected between December 2006 (beginning of PRIAS study) and May 2019. The primary event of interest is cancer progression detected upon a positive biopsy. Biopsies are scheduled at the following fixed follow-up times (measured since inclusion in AS): year 1, 4, 7, and 10, and every 5 years thereafter. An annual schedule of biopsies is prescribed to those patients who have a PSA (prostate-specific antigen) doubling time between 0 and 10 years. The PSA doubling time at any point during follow-up is measured as the inverse of the slope of the regression line through the base two logarithm of the observed PSA values. The time of progression is interval censored because biopsies are scheduled periodically. There are three types of competing events, namely death, removal of patients from AS on the basis of their observed DRE (digital rectal examination) and PSA measurements, and loss to follow-up. We assume these three types of events to be censored observations. Under this assumption of censoring, Figure~\ref{fig:npmle_plot} shows the cumulative-risk of progression over the study follow-up period.
+
+\begin{table}
+\small
+\centering
+\caption{\textbf{Summary of the PRIAS dataset}. The primary event of interest is cancer progression (increase in biopsy Gleason grade group from grade group~1~to~2 or higher). Abbreviations: PSA is prostate-specific antigen; DRE is digital rectal examination, with level T1c~\citep{schroder1992tnm} indicating a clinically inapparent tumor which is not palpable or visible by imaging, whereas tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable; IQR is interquartile range.}
+\label{table:prias_summary}
+\begin{tabular}{lr}
+\hline
+\hline
+\textbf{Characteristic} &  \textbf{Value}\\
+\hline
+Total patients &  7813\\
+\textit{progression (primary event)}  & 1134\\
+Treatment  &  2250\\
+Watchful waiting   & 334\\
+Lost to follow-up   & 203\\
+Discontinued on request   & 46\\
+Death (other)   & 95\\
+Death (prostate cancer)   & 2\\
+\hline
+Total DRE measurements & 37326 \\
+Total PSA measurements  & 67578\\
+Total biopsies & 15686\\
+\hline
+Median follow-up period per patient (years)   &  1.8 (IQR: 0.9--4.0)\\
+Median age at diagnosis (years)   & 66 (IQR: 61--71)\\
+Median PSA (ng/mL) & 5.7 (IQR: 4.1--7.7)\\
+$\mbox{DRE} = \mbox{T1c}$ (\%)  & 34883/37326 (94\%) \\
+\hline
+Median number of PSA per patient   &  6 (IQR: 4--12)\\
+Median number of DRE per patient & 4 (IQR: 2--7)\\
+Median number of biopsies per patient  &  2 (IQR: 1--2)\\
+\hline
+\end{tabular}
+\end{table}
+ 
+\begin{figure}[!htb]
+\captionsetup{justification=justified}
+\centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
+\caption{\textbf{Estimated cumulative-risk of cancer progression} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit{slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep{turnbull1976empirical}, to account for interval censored progression times observed in the PRIAS dataset. Censoring includes death, removal from AS on the basis of observed longitudinal data, and patient dropout.}
+\label{fig:npmle_plot}
+\end{figure}
+
+\subsection{Model Specification}
+Let $T_i^*$ denote the true progression time of the ${i\mbox{-th}}$ patient included in PRIAS. Since biopsies are conducted periodically, $T_i^*$ is observed with interval censoring ${l_i < T_i^* \leq r_i}$. When progression is observed for the patient at his latest biopsy time $r_i$, then $l_i$ denotes the time of the second latest biopsy. Otherwise, $l_i$ denotes the time of the latest biopsy and ${r_i=\infty}$. Let $\boldsymbol{y}_{di}$ and $\boldsymbol{y}_{pi}$ denote his observed DRE (digital rectal examination) and PSA (prostate-specific antigen) longitudinal measurements, respectively. The observed data of all $n$ patients is denoted by ${\mathcal{D}_n = \{l_i, r_i, \boldsymbol{y}_{di}, \boldsymbol{y}_{pi}; i = 1, \ldots, n\}}$.
+
+%\begin{figure}[!htb]
+%\captionsetup{justification=justified}
+%\centerline{\includegraphics[width=\columnwidth]{images/jmExplanationPlot_1757.eps}}
+%\caption{\textbf{Illustration of the joint model fitted to the PRIAS dataset}. \textbf{Panel~A:} shows the observed DRE measurements and the fitted probability of obtaining $\mbox{DRE} > \mbox{T1c}$ (Equation~\ref{eq:long_model_dre}) for . \textbf{Panel~B:} shows the observed and fitted $\log_2(\mbox{PSA} + 1)$ measurements (Equation~\ref{eq:long_model_psa}). \textbf{Panel~C:} shows the estimated $\log_2(\mbox{PSA} + 1)$ velocity (velocity cannot be observed directly) over time. The hazard function (Equation~\ref{eq:rel_risk_model}) shown in \textbf{Panel~D}, depends on the fitted log odds of having a $\mbox{DRE} > \mbox{T1c}$, and the fitted $\log_2(\mbox{PSA} + 1)$ value and velocity.}
+%\label{fig:jmExplanationPlot_1757}
+%\end{figure}
+
+In our joint model, the patient-specific DRE and PSA measurements over time are modeled using a bivariate generalized linear mixed effects sub-model. The sub-model for DRE is given by (see Panel~A, Figure~\ref{fig:jmExplanationPlot_1757}):
+\begin{equation}
+\label{eq:long_model_dre}
+\begin{split}
+    \mbox{logit} \big[\mbox{Pr}\{y_{di}(t) > \mbox{T1c}\}\big] &= \beta_{0d} + b_{0di} + (\beta_{1d} + b_{1di}) t\\
+    &+ \beta_{2d} (\mbox{Age}_i-65) + \beta_{3d} (\mbox{Age}_i-65)^2
+    \end{split}
+\end{equation}
+where, $t$ denotes the follow-up visit time, and $\mbox{Age}_i$ is the age of the ${i\mbox{-th}}$ patient at the time of inclusion in AS. The fixed effect parameters are denoted by ${\{\beta_{0d}, \ldots, \beta_{3d}\}}$, and ${\{b_{0di}, b_{1di}\}}$ are the patient specific random effects. With this definition, we assume that the patient-specific log odds of obtaining a DRE measurement larger than T1c (palpable tumor) remain linear over time. 
+
+The mixed effects sub-model for PSA is given by (see Panel~B, Figure~\ref{fig:jmExplanationPlot_1757}):
+\begin{equation}
+\label{eq:long_model_psa}
+\begin{split}
+    \log_2 \big\{y_{pi}(t) + 1\big\} &= m_{pi}(t) + \varepsilon_{pi}(t),\\
+    m_{pi}(t) &= \beta_{0p} + b_{0pi} + \sum_{k=1}^3 (\beta_{kp} + b_{kpi})  B_k(t,\mathcal{K})\\ 
+    &+ \beta_{4p} (\mbox{Age}_i-65) + \beta_{5p} (\mbox{Age}_i-65)^2,
+    \end{split}
+\end{equation}
+where, $m_{pi}(t)$ denotes the underlying measurement error free value of $\log_2 (\mbox{PSA} + 1)$ transformed \citep{pearson1994mixed,lin2000latent} measurements at time $t$. We model it non-linearly over time using B-splines \citep{de1978practical}. To this end, our B-spline basis function $B_k(t, \mathcal{K})$ has 3 internal knots at $\mathcal{K} = \{0.75, 2.12\}$ years (33-rd and 66-th percentile of observed follow-up times), and boundary knots at 0 and 6.4 years (95-th percentile of the observed follow-up times). The fixed effect parameters are denoted by ${\{\beta_{0p},\ldots,\beta_{5p}\}}$, and ${\{b_{0pi}, \ldots, b_{3pi}\}}$ are the patient specific random effects. The error $\varepsilon_{pi}(t)$ is assumed to be t-distributed with three degrees of freedom (see~\ref{subsec:t-dist-assumption}) and scale $\sigma$, and is independent of the random effects. 
+
+To account for the correlation between the DRE and PSA measurements of a patient, we link their corresponding random effects. More specifically, the complete vector of random effects ${\boldsymbol{b}_i = (b_{0di}, b_{1di}, b_{0pi}, \ldots, b_{3pi})^\top}$ is assumed to follow a multivariate normal distribution with mean zero and variance-covariance matrix $\boldsymbol{D}$.
+
+To model the impact of DRE and PSA measurements on the risk of progression, our joint model uses a relative risk sub-model. More specifically, the hazard of progression $h_i(t)$ at a time $t$ is given by (see Panel~D, Figure~\ref{fig:jmExplanationPlot_1757}):
+\begin{equation}
+\label{eq:rel_risk_model}
+\begin{split}
+    h_i(t) &= h_0(t) \exp\Big(\gamma_1 (\mbox{Age}_i-65) + \gamma_2 (\mbox{Age}_i-65)^2\\
+    &+\alpha_{1d} \mbox{logit} \big[\mbox{Pr}\{y_{di}(t) > \mbox{T1c}\}\big]+ \alpha_{1p} m_{pi}(t) + \alpha_{2p} \frac{\partial m_{pi}(t)}{\partial {t}}\Big),
+    \end{split}
+\end{equation}
+where, $\gamma_1, \gamma_2$ are the parameters for the effect of age. The parameter $\alpha_{1d}$ models the impact of log odds of obtaining a $\mbox{DRE} > \mbox{T1c}$ on the hazard of progression. The impact of PSA on the hazard of progression is modeled in two ways: a) the impact of the error free underlying PSA value $m_{pi}(t)$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_1757}), and b) the impact of the underlying PSA velocity $\partial m_{pi}(t)/\partial {t}$ (see Panel~C, Figure~\ref{fig:jmExplanationPlot_1757}). The corresponding parameters are $\alpha_{1p}$ and $\alpha_{2p}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}.
+
+\subsection{Parameter Estimates}
+We fit a joint model to the PRIAS dataset using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. The corresponding posterior parameter estimates are shown in \ref{tab:DRE_long} (longitudinal sub-model for DRE outcome), \ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and \ref{tab:DRE_PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model are shown in the following \ref{tab:D_matrix}:
 \begin{table}[!htb]
 \begin{center}
-\caption{Estimated variance-covariance matrix $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0d},b_{1d},b_{0p}, b_{1p}, b_{2p}, b_{3p}, b_{4p})}$ (see \ref{subsec:model_def}) from the joint model fitted to the PRIAS dataset. The variances of the random effects are highlighted along the diagonal of the variance-covariance matrix.}
+\caption{Estimated variance-covariance matrix $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0d},b_{1d},b_{0p}, b_{1p}, b_{2p}, b_{3p})}$ from the joint model fitted to the PRIAS dataset. The variances of the random effects are highlighted along the diagonal of the variance-covariance matrix.}
 \label{tab:D_matrix}
-\begin{tabular}{lrrrrrrr}
-\Hline
-Random Effects    & $b_{0d}$    & $b_{1d}$    & $b_{0p}$    & $b_{1p}$   & $b_{2p}$   & $b_{3p}$   & $b_{4p}$    \\
+\begin{tabular}{lrrrrrr}
 \hline
-$b_{0d}$ & \cellcolor{black}\textcolor{white}{7.55}  & -0.56 & -0.18 & 0.08 & 0.084 & 0.003 & -0.019 \\
-$b_{1d}$ & -0.564 & \cellcolor{black}\textcolor{white}{1.379}  & 0.081  & 0.119 & 0.165 & 0.266 & 0.219  \\
 \hline
-$b_{0p}$ & -0.182 & 0.081  & \cellcolor{black}\textcolor{white}{0.208}  & 0.031 & 0.034 & 0.068 & 0.014  \\
-$b_{1p}$ & 0.075  & 0.119  & 0.031  & \cellcolor{black}\textcolor{white}{0.224} & 0.109 & 0.158 & 0.088  \\
-$b_{2p}$ & 0.084  & 0.165  & 0.034  & 0.109 & \cellcolor{black}\textcolor{white}{0.293} & 0.324 & 0.238  \\
-$b_{3p}$ & 0.003  & 0.266  & 0.068  & 0.158 & 0.324 & \cellcolor{black}\textcolor{white}{0.480} & 0.312  \\
-$b_{4p}$ & -0.019 & 0.219  & 0.014  & 0.088 & 0.238 & 0.312 & \cellcolor{black}\textcolor{white}{0.290}  \\
+Random Effects    & $b_{0d}$    & $b_{1d}$    & $b_{0p}$    & $b_{1p}$   & $b_{2p}$   & $b_{3p}$ \\
+\hline
+$b_{0d}$ & 9.233 & -0.183 & -0.213 & 0.082 & 0.058 & 0.023 \\
+$b_{1d}$ & -0.183 & 1.259 & 0.091 & 0.079 & 0.145 & 0.109 \\
+\hline
+$b_{0p}$ & -0.213 & 0.091 & 0.247 & 0.007 & 0.067 & 0.018 \\
+$b_{1p}$ & 0.082 & 0.079 & 0.007 & 0.248 & 0.264 & 0.189 \\
+$b_{2p}$ & 0.058 & 0.145 & 0.067 & 0.264 & 0.511 & 0.327 \\
+$b_{3p}$ & 0.023 & 0.109 & 0.018 & 0.189 & 0.327 & 0.380 \\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
-
-For the DRE mixed effects sub-model (see Equation \ref{eq:long_model_dre}) parameter estimates, in Table~\ref{tab:DRE_long} we can see that the age of the patient trivially affects the baseline log odds of obtaining a DRE measurement larger than T1c. In Figure~\ref{fig:fitted_marginal_dre} we present the marginal evolution of log odds of obtaining a DRE larger than T1c, and the corresponding marginal probability, over a period of 10 years for a hypothetical AS patient who is included in AS at the age of 70 years. In addition, we present plots of observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_dre}.
 
 \begin{table}[!htb]
 \begin{center}
 \caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_dre}) for the DRE outcome.}
 \label{tab:DRE_long}
-\begin{tabular}{lrrrrr}
-\Hline
-Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\% & P     \\
+\begin{tabular}{lrrrr}
 \hline
-(Intercept)                      & -4.017   & 0.136 & -4.270  & -3.763 & \textless0.001     \\
-$(\mbox{Age} - 70)$                      & 0.058    & 0.009 & 0.041  & 0.075  & \textless0.001     \\
-$(\mbox{Age} - 70)^2$ & -0.001   & 0.001 & -0.003 & 0.000      & 0.076 \\
-visitTimeYears                   & -0.604   & 0.095 & -0.794 & -0.437 & \textless0.001    \\
+\hline
+Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\%   \\
+\hline
+(Intercept)                      & -4.407 & 0.151 & -4.716 & -4.113 \\
+$(\mbox{Age} - 65)$              & 0.057 & 0.009 & 0.039 & 0.075 \\
+$(\mbox{Age} - 65)^2$            & -0.002 & 0.001 & -0.004 & 0.000\\
+visitTimeYears                   & -1.089 & 0.113 & -1.292 & -0.866 \\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
 
-\begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/marginal_dre_both.eps}}
-\caption{Fitted marginal evolution of the log odds of obtaining a DRE larger than T1c, and the corresponding marginal probability, with 95\% credible interval. These results are for a hypothetical AS patient who is included in AS at the age of 70 years.}
-\label{fig:fitted_marginal_dre}
-\end{figure}
-
-\begin{figure}[!htb]
-\centerline{\includegraphics[width=\columnwidth]{images/fitted_9subject_dre.eps}}
-\caption{Observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed DRE measurements, PSA measurements, and time of the latest biopsy. Observed DRE measurements plotted against 0\% probability are equal to T1c. Observed DRE measurements plotted against 100\% probability are larger than T1c.}
-\label{fig:fitted_9subject_dre}
-\end{figure}
-
-\clearpage
-
-For the PSA mixed effects sub-model parameter estimates (see Equation \ref{eq:long_model_psa}), in Table~\ref{tab:PSA_long} we can see that the age of the patient trivially affects the baseline ${\log_2(\mbox{PSA} + 1)}$ measurement. Since the longitudinal evolution of ${\log_2 (\mbox{PSA} + 1)}$ measurements is modeled with non-linear terms, the interpretation of the coefficients corresponding to time is not straightforward. In lieu of the interpretation, in Figure~\ref{fig:fitted_marginal_psa} we present the fitted marginal evolution of ${\log_2 (\mbox{PSA} + 1)}$ over a period of 10 years for a hypothetical patient who is included in AS at the age of 70 years. In addition, we present plots of observed versus fitted PSA profiles for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_psa}. 
 
 \begin{table}[!htb]
 \begin{center}
 \caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_psa}) for the PSA outcome.}
 \label{tab:PSA_long}
-\begin{tabular}{lrrrrr}
-\Hline
-Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\% & P     \\
+\begin{tabular}{lrrrr}
 \hline
-(Intercept) & 2.701 & 0.008 & 2.686  & 2.716  & \textless0.001 \\
-$(\mbox{Age} - 70)$ & 0.003 & 0.001 & 0.001  & 0.005  & \textless0.001 \\
-$(\mbox{Age} - 70)^2$ & -4.7 $\times 10^{-4}$     & 9.8 $\times 10^{-5}$     & -6.6 $\times 10^{-4}$ & -2.7 $\times 10^{-4}$      & \textless0.001 \\
-Spline: [0.00, 0.10] years & 0.054 & 0.009 & 0.037  & 0.073  & \textless0.001 \\
-Spline: [0.10, 0.70] years & 0.177 & 0.012 & 0.151  & 0.200  & \textless0.001 \\
-Spline: [0.70, 4.00] years & 0.194 & 0.016 & 0.161  & 0.225  & \textless0.001 \\
-Spline: [4.00, 5.42] years & 0.341 & 0.015 & 0.312  & 0.371  & \textless0.001 \\
-$\sigma$ & 0.137 & 0.001 & 0.135  & 0.138  & \\
+\hline
+Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\% \\
+\hline
+(Intercept) & 2.687 & 0.007 & 2.674 & 2.701 \\
+$(\mbox{Age} - 65)$ & 0.008 & 0.001 & 0.006 & 0.010 \\
+$(\mbox{Age} - 65)^2$ & -0.001 & 0.000 & -0.001 & 0.000 \\
+Spline: [0.00, 0.75] years & 0.199 & 0.009 & 0.181 & 0.217 \\
+Spline: [0.75, 2.12] years & 0.293 & 0.012 & 0.269 & 0.316 \\
+Spline: [2.12, 6.4] years & 0.379 & 0.014 & 0.352 & 0.406\\
+$\sigma$ & 0.144 & 0.001 & 0.142 & 0.145\\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
 
+We present plots of observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected patients in Figure~\ref{fig:fitted_9subject_dre}. Similarly observed versus fitted PSA profiles for nine randomly selected patients are shown in Figure~\ref{fig:fitted_9subject_psa}. 
+
 \begin{figure}[!htb]
-\centerline{\includegraphics[width=0.7\columnwidth]{images/marginal_psa.eps}}
-\caption{Fitted marginal evolution of $\log_2 (\mbox{PSA} + 1)$ measurements over a period of 10 years with 95\% credible interval, for a hypothetical patient who is included in AS at the age of 70 years.}
-\label{fig:fitted_marginal_psa}
+\centerline{\includegraphics[width=\columnwidth]{images/fitted_9subject_dre.eps}}
+\caption{Observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed DRE measurements, PSA measurements, and time of the latest biopsy. Observed DRE measurements plotted against 0\% probability are equal to T1c. Observed DRE measurements plotted against 100\% probability are larger than T1c.}
+\label{fig:fitted_9subject_dre}
 \end{figure}
 
 \begin{figure}[!htb]
@@ -93,48 +169,46 @@ $\sigma$ & 0.137 & 0.001 & 0.135  & 0.138  & \\
 \label{fig:fitted_9subject_psa}
 \end{figure}
 
-\clearpage
-
-For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in Table~\ref{tab:DRE_PSA_survival} show that both ${\log_2 (\mbox{PSA} + 1)}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of cancer progression.  
+For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in \ref{tab:DRE_PSA_survival} show that both ${\log_2 (\mbox{PSA} + 1)}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of progression.  
 
 \begin{table}[!htb]
 \begin{center}
 \caption{Estimated mean and 95\% credible interval for the parameters of the relative risk sub-model (see Equation \ref{eq:rel_risk_model}) of the joint model fitted to the PRIAS dataset.}
 \label{tab:DRE_PSA_survival}
-\begin{tabular}{lrrrrr}
-\Hline
-Variable                      & Mean   & Std. Dev & 2.5\%  & 97.5\%                 & P              \\
+\begin{tabular}{lrrrr}
 \hline
-$(\mbox{Age} - 70)$                      & 0.012    & 0.006 & 0.000 & 0.022  & 0.045 \\
-$(\mbox{Age} - 70)^2$ & -0.001   & 0.001 & -0.002 & 0.000      & 0.095 \\
-$\mbox{logit} \big\{\mbox{Pr}(\mbox{DRE} > \mbox{T1c})\big\}$                 & 0.147    & 0.017 & 0.115  & 0.183  & \textless0.001     \\
-Fitted $\log_2 (\mbox{PSA} + 1)$ value            & 0.104    & 0.078 & -0.044 & 0.256  & 0.193 \\
-Fitted $\log_2 (\mbox{PSA} + 1)$ velocity             & 3.396    & 0.564 & 2.376  & 4.475  & \textless0.001   \\
+\hline
+Variable                      & Mean   & Std. Dev & 2.5\%  & 97.5\% \\
+\hline
+$(\mbox{Age} - 65)$  & 0.034 & 0.005 & 0.025 & 0.043 \\
+$(\mbox{Age} - 65)^2$ & 0.000 & 0.001 & -0.001 & 0.001 \\
+$\mbox{logit} \big\{\mbox{Pr}(\mbox{DRE} > \mbox{T1c})\big\}$ & 0.047 & 0.014 & 0.018 & 0.073 \\
+Fitted $\log_2 (\mbox{PSA} + 1)$ value  & 0.024 & 0.076 & -0.125 & 0.170\\
+Fitted $\log_2 (\mbox{PSA} + 1)$ velocity  & 2.656 & 0.291 & 2.090 & 3.236 \\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
 
-It is important to note that since age, ${\log_2 (\mbox{PSA} + 1)}$ value and velocity, and log odds of ${\mbox{DRE} > \mbox{T1c}}$ are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in Table \ref{tab:DRE_PSA_survival_easy}, we present the hazard (of cancer progression) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in log odds of DRE > T1c, from -6.650 to -4.356 (fitted first and third quartiles) corresponds to a hazard ratio of 1.402. The interpretation for the rest is similar.
+It is important to note that since age, ${\log_2 (\mbox{PSA} + 1)}$ value and velocity, and log odds of ${\mbox{DRE} > \mbox{T1c}}$ are all measured on different scales, a comparison between the corresponding parameter estimates is not easy. To this end, in \ref{tab:DRE_PSA_survival_easy}, we present the hazard (of progression) ratio, for an increase in the aforementioned variables from their first to the third quartile. For example, an increase in log odds of DRE > T1c, from -6.650 to -4.356 (fitted first and third quartiles) corresponds to a hazard ratio of 1.402. The interpretation for the rest is similar.
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Hazard (of cancer progression) ratio and 95\% credible interval (CI), for an increase in the variables of relative risk sub-model, from their first quartile ($\mbox{Q}_1$) to their third quartile ($\mbox{Q}_3$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
+\caption{Hazard (of progression) ratio and 95\% credible interval (CI), for an increase in the variables of relative risk sub-model, from their first quartile ($\mbox{Q}_1$) to their third quartile ($\mbox{Q}_3$). Except for age, quartiles for all other variables are based on their fitted values obtained from the joint model fitted to the PRIAS dataset.}
 \label{tab:DRE_PSA_survival_easy}
 \begin{tabular}{lrrr}
-\Hline
+\hline
+\hline
 Variable                      & $\mbox{Q}_1$   & $\mbox{Q}_3$ & Hazard ratio [95\% CI] \\
 \hline
-Age & 65 & 75 & 1.129 [1.002, 1.251] \\
-$\mbox{logit} \big\{\mbox{Pr}(\mbox{DRE} > \mbox{T1c})\big\}$ & -6.650 & -4.356 & 1.402 [1.301, 1.521]\\
-$\log_2 (\mbox{PSA} + 1)$ value & 2.336 & 3.053 & 1.079 [0.969, 1.201]\\
-$\log_2 (\mbox{PSA} + 1)$ velocity & -0.032 & 0.161 & 1.938 [1.582, 2.372]\\
+Age & 61 & 71 & 1.402 [1.282, 1.539] \\
+$\mbox{logit} \big\{\mbox{Pr}(\mbox{DRE} > \mbox{T1c})\big\}$ & -8.278 & -5.155 & 1.157 [1.057, 1.255]\\
+$\log_2 (\mbox{PSA} + 1)$ value & 2.362 & 3.076 & 1.017 [0.914, 1.129]\\
+$\log_2 (\mbox{PSA} + 1)$ velocity & -0.033 & 0.145 & 1.603 [1.450, 1.778]\\
 \hline
 \end{tabular}
 \end{center}
 \end{table}
-
-
 
 \clearpage
 
@@ -150,58 +224,29 @@ With regards to the choice of the distribution for the error term $\varepsilon_p
 
 \clearpage
 \subsection{Predictive Performance of the Joint Model Fitted to the PRIAS dataset}
-We evaluate the predictive performance of our model using two measures: the area under the receiver operating characteristic curve (AUC), and the prediction error. Given the longitudinal nature of the data at hand, in a joint model time dependent AUC and prediction errors are more relevant. More specifically, given the time of latest biopsy $t$, and history of DRE and PSA measurements up to time $s$, we are interested in a medically relevant time frame $(t, s]$, within which the occurrence of cancer progression is of interest. In the case of prostate cancer, at any point in time it is of interest to identify patients who may have obtained cancer progression in the last one year ($s-t = 1$). Using data of the patients from the PRIAS study, we calculate the AUC and prediction error (see \citet{landmarking2017} for estimation) at the following time points ($s$): year one, year two, year three, year four, and year five (95-percentile of observed cancer progression times) of follow-up in AS. The resulting AUC, and prediction error are presented in Table \ref{tab:AUC_PE}.
+The performance of personalized schedules depends on the performance of the joint model. In this regard, we evaluate the predictive performance of the model that we fitted to the PRIAS dataset, using two measures: the area under the receiver operating characteristic curve (AUC) as a measure of discrimination, and the mean absolute prediction error (MAPE) as a measure of calibration. Given the longitudinal nature of the data at hand, in a joint model time dependent AUC and MAPE are more relevant. More specifically, in PRIAS, given the time of latest biopsy $t$, and history of DRE and PSA measurements up to time $s$, we are interested in a medically relevant time frame $(t, s]$, within which the occurrence of progression is of interest. In the case of prostate cancer, at any point in time it is of interest to identify patients who may have obtained progression in the last one year ($s-t = 1$). Using data of the patients from the PRIAS study, we calculate the AUC and MAPE (see \citet{landmarking2017} for estimation) at every six months (schedule of PSA/DRE measurement follow-up in PRIAS) between year one and year six (roughly the 95-percentile of observed follow-up times). The resulting AUC, and MAPE are presented in \ref{tab:AUC_PE}. We can see that the our model has a moderate AUC and MAPE. Thus, we expect even better performance of personalized schedules than in our simulation study, in joint models with better AUC and MAPE.
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Area under the receiver operating characteristic curves (AUC), and prediction error, with 95\% confidence interval in brackets.}
+\caption{Follow-up time dependent, area under the receiver operating characteristic curves (AUC), and mean absolute prediction error (MAPE), with 95\% confidence interval in brackets.}
 \label{tab:AUC_PE}
 \begin{tabular}{r|r|r}
-\Hline
-Follow-up year & AUC & Prediction Error\\ 
 \hline
-1 & 0.651 [0.633, 0.663] & 0.055 [0.052, 0.059]\\
-2 & 0.621 [0.610, 0.640] & 0.144 [0.140, 0.148]\\
-3 & 0.748 [0.728, 0.770] & 0.076 [0.075, 0.078]\\
-4 & 0.710 [0.691, 0.736] & 0.076 [0.072, 0.079]\\
-5 & 0.592 [0.577, 0.614] & 0.107 [0.103, 0.112]\\
+\hline
+Follow-up period (years) & AUC (95\% CI) & MAPE (95\%CI)\\ 
+\hline
+0.0 to 1.0 & 0.658 [0.620, 0.693] & 0.234 [0.229, 0.240]\\
+0.5 to 1.5 & 0.648 [0.631, 0.663] & 0.220 [0.213, 0.226]\\
+1.0 to 2.0 & 0.624 [0.600, 0.644] & 0.151 [0.147, 0.155]\\
+1.5 to 2.5 & 0.649 [0.604, 0.704] & 0.127 [0.118, 0.134]\\
+2.0 to 3.0 & 0.683 [0.629, 0.729] & 0.134 [0.121, 0.143]\\
+2.5 to 3.5 & 0.681 [0.604, 0.739] & 0.115 [0.105, 0.128]\\
+3.0 to 4.0 & 0.647 [0.600, 0.710] & 0.079 [0.073, 0.087]\\
+3.5 to 4.5 & 0.630 [0.583, 0.668] & 0.095 [0.089, 0.101]\\
+4.0 to 5.0 & 0.614 [0.557, 0.659] & 0.104 [0.098, 0.111]\\
+4.5 to 5.5 & 0.615 [0.541, 0.702] & 0.101 [0.088, 0.114]\\
+5.0 to 6.0 & 0.617 [0.550, 0.713] & 0.102 [0.086, 0.121]\\
 \hline
 \end{tabular}	
 \end{center}
 \end{table}
-
-%\begin{table}[!htb]
-%\begin{center}
-%\caption{Area under the receiver operating characteristic curves (AUC), and 95\% confidence interval in brackets. AUC's are calculated for two joint models: first one utilizing information from both DRE and PSA measurements, and second one utilizing information from only PSA measurements.}
-%\label{tab : AUC}
-%\begin{tabular}{rrr}
-%\Hline
-%Year                      & both DRE and PSA & only PSA\\ 
-%\hline
-%1 & 0.651 [0.633, 0.663] & 0.636 [0.626, 0.648]\\
-%2 & 0.621 [0.610, 0.640] & 0.593 [0.584, 0.606]\\
-%3 & 0.748 [0.728, 0.770] & 0.716 [0.699, 0.733]\\
-%4 & 0.710 [0.691, 0.736] & 0.643 [0.623, 0.660]\\
-%5 & 0.592 [0.577, 0.614] & 0.536 [0.517, 0.553]\\
-%\hline
-%\end{tabular}	
-%\end{center}
-%\end{table}
-
-%\begin{table}[!htb]
-%\begin{center}
-%\caption{Prediction error, and 95\% confidence interval in brackets. Prediction errors are calculated for two joint models: first one utilizing information from both DRE and PSA measurements, and second one utilizing information from only PSA measurements.}
-%\label{tab : PE}
-%\begin{tabular}{rrr}
-%\Hline
-%Year                      & both DRE and PSA & only PSA\\ 
-%\hline
-%1 & 0.055 [0.052, 0.059] & 0.056 [0.052, 0.059]\\
-%2 & 0.144 [0.140, 0.148] & 0.148 [0.145, 0.153]\\
-%3 & 0.076 [0.075, 0.078] & 0.077 [0.075, 0.080]\\
-%4 & 0.076 [0.072, 0.079] & 0.077 [0.073, 0.080]\\
-%5 & 0.107 [0.103, 0.112] & 0.116 [0.112, 0.122]\\
-%\hline
-%\end{tabular}	
-%\end{center}
-%\end{table}

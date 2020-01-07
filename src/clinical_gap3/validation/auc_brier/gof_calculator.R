@@ -44,11 +44,11 @@ for(k in 1:length(pe_list)){
   
   print('Calculating PE')
   pe_list[[k]] = goodness_of_fit(pred_model = prias_model_recalib,
-                                   orig_model = mvJoint_psa_time_scaled,
-                                   newdata = longdata,
-                                   T_start = t_horizs[k]-1,
-                                   T_horiz = t_horizs[k],
-                                   M = M)
+                                 orig_model = mvJoint_psa_time_scaled,
+                                 newdata = longdata,
+                                 T_start = t_horizs[k]-1,
+                                 T_horiz = t_horizs[k],
+                                 M = M)
   
   #save(pe_list, file = paste0("Rdata/gap3/PRIAS_2019/pe/",cohort,"_",seed,".Rdata"))
 }

@@ -1,4 +1,4 @@
-seeds = 2101:2103
+seeds = 2001:2005
 
 for(seed in seeds){
   files = list.files("Rdata/lastpaper/simulation/results/",

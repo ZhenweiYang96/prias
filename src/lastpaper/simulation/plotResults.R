@@ -2,7 +2,7 @@ library(ggplot2)
 library(ggpubr)
 FONT_SIZE = 12
 
-seeds = 2101:2103
+seeds = 2021:2030
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results/seed_", seed, ".Rdata"))
@@ -11,12 +11,12 @@ biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
 }))
 
 biopsyDf_summary = droplevels(biopsyDf_summary[biopsyDf_summary$schedule %in%
-                                      c("Annual", "PRIAS", "Risk: 10%", "Risk: 5%", "Risk: Auto (1)"),])
+                                      c("Annual", "PRIAS", "Risk: 10%", "Risk: 5%", "Risk: Auto (0.5)"),])
 
 levels(biopsyDf_summary$schedule)[5] = "Risk: Auto"
-
-biopsyDf_summary$nb[biopsyDf_summary$delay<0] = biopsyDf_summary$nb[biopsyDf_summary$delay<0] + 1
-biopsyDf_summary$delay[biopsyDf_summary$delay<0] = 10 - biopsyDf_summary$progression_time[biopsyDf_summary$delay<0]
+# 
+# biopsyDf_summary$nb[biopsyDf_summary$delay<0] = biopsyDf_summary$nb[biopsyDf_summary$delay<0] + 1
+# biopsyDf_summary$delay[biopsyDf_summary$delay<0] = 10 - biopsyDf_summary$progression_time[biopsyDf_summary$delay<0]
 
 a = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
