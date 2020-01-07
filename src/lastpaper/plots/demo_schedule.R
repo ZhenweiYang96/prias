@@ -6,7 +6,7 @@ library(ggpubr)
 load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age_light.Rdata")
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 source("src/lastpaper/prediction_psa_dre.R")
-debugSource("src/lastpaper/scheduleCreator.R")
+source("src/lastpaper/scheduleCreator.R")
 
 SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
