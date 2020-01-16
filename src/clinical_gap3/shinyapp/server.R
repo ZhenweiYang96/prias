@@ -197,12 +197,20 @@ shinyServer(function(input, output, session) {
     footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )
   
+  cohort_change_modal_UCSF = modalDialog(
+    title="Selected Cohort: UCSF AS",
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 11 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("Removing any previously loaded patient data."),
+    footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
+  )
+  
   MODAL_MAPPING = list("PRIAS"=cohort_change_modal_PRIAS,
                        "Toronto"=cohort_change_modal_Toronto,
                        "Hopkins"=cohort_change_modal_Hopkins,
                        "MSKCC"=cohort_change_modal_MSKCC,
                        "MUSIC"=cohort_change_modal_MUSIC,
-                       "KCL"=cohort_change_modal_KCL)
+                       "KCL"=cohort_change_modal_KCL,
+                       "UCSF"=cohort_change_modal_UCSF)
   
   #modal for manual entry
   manual_entry_modal = modalDialog(

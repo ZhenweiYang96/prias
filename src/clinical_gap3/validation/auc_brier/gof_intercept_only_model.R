@@ -1,4 +1,5 @@
-goodness_of_fit_intercept_only <- function (icenRegModel, newdata, T_start, T_horiz) {
+goodness_of_fit_intercept_only <- function (icenRegModel, newdata, T_start, T_horiz, 
+                                            use_biopsy=T) {
   
   #we want intercept only model estimates
   baseline_est = getSCurves(icenRegModel, newdata=NULL)
@@ -9,7 +10,7 @@ goodness_of_fit_intercept_only <- function (icenRegModel, newdata, T_start, T_ho
   getConditionalSurvProb = function(last.time, pred.time){
     if(pred.time<=last.time){
       return(1)
-    }else{
+    }else if(use_biopsy==T){
       #turnbull intervals are hard to understand
       index1 = tail(which(baseline_est_int[,2]<=last.time),1)
       if(baseline_est_int[index1 + 1, 1]<=last.time){
@@ -26,6 +27,16 @@ goodness_of_fit_intercept_only <- function (icenRegModel, newdata, T_start, T_ho
       }
       
       return(pred.time.surv / last.time.surv)
+    }else{
+      #turnbull intervals are hard to understand
+      index2 = tail(which(baseline_est_int[,2]<=pred.time),1)
+      if(baseline_est_int[index2 + 1, 1]<=pred.time){
+        pred.time.surv = baseline_est_int[index2 + 1,3]
+      }else{
+        pred.time.surv = baseline_est_int[index2, 3]
+      }
+      
+      return(pred.time.surv)
     }
   }
   

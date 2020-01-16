@@ -2,7 +2,7 @@ library(ggplot2)
 library(JMbayes)
 library(splines)
 
-load("Rdata/gap3/PRIAS_2019/validation/fitted_true_models/mvJoint_psa_MUSIC.Rdata")
+load("Rdata/gap3/PRIAS_2019/validation/fitted_true_models/mvJoint_psa_UCSF.Rdata")
 cohort_model = mvJoint_psa_time_scaled
 load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
 prias_model = mvJoint_psa_time_scaled
@@ -138,10 +138,12 @@ prias_model_recalib$mcmc$Bs_gammas = MASS::mvrnorm(n=nrow(prias_model_recalib$mc
                                                    mu = mle_bs_gammas$par,
                                                    Sigma = 1.6*solve(mle_bs_gammas$hessian))
 
+calib_pred_times = seq(0.1, 10, 0.1)
 a=splineDesign(knots = cohort_model$control$knots, x = calib_pred_times, ord = 4, outer.ok = T) %*% cohort_model$statistics$postMeans$Bs_gammas
 
 b=splineDesign(knots = prias_model_recalib$control$knots, x = calib_pred_times, ord = 4, outer.ok = T) %*% prias_model_recalib$statistics$postMeans$Bs_gammas
 
-ggplot() + geom_line(aes(x=calib_pred_times, y=a)) + geom_line(aes(x=calib_pred_times, y=b))
+ggplot() + geom_line(aes(x=calib_pred_times, y=a)) + 
+  geom_line(aes(x=calib_pred_times, y=b))
 
-save(prias_model_recalib, file="Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_priasMUSIC.Rdata")
+save(prias_model_recalib, file="Rdata/gap3/PRIAS_2019/validation/recalibrated_prias_model/mvJoint_psa_recalib_priasUCSF.Rdata")

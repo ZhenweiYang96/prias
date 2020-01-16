@@ -56,11 +56,15 @@ load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/MUSIC.Rdata")
 calib_MUSIC= rowMeans(cumrisk_models[[2]],na.rm = T)
 load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/PRIAS.Rdata")
 calib_PRIAS= rowMeans(cumrisk_models[[2]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/UCSF.Rdata")
+calib_UCSF= rowMeans(cumrisk_models[[2]],na.rm = T)
 
 calib_df = data.frame(pred_time=calib_pred_times,
                       cum_risk=c(calib_Hopkins, calib_KCL,
-                                 calib_MSKCC, calib_Toronto, calib_MUSIC, calib_PRIAS),
-                      cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", "MUSIC", "PRIAS"), each=length(calib_pred_times)))
+                                 calib_MSKCC, calib_Toronto, 
+                                 calib_MUSIC, calib_PRIAS, calib_UCSF),
+                      cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", 
+                                   "MUSIC", "PRIAS", "UCSF"), each=length(calib_pred_times)))
 
 calib_df$max_time = sapply(calib_df$cohort, function(x){
   reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
@@ -73,8 +77,8 @@ before_recalib = npmle_plot_all +
             linetype="dashed")+
   geom_label(aes(x=cohort_labpos_x, 
                  y=cohort_labpos_y, 
-                 label=cohort_names,
-                 fill=cohort_names), color='white') +
+                 label=cohortnames,
+                 fill=cohortnames), color='white') +
   ggtitle("Before recalibration")
 
 load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/Hopkins.Rdata")
@@ -87,13 +91,16 @@ load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/KCL.Rdata")
 calib_KCL= rowMeans(cumrisk_models[[3]],na.rm = T)
 load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/MUSIC.Rdata")
 calib_MUSIC= rowMeans(cumrisk_models[[3]],na.rm = T)
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/UCSF.Rdata")
+calib_UCSF= rowMeans(cumrisk_models[[3]],na.rm = T)
 load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/PRIAS.Rdata")
 calib_PRIAS= rowMeans(cumrisk_models[[2]],na.rm = T)
 
 recalib_df = data.frame(pred_time=calib_pred_times,
                       cum_risk=c(calib_Hopkins, calib_KCL,
-                                 calib_MSKCC, calib_Toronto, calib_MUSIC, calib_PRIAS),
-                      cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", "MUSIC", "PRIAS"), each=length(calib_pred_times)))
+                                 calib_MSKCC, calib_Toronto, calib_MUSIC, calib_PRIAS,
+                                 calib_UCSF),
+                      cohort=rep(c("Hopkins", "KCL", "MSKCC", "Toronto", "MUSIC", "PRIAS", "UCSF"), each=length(calib_pred_times)))
 
 recalib_df$max_time = sapply(recalib_df$cohort, function(x){
   reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
@@ -106,8 +113,8 @@ after_recalib = npmle_plot_all +
             linetype="dashed")+
   geom_label(aes(x=cohort_labpos_x, 
                  y=cohort_labpos_y, 
-                 label=cohort_names,
-                 fill=cohort_names), color='white') +
+                 label=cohortnames,
+                 fill=cohortnames), color='white') +
   ggtitle("   After recalibration") +
   theme(axis.text.y = element_blank(), axis.title.y = element_blank())
 

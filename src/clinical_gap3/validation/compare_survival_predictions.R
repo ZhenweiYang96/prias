@@ -3,7 +3,7 @@ library(splines)
 library(survival)
 library(interval)
 
-load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/LondonKCL.Rdata")
+load("Rdata/gap3/PRIAS_2019/validation/predicted_risk_comparisons/UCSF.Rdata")
 load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
 
 npmle=npmle_all$`London-KCL`

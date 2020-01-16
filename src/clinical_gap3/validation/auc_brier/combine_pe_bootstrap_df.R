@@ -9,7 +9,7 @@ pe_bootstrap_df = do.call('rbind', lapply(cohortnames, function(cohort){
 
   cohort_df = lapply(1:30, function(iter){
     seed = 2019 + iter
-    load(paste0("Rdata/gap3/PRIAS_2019/validation/pe_intercept_only_model/", cohort, "_", seed, ".Rdata"))
+    load(paste0("Rdata/gap3/PRIAS_2019/pe/", cohort, "_", seed, ".Rdata"))
     for(i in 1:length(t_horizs)){
       pe_list[[i]] = pe_list[[i]][, c("P_ID", "right_cens_time", "reclassification", 
                                       "real_period_status","cum_risk_T_start_T_horiz", 

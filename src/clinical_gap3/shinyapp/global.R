@@ -34,14 +34,16 @@ COHORT_MAPPING = c("PRIAS" = "PRIAS",
                    "Johns Hopkins AS" = "Hopkins",
                    "MSKCC AS" = "MSKCC",
                    "MUSIC AS" = "MUSIC",
-                   "KCL (London) AS" = "KCL")
+                   "KCL (London) AS" = "KCL",
+                   "UCSF AS"="UCSF")
 
 MAX_FOLLOW_UP_MAPPING = c("PRIAS"=6,
                           "Hopkiins"=7,
                           "Toronto"=8,
                           "MSKCC"=6,
                           "MUSIC"=2,
-                          "KCL"=3)
+                          "KCL"=3,
+                          "UCSF"=11)
 
 CURRENT_COHORT_NAME = "PRIAS"
 

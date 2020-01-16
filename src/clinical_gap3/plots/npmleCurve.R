@@ -1,26 +1,40 @@
 library(JMbayes)
-load("Rdata/gap3/PRIAS_2019/npmle_all.Rdata")
+library(icenReg)
+load("Rdata/gap3/PRIAS_2019/motherdata.Rdata")
 
-npmle_plotdf_all=do.call('rbind', 
-                         lapply(c("Hopkins", "KCL", "MSKCC", "PRIAS", "Toronto", "MUSIC"), FUN = function(name){
-                           survProb = 1 - cumsum(npmle_all[[name]]$pf)
-                           survProb = c(1, survProb)
-                           
-                           survIntervals = npmle_all[[name]]$intmap
-                           survIntervals = cbind(c(0,0), survIntervals)
-                           
-                           timePoints = as.numeric(survIntervals)
-                           survProbs = c(1,as.numeric(rep(survProb, each=2)))[1:length(timePoints)]
-                           
-                           return(data.frame('Cohort'=name,timePoints=timePoints, riskProbs=1-survProbs))
-                         }))
+getSurvProbNPMLE = function(pred.time, baseline_est_int){
+  #turnbull intervals are hard to understand
+  index2 = tail(which(baseline_est_int[,2]<=pred.time),1)
+  if(baseline_est_int[index2 + 1, 1]<=pred.time){
+    pred.time.surv = baseline_est_int[index2 + 1,3]
+  }else{
+    pred.time.surv = baseline_est_int[index2, 3]
+  }
+  
+  return(pred.time.surv)
+}
 
-npmle_plotdf_all$time_10pat_risk_set = sapply(npmle_plotdf_all$Cohort, function(x){
-  reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==x]
-})
-npmle_plotdf_all = npmle_plotdf_all[npmle_plotdf_all$timePoints <= npmle_plotdf_all$time_10pat_risk_set,]
+npmle_all = vector("list", length = length(cohortnames))
+for(cohort in cohortnames){
+  longds.id = get(paste0("longdata_", cohort, ".id"))
+  npmle_all[[cohort]] = ic_sp(formula = Surv(time = latest_survival_time, time2 = earliest_failure_time,
+                                             type = "interval2")~1, data = longds.id)
+}
 
-cohort_names = unique(npmle_plotdf_all$Cohort)
+npmle_plotdf_all=do.call('rbind', lapply(cohortnames, FUN = function(cohort){
+  
+  baseline_est = getSCurves(npmle_all[[cohort]])
+  baseline_est_int = baseline_est$Tbull_ints
+  baseline_est_int = cbind(baseline_est_int, baseline_est$S_curves$baseline)
+  baseline_est_int = rbind(c(0,0,1), baseline_est_int)
+  
+  max_time = reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==cohort]
+  timePoints = seq(0, max_time, length.out = 100)
+  survProbs = sapply(timePoints, FUN = getSurvProbNPMLE, baseline_est_int=baseline_est_int)
+  
+  return(data.frame('Cohort'=cohort, timePoints=timePoints, riskProbs=1-survProbs))
+}))
+
 cohort_labpos_x = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$timePoints, max))
 cohort_labpos_y = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$riskProbs, max))
 
@@ -32,11 +46,11 @@ npmle_plot_all = ggplot() +
                 color=npmle_plotdf_all$Cohort)) +  
   geom_label(aes(x=cohort_labpos_x, 
                  y=cohort_labpos_y, 
-                 label=cohort_names,
-                 fill=cohort_names), color='white')+
+                 label=cohortnames,
+                 fill=cohortnames), color='white')+
   scale_color_manual(values=colormap)+
   scale_fill_manual(values=colormap)+
-  coord_cartesian(xlim=c(0,8)) + 
+  coord_cartesian(xlim=c(0,12)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
         legend.position = "none",
@@ -46,8 +60,9 @@ npmle_plot_all = ggplot() +
                      limits = c(0,1)) + 
   ylab("Cause-specific cumulative upgrading-risk (%)") +
   xlab("Follow-up time (years)")
+print(npmle_plot_all)
 
-ggsave(filename = "report/clinical/images/npmle_plot.eps",
-       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
+#ggsave(filename = "report/clinical/images/npmle_plot.eps",
+#       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
 
 

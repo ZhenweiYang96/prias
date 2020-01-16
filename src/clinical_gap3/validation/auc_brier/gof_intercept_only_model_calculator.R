@@ -3,6 +3,8 @@ library(icenReg)
 load("Rdata/gap3/PRIAS_2019/motherdata.Rdata")
 source("src/clinical_gap3/validation/auc_brier/gof_intercept_only_model.R")
 
+use_biopsy = F
+
 for(cohort in cohortnames){
   
   longdata_orig = get(paste0("longdata_", cohort))
@@ -45,12 +47,13 @@ for(cohort in cohortnames){
       print(paste("Calculations started for thoriz:", t_horizs[k]))
       
       print('Calculating PE')
-      pe_list[[k]] = goodness_of_fit_intercept_only(model,
+      pe_list[[k]] = goodness_of_fit_intercept_only(icenRegModel = model,
                                                     newdata = longdata,
                                                     T_start = t_horizs[k]-1,
-                                                    T_horiz = t_horizs[k])
+                                                    T_horiz = t_horizs[k],
+                                                    use_biopsy = use_biopsy)
       
-      save(pe_list, file = paste0("Rdata/gap3/PRIAS_2019/validation/pe_intercept_only_model/",cohort,"_",seed,".Rdata"))
+      save(pe_list, file = paste0("Rdata/gap3/PRIAS_2019/validation/pe/pe_intercept_only_model_notusing_biopsy/",cohort,"_",seed,".Rdata"))
     }
   }
 }
