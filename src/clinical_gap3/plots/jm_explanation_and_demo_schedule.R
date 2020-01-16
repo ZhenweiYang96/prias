@@ -72,7 +72,7 @@ blank_common = common +
 
 #c(0,latest_survival_time,cur_visit_time)
 A = blank_common + 
-  geom_point(aes(x=-50, y=Inf, color='Observed PSA (log scale)')) +
+  geom_point(aes(x=-50, y=Inf, color='Observed PSA (log scale of ng/mL)')) +
   scale_color_manual(values = THEME_COLOR) + 
   geom_point(aes(x=pat_data$year_visit,y=pat_data$log2psaplus1),
              size=POINT_SIZE, color=THEME_COLOR) +
@@ -95,7 +95,7 @@ C = common + geom_line(aes(x=survival_predict_times, y=mean_cum_risk), color=DAN
                   ymax=upper_cum_risk), alpha=0.15, fill=DANGER_COLOR) + 
   scale_y_continuous(breaks = seq(0,1, 0.5), 
                      labels = c("0%", "50%", "100%"), 
-                     limits = c(0,1)) + ylab("Cause-specific\ncumulative upgrading-risk") +
+                     limits = c(0,1)) + ylab("Cause-specific\ncumulative upgrading-risk (%)") +
   theme(axis.title.x = element_blank(),
         axis.title.y = element_text(color=DANGER_COLOR, size=FONT_SIZE),
         axis.text.y = element_text(color=DANGER_COLOR, size=FONT_SIZE),
@@ -123,7 +123,7 @@ jm_explanation_plot = ggarrange(A,B, C, D, ncol=1, nrow=4, align = "v",
                                 legend = "top", labels = c("A","B", "C", ""))
 
 ggsave(jm_explanation_plot, filename = "report/clinical/images/jmExplanationPlot_113.eps",
-       device = cairo_ps, height = 6.5, width=6)
+       device = cairo_ps, height = 7, width=6)
 
 
 ################

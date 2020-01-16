@@ -1,30 +1,26 @@
 % !TEX root =  ../main_manuscript.tex 
 \section{Joint Model for Time-to-Progression and Longitudinal Outcomes}
 \label{sec:jointmodel}
-Let the true time of disease progression for the ${i\mbox{-th}}$ patient be $T_i^*$. Progression is always observed with interval censoring ${l_i < T_i^* \leq r_i}$ (Figure~\ref{fig:delay_explanation}). In patients who obtain progression, $r_i$ and $l_i$ denote the time of their latest and second latest invasive tests. Otherwise, $l_i$ denotes the time of their latest test and ${r_i=\infty}$. Assuming $K$ auxiliary longitudinal outcomes, let $\boldsymbol{y}_{ki}$ denote the ${n_{ki} \times 1}$ longitudinal response vector of the ${k\mbox{-th}}$ outcome, $k\epsilon\{1, \ldots, K\}$. The observed data of all $n$ patients is given by ${\mathcal{A}_n = \{l_i, r_i, \boldsymbol{y}_{1i},\ldots \boldsymbol{y}_{Ki}; i = 1, \ldots, n\}}$.
+Let the true time of disease progression for the ${i\mbox{-th}}$ patient be $T_i^*$. Progression is always observed with interval censoring ${l_i < T_i^* \leq r_i}$ (Figure~\ref{fig:delay_explanation}). In patients who obtain progression, $r_i$ and $l_i$ denote the time of their latest and second latest invasive tests. Otherwise, $l_i$ denotes the time of their latest test and ${r_i=\infty}$. Assuming $K$ auxiliary longitudinal outcomes, let $\boldsymbol{y}_{ki}$ denote the ${n_{ki} \times 1}$ longitudinal response vector of the ${k\mbox{-th}}$ outcome, $k \in \{1, \ldots, K\}$. The observed data of all $n$ patients is given by ${\mathcal{A}_n = \{l_i, r_i, \boldsymbol{y}_{1i},\ldots \boldsymbol{y}_{Ki}; i = 1, \ldots, n\}}$.
 
-To accommodate longitudinal outcomes of different types in a unified framework, the joint model consists of a generalized linear mixed-effects sub-model~\citep{laird1982random}. In particular, the conditional
-distribution of $\boldsymbol{y}_{ki}$ given a vector of patient-specific random effects $\boldsymbol{b}_{ki}$ is assumed to be a member of the exponential family, with linear predictor given by,
-\begin{equation}
+To accommodate longitudinal outcomes of different types in a unified framework, the joint model consists of a generalized linear mixed-effects sub-model~\citep{mcculloch2005generalized}. In particular, the conditional distribution of $\boldsymbol{y}_{ki}$ given a vector of patient-specific random effects $\boldsymbol{b}_{ki}$ is assumed to be a member of the exponential family, with linear predictor given by,
+\begin{equation*}
 \label{eq:long_model}
 g_k\big[E\{y_{ki} (t) \mid \boldsymbol{b}_{ki}\}\big] = m_{ki}(t) = \boldsymbol{x}_{ki}^{\top}(t)\boldsymbol{\beta}_{k} + \boldsymbol{z}_{ki}^{\top}(t)\boldsymbol{b}_{ki},
-\end{equation}
+\end{equation*}
 where $g_k(\cdot)$ denotes a known one-to-one monotonic link function, $y_{ki}(t)$ denotes the
 value of the ${k\mbox{-th}}$ longitudinal outcome for the ${i\mbox{-th}}$ patient at time $t$, and $\boldsymbol{x}_{ki}(t)$ and $\boldsymbol{z}_{ki}(t)$ denote the time-dependent design vectors for the fixed $\boldsymbol{\beta}_{k}$ and random effects $\boldsymbol{b}_{ki}$, respectively. To account for the association between the different longitudinal outcomes, we link their corresponding random effects. More specifically, the complete vector of random effects ${\boldsymbol{b}_{i} = (\boldsymbol{b}_{1i}^{\top}, \ldots, \boldsymbol{b}_{Ki}^{\top})^{\top}}$ is assumed to follow a multivariate normal distribution with mean zero and variance-covariance matrix $W$.
 
 For the survival process, we assume that the hazard of progression $h_i(t)$ at a time $t$ depends on a function of the patient and outcome-specific linear predictors $m_{ki}(t)$ and/or the random effects. More specifically,
 %\begin{equation}
 %\label{eq:rel_risk_model}
-%\begin{split}
-%    h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i\big\} &= \lim_{\Delta t \to 0} \frac{\mbox{Pr}\big\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \boldsymbol{w}_i\big\}}{\Delta t}\\
-%&=h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i + \sum_{k=1}^{K} \sum_{l=1}^{L_k} f_{kl} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i, \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{kl} \big\}\Big], \quad t>0,,
-%    \end{split}
+%h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} \sum_{l=1}^{L_k} f_{kl} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{kl} \big\}\Big], \quad t>0,
 %\end{equation}
-\begin{equation}
+\begin{equation*}
 \label{eq:rel_risk_model}
-h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} \sum_{l=1}^{L_k} f_{kl} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{kl} \big\}\Big], \quad t>0,
-\end{equation}
-where $h_0(\cdot)$ denotes the baseline hazard function, $\mathcal{M}_{ki}(t)=\{m_{ki}(s) \mid 0 \leq s < t \}$ denotes the history of the ${k\mbox{-th}}$ longitudinal process up to $t$, and $\boldsymbol{w}_i(t)$ is a vector of exogenous, possibly time-varying, covariates with corresponding regression coefficients $\boldsymbol{\gamma}$. Functions $f_{kl}(\cdot)$, parameterized by vector of coefficients $\boldsymbol{\alpha_{kl}}$, specify which features of each longitudinal outcome are included in the linear predictor of the relative-risk model~\citep{brown2009assessing,rizopoulos2012joint,taylor2013real}. Some examples, motivated by the literature (subscripts $k$ and $l$ dropped for brevity), are:
+h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} f_{k} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{k} \big\}\Big], \quad t>0,
+\end{equation*}
+where $h_0(\cdot)$ denotes the baseline hazard function, $\mathcal{M}_{ki}(t)=\{m_{ki}(s) \mid 0 \leq s < t \}$ denotes the history of the ${k\mbox{-th}}$ longitudinal process up to $t$, and $\boldsymbol{w}_i(t)$ is a vector of exogenous, possibly time-varying, covariates with corresponding regression coefficients $\boldsymbol{\gamma}$. Functions $f_{k}(\cdot)$, parameterized by vector of coefficients $\boldsymbol{\alpha_{k}}$, specify which features of each longitudinal outcome are included in the linear predictor of the relative-risk model~\citep{brown2009assessing,rizopoulos2012joint,taylor2013real}. Some examples, motivated by the literature (subscripts $k$ dropped for brevity), are:
 \begin{eqnarray*}
 \left \{
 \begin{array}{l}

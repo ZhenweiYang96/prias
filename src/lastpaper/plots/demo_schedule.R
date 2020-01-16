@@ -3,10 +3,12 @@ library(splines)
 library(ggplot2)
 library(ggpubr)
 
-load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age_light.Rdata")
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
+load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age_light.Rdata")
 source("src/lastpaper/prediction_psa_dre.R")
-source("src/lastpaper/scheduleCreator.R")
+source('src/lastpaper/scheduleCreator.R')
+source('src/lastpaper/pers_schedule_api.R')
+load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age.Rdata")
 
 SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
@@ -138,22 +140,17 @@ prias_schedule = getPRIASSchedule(object = mvJoint_dre_psa_2knots_quad_age_light
                                   M=500, horizon = MAX_FOLLOW_UP)
 
 risk_10_perc_schedule = getFixedRiskBasedScheduleNoGrid(object = mvJoint_dre_psa_2knots_quad_age_light,
-                                    patient_data = patient_df,
-                                    cur_visit_time = current_visit_time,
-                                    last_biopsy_time = last_biopsy_time,
-                                    risk_threshold = 0.1, min_biopsy_gap = 1,
-                                    M = 500, horizon = MAX_FOLLOW_UP)
-
-t1 = Sys.time()
-risk_automatic_schedule = getAutomaticRiskBasedScheduleNoGrid(object = mvJoint_dre_psa_2knots_quad_age_light,
                                                         patient_data = patient_df,
                                                         cur_visit_time = current_visit_time,
                                                         last_biopsy_time = last_biopsy_time,
-                                                        min_biopsy_gap = 1,
+                                                        risk_threshold = 0.1, min_biopsy_gap = 1,
                                                         M = 500, horizon = MAX_FOLLOW_UP)
-t2 = Sys.time()
-print(t2-t1)
 
+risk_automatic_schedule = personalizedSchedule.mvJMbayes(object = mvJoint_dre_psa_2knots_quad_age,
+                                                         newdata = patient_df, idVar = "P_ID", last_test_time = last_biopsy_time,
+                                                         gap = 1, horizon = MAX_FOLLOW_UP, seed = 2019, M = 400, cache_size = 1000)
+
+risk_automatic_schedule = risk_automatic_schedule$selected_schedule
 
 schedule_df = data.frame(name=character(), number=numeric(),times=vector())
 schedule_df = rbind(schedule_df, data.frame(name="Annual", 
@@ -164,7 +161,7 @@ schedule_df = rbind(schedule_df, data.frame(name="PRIAS",
                                             times=prias_schedule))
 schedule_df = rbind(schedule_df, data.frame(name="Risk: Auto", 
                                             number=3,
-                                            times=risk_automatic_schedule$practical_biopsy_times))
+                                            times=risk_automatic_schedule$test_schedule))
 schedule_df = rbind(schedule_df, data.frame(name="Risk: 10%", 
                                             number=4,
                                             times=risk_10_perc_schedule))

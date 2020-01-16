@@ -5,9 +5,10 @@ YEAR_DIVIDER = 24 * 60 * 60 * 365
 # prias=read.spss("/home/a_tomer/Documents/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
 #           to.data.frame = T)
 
-prias=read.spss("/home/a_tomer/Data/ErasmusMC_datasets/PRIAS-2019/2019-04-10_dump.sav",
-           to.data.frame = T)
+prias=read.spss(file = file.choose(), to.data.frame = T)
 
+prias_mri = prias[,c(1,which(grepl(colnames(prias), pattern = 'Pirad', fixed = F)==T))]
+prias_mri$N_A = NA
 
 usefulCols = c(1,2,3,4,6,7,8,14,15,16, 21,22,23,24,25,32,33,34,35,36,38,
                    63:200, 201:292, 385:430, 707:844,
@@ -63,8 +64,6 @@ prias = prias[prias$P_ID != 317,]
 #Lets remove all patients who have a Gleason > 6 at first visit
 prias = prias[!(prias$Gleason_sum %in% c(7,8,9,10)),]
 
-#Now going to check reasons of treatment etc.
-
 #The column 584 is a dummy column to handle Gleason2 which is 
 #gleason taken again at the time of diagnosis
 prias_long=reshape(prias, direction='long', idvar='P_ID', timevar = "visit_number",
@@ -80,6 +79,15 @@ prias_long=reshape(prias, direction='long', idvar='P_ID', timevar = "visit_numbe
                              'dummy', 'active'))
 
 prias_long = prias_long[order(prias_long$P_ID), ]
+
+prias_mri_long = reshape(prias_mri, direction='long', idvar='P_ID', timevar = "visit_number",
+                         varying=list(c(2,143,3:48), c(49, 143, 50:95), 
+                                      c(96, 143, 97:142)), 
+                         v.names=c('pirads1', 'pirads2','pirads3'))
+prias_mri_long = prias_mri_long[order(prias_mri_long$P_ID), ]
+prias_mri_long = prias_mri_long[prias_mri_long$P_ID %in% prias$P_ID,]
+
+#prias_long = cbind(prias_long, prias_mri_long[, c('pirads1', 'pirads2','pirads3')])
 
 #First lets check Gleason table
 table(prias_long$gleason_sum, useNA = "always")

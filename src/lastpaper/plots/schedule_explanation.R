@@ -18,7 +18,7 @@ LABEL_SIZE = 2.5
 
 conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA, 
                                       threshold = 0.1, xbreaks, xlabs, psa_breaks = NULL,
-                                      max_follow_up){
+                                      max_follow_up, test_decision_times){
   set.seed(2019)
   
   if(is.na(latest_survival_time)){
@@ -26,7 +26,6 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
   }
   
   max_psa_time = max(pat_df$year_visit)
-  print(max_psa_time)
   
   accuracy = 50
   psa_predict_times = seq(0, max_psa_time, length.out = accuracy)
@@ -48,29 +47,64 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
   new_test_df = data.frame(survtime=numeric(), mean_cum_risk=numeric(),
                            mean_cum_risk_scaled=numeric(), 
                            lower_cum_risk_scaled=numeric(), upper_cum_risk_scaled=numeric())
-  accuracy = 200
+  accuracy = 100
   latest_test_time = latest_survival_time
-  while(latest_test_time<max_follow_up){
-    survival_predict_times = seq(from = latest_test_time, to = max_follow_up, length.out = accuracy)
+  test_decisions = rep("NB", length(test_decision_times))
+  for(i in 1:length(test_decision_times)){
+    test_decision_time = test_decision_times[i]
+    
     exp_fut = getExpectedFutureOutcomes(object, pat_df, 
                                         latest_survival_time = latest_test_time, Inf,
-                                        survival_predict_times = survival_predict_times, 
+                                        survival_predict_times = test_decision_time, 
+                                        psaDist = "Tdist", addRandomError = F)
+    
+    mean_cum_risk = 1-mean(exp_fut$predicted_surv_prob)
+    
+    if(mean_cum_risk >= threshold){
+      test_decisions[i] = "B"
+      
+      #this bit of extra work to make the ribbon and line for survival curve
+      surv_ribbon_predict_times = seq(from = latest_test_time, to = test_decision_time, length.out = accuracy)
+      exp_fut = getExpectedFutureOutcomes(object, pat_df, 
+                                          latest_survival_time = latest_test_time, Inf,
+                                          survival_predict_times = surv_ribbon_predict_times, 
+                                          psaDist = "Tdist", addRandomError = F)
+      
+      mean_cum_risk = 1-c(1, rowMeans(exp_fut$predicted_surv_prob))
+      lower_cum_risk = 1-c(1, apply(exp_fut$predicted_surv_prob, 1, quantile, probs=0.025))
+      upper_cum_risk = 1-c(1, apply(exp_fut$predicted_surv_prob, 1, quantile, probs=0.975))
+      
+      new_test_df = rbind(new_test_df, data.frame(survtime=surv_ribbon_predict_times,
+                                                  mean_cum_risk = mean_cum_risk,
+                                                  mean_cum_risk_scaled = transformRiskToPSA(mean_cum_risk),
+                                                  lower_cum_risk_scaled = transformRiskToPSA(lower_cum_risk),
+                                                  upper_cum_risk_scaled = transformRiskToPSA(upper_cum_risk)))
+      
+      
+      latest_test_time = test_decision_time
+    }
+    
+    print(latest_test_time)
+  }
+  
+  if(latest_test_time < max_follow_up){
+    #this bit of extra work to make the ribbon and line for survival curve
+    surv_ribbon_predict_times = seq(from = latest_test_time, to = max_follow_up, length.out = accuracy)
+    exp_fut = getExpectedFutureOutcomes(object, pat_df, 
+                                        latest_survival_time = latest_test_time, Inf,
+                                        survival_predict_times = surv_ribbon_predict_times, 
                                         psaDist = "Tdist", addRandomError = F)
     
     mean_cum_risk = 1-c(1, rowMeans(exp_fut$predicted_surv_prob))
     lower_cum_risk = 1-c(1, apply(exp_fut$predicted_surv_prob, 1, quantile, probs=0.025))
     upper_cum_risk = 1-c(1, apply(exp_fut$predicted_surv_prob, 1, quantile, probs=0.975))
     
-    latest_test_time = survival_predict_times[which.min(abs(mean_cum_risk - threshold))]
-    indices = survival_predict_times <= latest_test_time
+    new_test_df = rbind(new_test_df, data.frame(survtime=surv_ribbon_predict_times,
+                                                mean_cum_risk = mean_cum_risk,
+                                                mean_cum_risk_scaled = transformRiskToPSA(mean_cum_risk),
+                                                lower_cum_risk_scaled = transformRiskToPSA(lower_cum_risk),
+                                                upper_cum_risk_scaled = transformRiskToPSA(upper_cum_risk)))
     
-    new_test_df = rbind(new_test_df, data.frame(survtime=survival_predict_times[indices],
-                                                mean_cum_risk = mean_cum_risk[indices],
-                                                mean_cum_risk_scaled = transformRiskToPSA(mean_cum_risk[indices]),
-                                                lower_cum_risk_scaled = transformRiskToPSA(lower_cum_risk[indices]),
-                                                upper_cum_risk_scaled = transformRiskToPSA(upper_cum_risk[indices])))
-    
-    print(latest_test_time)
   }
   
   riskBreaksOriginal = c(0, threshold, 0.5,1)
@@ -90,7 +124,7 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
     geom_ribbon(data=new_test_df, 
                 aes(x=survtime, ymin=lower_cum_risk_scaled,
                     ymax=upper_cum_risk_scaled), alpha=0.15, fill=DANGER_COLOR) + 
-    geom_vline(xintercept = new_test_df$survtime[new_test_df$mean_cum_risk==0],
+    geom_vline(xintercept = test_decision_times[test_decisions=="B"],
                color=SUCCESS_COLOR) +
     geom_point(aes(x=pat_df$year_visit,y=pat_df$log2psaplus1),
                size=POINT_SIZE, color=THEME_COLOR) +
@@ -117,7 +151,8 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
     scale_color_manual(values = c(THEME_COLOR), labels="Observed longitudinal biomarker")
     
   
-  return(p)
+  return(list(plot=p, test_decision_times=test_decision_times, 
+              test_decisions=test_decisions))
 }
 
 getpsaBreaks = function(pat_data, total=3){
@@ -128,33 +163,46 @@ set.seed(2019)
 pat_data = prias_long_final[prias_long_final$P_ID==102,]
 ##I am perturbing the PSA of one of the patients to demo effect of rising PSA
 pat_data$log2psaplus1[c(nrow(pat_data)-1, nrow(pat_data))] =  pat_data$log2psaplus1[c(nrow(pat_data)-1, nrow(pat_data))] + runif(n = 2, 0.1, 0.5)
+pat_data = pat_data[pat_data$year_visit<=3.0,]
+pat_data$year_visit[nrow(pat_data)] = 2.5
 psa_breaks = getpsaBreaks(pat_data)
 
-cond_risk_plot = conditionalDynamicRiskPlot(mvJoint_psa_time_scaled,
-                                            pat_data[pat_data$year_visit<=3.0,],
+test_decision_times = seq(2.5,6.5, 1)
+cond_risk_plot_data = conditionalDynamicRiskPlot(mvJoint_psa_time_scaled,
+                                            pat_data,
                                             latest_survival_time = 1.5,
-                                            threshold = 0.15,
-                                            xbreaks = 0:7,
-                                            xlabs = 0:7,
+                                            threshold = 0.12,
+                                            xbreaks = c(0,1.5,2.5,3.5,4.5,5.5,6.5),
+                                            xlabs = c(0,1.5,2.5,3.5,4.5,5.5,6.5),
                                             psa_breaks = psa_breaks,
-                                            max_follow_up = 7) + 
-  theme(axis.title.x = element_blank(),
-        plot.margin = margin(0,0,0,0, unit = "pt"))
+                                            max_follow_up = 6.5, 
+                                            test_decision_times = test_decision_times)
+
+cond_risk_plot = cond_risk_plot_data$plot + theme(axis.title.x = element_blank(),
+                                                  plot.margin = margin(0,0,0,0, unit = "pt"))
+test_decisions = cond_risk_plot_data$test_decisions
+
+print(test_decision_times[test_decisions=="B"])
 
 label_plot = ggplot() + 
-  geom_vline(xintercept = c(0,1.5,2.589041,3.79397, 5.695033),
+  geom_vline(xintercept = c(0,1.5,2.5, 3.5, 5.5),
              color=c(WARNING_COLOR, SUCCESS_COLOR, "black",
                      SUCCESS_COLOR, SUCCESS_COLOR),
              linetype=c("solid", "solid", "dashed", "solid", "solid")) +
-  geom_label(aes(x=c(0,1.5,2.589041), y=c(0,0,0), 
+  geom_vline(xintercept = c(4.5, 6.5), 
+             linetype=c("dashed", "dashed")) +
+  geom_label(aes(x=c(0,1.5,2.5), y=c(0,0,0.03), 
                  label = c("Start\nsurveillance", 
                            "Last\ntest",
                            "Current\nvisit")), color='white',
              size= LABEL_SIZE,
              fill=c(WARNING_COLOR, SUCCESS_COLOR, 'black')) +
-  geom_label(aes(x=c(3.79397, 5.695033), y=c(0,0), 
-                 label = c("1st future\ntest", 
-                           "2nd future\ntest")), 
+  geom_label(aes(x=c(2.5, 4.5,6.5), y=c(-0.07,0,0), 
+                 label = c("No test","No test", "No test")),
+             size= LABEL_SIZE) +
+  geom_label(aes(x=c(3.5, 5.5), y=c(0,0), 
+                 label = c("Test\nscheduled", 
+                           "Test\nscheduled")), 
              color=SUCCESS_COLOR, size= LABEL_SIZE, fill='white') +
   theme_bw() +
   theme(text = element_text(size = FONT_SIZE),
@@ -166,13 +214,13 @@ label_plot = ggplot() +
         panel.grid = element_blank(),
         plot.margin = margin(0,0,0,0, unit = "pt")) + 
   xlab("Follow-up time (years)") + ylim(-0.1,0.1) + 
-  xlim(-0.35,7)
+  xlim(-0.35,6.5)
 
 schedule_plot = ggpubr::ggarrange(cond_risk_plot, label_plot,
                                   nrow=2, ncol=1, align="v",
-                                  heights = c(4,1),
+                                  heights = c(4,1.2),
                                   common.legend = T, legend = "bottom")
 
 print(schedule_plot)
 ggsave(schedule_plot, filename = "report/lastpaper/images/schedule_explanation_102.eps",
-       device = cairo_ps,  height = 4, width=6.5)
+       device = cairo_ps,  height = 4.5, width=6.5)

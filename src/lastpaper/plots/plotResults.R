@@ -2,7 +2,7 @@ library(ggplot2)
 library(ggpubr)
 FONT_SIZE = 12
 
-seeds = 2021:2030
+seeds = c(2001:2086, 2201:2332)
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results/seed_", seed, ".Rdata"))
@@ -22,10 +22,11 @@ a = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
   theme_bw() + 
   scale_y_continuous(breaks = c(1,4,7,10), limits = c(1,10)) +
-  theme(text=element_text(size=FONT_SIZE)) +
+  theme(text=element_text(size=FONT_SIZE),
+        title = element_text(size=FONT_SIZE-1)) +
   xlab("Schedule") + ylab("Number of biopsies") +
   coord_flip() +
-  ggtitle("Progressing patients")
+  ggtitle("Progressing patients (50%)")
 
 b = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
   geom_boxplot(aes(x=schedule, y=delay), outlier.shape = NA)+
@@ -40,15 +41,16 @@ c = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==0,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
   theme_bw() +
   scale_y_continuous(breaks = c(1,4,7,10), limits = c(1,10)) +
-  theme(text=element_text(size=FONT_SIZE)) +
+  theme(text=element_text(size=FONT_SIZE),
+        title = element_text(size=FONT_SIZE-1)) +
   xlab("Schedule") + ylab("Number of biopsies") +
   coord_flip() +
-  ggtitle("Non-progressing patients")
+  ggtitle("Non-progressing patients (50%)")
 
 d = ggplot() +
   geom_boxplot(data=biopsyDf_summary[biopsyDf_summary$progressed==0,],
                aes(x=schedule, y=-1), outlier.shape = NA)+
-  geom_text(aes(x="Risk: 10%", y=2), label="Time delay cannot be calculated for\nnon-progressing patients")+
+  geom_text(aes(x="Risk: 10%", y=2), label="Time delay not available for\nnon-progressing patients")+
   theme_bw() + 
   scale_y_continuous(breaks = 0:4, limits = c(0,4)) +
   theme(axis.text.y = element_blank(), axis.title.y = element_blank(),

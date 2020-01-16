@@ -1,4 +1,4 @@
-cohort = "MUSIC"
+cohort = "UCSF"
 
 library(JMbayes)
 library(splines)

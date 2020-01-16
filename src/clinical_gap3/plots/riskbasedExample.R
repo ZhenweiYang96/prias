@@ -71,8 +71,8 @@ p1 = ggplot() +
   theme(text = element_text(size = FONT_SIZE),
         axis.text.x = element_blank(),
         axis.title.x = element_blank())+
-  scale_x_continuous(breaks = c(0,1,2,3), limits = c(-0.35,3.25),
-                     labels = c("0", "1","2", "3")) + 
+  scale_x_continuous(breaks = c(0,1,2), limits = c(-0.35,2.25),
+                     labels = c("0", "1","2")) + 
   ylim(0,15) +
   ylab("PSA (ng/mL)") + xlab("Follow-up time (years)") +
   ggtitle("Should a biopsy be conducted at current visit?")
@@ -93,13 +93,13 @@ p2 = ggplot() +
   theme(text = element_text(size = FONT_SIZE),
         axis.title.x = element_blank(),
         plot.margin = margin(0,0,0,0, unit = "pt"))+
-  scale_x_continuous(breaks = c(0,1,2,3), limits = c(-0.35,3.25),
-                     labels = c("0", "1","2", "3")) + 
+  scale_x_continuous(breaks = c(0,1,2), limits = c(-0.35,2.25),
+                     labels = c("0", "1","2")) + 
   ylim(0,15) +
   ylab("PSA (ng/mL)") + xlab("Follow-up time (years)")
 
-p3 = ggplot() + 
-  geom_label(aes(x=c(0,1,3), y=c(0,0,0), 
+label_plot = ggplot() + 
+  geom_label(aes(x=c(0,1,2), y=c(0,0,0), 
                  label = c("Start AS\nGleason grade 1", 
                            "Biopsy\nGleason grade 1",
                            "Current\nVisit")), color='white',
@@ -115,11 +115,11 @@ p3 = ggplot() +
         panel.grid = element_blank(),
         plot.margin = margin(0,0,0,0, unit = "pt")) + 
   xlab("Follow-up time (years)") + ylim(-0.25,0.25) + 
-  scale_x_continuous(breaks = c(0, 1, 2, 3), limits = c(-0.35,3.25),
-                     labels = c("0", "1","2", "3"))
+  scale_x_continuous(breaks = c(0, 1, 2), limits = c(-0.35,2.25),
+                     labels = c("0", "1","2"))
 
 
-psa_plot = ggpubr::ggarrange(p1, p2, p3, 
+psa_plot = ggpubr::ggarrange(p1, p2, label_plot, 
                              align = "v", labels = c("A", "B", ""),
                              ncol=1, nrow=3, heights = c(1.1, 1, 0.25))
 

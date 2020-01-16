@@ -76,7 +76,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       test_intervals = split(test_intervals, rep(1:(length(test_intervals)/2), each=2))
     }
     
-    res = vector("list", length(test_intervals))
+    interval_res = vector("list", length(test_intervals))
     for(j in 1:length(test_intervals)){
       wt_points=getGaussianQuadWeightsPoints(test_intervals[[j]])
       lower_limit = test_intervals[[j]][1]
@@ -84,20 +84,20 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       
       lower_limit_nearest_index = which.min(abs(lower_limit-SURV_CACHE_TIMES))
       upper_limit_nearest_index = which.min(abs(upper_limit-SURV_CACHE_TIMES))
-      res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
+      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
         SURV_CACHE_FULL[upper_limit_nearest_index,]
       
       cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
         cum_surv_at_points = SURV_CACHE_FULL[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL[upper_limit_nearest_index,]
-        scaled_cum_surv_at_points = cum_surv_at_points/res[[j]]$cum_risk_interval
+        scaled_cum_surv_at_points = cum_surv_at_points/interval_res[[j]]$cum_risk_interval
         
         return(wt_points$weights[i] * scaled_cum_surv_at_points)
       })
       
-      res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time, 1, sum))
+      interval_res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time, 1, sum))
     }
     
-    expected_delay = mean(apply(sapply(res, FUN = function(x){
+    expected_delay = mean(apply(sapply(interval_res, FUN = function(x){
       x$delay * x$cum_risk_interval
     }),1, sum, na.rm=T),na.rm=T)
     
@@ -108,9 +108,9 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   }
   
   #Now we create many fixed risk based schedules
-  risk_thresholds <- seq(0, 1, length.out = 1000)
-  res <- vector("list", length=length(risk_thresholds))
-  names(res) <- c(paste("Risk:", risk_thresholds))
+  risk_thresholds <- seq(0, 1, length.out = 100)
+  all_schedules <- vector("list", length=length(risk_thresholds))
+  names(all_schedules) <- c(paste("Risk:", risk_thresholds))
   
   for(i in 1:length(risk_thresholds)){
     threshold <- risk_thresholds[i]
@@ -119,15 +119,14 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       risk_schedule <- horizon
     }
     
-    res[[i]] = consequences(risk_schedule)
-    res[[i]]$threshold = threshold
+    all_schedules[[i]] = consequences(risk_schedule)
+    all_schedules[[i]]$threshold = threshold
+    all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_delay^2 + (length(all_schedules[[i]]$practical_test_times)-1)^2)
   }
   
-  expected_delays = sapply(res, "[[", "expected_delay")
-  total_tests = sapply(lapply(res, "[[", "practical_test_times"), length)
-  
-  #Distance from optimal point
-  dist = sqrt(expected_delays^2 + (total_tests - 1)^2)
+  expected_delays = sapply(all_schedules, "[[", "expected_delay")
+  total_tests = sapply(lapply(all_schedules, "[[", "practical_test_times"), length)
+  dist = sapply(all_schedules, "[[", "euclidean_distance")
   
   ############
   # this is the code for applying constraints before final optimization
@@ -158,17 +157,17 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   }
   
   filter = expected_delays<=detection_delay_limit & total_tests<=total_tests_limit
-  res = res[filter]
-  risk_thresholds = risk_thresholds[filter]
-  dist = dist[filter]
+  filtered_schedules = all_schedules[filter]
+  filtered_dist = dist[filter]
   
   #There are many, but we select only one for now
-  #optimal_threshold_indices = which(dist == min(dist))
-  optimal_threshold_index = which.min(dist)[1]
-  ret = res[[optimal_threshold_index]]
+  optimal_threshold_index = which.min(filtered_dist)[1]
+  ret = filtered_schedules[[optimal_threshold_index]]
   ret$proposed_test_times = NULL
-  names(ret) = c("expected_detection_delay", "test_schedule", "corresponding_risk_threshold")
+  names(ret) = c("expected_detection_delay", "test_schedule", "risk_threshold", "euclidean_distance")
   
-  class(ret) <- "personalizedSchedule.mvJMbayes"
-  return(ret)
+  full_data = list('selected_schedule'=ret, 'all_schedules'=all_schedules)
+  
+  class(full_data) <- "personalizedSchedule.mvJMbayes"
+  return(full_data)
 }
