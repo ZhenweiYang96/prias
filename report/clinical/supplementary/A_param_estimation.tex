@@ -75,37 +75,103 @@ With regards to the choice of the distribution for the error term $\varepsilon$ 
 
 \clearpage
 \subsection{Results}
-Characteristics of the five validation cohorts from the GAP3 database~\citep{gap3_2018} are shown in Table~\ref{table:gap3_summary}. The cause-specific cumulative upgrading-risk in these cohorts is shown in Figure~\ref{fig:npmle_plot}.
+Characteristics of the six validation cohorts from the GAP3 database~\citep{gap3_2018} are shown in Table~\ref{table:gap3_summary_1}, Table~\ref{table:gap3_summary_2}, and Table~\ref{table:gap3_summary_3}. The cause-specific cumulative upgrading-risk in these cohorts is shown in Figure~\ref{fig:npmle_plot}.
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
-\caption{\textbf{Nonparametric estimate \citep{turnbull1976empirical} of the cause-specific cumulative upgrading-risk} in the world's largest AS cohort PRIAS, and largest five AS cohorts from the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
+\caption{\textbf{Nonparametric estimate \citep{turnbull1976empirical} of the cause-specific cumulative upgrading-risk} in the world's largest AS cohort PRIAS, and largest six AS cohorts from the GAP3 database \citep{gap3_2018}. Abbreviations are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS, \textit{UCSF}: University of California San Francisco Active Surveillance.}
 \label{fig:npmle_plot}
 \end{figure}
 
-\begin{landscape}
+%\begin{landscape}
+%\begin{table}
+%\small\sf\centering
+%\caption{\textbf{Summary of the five validation cohorts from the GAP3 database~\citep{gap3_2018}}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1 to 2 or higher. \#PSA: number of PSA, \#biopsies: number of biopsies, IQR:~interquartile range, PSA:~prostate-specific antigen. Full names of cohorts are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
+%\label{table:gap3_summary}
+%\begin{tabular}{lrrrrr}
+%\hline
+%\textbf{Characteristic} & \textbf{Hopkins} & \textbf{Toronto} & \textbf{MSKCC} & \textbf{MUSIC} & \textbf{KCL}\\
+%\hline
+%Total patients & 1392 & 1046 & 894 &  2743 & 616\\
+%Upgrading (primary event) & 260 & 359 & 242 & 385 & 198\\
+%\hline
+%Median age (years) & 62 (IQR: 66--69) & 67 (IQR: 60--72) & 63 (IQR: 57--68) & 65 (IQR: 60--71) & 63 (IQR: 58--68)\\
+%Median maximum follow-up per patient (years) &  3 (IQR: 1.3--5.8) & 4.5 (IQR: 1.9--8.4) & 5.3 (IQR: 1.8--8.3) & 1.2 (IQR: 0.6--2.2) & 2.4 (IQR: 1.3--3.8)\\
+%Total PSA measurements & 11126 & 13984 & 10704 & 12087 & 2987\\
+%Median \#PSA per patient &  6 (IQR: 4--11) & 12 (IQR: 7--19) & 11 (IQR: 5--17) & 4 (IQR: 2--6) & 4 (IQR: 2--6)\\
+%Median PSA (ng/mL) & 4.7 (IQR: 2.9--6.7) & 6 (IQR: 3.7--9.0) & 4.7 (IQR: 2.8--7.1) & 5.1 (IQR: 3.4--7.1) & 6 (IQR: 4--9)\\
+%Total biopsies & 1926 & 909 & 1102 & 1032 & 484\\
+%Median \#biopsies per patient &  1 (IQR: 1--2) &  1 (IQR: 1--2) &  1 (IQR: 1--2) & 1 (IQR: 1--1) & 1 (IQR: 1--1)\\
+%\hline
+%\end{tabular}
+%\end{table}
+%\end{landscape}
+
 \begin{table}
 \small\sf\centering
-\caption{\textbf{Summary of the five validation cohorts from the GAP3 database~\citep{gap3_2018}}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1 to 2 or higher. \#PSA: number of PSA, \#biopsies: number of biopsies, IQR:~interquartile range, PSA:~prostate-specific antigen. Full names of cohorts are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
-\label{table:gap3_summary}
-\begin{tabular}{lrrrrr}
+\caption{\textbf{Summary of the Hopkins and Toronto validation cohorts from the GAP3 database~\citep{gap3_2018}}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1 to 2 or higher. \#PSA: number of PSA, \#biopsies: number of biopsies, IQR:~interquartile range, PSA:~prostate-specific antigen. Full names of cohorts are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance}
+\label{table:gap3_summary_1}
+\begin{tabular}{lrr}
 \hline
-\textbf{Characteristic} & \textbf{Hopkins} & \textbf{Toronto} & \textbf{MSKCC} & \textbf{MUSIC} & \textbf{KCL}\\
+\textbf{Characteristic} & \textbf{Hopkins} & \textbf{Toronto}\\
 \hline
-Total patients & 1392 & 1046 & 894 &  2743 & 616\\
-Upgrading (primary event) & 260 & 359 & 242 & 385 & 198\\
+Total patients & 1392 & 1046\\
+Upgrading (primary event) & 260 & 359\\
 \hline
-Median age (years) & 62 (IQR: 66--69) & 67 (IQR: 60--72) & 63 (IQR: 57--68) & 65 (IQR: 60--71) & 63 (IQR: 58--68)\\
-Median follow-up per patient (years) &  3 (IQR: 1.3--5.8) & 4.5 (IQR: 1.9--8.4) & 5.3 (IQR: 1.8--8.3) & 1.2 (IQR: 0.6--2.2) & 2.4 (IQR: 1.3--3.8)\\
-Total PSA measurements & 11126 & 13984 & 10704 & 12087 & 2987\\
-Median \#PSA per patient &  6 (IQR: 4--11) & 12 (IQR: 7--19) & 11 (IQR: 5--17) & 4 (IQR: 2--6) & 4 (IQR: 2--6)\\
-Median PSA (ng/mL) & 4.7 (IQR: 2.9--6.7) & 6 (IQR: 3.7--9.0) & 4.7 (IQR: 2.8--7.1) & 5.1 (IQR: 3.4--7.1) & 6 (IQR: 4--9)\\
-Total biopsies & 1926 & 909 & 1102 & 1032 & 484\\
-Median \#biopsies per patient &  1 (IQR: 1--2) &  1 (IQR: 1--2) &  1 (IQR: 1--2) & 1 (IQR: 1--1) & 1 (IQR: 1--1)\\
+Median age (years) & 62 (IQR: 66--69) & 67 (IQR: 60--72)\\
+Median maximum follow-up per patient (years) &  3 (IQR: 1.3--5.8) & 4.5 (IQR: 1.9--8.4)\\
+Total PSA measurements & 11126 & 13984\\
+Median \#PSA per patient &  6 (IQR: 4--11) & 12 (IQR: 7--19)\\
+Median PSA (ng/mL) & 4.7 (IQR: 2.9--6.7) & 6 (IQR: 3.7--9.0)\\
+Total biopsies & 1926 & 909\\
+Median \#biopsies per patient &  1 (IQR: 1--2) &  1 (IQR: 1--2)\\
 \hline
 \end{tabular}
 \end{table}
-\end{landscape}
+
+\begin{table}
+\small\sf\centering
+\caption{\textbf{Summary of the MSKCC and UCSF validation cohorts from the GAP3 database~\citep{gap3_2018}}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1 to 2 or higher. \#PSA: number of PSA, \#biopsies: number of biopsies, IQR:~interquartile range, PSA:~prostate-specific antigen. Full names of cohorts are \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{UCSF}: University of California San Francisco Active Surveillance.}
+\label{table:gap3_summary_2}
+\begin{tabular}{lrr}
+\hline
+\textbf{Characteristic} & \textbf{MSKCC} & \textbf{UCSF}\\
+\hline
+Total patients & 894 & 1397 \\
+Upgrading (primary event) & 242 & 547\\
+\hline
+Median age (years) & 63 (IQR: 57--68) & 63 (IQR: 57--68)\\
+Median maximum follow-up per patient (years) & 5.3 (IQR: 1.8--8.3) & 3.6 (IQR: 1.5--7.2)\\
+Total PSA measurements & 10704 & 16093\\
+Median \#PSA per patient & 11 (IQR: 5--17) & 8 (IQR: 4--16)\\
+Median PSA (ng/mL) & 4.7 (IQR: 2.8--7.1) & 5.0 (IQR: 3.4--7.2)\\
+Total biopsies & 1102 & 3512\\
+Median \#biopsies per patient & 1 (IQR: 1--2) & 2 (IQR: 2--3)\\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\small\sf\centering
+\caption{\textbf{Summary of the MUSIC and KCL validation cohorts from the GAP3 database~\citep{gap3_2018}}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1 to 2 or higher. \#PSA: number of PSA, \#biopsies: number of biopsies, IQR:~interquartile range, PSA:~prostate-specific antigen. Full names of cohorts are \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS.}
+\label{table:gap3_summary_3}
+\begin{tabular}{lrr}
+\hline
+\textbf{Characteristic} & \textbf{MUSIC} & \textbf{KCL}\\
+\hline
+Total patients & 2743 & 616\\
+Upgrading (primary event) & 385 & 198\\
+\hline
+Median age (years) & 65 (IQR: 60--71) & 63 (IQR: 58--68)\\
+Median maximum follow-up per patient (years) & 1.2 (IQR: 0.6--2.2) & 2.4 (IQR: 1.3--3.8)\\
+Total PSA measurements & 12087 & 2987\\
+Median \#PSA per patient & 4 (IQR: 2--6) & 4 (IQR: 2--6)\\
+Median PSA (ng/mL) & 5.1 (IQR: 3.4--7.1) & 6 (IQR: 4--9)\\
+Total biopsies & 1032 & 484\\
+Median \#biopsies per patient & 1 (IQR: 1--1) & 1 (IQR: 1--1)\\
+\hline
+\end{tabular}
+\end{table}
 
 The joint model was fitted using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. This package utilizes the Bayesian methodology to estimate model parameters. The corresponding posterior parameter estimates are shown in Table~\ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and Table~\ref{tab:PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model for PSA are shown in the following Table~\ref{tab:D_matrix}:
 \begin{table}
@@ -187,7 +253,7 @@ Fitted $\log_2 (\mbox{PSA} + 1)$ velocity & -0.085 & 0.308 & 2.433 [1.883, 2.962
 
 \begin{table}
 \small\sf\centering
-\caption{\textbf{Parameters of the relative risk sub-model in validation cohorts}. We fitted separate joint models for each of the five GAP3 validation cohorts as well. The specification of these joint models was same as that of the model for PRIAS. Two important predictors in the relative-risk sub-model, namely, the $\log_2 (\mbox{PSA} + 1)$ value and velocity have different impact on upgrading-risk across the cohorts. Table shows the mean estimate of these parameters with 95\% credible interval in brackets. Strongest average effect of $\log_2 (\mbox{PSA} + 1)$ velocity is in PRIAS cohort, whereas the weakest is in KCL cohort. The strongest average effect of $\log_2 (\mbox{PSA} + 1)$ value is in the Toronto cohort whereas the weakest is in PRIAS cohort.}
+\caption{\textbf{Parameters of the relative risk sub-model in validation cohorts}. We fitted separate joint models for each of the six GAP3 validation cohorts as well. The specification of these joint models was same as that of the model for PRIAS. Two important predictors in the relative-risk sub-model, namely, the $\log_2 (\mbox{PSA} + 1)$ value and velocity have different impact on upgrading-risk across the cohorts. Table shows the mean estimate of these parameters with 95\% credible interval in brackets. Strongest average effect of $\log_2 (\mbox{PSA} + 1)$ velocity is in PRIAS cohort, whereas the weakest is in KCL cohort. The strongest average effect of $\log_2 (\mbox{PSA} + 1)$ value is in the Toronto cohort whereas the weakest is in PRIAS cohort. Full names of cohorts are \textit{Hopkins}: Johns Hopkins Active Surveillance, \textit{PRIAS}: Prostate Cancer International Active Surveillance, \textit{Toronto}: University of Toronto Active Surveillance, \textit{MSKCC}: Memorial Sloan Kettering Cancer Center Active Surveillance, \textit{KCL}: King's College London Active Surveillance, \textit{MUSIC}: Michigan Urological Surgery Improvement Collaborative AS, \textit{UCSF}: University of California San Francisco Active Surveillance.}
 \label{tab:PSA_survival_gap3}
 \begin{tabular}{lrr}
 \hline
@@ -197,6 +263,7 @@ PRIAS & -0.012 [-0.164, 0.135] & 2.266 [ 1.613, 2.767]\\
 Hopkins & 0.061 [-0.323, 0.329] & 1.839 [ 0.761, 4.378]\\
 MSKCC & 0.336 [ 0.081, 0.583] & 1.122 [ 0.421, 1.980]\\
 Toronto & 0.572 [ 0.347, 0.794] & 0.943 [ 0.464, 1.554]\\
+UCSF &  0.498 [0.326, 0.673] & 0.812 [0.280, 1.383]\\
 MUSIC & 0.441 [ 0.092, 0.767] & 0.029 [-0.552, 0.512]\\
 KCL &  0.194 [-0.104, 0.540] & 0.840 [-0.087, 1.665]\\
 \hline

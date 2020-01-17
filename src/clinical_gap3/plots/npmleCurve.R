@@ -50,7 +50,7 @@ npmle_plot_all = ggplot() +
                  fill=cohortnames), color='white')+
   scale_color_manual(values=colormap)+
   scale_fill_manual(values=colormap)+
-  coord_cartesian(xlim=c(0,12)) + 
+  scale_x_continuous(breaks=0:9, limits = c(0,9)) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
         legend.position = "none",
@@ -62,7 +62,7 @@ npmle_plot_all = ggplot() +
   xlab("Follow-up time (years)")
 print(npmle_plot_all)
 
-#ggsave(filename = "report/clinical/images/npmle_plot.eps",
-#       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
+ggsave(filename = "report/clinical/images/npmle_plot.eps",
+       plot=npmle_plot_all, device=cairo_ps, height=5.5, width=6, dpi = 500)
 
 

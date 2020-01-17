@@ -199,7 +199,7 @@ shinyServer(function(input, output, session) {
   
   cohort_change_modal_UCSF = modalDialog(
     title="Selected Cohort: UCSF AS",
-    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 11 years of follow-up. Patient data beyond this limit is automatically trimmed."),
+    tags$p("In this cohort, risk predictions and personalized biopsy schedules can only be made for the first 8.5 years of follow-up. Patient data beyond this limit is automatically trimmed."),
     tags$p("Removing any previously loaded patient data."),
     footer = modalButton("Ok"),size = "m", fade = F, easyClose = T
   )

@@ -43,7 +43,7 @@ MAX_FOLLOW_UP_MAPPING = c("PRIAS"=6,
                           "MSKCC"=6,
                           "MUSIC"=2,
                           "KCL"=3,
-                          "UCSF"=11)
+                          "UCSF"=8.5)
 
 CURRENT_COHORT_NAME = "PRIAS"
 
