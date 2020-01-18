@@ -77,6 +77,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     }
     
     interval_res = vector("list", length(test_intervals))
+    exp_num_tests = rep(0, M)
     for(j in 1:length(test_intervals)){
       wt_points=getGaussianQuadWeightsPoints(test_intervals[[j]])
       lower_limit = test_intervals[[j]][1]
@@ -95,7 +96,11 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       })
       
       interval_res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time, 1, sum))
+      
+      exp_num_tests = exp_num_tests + j * interval_res[[j]]$cum_risk_interval
     }
+    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL[upper_limit_nearest_index,]
+    exp_num_tests = mean(exp_num_tests, na.rm = T)
     
     expected_delay = mean(apply(sapply(interval_res, FUN = function(x){
       x$delay * x$cum_risk_interval
@@ -103,6 +108,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     
     #proposed test times always has a final test at year 10
     return(list(expected_delay = expected_delay,
+                expected_num_tests = exp_num_tests,
                 proposed_test_times=proposed_test_times,
                 practical_test_times = practical_test_times))
   }
@@ -121,11 +127,11 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     
     all_schedules[[i]] = consequences(risk_schedule)
     all_schedules[[i]]$threshold = threshold
-    all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_delay^2 + (length(all_schedules[[i]]$practical_test_times)-1)^2)
+    all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_delay^2 + (all_schedules[[i]]$expected_num_tests-1)^2)
   }
   
   expected_delays = sapply(all_schedules, "[[", "expected_delay")
-  total_tests = sapply(lapply(all_schedules, "[[", "practical_test_times"), length)
+  expected_num_tests = sapply(all_schedules, "[[", "expected_num_tests")
   dist = sapply(all_schedules, "[[", "euclidean_distance")
   
   ############
@@ -133,7 +139,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   ###########
   flag = 0
   old_total_test_limit = total_tests_limit
-  while(sum(total_tests<=total_tests_limit)==0){
+  while(sum(expected_num_tests<=total_tests_limit)==0){
     flag = 1
     total_tests_limit = total_tests_limit + 1
   }
@@ -156,7 +162,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     print(paste0("Using new detection_delay_limit=",detection_delay_limit))
   }
   
-  filter = expected_delays<=detection_delay_limit & total_tests<=total_tests_limit
+  filter = expected_delays<=detection_delay_limit & expected_num_tests<=total_tests_limit
   filtered_schedules = all_schedules[filter]
   filtered_dist = dist[filter]
   
@@ -164,7 +170,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   optimal_threshold_index = which.min(filtered_dist)[1]
   ret = filtered_schedules[[optimal_threshold_index]]
   ret$proposed_test_times = NULL
-  names(ret) = c("expected_detection_delay", "test_schedule", "risk_threshold", "euclidean_distance")
+  names(ret) = c("expected_detection_delay", "expected_number_tests",  "test_schedule", "cumulative_risk_threshold", "euclidean_distance")
   
   full_data = list('selected_schedule'=ret, 'all_schedules'=all_schedules)
   

@@ -10,7 +10,7 @@ library(MASS)
 
 load(paste0("Rdata/lastpaper/simulation/light/jointModelData_seed_", seed, "_t3.Rdata"))
 source("src/lastpaper/prediction_psa_dre.R")
-source("src/lastpaper/scheduleCreator.R")
+source("src/lastpaper/scheduleCreator_expbiopsies.R")
 
 ANNUAL = "Annual"
 BIENNIAL = "Biennial"
