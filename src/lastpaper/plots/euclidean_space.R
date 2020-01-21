@@ -29,7 +29,7 @@ schedules = personalizedSchedule.mvJMbayes(object=mvJoint_dre_psa_2knots_quad_ag
 total_schedules = length(schedules$all_schedules)
 risk_thresholds = sapply(schedules$all_schedules, "[[", "threshold")
 expected_delays = sapply(schedules$all_schedules, "[[", "expected_delay")
-total_tests = sapply(lapply(schedules$all_schedules, "[[", "practical_test_times"), length)
+expected_total_tests = sapply(schedules$all_schedules, "[[", "expected_num_tests")
 euclidean_distance = sapply(schedules$all_schedules, "[[", "euclidean_distance")
 
 min_dist_schedule_index = which.min(euclidean_distance)[1]
@@ -37,24 +37,24 @@ min_dist_schedule_index = which.min(euclidean_distance)[1]
 kappa_choice = ggplot() + 
   geom_hline(yintercept = 1.5, linetype='dashed', color=WARNING_COLOR) +
   geom_label(aes(x=6, y=1.5, label="Clinically acceptable limit for maximum time delay"), color=WARNING_COLOR, size=LABEL_SIZE) +
-  geom_segment(aes(x=1,xend=total_tests[-min_dist_schedule_index], 
+  geom_segment(aes(x=1,xend=expected_total_tests[-min_dist_schedule_index], 
                    y=0,yend=expected_delays[-min_dist_schedule_index]), 
-               alpha=0.125, color='gray') +
-  geom_segment(aes(x=1,xend=total_tests[min_dist_schedule_index], 
+               alpha=0.175, color='gray') +
+  geom_segment(aes(x=1,xend=expected_total_tests[min_dist_schedule_index], 
                    y=0,yend=expected_delays[min_dist_schedule_index]),
                color=SUCCESS_COLOR) +
-  geom_point(aes(x=total_tests[-min_dist_schedule_index], 
+  geom_point(aes(x=expected_total_tests[-min_dist_schedule_index], 
                  y=expected_delays[-min_dist_schedule_index]), 
              size=POINT_SIZE) +
-  geom_point(aes(x=total_tests[min_dist_schedule_index], 
+  geom_point(aes(x=expected_total_tests[min_dist_schedule_index], 
                  y=expected_delays[min_dist_schedule_index]), 
              size=POINT_SIZE+1, color=SUCCESS_COLOR, shape=17) +
-  geom_label(aes(x=total_tests[min_dist_schedule_index], 
+  geom_label(aes(x=expected_total_tests[min_dist_schedule_index], 
                  y=expected_delays[min_dist_schedule_index], 
                  label=paste0("Personalized\nSchedule\n(k = ", 
                              round(risk_thresholds[min_dist_schedule_index]*100,1), "%)")), 
              nudge_x = 1, fill=SUCCESS_COLOR, color='white', size=LABEL_SIZE)+
-  geom_label(aes(x=total_tests[c(1, total_schedules)], 
+  geom_label(aes(x=expected_total_tests[c(1, total_schedules)], 
                  y=expected_delays[c(1, total_schedules)], 
                  label=paste0("Personalized\nSchedule\n(k = ", 
                              round(risk_thresholds[c(1, total_schedules)]*100,1), "%)")), 
@@ -73,3 +73,5 @@ kappa_choice = ggplot() +
   ylab("Expected time delay in detecting progression")
 
 print(kappa_choice)
+ggsave(kappa_choice, filename = "report/lastpaper/images/kappa_choice_102.eps",
+       device = cairo_ps,  height = 6, width=6)

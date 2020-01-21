@@ -3,6 +3,8 @@ library(ggpubr)
 FONT_SIZE = 12
 
 seeds = c(2001:2086, 2201:2332)
+seeds = 2410:2450
+#seeds = 2451:2494
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results/seed_", seed, ".Rdata"))
@@ -17,6 +19,17 @@ levels(biopsyDf_summary$schedule)[5] = "Risk: Auto"
 # 
 # biopsyDf_summary$nb[biopsyDf_summary$delay<0] = biopsyDf_summary$nb[biopsyDf_summary$delay<0] + 1
 # biopsyDf_summary$delay[biopsyDf_summary$delay<0] = 10 - biopsyDf_summary$progression_time[biopsyDf_summary$delay<0]
+
+by(INDICES = biopsyDf_summary$schedule[biopsyDf_summary$progressed==0],
+   data= biopsyDf_summary$nb[biopsyDf_summary$progressed==0], summary)
+
+by(INDICES = biopsyDf_summary$schedule[biopsyDf_summary$progressed==1],
+   data= biopsyDf_summary$nb[biopsyDf_summary$progressed==1], summary)
+
+by(INDICES = biopsyDf_summary$schedule[biopsyDf_summary$progressed==1],
+   data= biopsyDf_summary$delay[biopsyDf_summary$progressed==1], summary)
+
+
 
 a = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
