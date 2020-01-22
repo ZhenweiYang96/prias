@@ -7,7 +7,7 @@ seeds = 2410:2450
 #seeds = 2451:2494
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/combined_results/seed_", seed, ".Rdata"))
+  load(paste0("Rdata/lastpaper/simulation/combined_results_exp_tests/seed_", seed, ".Rdata"))
   
   return(biopsyDf_summary)
 }))
@@ -15,7 +15,7 @@ biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
 biopsyDf_summary = droplevels(biopsyDf_summary[biopsyDf_summary$schedule %in%
                                       c("Annual", "PRIAS", "Risk: 10%", "Risk: 5%", "Risk: Auto (0.5)"),])
 
-levels(biopsyDf_summary$schedule)[5] = "Risk: Auto"
+levels(biopsyDf_summary$schedule)[5] = "Risk:\u03BA*(v)"
 # 
 # biopsyDf_summary$nb[biopsyDf_summary$delay<0] = biopsyDf_summary$nb[biopsyDf_summary$delay<0] + 1
 # biopsyDf_summary$delay[biopsyDf_summary$delay<0] = 10 - biopsyDf_summary$progression_time[biopsyDf_summary$delay<0]

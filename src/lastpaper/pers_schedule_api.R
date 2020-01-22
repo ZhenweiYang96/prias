@@ -1,7 +1,7 @@
 #Only works for one patient at a time
 personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_test_time = NULL,
-                                            gap = 0, horizon, detection_delay_limit=Inf, total_tests_limit=Inf,
-                                            seed = 1L, M = 200L, cache_size=1000, ...) {
+                                            fixed_grid_visits, gap = 0, detection_delay_limit=Inf, total_tests_limit=Inf,
+                                            seed = 1L, M = 400L, cache_size=1000, ...) {
   
   if(length(unique(newdata[[idVar]])) > 1){
     stop("Personalized schedule can be created for only one patient at a time.\n")
@@ -14,9 +14,12 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   }
   
   cur_visit_time = max(newdata[[timeVar]], na.rm = T)
+  fixed_grid_visits = unique(c(cur_visit_time, fixed_grid_visits[fixed_grid_visits >= cur_visit_time]))
+  horizon = max(fixed_grid_visits)
   
-  #Step 1: Create a CACHE of predicted survival probabilities to speed up operations
+  #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
   SURV_CACHE_TIMES <- seq(from = last_test_time, to = horizon, length.out = cache_size)
+  SURV_CACHE_TIMES <- unique(sort(c(fixed_grid_visits, SURV_CACHE_TIMES), decreasing = F))
   
   surv_pred <- survfitJM(object=object, newdata=newdata, idVar=idVar, survTimes = SURV_CACHE_TIMES[-1],
                          last.time = last_test_time, seed=seed, M=M, ...)
@@ -32,12 +35,14 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     previous_test_time <- last_test_time
     surv_schedule_temp <- SURV_CACHE_FULL
     
-    for(i in 1:length(SURV_CACHE_TIMES)){
-      if(SURV_CACHE_TIMES[i] - previous_test_time>=gap){
-        if(mean(surv_schedule_temp[i,], na.rm = T) <= surv_threshold){
-          previous_test_time <- SURV_CACHE_TIMES[i]
-          proposed_test_times <- c(proposed_test_times, previous_test_time)
-          surv_schedule_temp <- apply(SURV_CACHE_FULL, 2, FUN = function(x){x/x[i]})
+    for(i in 1:length(fixed_grid_visits)){
+      if(fixed_grid_visits[i] - previous_test_time>=gap){
+        surv_cache_index = which(SURV_CACHE_TIMES==fixed_grid_visits[i])
+        surv_row_visit = surv_schedule_temp[surv_cache_index,]
+        if(mean(surv_row_visit, na.rm = T) <= surv_threshold){
+          proposed_test_times <- c(proposed_test_times, fixed_grid_visits[i])
+          previous_test_time = fixed_grid_visits[i]
+          surv_schedule_temp <- apply(SURV_CACHE_FULL, 2, FUN = function(x){x/x[surv_cache_index]})
         }
       }
     }
@@ -57,22 +62,21 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   ###############################################
   # Consequences
   ###############################################
-  consequences = function(proposed_test_times){
-    
-    practical_test_times = proposed_test_times
+  getConsequences = function(proposed_test_times){
+    planned_test_schedule = proposed_test_times
     #Make the last test at year 10
-    if(horizon - tail(practical_test_times,1) < gap){
-      practical_test_times = practical_test_times[-length(practical_test_times)]
+    if(horizon - tail(planned_test_schedule,1) < gap){
+      planned_test_schedule = planned_test_schedule[-length(planned_test_schedule)]
     }
-    practical_test_times = c(practical_test_times, horizon)
+    planned_test_schedule = c(planned_test_schedule, horizon)
     
     #Now we create intervals in which to integrate the conditional surv prob
-    if(length(practical_test_times)==1){
-      test_intervals = list(c(last_test_time, practical_test_times))
+    if(length(planned_test_schedule)==1){
+      test_intervals = list(c(last_test_time, planned_test_schedule))
     }else{
       test_intervals = c(last_test_time,
-                         rep(practical_test_times[-length(practical_test_times)],each=2),
-                         practical_test_times[length(practical_test_times)])
+                         rep(planned_test_schedule[-length(planned_test_schedule)],each=2),
+                         planned_test_schedule[length(planned_test_schedule)])
       test_intervals = split(test_intervals, rep(1:(length(test_intervals)/2), each=2))
     }
     
@@ -83,8 +87,8 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       lower_limit = test_intervals[[j]][1]
       upper_limit = test_intervals[[j]][2]
       
-      lower_limit_nearest_index = which.min(abs(lower_limit-SURV_CACHE_TIMES))
-      upper_limit_nearest_index = which.min(abs(upper_limit-SURV_CACHE_TIMES))
+      lower_limit_nearest_index = which(lower_limit==SURV_CACHE_TIMES)
+      upper_limit_nearest_index = which(upper_limit==SURV_CACHE_TIMES)
       interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
         SURV_CACHE_FULL[upper_limit_nearest_index,]
       
@@ -102,35 +106,34 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL[upper_limit_nearest_index,]
     exp_num_tests = mean(exp_num_tests, na.rm = T)
     
-    expected_delay = mean(apply(sapply(interval_res, FUN = function(x){
+    expected_detection_delay = mean(apply(sapply(interval_res, FUN = function(x){
       x$delay * x$cum_risk_interval
     }),1, sum, na.rm=T),na.rm=T)
     
     #proposed test times always has a final test at year 10
-    return(list(expected_delay = expected_delay,
+    return(list(expected_detection_delay = expected_detection_delay,
                 expected_num_tests = exp_num_tests,
-                proposed_test_times=proposed_test_times,
-                practical_test_times = practical_test_times))
+                planned_test_schedule = planned_test_schedule))
   }
   
   #Now we create many fixed risk based schedules
-  risk_thresholds <- seq(0, 1, length.out = 100)
+  risk_thresholds <- seq(0, 1, by=0.0025)
   all_schedules <- vector("list", length=length(risk_thresholds))
   names(all_schedules) <- c(paste("Risk:", risk_thresholds))
   
   for(i in 1:length(risk_thresholds)){
-    threshold <- risk_thresholds[i]
-    risk_schedule <- fixedSchedule(1-threshold)
+    cumulative_risk_threshold <- risk_thresholds[i]
+    risk_schedule <- fixedSchedule(1-cumulative_risk_threshold)
     if(is.null(risk_schedule)){
       risk_schedule <- horizon
     }
     
-    all_schedules[[i]] = consequences(risk_schedule)
-    all_schedules[[i]]$threshold = threshold
-    all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_delay^2 + (all_schedules[[i]]$expected_num_tests-1)^2)
+    all_schedules[[i]] = getConsequences(risk_schedule)
+    all_schedules[[i]]$cumulative_risk_threshold = cumulative_risk_threshold
+    all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_detection_delay^2 + (all_schedules[[i]]$expected_num_tests-1)^2)
   }
   
-  expected_delays = sapply(all_schedules, "[[", "expected_delay")
+  expected_delays = sapply(all_schedules, "[[", "expected_detection_delay")
   expected_num_tests = sapply(all_schedules, "[[", "expected_num_tests")
   dist = sapply(all_schedules, "[[", "euclidean_distance")
   
@@ -169,11 +172,110 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   #There are many, but we select only one for now
   optimal_threshold_index = which.min(filtered_dist)[1]
   ret = filtered_schedules[[optimal_threshold_index]]
-  ret$proposed_test_times = NULL
-  names(ret) = c("expected_detection_delay", "expected_number_tests",  "test_schedule", "cumulative_risk_threshold", "euclidean_distance")
   
-  full_data = list('selected_schedule'=ret, 'all_schedules'=all_schedules)
+  full_data = list('optimal_schedule'=ret, 'all_schedules'=all_schedules)
   
   class(full_data) <- "personalizedSchedule.mvJMbayes"
   return(full_data)
 }
+
+#Only works for one patient at a time
+testScheduleConsequences.mvJMbayes <- function (object, newdata, idVar = "id", last_test_time = NULL,
+                                                planned_test_schedule, seed = 1L, M = 400L, cache_size=1000,...) {
+  
+  if(length(unique(newdata[[idVar]])) > 1){
+    stop("Expected time delay and number of tests can be calculated for only one patient at a time.\n")
+  }
+  timeVar <- object$model_info$timeVar
+  
+  if(is.null(last_test_time)){
+    last_test_time <- max(newdata[[timeVar]], na.rm = T)
+  }
+  
+  cur_visit_time = max(newdata[[timeVar]], na.rm = T)
+  
+  planned_test_schedule = planned_test_schedule[planned_test_schedule >= cur_visit_time]
+  if(length(planned_test_schedule)==0){
+    stop("Expected time delay and number of tests cannot be calculated for an empty schedule or a schedule with maximum visit time less than current visit time.\n")
+  }
+  
+  #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
+  SURV_CACHE_TIMES <- seq(from = last_test_time, to = max(planned_test_schedule), length.out = cache_size)
+  SURV_CACHE_TIMES <- unique(sort(c(planned_test_schedule, SURV_CACHE_TIMES), decreasing = F))
+  
+  surv_pred <- survfitJM(object=object, newdata=newdata, idVar=idVar, survTimes = SURV_CACHE_TIMES[-1],
+                         last.time = last_test_time, seed=seed, M=M, ...)
+  
+  SURV_CACHE_FULL <- rbind(rep(1, M), 
+                           do.call('cbind', lapply(surv_pred$full.results, "[[", 1)))
+  
+  wk = JMbayes:::gaussKronrod()$wk
+  sk = JMbayes:::gaussKronrod()$sk
+  getGaussianQuadWeightsPoints = function(lower_upper_limit){
+    p1 = 0.5 * sum(lower_upper_limit)
+    p2 = 0.5 * diff(lower_upper_limit)
+    
+    return(list(weights = p2*wk, points = p2 * sk + p1))
+  }
+  
+  ###############################################
+  # Consequences
+  ###############################################
+  consequences = function(test_times){
+    
+    #Now we create intervals in which to integrate the conditional surv prob
+    if(length(test_times)==1){
+      test_intervals = list(c(last_test_time, test_times))
+    }else{
+      test_intervals = c(last_test_time,
+                         rep(test_times[-length(test_times)],each=2),
+                         test_times[length(test_times)])
+      test_intervals = split(test_intervals, rep(1:(length(test_intervals)/2), each=2))
+    }
+    
+    interval_res = vector("list", length(test_intervals))
+    exp_num_tests = rep(0, M)
+    for(j in 1:length(test_intervals)){
+      wt_points=getGaussianQuadWeightsPoints(test_intervals[[j]])
+      lower_limit = test_intervals[[j]][1]
+      upper_limit = test_intervals[[j]][2]
+      
+      lower_limit_nearest_index = which(lower_limit==SURV_CACHE_TIMES)
+      upper_limit_nearest_index = which(upper_limit==SURV_CACHE_TIMES)
+      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
+        SURV_CACHE_FULL[upper_limit_nearest_index,]
+      
+      cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
+        cum_surv_at_points = SURV_CACHE_FULL[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL[upper_limit_nearest_index,]
+        scaled_cum_surv_at_points = cum_surv_at_points/interval_res[[j]]$cum_risk_interval
+        
+        return(wt_points$weights[i] * scaled_cum_surv_at_points)
+      })
+      
+      interval_res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time, 1, sum))
+      
+      exp_num_tests = exp_num_tests + j * interval_res[[j]]$cum_risk_interval
+    }
+    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL[upper_limit_nearest_index,]
+    exp_num_tests = mean(exp_num_tests, na.rm = T)
+    
+    expected_detection_delay = mean(apply(sapply(interval_res, FUN = function(x){
+      x$delay * x$cum_risk_interval
+    }),1, sum, na.rm=T),na.rm=T)
+    
+    #proposed test times always has a final test at year 10
+    return(list(expected_detection_delay = expected_detection_delay,
+                expected_num_tests = exp_num_tests,
+                planned_test_schedule = test_times))
+  }
+  
+  test_schedule_conseq = consequences(planned_test_schedule)
+  test_schedule_conseq$euclidean_distance = sqrt(test_schedule_conseq$expected_detection_delay^2 + (test_schedule_conseq$expected_num_tests-1)^2)
+  
+  class(test_schedule_conseq) <- "testScheduleConsequences.mvJMbayes"
+  return(test_schedule_conseq)
+}
+
+
+
+

@@ -110,7 +110,7 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
   riskBreaksOriginal = c(0, threshold, 0.5,1)
   riskAxisBreaks = transformRiskToPSA(riskBreaksOriginal)
   riskAxisLabels = paste0(riskBreaksOriginal*100, "%")
-  riskAxisLabels[2] = paste0("Threshold\nk = ",riskAxisLabels[2])
+  riskAxisLabels[2] = paste0("Threshold\n\u03BA* = ",riskAxisLabels[2])
   
   p = ggplot() +  
     geom_vline(xintercept = latest_survival_time, color=SUCCESS_COLOR)+

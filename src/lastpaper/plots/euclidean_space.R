@@ -21,14 +21,17 @@ pat_data = prias_long_final[prias_long_final$P_ID==102,]
 ##I am perturbing the PSA of one of the patients to demo effect of rising PSA
 pat_data$log2psaplus1[c(nrow(pat_data)-1, nrow(pat_data))] =  pat_data$log2psaplus1[c(nrow(pat_data)-1, nrow(pat_data))] + runif(n = 2, 0.1, 0.5)
 pat_data = pat_data[pat_data$year_visit<=3.0,]
+pat_data$year_visit[nrow(pat_data)] = 2.5
+cur_visit_time = pat_data$year_visit[nrow(pat_data)]
 
 schedules = personalizedSchedule.mvJMbayes(object=mvJoint_dre_psa_2knots_quad_age,
                                            newdata = pat_data, idVar = "P_ID", last_test_time = 1.5,
-                                           gap = 1, horizon = 10, seed = 2019, M = 400, cache_size = 1000)
+                                           gap = 1, fixed_grid_visits = seq(cur_visit_time, to = MAX_FOLLOW_UP, by = 0.5), 
+                                           seed = 2019)
 
 total_schedules = length(schedules$all_schedules)
-risk_thresholds = sapply(schedules$all_schedules, "[[", "threshold")
-expected_delays = sapply(schedules$all_schedules, "[[", "expected_delay")
+risk_thresholds = sapply(schedules$all_schedules, "[[", "cumulative_risk_threshold")
+expected_delays = sapply(schedules$all_schedules, "[[", "expected_detection_delay")
 expected_total_tests = sapply(schedules$all_schedules, "[[", "expected_num_tests")
 euclidean_distance = sapply(schedules$all_schedules, "[[", "euclidean_distance")
 
@@ -51,13 +54,13 @@ kappa_choice = ggplot() +
              size=POINT_SIZE+1, color=SUCCESS_COLOR, shape=17) +
   geom_label(aes(x=expected_total_tests[min_dist_schedule_index], 
                  y=expected_delays[min_dist_schedule_index], 
-                 label=paste0("Personalized\nSchedule\n(k = ", 
-                             round(risk_thresholds[min_dist_schedule_index]*100,1), "%)")), 
+                 label=paste0("Personalized\nSchedule\n\u03BA*(v) = ", 
+                              round(risk_thresholds[min_dist_schedule_index]*100,1), "%")), 
              nudge_x = 1, fill=SUCCESS_COLOR, color='white', size=LABEL_SIZE)+
   geom_label(aes(x=expected_total_tests[c(1, total_schedules)], 
                  y=expected_delays[c(1, total_schedules)], 
-                 label=paste0("Personalized\nSchedule\n(k = ", 
-                             round(risk_thresholds[c(1, total_schedules)]*100,1), "%)")), 
+                 label=paste0("Personalized\nSchedule\n\u03BA* = ", 
+                              round(risk_thresholds[c(1, total_schedules)]*100,1), "%")), 
              nudge_x = c(0, 1), nudge_y=c(0.2, 0), fill='black', color='white', size=LABEL_SIZE)+
   geom_point(aes(x=1, y=0), shape=15, size=POINT_SIZE + 1, 
              color=THEME_COLOR) +
@@ -67,9 +70,9 @@ kappa_choice = ggplot() +
              size=LABEL_SIZE)+
   theme_bw() +
   theme(text = element_text(size = FONT_SIZE)) +
-  scale_x_continuous(breaks=1:10, limits = c(0.5,9)) +
-  scale_y_continuous(breaks=seq(0, 2.5, 0.5), limits = c(-0.2,2.25)) +
-  xlab("Number of biopsies") +
+  scale_x_continuous(breaks=1:8, limits = c(0.5,8)) +
+  scale_y_continuous(breaks=seq(0, 2, 0.5), limits = c(-0.2,2)) +
+  xlab("Expected number of tests") +
   ylab("Expected time delay in detecting progression")
 
 print(kappa_choice)

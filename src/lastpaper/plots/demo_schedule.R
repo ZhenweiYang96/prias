@@ -4,11 +4,10 @@ library(ggplot2)
 library(ggpubr)
 
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
-load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age_light.Rdata")
-source("src/lastpaper/prediction_psa_dre.R")
-source('src/lastpaper/scheduleCreator.R')
-source('src/lastpaper/pers_schedule_api.R')
 load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age.Rdata")
+source("src/lastpaper/prediction_psa_dre.R")
+source('src/lastpaper/pers_schedule_api.R')
+source('src/lastpaper/simulation/scheduleCreator.R')
 
 SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
@@ -30,7 +29,7 @@ current_visit_time = max(patient_df$year_visit)
 last_biopsy_time = 3.5
 
 surv_prob_times = seq(last_biopsy_time, MAX_FOLLOW_UP, length.out = 100)
-future = getExpectedFutureOutcomes(object = mvJoint_dre_psa_2knots_quad_age_light, 
+future = getExpectedFutureOutcomes(object = mvJoint_dre_psa_2knots_quad_age, 
                                    patient_data = patient_df, 
                                    latest_survival_time = last_biopsy_time, 
                                    long_predict_times = patient_df$year_visit,
@@ -133,40 +132,49 @@ risk_plot = baseggplot_no_xticks +
 
 print(risk_plot)
 
-prias_schedule = getPRIASSchedule(object = mvJoint_dre_psa_2knots_quad_age_light,
+planned_prias_schedule = getPRIASSchedule(object = mvJoint_dre_psa_2knots_quad_age,
                                   patient_data = patient_df, 
                                   cur_visit_time = current_visit_time, 
                                   last_biopsy_time = last_biopsy_time,
-                                  M=500, horizon = MAX_FOLLOW_UP)
+                                  M=400, horizon = MAX_FOLLOW_UP)
+prias_schedule = testScheduleConsequences.mvJMbayes(object = mvJoint_dre_psa_2knots_quad_age,
+                                                    newdata = patient_df, idVar = "P_ID", last_test_time = last_biopsy_time,
+                                                    planned_prias_schedule, seed = 2019)
 
-risk_10_perc_schedule = getFixedRiskBasedScheduleNoGrid(object = mvJoint_dre_psa_2knots_quad_age_light,
-                                                        patient_data = patient_df,
-                                                        cur_visit_time = current_visit_time,
-                                                        last_biopsy_time = last_biopsy_time,
-                                                        risk_threshold = 0.1, min_biopsy_gap = 1,
-                                                        M = 500, horizon = MAX_FOLLOW_UP)
+all_risk_schedules = personalizedSchedule.mvJMbayes(object = mvJoint_dre_psa_2knots_quad_age,
+                                                    newdata = patient_df, idVar = "P_ID", last_test_time = last_biopsy_time,
+                                                    fixed_grid_visits = seq(current_visit_time, MAX_FOLLOW_UP, 0.5),
+                                                    gap = 1, seed = 2019)
 
-risk_automatic_schedule = personalizedSchedule.mvJMbayes(object = mvJoint_dre_psa_2knots_quad_age,
-                                                         newdata = patient_df, idVar = "P_ID", last_test_time = last_biopsy_time,
-                                                         gap = 1, horizon = MAX_FOLLOW_UP, seed = 2019, M = 400, cache_size = 1000)
-
-risk_automatic_schedule = risk_automatic_schedule$selected_schedule
+risk_automatic_schedule = all_risk_schedules$optimal_schedule
+risk_10_perc_schedule = all_risk_schedules$all_schedules$`Risk: 0.1`
+annual_schedule = all_risk_schedules$all_schedules$`Risk: 0`
 
 schedule_df = data.frame(name=character(), number=numeric(),times=vector())
 schedule_df = rbind(schedule_df, data.frame(name="Annual", 
                                             number=1,
-                                            times=seq(current_visit_time, MAX_FOLLOW_UP, by = 1)))
+                                            times=annual_schedule$planned_test_schedule,
+                                            expected_num_tests=annual_schedule$expected_num_tests,
+                                            expected_detection_delay=annual_schedule$expected_detection_delay))
 schedule_df = rbind(schedule_df, data.frame(name="PRIAS", 
                                             number=2,
-                                            times=prias_schedule))
-schedule_df = rbind(schedule_df, data.frame(name="Risk: Auto", 
+                                            times=prias_schedule$planned_test_schedule,
+                                            expected_num_tests=prias_schedule$expected_num_tests,
+                                            expected_detection_delay=prias_schedule$expected_detection_delay))
+schedule_df = rbind(schedule_df, data.frame(name="Risk: \u03BA*(v)", 
                                             number=3,
-                                            times=risk_automatic_schedule$test_schedule))
+                                            times=risk_automatic_schedule$planned_test_schedule,
+                                            expected_num_tests=risk_automatic_schedule$expected_num_tests,
+                                            expected_detection_delay=risk_automatic_schedule$expected_detection_delay))
 schedule_df = rbind(schedule_df, data.frame(name="Risk: 10%", 
                                             number=4,
-                                            times=risk_10_perc_schedule))
+                                            times=risk_10_perc_schedule$planned_test_schedule,
+                                            expected_num_tests=risk_10_perc_schedule$expected_num_tests,
+                                            expected_detection_delay=risk_10_perc_schedule$expected_detection_delay))
 
-schedule_plot = baseggplot +
+rm(mvJoint_dre_psa_2knots_quad_age)
+
+planned_schedule_plot = baseggplot +
   geom_vline(xintercept = last_biopsy_time, color=SUCCESS_COLOR) + 
   geom_vline(xintercept = current_visit_time, color='black', linetype='dashed') + 
   geom_segment(aes(x=rep(current_visit_time,4), xend=rep(MAX_FOLLOW_UP,4), y=1:4, yend=1:4), color=SUCCESS_COLOR, linetype='dotted')+
@@ -174,7 +182,7 @@ schedule_plot = baseggplot +
              aes(x=times, y=number, label="B", group=name), 
              color=SUCCESS_COLOR, fill='white')+
   xlab("Follow-up time (years)") + 
-  ylab('Schedule') +
+  ylab('Planned future tests') +
   scale_x_continuous(breaks=0:MAX_FOLLOW_UP,
                      limits = c(min_x, MAX_FOLLOW_UP)) +
   scale_y_continuous(limits = c(1 - 0.25, 4 + 0.25),
@@ -212,39 +220,57 @@ label_plot = ggplot() +
   xlab("Follow-up time (years)") + ylim(-0.1,0.1) + 
   xlim(min_x,MAX_FOLLOW_UP)
 
-#######
-expected_delays = sapply(split(schedule_df$times, schedule_df$name),
-                         FUN = function(schedule){
-                           set.seed(2019)
-                           getConsequences(object = mvJoint_dre_psa_2knots_quad_age_light,
-                                           patient_data = patient_df,
-                                           cur_visit_time = cur_visit_time,
-                                           latest_survival_time = last_biopsy_time,
-                                           proposed_biopsy_times = schedule,
-                                           M = 500, horizon = MAX_FOLLOW_UP)$expected_delay * 12
-                         })
+#########################
+consequences_df = schedule_df[!duplicated(schedule_df$name),]
+consequences_df$expected_detection_delay = consequences_df$expected_detection_delay*12
+max_tests_possible = length(annual_schedule$planned_test_schedule)
 
-delay_plot = ggplot() + geom_col(aes(x=rep(1:4,2), 
-                                     y=c(expected_delays, 12 - expected_delays)),
-                                 color='black', fill=c(rep(c('darkgrey','white'), length(expected_delays))),
-                                 width=0.5)+
-  ylab("Expected time delay (months) in detecting progression") + 
-  xlab("Schedule") +
-  scale_y_continuous(breaks = seq(0, 12, length.out = 7),
-                     labels = round(seq(0,12, length.out = 7),1),
-                     limits=c(0,12))+
-  scale_x_continuous(breaks=1:4, labels = names(expected_delays)) +
-  coord_flip() +
-  theme_bw() + 
+num_test_plot = ggplot() + geom_col(aes(x=rep(consequences_df$name,2), 
+                                        y=c(consequences_df$expected_num_tests, max_tests_possible - consequences_df$expected_num_tests)),
+                                    color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
+                                    width=0.5)+
+  ylab("Expected number of tests") + 
+  xlab("Schedule") + scale_y_continuous(breaks = seq(0, max_tests_possible, by=2),
+                                        labels = seq(0, max_tests_possible, by=2),
+                                        limits = c(0, max_tests_possible)) + 
+  coord_flip() + theme_bw()+
   theme(text = element_text(size = FONT_SIZE))
 
-demo_schedule = ggpubr::ggarrange(risk_plot, schedule_plot, 
-                                  label_plot, delay_plot,
+delay_plot = ggplot() + geom_col(aes(x=rep(consequences_df$name,2), 
+                                     y=c(consequences_df$expected_detection_delay, 
+                                         12 - consequences_df$expected_detection_delay)),
+                                 color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
+                                 width=0.5)+
+  ylab("Expected time delay (months)\nin detecting progression") + 
+  xlab("Schedule") +
+  scale_y_continuous(breaks = seq(0, 12, length.out = 5),
+                     labels = seq(0, 12, length.out = 5),
+                     limits= c(0, 12))+
+  coord_flip() +
+  theme_bw() + 
+  theme(text = element_text(size = FONT_SIZE),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank())
+
+
+consequences_plot = ggpubr::ggarrange(num_test_plot, delay_plot, 
+                                      ncol=2, nrow=1, align = "h",
+                                      labels = c("C", "D"),
+                                      widths = c(1, 0.8))
+
+upper_plot = ggpubr::ggarrange(risk_plot, planned_schedule_plot, 
+                               label_plot,
+                               ncol=1, align = "v",
+                               hjust = -1.5,
+                               heights = c(1,0.8,0.3),
+                               labels = c('A', 'B', ''), 
+                               legend = "none")
+  
+demo_schedule = ggpubr::ggarrange(upper_plot, consequences_plot,
                                   ncol=1, align = "v",
                                   hjust = -1.5,
-                                  heights = c(1,0.8,0.3,0.85),
-                                  labels = c('A', 'B', '', 'C'), 
+                                  heights = c(1,0.45),
                                   legend = "none")
-
+print(demo_schedule)
 ggsave(demo_schedule, filename = "report/lastpaper/images/demo_schedule.eps",
-       device = cairo_ps,  height = 7, width=7/1.1)
+       device = cairo_ps,  height = 7.25, width=7)
