@@ -123,8 +123,12 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
   
   #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
-  CACHE_SIZE = 1000
-  SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
+  if(horizon - last_biopsy_time <= 1.5){
+    SURV_CACHE_TIMES = c(seq(last_biopsy_time, horizon, by = 1/365), horizon)
+  }else{
+    CACHE_SIZE = 500
+    SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
+  }
   SURV_CACHE_TIMES <- unique(sort(c(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= last_biopsy_time], SURV_CACHE_TIMES), decreasing = F))
   
   pred_res = getExpectedFutureOutcomes(object, patient_data, last_biopsy_time, 
@@ -156,7 +160,7 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
     return(proposed_biopsy_times)
   }
   
-  risk_thresholds = seq(0, 1, length.out = 1000)
+  risk_thresholds = seq(0, 1, length.out = 201)
   res = vector("list", length=length(risk_thresholds))
   names(res) = c(paste("Risk:", risk_thresholds))
   
@@ -206,9 +210,15 @@ ifAutomaticFullTreeBasedBiopsy = function(object, patient_data, cur_visit_time,
   
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
   
+  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+  
   #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
-  CACHE_SIZE = 1000
-  SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
+  if(horizon - last_biopsy_time <= 1.5){
+    SURV_CACHE_TIMES = c(seq(last_biopsy_time, horizon, by = 1/365), horizon)
+  }else{
+    CACHE_SIZE = 500
+    SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
+  }
   SURV_CACHE_TIMES <- unique(sort(c(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= last_biopsy_time], SURV_CACHE_TIMES), decreasing = F))
   
   pred_res = getExpectedFutureOutcomes(object, patient_data, last_biopsy_time, 

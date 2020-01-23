@@ -55,7 +55,7 @@ Let $T_i^*$ denote the true progression time of the ${i\mbox{-th}}$ patient incl
 %\begin{figure}[!htb]
 %\captionsetup{justification=justified}
 %\centerline{\includegraphics[width=\columnwidth]{images/jmExplanationPlot_1757.eps}}
-%\caption{\textbf{Illustration of the joint model fitted to the PRIAS dataset}. \textbf{Panel~A:} shows the observed DRE measurements and the fitted probability of obtaining $\mbox{DRE} > \mbox{T1c}$ (Equation~\ref{eq:long_model_dre}) for . \textbf{Panel~B:} shows the observed and fitted $\log_2(\mbox{PSA} + 1)$ measurements (Equation~\ref{eq:long_model_psa}). \textbf{Panel~C:} shows the estimated $\log_2(\mbox{PSA} + 1)$ velocity (velocity cannot be observed directly) over time. The hazard function (Equation~\ref{eq:rel_risk_model}) shown in \textbf{Panel~D}, depends on the fitted log odds of having a $\mbox{DRE} > \mbox{T1c}$, and the fitted $\log_2(\mbox{PSA} + 1)$ value and velocity.}
+%\caption{\textbf{Illustration of the joint model fitted to the PRIAS dataset}. \textbf{Panel~A:} shows the observed DRE measurements and the fitted probability of obtaining $\mbox{DRE} > \mbox{T1c}$ (\ref{eq:long_model_dre}) for . \textbf{Panel~B:} shows the observed and fitted $\log_2(\mbox{PSA} + 1)$ measurements (\ref{eq:long_model_psa}). \textbf{Panel~C:} shows the estimated $\log_2(\mbox{PSA} + 1)$ velocity (velocity cannot be observed directly) over time. The hazard function (\ref{eq:rel_risk_model}) shown in \textbf{Panel~D}, depends on the fitted log odds of having a $\mbox{DRE} > \mbox{T1c}$, and the fitted $\log_2(\mbox{PSA} + 1)$ value and velocity.}
 %\label{fig:jmExplanationPlot_1757}
 %\end{figure}
 
@@ -117,7 +117,7 @@ $b_{3p}$ & 0.023 & 0.109 & 0.018 & 0.189 & 0.327 & 0.380 \\
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_dre}) for the DRE outcome.}
+\caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see~\ref{eq:long_model_dre}) for the DRE outcome.}
 \label{tab:DRE_long}
 \begin{tabular}{lrrrr}
 \hline
@@ -136,7 +136,7 @@ visitTimeYears                   & -1.089 & 0.113 & -1.292 & -0.866 \\
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see Equation \ref{eq:long_model_psa}) for the PSA outcome.}
+\caption{Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model (see~\ref{eq:long_model_psa}) for the PSA outcome.}
 \label{tab:PSA_long}
 \begin{tabular}{lrrrr}
 \hline
@@ -169,11 +169,11 @@ We present plots of observed DRE versus fitted probabilities of obtaining a DRE 
 \label{fig:fitted_9subject_psa}
 \end{figure}
 
-For the relative risk sub-model (see Equation \ref{eq:rel_risk_model}), the parameter estimates in \ref{tab:DRE_PSA_survival} show that both ${\log_2 (\mbox{PSA} + 1)}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of progression.  
+For the relative risk sub-model (see~\ref{eq:rel_risk_model}), the parameter estimates in \ref{tab:DRE_PSA_survival} show that both ${\log_2 (\mbox{PSA} + 1)}$ velocity,  and the log odds of having ${\mbox{DRE} > \mbox{T1c}}$  were significantly associated with the hazard of progression.  
 
 \begin{table}[!htb]
 \begin{center}
-\caption{Estimated mean and 95\% credible interval for the parameters of the relative risk sub-model (see Equation \ref{eq:rel_risk_model}) of the joint model fitted to the PRIAS dataset.}
+\caption{Estimated mean and 95\% credible interval for the parameters of the relative risk sub-model (see~\ref{eq:rel_risk_model}) of the joint model fitted to the PRIAS dataset.}
 \label{tab:DRE_PSA_survival}
 \begin{tabular}{lrrrr}
 \hline
@@ -214,7 +214,7 @@ $\log_2 (\mbox{PSA} + 1)$ velocity & -0.033 & 0.145 & 1.603 [1.450, 1.778]\\
 
 \subsection{Assumption of t-distributed (df=3) Error Terms}
 \label{subsec:t-dist-assumption}
-With regards to the choice of the distribution for the error term $\varepsilon_p$ for the PSA measurements (see Equation \ref{eq:long_model_psa}), we attempted fitting multiple joint models differing in error distribution, namely t-distribution with three, and four degrees of freedom, and a normal distribution for the error term. However, the model assumption for the error term were best met by the model with t-distribution having three degrees of freedom. The quantile-quantile plot of subject-specific residuals for the corresponding model in Panel~A of Figure~\ref{fig:qqplot}, shows that the assumption of t-distributed (df=3) errors is reasonably met by the fitted model. 
+With regards to the choice of the distribution for the error term $\varepsilon_p$ for the PSA measurements (see~\ref{eq:long_model_psa}), we attempted fitting multiple joint models differing in error distribution, namely t-distribution with three, and four degrees of freedom, and a normal distribution for the error term. However, the model assumption for the error term were best met by the model with t-distribution having three degrees of freedom. The quantile-quantile plot of subject-specific residuals for the corresponding model in Panel~A of Figure~\ref{fig:qqplot}, shows that the assumption of t-distributed (df=3) errors is reasonably met by the fitted model. 
 
 \begin{figure}[!htb]
 \centerline{\includegraphics[width=\columnwidth]{images/qqplot.eps}}

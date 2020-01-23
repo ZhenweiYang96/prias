@@ -22,9 +22,9 @@ For the survival process, we assume that the hazard of progression $h_i(t)$ at a
 %\end{equation}
 \begin{equation}
 \label{eq:rel_risk_model}
-h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} \sum_{l=1}^{L_k} f_{kl} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{kl} \big\}\Big], \quad t>0,
+h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} f_{k} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{k} \big\}\Big], \quad t>0,
 \end{equation}
-where $h_0(\cdot)$ denotes the baseline hazard function, $\mathcal{M}_{ki}(t)=\{m_{ki}(s) \mid 0 \leq s < t \}$ denotes the history of the ${k\mbox{-th}}$ longitudinal process up to $t$, and $\boldsymbol{w}_i(t)$ is a vector of exogenous, possibly time-varying, covariates with corresponding regression coefficients $\boldsymbol{\gamma}$. Functions $f_{kl}(\cdot)$, parameterized by vector of coefficients $\boldsymbol{\alpha_{kl}}$, specify which features of each longitudinal outcome are included in the linear predictor of the relative-risk model~\citep{brown2009assessing,rizopoulos2012joint,taylor2013real}. Some examples, motivated by the literature (subscripts $k$ and $l$ dropped for brevity), are:
+where $h_0(\cdot)$ denotes the baseline hazard function, $\mathcal{M}_{ki}(t)=\{m_{ki}(s) \mid 0 \leq s < t \}$ denotes the history of the ${k\mbox{-th}}$ longitudinal process up to $t$, and $\boldsymbol{w}_i(t)$ is a vector of exogenous, possibly time-varying, covariates with corresponding regression coefficients $\boldsymbol{\gamma}$. Functions $f_{k}(\cdot)$, parameterized by vector of coefficients $\boldsymbol{\alpha_{k}}$, specify which features of each longitudinal outcome are included in the linear predictor of the relative-risk model~\citep{brown2009assessing,rizopoulos2012joint,taylor2013real}. Some examples, motivated by the literature (subscripts $k$ dropped for brevity), are:
 \begin{eqnarray*}
 \left \{
 \begin{array}{l}
@@ -55,7 +55,7 @@ where $n_{ki}$ are the total number of longitudinal measurements of type $k$ for
 \label{web_eq:likelihood_contribution_survival}
 p(l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}) = \exp\Big[-\int_0^{l_i} h_i\big\{s \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\}\mathrm{d}{s}\Big] - \exp\Big[-\int_0^{r_i}h_i\big\{s \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\}\mathrm{d}{s}\Big].
 \end{equation}
-The integral in Equation~(\ref{web_eq:likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate it.
+The integral in~(\ref{web_eq:likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate it.
 
 We use independent normal priors with zero mean and variance 100 for the fixed effect parameters of the longitudinal model. For scale parameters we inverse Gamma priors. For the variance-covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the total number of random effects. For the relative risk model's parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. However, when $\boldsymbol{\alpha}$ becomes high dimensional (e.g., when several functional forms are considered per longitudinal outcome), we opt for a global-local ridge-type shrinkage prior, i.e., for the s-th element of $\boldsymbol{\alpha}$ we assume:
 \begin{equation}

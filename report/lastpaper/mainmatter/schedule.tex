@@ -38,7 +38,7 @@ t_l &= \left\{\begin{array}{lcr}
 \end{array} \right\}.
 \end{split}
 \end{equation*}
-The cumulative-risk $R_j(u_l \mid t_l, v)$ at future visit time $u_l$ utilizes the time $t_l$ as the time of the last conducted test on which progression may not be observed (Equation~\ref{eq:cumulative_risk}). However, the contribution of the observed longitudinal data $\{\mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v)\}$ in the risk function remains the same over all time points in $U$. The test decision at time $u_l$ is denoted by ${Q_j^{\kappa^*}(u_l \mid t_l, v)}$. Via the indicator function $I(\cdot)$ it obtains a value 1 (or 0) when a test is to be conducted (or not conducted) at time $u_l$. The subset of future time points in $U$ on which a test is to be performed results into a personalized schedule of planned future tests, given by:
+The cumulative-risk $R_j(u_l \mid t_l, v)$ at future visit time $u_l$ utilizes the time $t_l$ as the time of the last conducted test on which progression may not be observed~(\ref{eq:cumulative_risk}). However, the contribution of the observed longitudinal data $\{\mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v)\}$ in the risk function remains the same over all time points in $U$. The test decision at time $u_l$ is denoted by ${Q_j^{\kappa^*}(u_l \mid t_l, v)}$. Via the indicator function $I(\cdot)$ it obtains a value 1 (or 0) when a test is to be conducted (or not conducted) at time $u_l$. The subset of future time points in $U$ on which a test is to be performed results into a personalized schedule of planned future tests, given by:
 \begin{equation}
 \label{eq:personalized_schedule_grid}
 S_j^{\kappa^*}(U \mid t, v) = \big\{ u_l \in U \mid Q_j^{\kappa^*}(u_l \mid t_l, v)=1\big\}.
@@ -72,7 +72,7 @@ D_j (S \mid t) &= \left\{ \begin{array}{lcrr}
 \end{array} \right\}.
 \end{split}
 \end{equation}
-The time delay is not defined for the scenario in which the patient obtains progression after the time of the last test in the schedule $T^*_j > s_N$. To estimate the expected values of both $N_j(\cdot)$ and $D_j(\cdot)$ in a patient-specific manner, we exploit the personalized cumulative-risk profile of the patient (Equation~\ref{eq:cumulative_risk}). Specifically, the expected number of tests $E\{N_j(\cdot)\}$ and expected time delay $E\{D_j(\cdot)\}$ can be calculated as the weighted sum of $N$ possible number of tests and time delays defined in~(\ref{eq:number_of_tests_and_delay}). The $n$-th weight is equal to the probability of the patient obtaining progression in the $n$-th interval ${s_{n-1} < T^*_j \leq s_n}$.
+The time delay is not defined for the scenario in which the patient obtains progression after the time of the last test in the schedule $T^*_j > s_N$. To estimate the expected values of both $N_j(\cdot)$ and $D_j(\cdot)$ in a patient-specific manner, we exploit the personalized cumulative-risk profile of the patient defined in~(\ref{eq:cumulative_risk}). Specifically, the expected number of tests $E\{N_j(\cdot)\}$ and expected time delay $E\{D_j(\cdot)\}$ can be calculated as the weighted sum of $N$ possible number of tests and time delays defined in~(\ref{eq:number_of_tests_and_delay}). The $n$-th weight is equal to the probability of the patient obtaining progression in the $n$-th interval ${s_{n-1} < T^*_j \leq s_n}$.
 \begin{equation}
 \label{eq:expected_number_of_tests_and_delay}
 \begin{split}
