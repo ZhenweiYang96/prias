@@ -9,7 +9,7 @@ library(survival)
 library(MASS)
 
 load(paste0("Rdata/lastpaper/simulation/light/jointModelData_seed_", seed, "_t3.Rdata"))
-source("src/lastpaper/prediction_psa_dre.R")
+source("src/lastpaper/prediction_psa_dre_randEff_reuse.R")
 source("src/lastpaper/simulation/scheduleCreator.R")
 
 KAPPA_auto_pt5 = "Risk: Auto (0.5)"
@@ -43,7 +43,7 @@ auto_risk_biopsies = lapply(c(0.5, 1, Inf), function(delay_limit){
                                   cur_visit_time = cur_visit_time, 
                                   last_biopsy_time = max(automatic_kappa_biopsies, 0),
                                   min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay_limit,
-                                  M = M, horizon = MAX_FAIL_TIME)){
+                                  M = M, horizon = MAX_FAIL_TIME, use_restricted_delay = T)){
       automatic_kappa_biopsies = c(automatic_kappa_biopsies, cur_visit_time)
     }
     

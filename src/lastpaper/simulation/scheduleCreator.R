@@ -115,203 +115,159 @@ getFixedRiskBasedScheduleNoGrid = function(object, patient_data,
 #################### CACHE BASED SOLUTION #######################
 ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
                                       last_biopsy_time, min_biopsy_gap = 1, M = M, 
-                                      delay_limit = 1, horizon=10){
+                                      delay_limit = 1, horizon=10, use_restricted_delay=T){
   if(cur_visit_time - last_biopsy_time < min_biopsy_gap){
     return(FALSE)
   }
   
   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
   
-  #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
-  if(horizon - last_biopsy_time <= 1.5){
-    SURV_CACHE_TIMES = c(seq(last_biopsy_time, horizon, by = 1/365), horizon)
-  }else{
-    CACHE_SIZE = 500
-    SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
-  }
-  SURV_CACHE_TIMES <- unique(sort(c(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= last_biopsy_time], SURV_CACHE_TIMES), decreasing = F))
-  
-  pred_res = getExpectedFutureOutcomes(object, patient_data, last_biopsy_time, 
-                                       survival_predict_times = SURV_CACHE_TIMES[-1],
-                                       psaDist = "Tdist", M = M)
-  SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
-  rownames(SURV_CACHE_FULL)[1] = as.character(last_biopsy_time)
+  post_rand_eff = getRandomEffectDist(object, patient_data, last_biopsy_time, 
+                                      psaDist = "Tdist", M = M)
   
   fixed_grid_visits = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME<=horizon])
+  pred_res = getExpectedFutureOutcomes(object, post_rand_eff, patient_data, last_biopsy_time, 
+                                       survival_predict_times = fixed_grid_visits,
+                                       psaDist = "Tdist", M = M)
+  
+  fixed_grid_surv = pred_res$predicted_surv_prob
+  
+  if(use_restricted_delay==FALSE){
+    fixed_grid_surv = 1 - t(apply(1-fixed_grid_surv, 1, FUN = function(x){
+      x / (1-fixed_grid_surv[nrow(fixed_grid_surv),])
+    }))
+  }
   
   #Fixed risk schedule function
   getRiskScheduleWithCache <- function(surv_threshold){
     proposed_biopsy_times <- c()
     previous_biopsy_time <- last_biopsy_time
-    surv_schedule_temp <- SURV_CACHE_FULL
+    surv_schedule_temp <- fixed_grid_surv
     
     for(i in 1:length(fixed_grid_visits)){
       if(fixed_grid_visits[i] - previous_biopsy_time>=min_biopsy_gap){
-        surv_cache_index = which(SURV_CACHE_TIMES==fixed_grid_visits[i])
-        surv_row_visit = surv_schedule_temp[surv_cache_index,]
-        if(mean(surv_row_visit, na.rm = T) <= surv_threshold){
+        if(mean(surv_schedule_temp[i,], na.rm = T) <= surv_threshold){
           proposed_biopsy_times <- c(proposed_biopsy_times, fixed_grid_visits[i])
           previous_biopsy_time = fixed_grid_visits[i]
-          surv_schedule_temp <- apply(SURV_CACHE_FULL, 2, FUN = function(x){x/x[surv_cache_index]})
+          surv_schedule_temp <- apply(fixed_grid_surv, 2, FUN = function(x){x/x[i]})
         }
       }
+    }
+    
+    if(length(proposed_biopsy_times)==0){
+      proposed_biopsy_times = horizon
+    }else if(horizon - tail(proposed_biopsy_times, 1) < min_biopsy_gap){
+      proposed_biopsy_times[length(proposed_biopsy_times)] = horizon
+    }else if(tail(proposed_biopsy_times, 1)<horizon){
+      proposed_biopsy_times = c(proposed_biopsy_times, horizon)
     }
     
     return(proposed_biopsy_times)
   }
   
-  risk_thresholds = seq(0, 1, length.out = 201)
-  res = vector("list", length=length(risk_thresholds))
-  names(res) = c(paste("Risk:", risk_thresholds))
+  risk_thresholds = seq(0, 1, length.out = 501)
+  all_schedules=lapply(1-risk_thresholds, getRiskScheduleWithCache)
+  unique_schedules_string = unique(sapply(all_schedules, paste, collapse="-"))
+  unique_schedules = lapply(strsplit(unique_schedules_string, split = "-"), as.numeric)
   
-  for(i in 1:length(risk_thresholds)){
-    threshold = risk_thresholds[i]
-    risk_schedule = getRiskScheduleWithCache(1-threshold)
-    if(is.null(risk_schedule)){
-      risk_schedule = horizon
+  all_biopsy_intervals=lapply(unique_schedules, FUN = function(planned_biopsy_times){
+    if(length(planned_biopsy_times)==1){
+      biop_intervals = list(c(last_biopsy_time, planned_biopsy_times))
+    }else{
+      biop_intervals = c(last_biopsy_time,
+                         rep(planned_biopsy_times[-length(planned_biopsy_times)],each=2),
+                         planned_biopsy_times[length(planned_biopsy_times)])
+      biop_intervals = split(biop_intervals, rep(1:(length(biop_intervals)/2), each=2))
     }
-    
-    res[[i]] = getConsequencesWithCache(SURV_CACHE_TIMES, SURV_CACHE_FULL, horizon,
-                                        risk_schedule, last_biopsy_time)
-    res[[i]]$threshold = threshold
-  }
+    return(biop_intervals)
+  })
+  unique_biopsy_intervals_string = unique(do.call('c', lapply(all_biopsy_intervals, FUN = function(x){
+    sapply(x, paste, collapse="-")
+  })))
   
-  expected_delays = sapply(res, "[[", "expected_delay")
-  exp_total_biopsies = sapply(res, "[[", "expected_num_biopsies")
+  unique_biopsy_intervals = lapply(strsplit(unique_biopsy_intervals_string, split="-"), as.numeric)
+  biopsy_interval_gqpoints = lapply(unique_biopsy_intervals, FUN = getGaussianQuadWeightsPoints)
+  biopsy_interval_gqpoints = do.call('c', lapply(biopsy_interval_gqpoints, "[[", "points"))
   
-  #Distance from optimal point
-  dist = sqrt(expected_delays^2 + (exp_total_biopsies - 1)^2)
-  
-  while(sum(expected_delays<=delay_limit) == 0){
-    delay_limit = delay_limit + 0.1
-  }
-  
-  filter = expected_delays<=delay_limit
-  risk_thresholds = risk_thresholds[filter]
-  dist = dist[filter]
-  exp_total_biopsies = exp_total_biopsies[filter]
-  res = res[filter]
-  expected_delays = expected_delays[filter]
-  
-  #There are many, but we select only one for now
-  optimal_schedule_index = which.min(dist)[1]
-  optimal_schedule = res[[optimal_schedule_index]]$practical_biopsy_times
-  decision = optimal_schedule[1] <= cur_visit_time
-  
-  return(decision)
-}
-
-ifAutomaticFullTreeBasedBiopsy = function(object, patient_data, cur_visit_time,
-                                          last_biopsy_time, min_biopsy_gap = 1, M = M, 
-                                          delay_limit = 1, horizon=10){
-  if(cur_visit_time - last_biopsy_time < min_biopsy_gap){
-    return(FALSE)
-  }
-  
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
-  
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
-  
-  #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
-  if(horizon - last_biopsy_time <= 1.5){
-    SURV_CACHE_TIMES = c(seq(last_biopsy_time, horizon, by = 1/365), horizon)
-  }else{
-    CACHE_SIZE = 500
-    SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
-  }
-  SURV_CACHE_TIMES <- unique(sort(c(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= last_biopsy_time], SURV_CACHE_TIMES), decreasing = F))
-  
-  pred_res = getExpectedFutureOutcomes(object, patient_data, last_biopsy_time, 
+  ###########
+  # New surv cache
+  ###########
+  SURV_CACHE_TIMES = unique(sort(c(last_biopsy_time, fixed_grid_visits, biopsy_interval_gqpoints), decreasing = F))
+  pred_res = getExpectedFutureOutcomes(object, post_rand_eff, patient_data, last_biopsy_time, 
                                        survival_predict_times = SURV_CACHE_TIMES[-1],
                                        psaDist = "Tdist", M = M)
-  
   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
   
-  #Function to create all possible biopsy schedules 
-  allBiopsySchedules = function(cur_visit_time, min_biopsy_gap, horizon){
-    times = list()
-    count = 0
-    
-    PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
-    
-    recursive = function(last_biopsy_time, current_visit_time, cur_path){
-      if(current_visit_time < cur_visit_time){
-        count <<- count + 1
-        times[[count]] <<- as.numeric(strsplit(cur_path, split = "-")[[1]])
-      }else{
-        if(last_biopsy_time - current_visit_time>=min_biopsy_gap){
-          #case 1 do a biopsy
-          recursive(current_visit_time, 
-                    current_visit_time - min_biopsy_gap,
-                    paste0(current_visit_time,"-",cur_path))
-          
-          #case 2 don't do a biopsy
-          recursive(last_biopsy_time, 
-                    tail(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME<current_visit_time],1),
-                    cur_path)
-        }
-      }
-    }
-    recursive(horizon, horizon-min_biopsy_gap, as.character(horizon))
-    
-    #I will sort them by first biopsy time
-    first_biopsy_time = sapply(times, min)
-    total_biopsies = sapply(times, length)
-    times = times[order(first_biopsy_time, total_biopsies, decreasing = F)]
-    return(times)
+  
+  if(use_restricted_delay==FALSE){
+    SURV_CACHE_FULL = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+      x / (1-SURV_CACHE_FULL[nrow(SURV_CACHE_FULL),])
+    })) 
   }
   
-  allSchedules = allBiopsySchedules(cur_visit_time = cur_visit_time, 
-                                    min_biopsy_gap = min_biopsy_gap, horizon = horizon)
-  
-  res = vector("list", length=length(allSchedules))
-  for(i in 1:length(allSchedules)){
-    schedule = allSchedules[[i]]
-    
+  #Now we calculate consequences for each unique schedule
+  res = vector("list", length=length(unique_schedules))
+  names(res) = c(paste("Risk:", unique_schedules))
+  for(i in 1:length(unique_schedules)){
     res[[i]] = getConsequencesWithCache(SURV_CACHE_TIMES, SURV_CACHE_FULL, horizon,
-                                        schedule, last_biopsy_time)
+                                        unique_schedules[[i]], last_biopsy_time)
   }
   
   expected_delays = sapply(res, "[[", "expected_delay")
   exp_total_biopsies = sapply(res, "[[", "expected_num_biopsies")
   
+  if(length(res)==1){
+    sd_expected_delay = 1
+    sd_exp_total_biopsy = 1
+  }else{
+    sd_expected_delay = sd(expected_delays)
+    sd_exp_total_biopsy = sd(exp_total_biopsies)
+  }
+  
+  scaled_expected_delays = expected_delays/sd_expected_delay
+  scaled_exp_total_biopsies = exp_total_biopsies/sd_exp_total_biopsy
+  
   #Distance from optimal point
   dist = sqrt(expected_delays^2 + (exp_total_biopsies - 1)^2)
+  scaled_dist = sqrt(scaled_expected_delays^2 + (scaled_exp_total_biopsies - 1/sd_exp_total_biopsy)^2)
   
-  while(sum(expected_delays<=delay_limit) == 0){
+  # while(sum(expected_delays<=delay_limit) == 0){
+  #   delay_limit = delay_limit + 0.1
+  # }
+  # 
+  # filter = expected_delays<=delay_limit
+  # dist = dist[filter]
+  # exp_total_biopsies = exp_total_biopsies[filter]
+  # res = res[filter]
+  # expected_delays = expected_delays[filter]
+  # 
+  # #There are many, but we select only one for now
+  # optimal_schedule_index = which.min(dist)[1]
+  
+  while(sum(scaled_expected_delays<=(delay_limit/sd_expected_delay)) == 0){
     delay_limit = delay_limit + 0.1
   }
   
-  risk_thresholds = risk_thresholds[expected_delays<=delay_limit]
-  dist = dist[expected_delays<=delay_limit]
-  exp_total_biopsies = exp_total_biopsies[expected_delays<=delay_limit]
-  res = res[expected_delays<=delay_limit]
-  
-  #There are many, but we select only one for now
-  optimal_schedule_index = which.min(dist)[1]
-  optimal_schedule = res[[optimal_schedule_index]]$practical_biopsy_times
+  filter = scaled_expected_delays<=(delay_limit/sd_expected_delay)
+  scaled_dist = scaled_dist[filter]
+  res = res[filter]
+  optimal_schedule_index = which.min(scaled_dist)[1]
+  optimal_schedule = res[[optimal_schedule_index]]$planned_biopsy_times
   decision = optimal_schedule[1] <= cur_visit_time
   
   return(decision)
 }
 
 getConsequencesWithCache = function(cache_times, cache_surv_full, horizon,
-                                    proposed_biopsy_times, latest_survival_time){
-  
-  practical_biopsy_times = proposed_biopsy_times
-  #Make the last biopsy at year 10
-  if(horizon - tail(practical_biopsy_times,1) < 1){
-    practical_biopsy_times = practical_biopsy_times[-length(practical_biopsy_times)]
-  }
-  practical_biopsy_times = c(practical_biopsy_times, horizon)
+                                    planned_biopsy_times, latest_survival_time){
   
   #Now we create intervals in which to integrate the conditional surv prob
-  if(length(practical_biopsy_times)==1){
-    biop_intervals = list(c(latest_survival_time, practical_biopsy_times))
+  if(length(planned_biopsy_times)==1){
+    biop_intervals = list(c(latest_survival_time, planned_biopsy_times))
   }else{
     biop_intervals = c(latest_survival_time,
-                       rep(practical_biopsy_times[-length(practical_biopsy_times)],each=2),
-                       practical_biopsy_times[length(practical_biopsy_times)])
+                       rep(planned_biopsy_times[-length(planned_biopsy_times)],each=2),
+                       planned_biopsy_times[length(planned_biopsy_times)])
     biop_intervals = split(biop_intervals, rep(1:(length(biop_intervals)/2), each=2))
   }
   
@@ -328,7 +284,7 @@ getConsequencesWithCache = function(cache_times, cache_surv_full, horizon,
       cache_surv_full[upper_limit_nearest_index,]
     
     cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
-      cum_surv_at_points = cache_surv_full[which.min(abs(wt_points$points[i]-cache_times)),] - cache_surv_full[upper_limit_nearest_index,]
+      cum_surv_at_points = cache_surv_full[which(wt_points$points[i]==cache_times),] - cache_surv_full[upper_limit_nearest_index,]
       scaled_cum_surv_at_points = cum_surv_at_points/res[[j]]$cum_risk_interval
       
       return(wt_points$weights[i] * scaled_cum_surv_at_points)
@@ -347,6 +303,99 @@ getConsequencesWithCache = function(cache_times, cache_surv_full, horizon,
   #proposed biopsy times always has a final biopsy at year 10
   return(list(expected_delay = expected_delay,
               expected_num_biopsies = exp_num_biopsies,
-              proposed_biopsy_times=proposed_biopsy_times,
-              practical_biopsy_times = practical_biopsy_times))
+              planned_biopsy_times = planned_biopsy_times))
 }
+
+# ifAutomaticFullTreeBasedBiopsy = function(object, patient_data, cur_visit_time,
+#                                           last_biopsy_time, min_biopsy_gap = 1, M = M, 
+#                                           delay_limit = 1, horizon=10){
+#   if(cur_visit_time - last_biopsy_time < min_biopsy_gap){
+#     return(FALSE)
+#   }
+#   
+#   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+#   
+#   PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+#   
+#   #Step 1: Create a CACHE of predicted survival probabilities to speed up operation
+#   if(horizon - last_biopsy_time <= 1.5){
+#     SURV_CACHE_TIMES = c(seq(last_biopsy_time, horizon, by = 1/365), horizon)
+#   }else{
+#     CACHE_SIZE = 500
+#     SURV_CACHE_TIMES = seq(last_biopsy_time, horizon, length.out = CACHE_SIZE)
+#   }
+#   SURV_CACHE_TIMES <- unique(sort(c(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME >= last_biopsy_time], SURV_CACHE_TIMES), decreasing = F))
+#   
+#   pred_res = getExpectedFutureOutcomes(object, patient_data, last_biopsy_time, 
+#                                        survival_predict_times = SURV_CACHE_TIMES[-1],
+#                                        psaDist = "Tdist", M = M)
+#   
+#   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
+#   
+#   #Function to create all possible biopsy schedules 
+#   allBiopsySchedules = function(cur_visit_time, min_biopsy_gap, horizon){
+#     times = list()
+#     count = 0
+#     
+#     PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, horizon, 0.5))
+#     
+#     recursive = function(last_biopsy_time, current_visit_time, cur_path){
+#       if(current_visit_time < cur_visit_time){
+#         count <<- count + 1
+#         times[[count]] <<- as.numeric(strsplit(cur_path, split = "-")[[1]])
+#       }else{
+#         if(last_biopsy_time - current_visit_time>=min_biopsy_gap){
+#           #case 1 do a biopsy
+#           recursive(current_visit_time, 
+#                     current_visit_time - min_biopsy_gap,
+#                     paste0(current_visit_time,"-",cur_path))
+#           
+#           #case 2 don't do a biopsy
+#           recursive(last_biopsy_time, 
+#                     tail(PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME<current_visit_time],1),
+#                     cur_path)
+#         }
+#       }
+#     }
+#     recursive(horizon, horizon-min_biopsy_gap, as.character(horizon))
+#     
+#     #I will sort them by first biopsy time
+#     first_biopsy_time = sapply(times, min)
+#     total_biopsies = sapply(times, length)
+#     times = times[order(first_biopsy_time, total_biopsies, decreasing = F)]
+#     return(times)
+#   }
+#   
+#   allSchedules = allBiopsySchedules(cur_visit_time = cur_visit_time, 
+#                                     min_biopsy_gap = min_biopsy_gap, horizon = horizon)
+#   
+#   res = vector("list", length=length(allSchedules))
+#   for(i in 1:length(allSchedules)){
+#     schedule = allSchedules[[i]]
+#     
+#     res[[i]] = getConsequencesWithCache(SURV_CACHE_TIMES, SURV_CACHE_FULL, horizon,
+#                                         schedule, last_biopsy_time)
+#   }
+#   
+#   expected_delays = sapply(res, "[[", "expected_delay")
+#   exp_total_biopsies = sapply(res, "[[", "expected_num_biopsies")
+#   
+#   #Distance from optimal point
+#   dist = sqrt(expected_delays^2 + (exp_total_biopsies - 1)^2)
+#   
+#   while(sum(expected_delays<=delay_limit) == 0){
+#     delay_limit = delay_limit + 0.1
+#   }
+#   
+#   risk_thresholds = risk_thresholds[expected_delays<=delay_limit]
+#   dist = dist[expected_delays<=delay_limit]
+#   exp_total_biopsies = exp_total_biopsies[expected_delays<=delay_limit]
+#   res = res[expected_delays<=delay_limit]
+#   
+#   #There are many, but we select only one for now
+#   optimal_schedule_index = which.min(dist)[1]
+#   optimal_schedule = res[[optimal_schedule_index]]$practical_biopsy_times
+#   decision = optimal_schedule[1] <= cur_visit_time
+#   
+#   return(decision)
+# }
