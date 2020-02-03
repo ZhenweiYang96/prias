@@ -115,7 +115,7 @@ getFixedRiskBasedScheduleNoGrid = function(object, patient_data,
 #################### CACHE BASED SOLUTION #######################
 ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
                                       last_biopsy_time, min_biopsy_gap = 1, M = M, 
-                                      delay_limit = 1, horizon=10, use_restricted_delay=T){
+                                      delay_limit = 1, horizon=10, use_exact_delay=T){
   if(cur_visit_time - last_biopsy_time < min_biopsy_gap){
     return(FALSE)
   }
@@ -132,7 +132,7 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   
   fixed_grid_surv = pred_res$predicted_surv_prob
   
-  if(use_restricted_delay==FALSE){
+  if(use_exact_delay==TRUE){
     fixed_grid_surv = 1 - t(apply(1-fixed_grid_surv, 1, FUN = function(x){
       x / (1-fixed_grid_surv[nrow(fixed_grid_surv),])
     }))
@@ -198,8 +198,7 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
                                        psaDist = "Tdist", M = M)
   SURV_CACHE_FULL = rbind(rep(1, M), pred_res$predicted_surv_prob)
   
-  
-  if(use_restricted_delay==FALSE){
+  if(use_exact_delay==TRUE){
     SURV_CACHE_FULL = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
       x / (1-SURV_CACHE_FULL[nrow(SURV_CACHE_FULL),])
     })) 
@@ -215,43 +214,38 @@ ifAutomaticRiskBasedBiopsy = function(object, patient_data, cur_visit_time,
   
   expected_delays = sapply(res, "[[", "expected_delay")
   exp_total_biopsies = sapply(res, "[[", "expected_num_biopsies")
-  
-  if(length(res)==1){
-    sd_expected_delay = 1
-    sd_exp_total_biopsy = 1
-  }else{
-    sd_expected_delay = sd(expected_delays)
-    sd_exp_total_biopsy = sd(exp_total_biopsies)
-  }
-  
-  scaled_expected_delays = expected_delays/sd_expected_delay
-  scaled_exp_total_biopsies = exp_total_biopsies/sd_exp_total_biopsy
-  
-  #Distance from optimal point
   dist = sqrt(expected_delays^2 + (exp_total_biopsies - 1)^2)
-  scaled_dist = sqrt(scaled_expected_delays^2 + (scaled_exp_total_biopsies - 1/sd_exp_total_biopsy)^2)
   
-  # while(sum(expected_delays<=delay_limit) == 0){
+  # if(length(res)==1){
+  #   sd_expected_delay = 1
+  #   sd_exp_total_biopsy = 1
+  # }else{
+  #   sd_expected_delay = sd(expected_delays)
+  #   sd_exp_total_biopsy = sd(exp_total_biopsies)
+  # }
+  
+  #scaled_expected_delays = expected_delays/sd_expected_delay
+  #scaled_exp_total_biopsies = exp_total_biopsies/sd_exp_total_biopsy
+  #scaled_dist = sqrt(scaled_expected_delays^2 + (scaled_exp_total_biopsies - 1/sd_exp_total_biopsy)^2)
+  
+  # while(sum(scaled_expected_delays<=(delay_limit/sd_expected_delay)) == 0){
   #   delay_limit = delay_limit + 0.1
   # }
-  # 
-  # filter = expected_delays<=delay_limit
-  # dist = dist[filter]
-  # exp_total_biopsies = exp_total_biopsies[filter]
-  # res = res[filter]
-  # expected_delays = expected_delays[filter]
-  # 
-  # #There are many, but we select only one for now
-  # optimal_schedule_index = which.min(dist)[1]
   
-  while(sum(scaled_expected_delays<=(delay_limit/sd_expected_delay)) == 0){
-    delay_limit = delay_limit + 0.1
+  #filter = scaled_expected_delays<=(delay_limit/sd_expected_delay)
+  #scaled_dist = scaled_dist[filter]
+  #res = res[filter]
+  # optimal_schedule_index = which.min(scaled_dist)[1]
+  
+  while(sum(expected_delays<=delay_limit) == 0){
+    delay_limit = delay_limit + 0.01
   }
   
-  filter = scaled_expected_delays<=(delay_limit/sd_expected_delay)
-  scaled_dist = scaled_dist[filter]
+  filter = expected_delays<=delay_limit
+  dist = dist[filter]
   res = res[filter]
-  optimal_schedule_index = which.min(scaled_dist)[1]
+  optimal_schedule_index = which.min(dist)[1]
+  
   optimal_schedule = res[[optimal_schedule_index]]$planned_biopsy_times
   decision = optimal_schedule[1] <= cur_visit_time
   

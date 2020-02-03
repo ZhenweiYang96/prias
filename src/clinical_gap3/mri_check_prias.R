@@ -56,3 +56,5 @@ prias_final.id_mri = prias_final.id[prias_final.id$P_ID %in% prias_mri_long$P_ID
 sum(prias_final.id_mri$reclassification)
 
 length(unique(prias_mri_long$P_ID[!is.na(prias_mri_long$any_pirads)]))
+
+#How many patients had MRI within 6 months of their

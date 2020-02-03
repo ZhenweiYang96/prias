@@ -1,8 +1,7 @@
-getFixedSchedule = function(cur_visit_time, latest_survival_time=NA,
-                            min_biopsy_gap = 1, biopsy_frequency=1, horizon=10){
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
+getFixedSchedule = function(latest_survival_time=NA,
+                            min_biopsy_gap = 1, biopsy_frequency=1){
   
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
+  visit_schedule = patient_cache$visit_schedule
   
   proposed_biopsy_times = c()
   min_biopsy_gap = max(min_biopsy_gap, biopsy_frequency)
@@ -19,40 +18,25 @@ getFixedSchedule = function(cur_visit_time, latest_survival_time=NA,
   return(proposed_biopsy_times)
 }
 
-getPRIASSchedule = function(object, patient_data, cur_visit_time=NA, 
-                            latest_survival_time=NA,
-                            min_biopsy_gap = 1,
-                            M=750, horizon=10){
-  if(is.na(cur_visit_time)){
-    cur_visit_time = min(max(patient_data$year_visit), horizon)
-  }
+getPRIASSchedule = function(latest_survival_time, min_biopsy_gap){
   
-  patient_data = patient_data[patient_data$year_visit <= cur_visit_time,]
+  visit_schedule = patient_cache$visit_schedule
+  psa_indices = sapply(visit_schedule, FUN = function(x){
+    which(patient_cache$PSA_CACHE_TIMES==x)
+  })
   
-  if(is.na(latest_survival_time)){
-    latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
-  }
-  
-  if(cur_visit_time < latest_survival_time){
-    stop("Current visit time should be more than latest survival time")
-  }
-  
-  #making schedule now
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
-  future_log2psaplus1_matrix = getExpectedFutureOutcomes(object, patient_data, latest_survival_time, 
-                                                         psa_predict_times = visit_schedule, 
-                                                         psaDist = "Tdist", M = M, addRandomError = T)$predicted_psa
-  proposed_biopsy_times_list = vector("list", length=500)
+  future_log2psaplus1_matrix = patient_cache$PSA_CACHE_FULL[psa_indices,,drop = FALSE]
+    
+  proposed_biopsy_times_list = vector("list", length=max(min(100, M)))
   for(sim in 1:length(proposed_biopsy_times_list)){
     proposed_biopsy_times = c()
     
     future_log2psaplus1 = apply(future_log2psaplus1_matrix, MARGIN = 1, sample, size=1)
     future_psa = pmax(0.1, 2^(future_log2psaplus1)-1)
-    obs_psa = patient_data$psa
-    obs_psa_times = patient_data$year_visit
+    obs_psa = patient_cache$patient_data$psa
+    obs_psa_times = patient_cache$patient_data$year_visit
     
-    if(max(obs_psa_times)==cur_visit_time){
+    if(max(obs_psa_times)==patient_cache$current_visit_time){
       future_psa[1] = tail(obs_psa,1)
       obs_psa = obs_psa[-length(obs_psa)]
       obs_psa_times = obs_psa_times[-length(obs_psa_times)]
@@ -92,103 +76,86 @@ getPRIASSchedule = function(object, patient_data, cur_visit_time=NA,
   return(final_proposed_biopsy_times)
 }
 
-getRiskBasedSchedule = function(object, patient_data, cur_visit_time=NA, 
-                                latest_survival_time=NA,
-                                risk_threshold = 0.05, 
-                                min_biopsy_gap = 1,
-                                M=750, horizon=10){
+getRiskBasedSchedule = function(surv_threshold, previous_test_time, gap){
+  proposed_test_times <- c()
+  surv_schedule_temp <- patient_cache$SURV_CACHE_FULL
+  fixed_grid_visits <- patient_cache$visit_schedule
   
-  if(is.na(cur_visit_time)){
-    cur_visit_time = min(max(patient_data$year_visit), horizon)
-  }
-  
-  patient_data = patient_data[patient_data$year_visit <= cur_visit_time,]
-  
-  if(is.na(latest_survival_time)){
-    latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
-  }
-  
-  if(cur_visit_time < latest_survival_time){
-    stop("Current visit time should be more than latest survival time")
-  }
-  
-  #making schedule now
-  PSA_CHECK_UP_TIME = c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
-  visit_schedule = c(cur_visit_time, PSA_CHECK_UP_TIME[PSA_CHECK_UP_TIME > cur_visit_time & PSA_CHECK_UP_TIME <=horizon])
-  proposed_biopsy_times = c()
-  
-  latest_biopsy_time = latest_survival_time
-  for(i in 1:length(visit_schedule)){
-    visit_time = visit_schedule[i]
-    if(visit_time - latest_biopsy_time>=min_biopsy_gap){
-      visit_cum_risk = 1-getExpectedFutureOutcomes(object, patient_data, latest_biopsy_time, 
-                                                   survival_predict_times = visit_time,
-                                                   psaDist = "Tdist", M = M)$predicted_surv_prob
-      if(mean(visit_cum_risk, na.rm = T) > risk_threshold){
-        proposed_biopsy_times = c(proposed_biopsy_times, visit_time)
-        latest_biopsy_time = visit_time
+  for(i in 1:length(fixed_grid_visits)){
+    if(fixed_grid_visits[i] - previous_test_time>=gap){
+      surv_cache_index = which(patient_cache$SURV_CACHE_TIMES==fixed_grid_visits[i])
+      surv_row_visit = surv_schedule_temp[surv_cache_index,]
+      if(mean(surv_row_visit, na.rm = T) <= surv_threshold){
+        proposed_test_times <- c(proposed_test_times, fixed_grid_visits[i])
+        previous_test_time = fixed_grid_visits[i]
+        surv_schedule_temp <- apply(patient_cache$SURV_CACHE_FULL, 2, FUN = function(x){x/x[surv_cache_index]})
       }
     }
   }
   
-  return(proposed_biopsy_times)
+  return(proposed_test_times)
 }
 
-getConsequences = function(object, patient_data, cur_visit_time=NA, 
-                           latest_survival_time=NA,
-                           proposed_biopsy_times, 
-                           M=750, horizon=10){
+getConsequences = function(proposed_test_times, gap, last_test_time){
+  set.seed(2019);
   
-  practical_biopsy_times = proposed_biopsy_times
-  #Make the last biopsy at year 10
-  #and if the last biopsy was 9.5 or more, remove it and only keep the one at 10
-  if(max(practical_biopsy_times)>=(horizon-0.5)){
-    practical_biopsy_times = practical_biopsy_times[-length(practical_biopsy_times)]
+  if(length(proposed_test_times)==0){
+    proposed_test_times = MAX_FOLLOW_UP
   }
-  practical_biopsy_times = c(practical_biopsy_times, horizon)
+  
+  planned_test_schedule = proposed_test_times
+  #Make the last test at MAX_FOLLOW_UP
+  if(MAX_FOLLOW_UP - tail(planned_test_schedule,1) < gap){
+    planned_test_schedule = planned_test_schedule[-length(planned_test_schedule)]
+  }
+  planned_test_schedule = c(planned_test_schedule, MAX_FOLLOW_UP)
   
   #Now we create intervals in which to integrate the conditional surv prob
-  if(length(practical_biopsy_times)==1){
-    biop_intervals = list(c(latest_survival_time,practical_biopsy_times))
+  if(length(planned_test_schedule)==1){
+    test_intervals = list(c(last_test_time, planned_test_schedule))
   }else{
-    biop_intervals = c(latest_survival_time,
-                       rep(practical_biopsy_times[-length(practical_biopsy_times)],each=2),
-                       practical_biopsy_times[length(practical_biopsy_times)])
-    biop_intervals = split(biop_intervals, rep(1:(length(biop_intervals)/2), each=2))
+    test_intervals = c(last_test_time,
+                       rep(planned_test_schedule[-length(planned_test_schedule)],each=2),
+                       planned_test_schedule[length(planned_test_schedule)])
+    test_intervals = split(test_intervals, rep(1:(length(test_intervals)/2), each=2))
   }
   
-  exp_delay_interval = rep(NA, length(biop_intervals))
-  for(j in 1:length(biop_intervals)){
-    wt_points=getGaussianQuadWeightsPoints(biop_intervals[[j]])
-    lower_limit = biop_intervals[[j]][1]
-    upper_limit = biop_intervals[[j]][2]
+  SURV_CACHE_FULL_rescaled = 1 - t(apply(1-patient_cache$SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-patient_cache$SURV_CACHE_FULL[nrow(patient_cache$SURV_CACHE_FULL),, drop=F])
+  })) 
+  
+  interval_res = vector("list", length(test_intervals))
+  exp_num_tests = rep(0, M)
+  for(j in 1:length(test_intervals)){
+    wt_points=getGaussianQuadWeightsPoints(test_intervals[[j]])
+    lower_limit = test_intervals[[j]][1]
+    upper_limit = test_intervals[[j]][2]
     
-    unscaled_cumrisk_upper = mean(1-getExpectedFutureOutcomes(object = object, 
-                                                              patient_data = patient_data,
-                                                              latest_survival_time = lower_limit, 
-                                                              earliest_failure_time = Inf,
-                                                              survival_predict_times = upper_limit,
-                                                              psaDist = "Tdist", M = M)$predicted_surv_prob[1,], na.rm = T)
+    lower_limit_nearest_index = which.min(abs(lower_limit - patient_cache$SURV_CACHE_TIMES))
+    upper_limit_nearest_index = which.min(abs(upper_limit - patient_cache$SURV_CACHE_TIMES))
+    interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL_rescaled[lower_limit_nearest_index,] - 
+      SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
     
-    surv_prob_interval = getExpectedFutureOutcomes(object = object, 
-                                                   patient_data = patient_data,
-                                                   latest_survival_time = lower_limit, 
-                                                   earliest_failure_time = upper_limit,
-                                                   survival_predict_times = wt_points$points,
-                                                   psaDist = "Tdist", M = M)$predicted_surv_prob
+    cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
+      cum_surv_at_points = SURV_CACHE_FULL_rescaled[which.min(abs(wt_points$points[i]-patient_cache$SURV_CACHE_TIMES)),] - SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
+      scaled_cum_surv_at_points = cum_surv_at_points/interval_res[[j]]$cum_risk_interval
+      
+      return(wt_points$weights[i] * scaled_cum_surv_at_points)
+    })
     
-    scaled_surv_prob_interval = surv_prob_interval * matrix(rep(wt_points$weights, each=M), 
-                                                            nrow=length(wt_points$points), 
-                                                            ncol=M, byrow = T)
-    area_under_survival = apply(scaled_surv_prob_interval, 2, sum, na.rm=T)
-    delay = upper_limit - (lower_limit + area_under_survival)
-    exp_delay_interval[j] = mean(unscaled_cumrisk_upper * delay, na.rm = T)
+    interval_res[[j]]$delay = upper_limit - (lower_limit + apply(cond_expected_fail_time, 1, sum))
+    
+    exp_num_tests = exp_num_tests + j * interval_res[[j]]$cum_risk_interval
   }
+  exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
+  exp_num_tests = mean(exp_num_tests, na.rm = T)
   
-  expected_delay = sum(exp_delay_interval)
+  expected_detection_delay = mean(apply(sapply(interval_res, FUN = function(x){
+    x$delay * x$cum_risk_interval
+  }),1, sum, na.rm=T),na.rm=T)
   
-  #proposed biopsy times always has a final biopsy at year 10
-  return(list(expected_delay = expected_delay,
-              proposed_biopsy_times = proposed_biopsy_times,
-              practical_biopsy_times = practical_biopsy_times))
+  #proposed test times always has a final test at MAX_FOLLOW_UP
+  return(list(expected_detection_delay = expected_detection_delay,
+              expected_num_tests = exp_num_tests,
+              planned_test_schedule = planned_test_schedule))
 }

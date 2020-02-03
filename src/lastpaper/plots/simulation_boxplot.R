@@ -2,12 +2,10 @@ library(ggplot2)
 library(ggpubr)
 FONT_SIZE = 12
 
-seeds = c(2001:2086, 2201:2332)
-seeds = 2410:2450
-#seeds = 2451:2494
+seeds = c(2001:2100)
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/combined_results_exp_tests/seed_", seed, ".Rdata"))
+  load(paste0("Rdata/lastpaper/simulation/combined_results_non_auto/seed_", seed, ".Rdata"))
   
   return(biopsyDf_summary)
 }))
@@ -30,11 +28,10 @@ by(INDICES = biopsyDf_summary$schedule[biopsyDf_summary$progressed==1],
    data= biopsyDf_summary$delay[biopsyDf_summary$progressed==1], summary)
 
 
-
 a = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
   theme_bw() + 
-  scale_y_continuous(breaks = c(1,4,7,10), limits = c(1,10)) +
+  scale_y_continuous(breaks = c(1:10), limits = c(1,10)) +
   theme(text=element_text(size=FONT_SIZE),
         title = element_text(size=FONT_SIZE-1)) +
   xlab("Schedule") + ylab("Number of biopsies") +
@@ -53,7 +50,7 @@ b = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==1,]) +
 c = ggplot(biopsyDf_summary[biopsyDf_summary$progressed==0,]) +
   geom_boxplot(aes(x=schedule, y=nb), outlier.shape = NA) +
   theme_bw() +
-  scale_y_continuous(breaks = c(1,4,7,10), limits = c(1,10)) +
+  scale_y_continuous(breaks = c(1:10), limits = c(1,10)) +
   theme(text=element_text(size=FONT_SIZE),
         title = element_text(size=FONT_SIZE-1)) +
   xlab("Schedule") + ylab("Number of biopsies") +

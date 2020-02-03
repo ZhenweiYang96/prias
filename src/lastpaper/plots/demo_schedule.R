@@ -7,6 +7,7 @@ load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 load("Rdata/lastpaper/fitted_model/mvJoint_dre_psa_2knots_quad_age.Rdata")
 source("src/lastpaper/prediction_psa_dre.R")
 source('src/lastpaper/pers_schedule_api.R')
+#This file for creating PRIAS schedule, nothing else
 source('src/lastpaper/simulation/scheduleCreator.R')
 
 SUCCESS_COLOR = 'forestgreen'
@@ -161,12 +162,12 @@ schedule_df = rbind(schedule_df, data.frame(name="PRIAS",
                                             times=prias_schedule$planned_test_schedule,
                                             expected_num_tests=prias_schedule$expected_num_tests,
                                             expected_detection_delay=prias_schedule$expected_detection_delay))
-schedule_df = rbind(schedule_df, data.frame(name="Risk: \u03BA*(v)", 
+schedule_df = rbind(schedule_df, data.frame(name="\u03BA*(v)", 
                                             number=3,
                                             times=risk_automatic_schedule$planned_test_schedule,
                                             expected_num_tests=risk_automatic_schedule$expected_num_tests,
                                             expected_detection_delay=risk_automatic_schedule$expected_detection_delay))
-schedule_df = rbind(schedule_df, data.frame(name="Risk: 10%", 
+schedule_df = rbind(schedule_df, data.frame(name="\u03BA*=10%", 
                                             number=4,
                                             times=risk_10_perc_schedule$planned_test_schedule,
                                             expected_num_tests=risk_10_perc_schedule$expected_num_tests,
@@ -222,7 +223,6 @@ label_plot = ggplot() +
 
 #########################
 consequences_df = schedule_df[!duplicated(schedule_df$name),]
-consequences_df$expected_detection_delay = consequences_df$expected_detection_delay*12
 max_tests_possible = length(annual_schedule$planned_test_schedule)
 
 num_test_plot = ggplot() + geom_col(aes(x=rep(consequences_df$name,2), 
@@ -236,16 +236,17 @@ num_test_plot = ggplot() + geom_col(aes(x=rep(consequences_df$name,2),
   coord_flip() + theme_bw()+
   theme(text = element_text(size = FONT_SIZE))
 
+max_delay_limit = 3
 delay_plot = ggplot() + geom_col(aes(x=rep(consequences_df$name,2), 
                                      y=c(consequences_df$expected_detection_delay, 
-                                         12 - consequences_df$expected_detection_delay)),
+                                         max_delay_limit - consequences_df$expected_detection_delay)),
                                  color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
                                  width=0.5)+
-  ylab("Expected time delay (months)\nin detecting progression") + 
+  ylab("Expected time delay (years)\nin detecting progression") + 
   xlab("Schedule") +
-  scale_y_continuous(breaks = seq(0, 12, length.out = 5),
-                     labels = seq(0, 12, length.out = 5),
-                     limits= c(0, 12))+
+  scale_y_continuous(breaks = seq(0, max_delay_limit, by = 0.5),
+                     labels = seq(0, max_delay_limit,  by = 0.5),
+                     limits= c(0, max_delay_limit))+
   coord_flip() +
   theme_bw() + 
   theme(text = element_text(size = FONT_SIZE),

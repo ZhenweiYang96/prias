@@ -26,7 +26,7 @@ The personalized cumulative-risk function $R_j(\cdot)$ depends on the observed l
 \label{subsec:pers_schedule}
 Our aim is to employ the cumulative-risk function in~(\ref{eq:cumulative_risk}) to develop a risk-based personalized schedule of invasive tests for the $j$-th patient. Typically an invasive test is decided on the same visit on which auxiliary data (e.g., biomarkers) is measured. Let $U={u_1, \ldots, u_L}$ represent a schedule of such visits (e.g., every six months in prostate cancer for PSA measurement), where $u_1=v$ is also the time of the current visit.
 
-First, we make $L$ successive decisions for conducting tests on each of the $L$ future visit times $u_l \in U$. Specifically, we decide to conduct a test at time $u_l$ if the conditional cumulative-risk of progression at $u_l$ is larger than a certain risk threshold $0 \leq \kappa^* \leq 1$ (e.g., $\kappa^*=10$\% risk). If a test gets planned at time $u_l$, then the successive test decision at time $u_{l+1}$ is made using an updated cumulative-risk profile (Figure~\ref{fig:schedule_explanation}). This updated cumulative-risk profile accounts for the possibility that progression may occur after time $u_l < T^*_j$. The test decisions on each future visit time $u_l$ are defined as: 
+First, we make $L$ successive decisions for conducting tests on each of the $L$ future visit times $u_l \in U$. Specifically, we decide to conduct a test at time $u_l$ if the conditional cumulative-risk of progression at $u_l$ is larger than a certain risk threshold $0 \leq \kappa^* \leq 1$ (e.g., $\kappa^*=10$\% risk). If a test gets planned at time $u_l$, then the successive test decision at time $u_{l+1}$ is made using an updated cumulative-risk profile (Figure~\ref{fig:schedule_explanation}). This updated cumulative-risk profile accounts for the possibility that progression may occur after time $u_l < T^*_j$. The test decisions on each future visit time $u_l$ are defined as:
 \begin{equation*}
 \label{eq:personalized_decision_grid}
 \begin{split}
@@ -47,23 +47,22 @@ The personalized schedule in~(\ref{eq:personalized_schedule_grid}) is updated as
 
 \begin{figure}
 \centerline{\includegraphics{images/schedule_explanation_102.eps}}
-\caption{\textbf{Personalized Invasive Test Schedule Using Patient-specific Conditional Cumulative-risk of Progression}.  A single longitudinal outcome, namely, a continuous biomarker (observed: blue dots, fitted: blue line) of disease progression is used for illustration. The last test on which progression was not observed was conducted at $t=1.5$ years. The current visit time of the patient is $v=2.5$ years. Decisions for invasive test need to be made at a gap of every one year starting from the current visit until a horizon of 6.5 years. That is, $U=\{2.5, 3.5, 4.5, 5.5, 6.5\}$ years. Based on an example risk threshold of 12\% ($\kappa^*=0.12$) the future test decisions at time points in $U$ lead to a personalized schedule $S_j^{\kappa^*} (U \mid t=1.5, v=2.5) = \{3.5, 5.5\}$ years. The conditional cumulative-risk profiles $R_j(u_l \mid t_l, v)$ employed in~(\ref{eq:personalized_decision_grid}) are shown with red line (confidence interval shaded). It is called `conditional' because, for example, the second test at future time 5.5 years, is scheduled after accounting for the possibility that progression (true time $T^*_j$) may not have occurred until the time of the previously scheduled test at time $3.5 < T^*_j$ years. All values are illustrative.} 
+\caption{\textbf{Personalized Invasive Test Schedule Using Patient-specific Conditional Cumulative-risk of Progression}.  A single longitudinal outcome, namely, a continuous biomarker (observed: blue dots, fitted: blue line) of disease progression is used for illustration. The last test on which progression was not observed was conducted at $t=1.5$ years. The current visit time of the patient is $v=2.5$ years. Decisions for invasive test need to be made at a gap of every one year starting from the current visit until a horizon of 6.5 years. That is, $U=\{2.5, 3.5, 4.5, 5.5, 6.5\}$ years. Based on an example risk threshold of 12\% ($\kappa^*=0.12$) the future test decisions at time points in $U$ lead to a personalized schedule $S_j^{\kappa^*} (U \mid t=1.5, v=2.5) = \{3.5, 5.5\}$ years. The conditional cumulative-risk profiles $R_j(u_l \mid t_l, v)$ employed in~(\ref{eq:personalized_decision_grid}) are shown with red line (confidence interval shaded). It is called `conditional' because, for example, the second test at future time 5.5 years, is scheduled after accounting for the possibility that progression (true time $T^*_j$) may not have occurred until the time of the previously scheduled test at time $T^*_j>3.5$ years. All values are illustrative.} 
 \label{fig:schedule_explanation}
 \end{figure}
 
 \subsection{Expected Number of Tests and Time Delay in Detecting Progression}
 \label{subsec:exp_delay_estimation}
-The schedule $S_j^{\kappa^*}(U \mid t, v)$ manifests a personalized test plan for the $j$-the patient. However, the number of tests that will get conducted and the time delay in detecting progression that may subsequently be observed (Figure~\ref{fig:delay_explanation}), depends on the true time of progression $T^*_j$ of the patient. Since two different patients with the same timing of tests will expect different number of tests and time delay, we estimate these two quantities in a patient-specific manner as well. Although, this calculation is not limited to personalized schedules only, but can be done for any schedule $S$ of tests with $N$ time points $S=\{s_n \mid n=1,\ldots, N\}$. 
+The schedule $S_j^{\kappa^*}(U \mid t, v)$ manifests a personalized test plan for the $j$-the patient. However, the number of tests that will get conducted and the time delay in detecting progression that may subsequently be observed (Figure~\ref{fig:delay_explanation}), depends on the true time of progression $T^*_j$ of the patient. Since two different patients with the same timing of tests will expect different number of tests and time delay, we estimate these two quantities in a patient-specific manner as well. Although, this calculation is not limited to personalized schedules only, but can be done for any schedule of tests. More specifically, given a schedule $S$ with tests planned at $S=\{s_n \mid n=1,\ldots, N\}$, we calculate the expected number of tests and delay for the scenario that the patient obtains progression before the time of the last test $T^*_j \leq s_N$.
 
-For each of the $N$ planned tests there exist $N$ time intervals ${s_{n-1} < T^*_j \leq s_n}$ in which progression may be observed. Correspondingly, there are $N$ possible number of tests $1,\ldots, N$, and $N$ possible time delays in detecting progression $s_n - T^*_j$. Given a schedule $S$, the true number of tests $N_j$ and true time delay in detecting progression $D_j$ that the patient will experience can be defined as:
+If $T^*_j \leq s_N$ then for each of the $N$ test times $s_n \in S$ there exist $N$ time intervals ${s_{n-1} < T^*_j \leq s_n}$ in which progression may be observed. Correspondingly, there are $N$ possible number of tests $(1,\ldots, N)$, and $N$ possible time delays $s_n - T^*_j$ in detecting progression. Specifically, the true number of tests $N_j$ and true time delay in detecting progression $D_j$ that the patient will experience can be defined as:
 \begin{equation}
 \label{eq:number_of_tests_and_delay}
 \begin{split}
 N_j (S \mid t) &= \left\{ \begin{array}{lcr}
   1, &\mbox{if}& t < T^*_j \leq s_1\\
   \ldots \\
-  N-1, &\mbox{if}& s_{N-2} < T^*_j \leq s_{N-1}\\
-  N, &\mbox{if}& s_{N-1} < T^*_j  
+  N, &\mbox{if}& s_{N-1} < T^*_j \leq s_{N}  
 \end{array} \right\},\\
 D_j (S \mid t) &= \left\{ \begin{array}{lcrr}
   s_1 - T^*_j, &\mbox{if}& t < T^*_j \leq s_1\\
@@ -72,17 +71,26 @@ D_j (S \mid t) &= \left\{ \begin{array}{lcrr}
 \end{array} \right\}.
 \end{split}
 \end{equation}
-The time delay is not defined for the scenario in which the patient obtains progression after the time of the last test in the schedule $T^*_j > s_N$. To estimate the expected values of both $N_j(\cdot)$ and $D_j(\cdot)$ in a patient-specific manner, we exploit the personalized cumulative-risk profile of the patient defined in~(\ref{eq:cumulative_risk}). Specifically, the expected number of tests $E\{N_j(\cdot)\}$ and expected time delay $E\{D_j(\cdot)\}$ can be calculated as the weighted sum of $N$ possible number of tests and time delays defined in~(\ref{eq:number_of_tests_and_delay}). The $n$-th weight is equal to the probability of the patient obtaining progression in the $n$-th interval ${s_{n-1} < T^*_j \leq s_n}$.
-\begin{equation}
+To estimate the expected values of both $N_j(\cdot)$ and $D_j(\cdot)$ in a patient-specific manner, we exploit the personalized cumulative-risk profile of the patient defined in~(\ref{eq:cumulative_risk}). Specifically, the expected number of tests $E\{N_j(\cdot)\}$ and expected time delay $E\{D_j(\cdot)\}$ can be calculated as the weighted sum of $N$ possible number of tests and time delays defined in~(\ref{eq:number_of_tests_and_delay}). The $n$-th weight is equal to the probability $\mbox{Pr}(s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N)$ of the patient obtaining progression in the $n$-th interval ${s_{n-1} < T^*_j \leq s_n}$.
+%\begin{equation}
+%\label{eq:expected_number_of_tests_and_delay}
+%\begin{split}
+%E\big\{N_j(S \mid t)\big\} &= \sum_{n=1}^{N-1} n \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n) + N \times \mbox{Pr}(T^*_j > s_{N-1}), \quad s_0 = t\\
+%E\big\{D_j(S \mid t)\big\} &= \sum_{n=1}^{N} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n) , \quad s_0 = t\\
+%E(T^*_j \mid s_{n-1}, s_n, v) &= s_{n-1} + \int_{s_{n-1}}^{s_n} \mbox{Pr}\Big\{T^*_j \geq u \mid s_{n-1} < T^*_j \leq s_n, \mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v), \mathcal{A}_n\Big\} \mathrm{d}u\\
+%\mbox{Pr}(s_{n-1} < T^*_j \leq s_n) &= R_j(s_n \mid t, v) - R_j(s_{n-1} \mid t, v)\\
+%\mbox{Pr}(T^*_j > s_{N-1}) &= 1- R_j(s_{N-1} \mid t, v),
+%\end{split}
+%\end{equation}
+\begin{equation*}
 \label{eq:expected_number_of_tests_and_delay}
 \begin{split}
-E\big\{N_j(S \mid t)\big\} &= \sum_{n=1}^{N-1} n \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n) + N \times \mbox{Pr}(T^*_j > s_{N-1}), \quad s_0 = t\\
-E\big\{D_j(S \mid t)\big\} &= \sum_{n=1}^{N} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n) , \quad s_0 = t\\
+E\big\{N_j(S \mid t)\big\} &= \sum_{n=1}^{N-1} n \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N), \quad s_0 = t\\
+E\big\{D_j(S \mid t)\big\} &= \sum_{n=1}^{N} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n\mid T^*_j \leq s_N)\\
 E(T^*_j \mid s_{n-1}, s_n, v) &= s_{n-1} + \int_{s_{n-1}}^{s_n} \mbox{Pr}\Big\{T^*_j \geq u \mid s_{n-1} < T^*_j \leq s_n, \mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v), \mathcal{A}_n\Big\} \mathrm{d}u\\
-\mbox{Pr}(s_{n-1} < T^*_j \leq s_n) &= R_j(s_n \mid t, v) - R_j(s_{n-1} \mid t, v)\\
-\mbox{Pr}(T^*_j > s_{N-1}) &= 1- R_j(s_{N-1} \mid t, v),
+\mbox{Pr}(s_{n-1} < T^*_j \leq s_n\mid T^*_j \leq s_N) &= \frac{R_j(s_n \mid t, v) - R_j(s_{n-1} \mid t, v)}{R_j(s_N \mid t, v)},
 \end{split}
-\end{equation}
+\end{equation*}
 where $E(T^*_j \mid s_{n-1}, s_n, v)$ denotes the conditional expected time of progression for the scenario $s_{n-1} < T^*_j \leq s_n$, and is calculated as the area under the corresponding survival curve.
 
 The personalized expected number of tests and expected time delay in detecting progression have the advantage that they are updated over follow-up as more patient data becomes available. Since they can be calculated for any schedule, patients and doctors can utilize them to compare schedules before making a decision. Although, in order to have a fair comparison of time delays between different schedules for the same patient, a compulsory test at a common horizon time point should be planned in all schedules.
@@ -101,6 +109,6 @@ Certain patients may have preferences for the maximum number of invasive tests t
 
 \begin{figure}
 \centerline{\includegraphics{images/kappa_choice_102.eps}}
-\caption{\textbf{Automatic choice of risk threshold $0 \leq \kappa^* \leq 1$ using~(\ref{eq:kappa_choice})}. The ideal schedule of tests at point (1,0) is shown as a blue square. It plans exactly one invasive test at the true time of progression $T^*_j$ of a patient and hence leads to a zero time delay in detecting progression. Personalized schedules based on a grid of thresholds chosen between $0 \leq \kappa^* \leq 1$ are shown with black circles. Higher thresholds lead to fewer tests, but also higher expected time delay. We propose to choose the personalized schedule based on $\kappa^*(v)=19.5\%$ threshold (green triangle). This is because it has the least Euclidean distance (shown with a green line) to the ideal schedule. It is also possible to find the least distance under a certain clinically acceptable limit on time delay (orange dashed line), or number of tests.}
+\caption{\textbf{Automatic choice of risk threshold $0 \leq \kappa^* \leq 1$ using~(\ref{eq:kappa_choice})}. The ideal schedule of tests at point (1,0) is shown as a blue square. It plans exactly one invasive test at the true time of progression $T^*_j$ of a patient and hence leads to a zero time delay in detecting progression. Personalized schedules based on a grid of thresholds chosen between $0 \leq \kappa^* \leq 1$ are shown with black circles. Higher thresholds lead to fewer tests, but also higher expected time delay. We propose to choose the personalized schedule based on $\kappa^*(v)=9.5\%$ threshold (green triangle). This is because it has the least Euclidean distance (shown with a green line) to the ideal schedule. It is also possible to find the least distance under a certain clinically acceptable limit on time delay (orange dashed line), or number of tests.}
 \label{fig:kappa_choice}
 \end{figure}

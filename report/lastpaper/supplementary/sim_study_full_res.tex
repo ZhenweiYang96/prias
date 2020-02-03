@@ -1,28 +1,29 @@
 % !TEX root =  ../supplementary.tex
 \section{Simulation Study Results}
-
-In the simulation study, we evaluated the following biopsy schedules \citep{loeb2014heterogeneity, inoue2018comparative}: biopsy every year (annual), biopsy according to the PRIAS schedule (PRIAS), personalized biopsy schedules based on two fixed risk thresholds, namely, $\kappa^*=5\%$ and $\kappa^*=10\%$, and an automatically chosen $\kappa^*(v)$ (Section~3 of main manuscript). We compare all the aforementioned schedules on two criteria, namely the number of biopsies they schedule and the corresponding time delay in detection of cancer progression, in years (time of positive biopsy - true time of cancer progression). The corresponding results, using ${\mbox{500} \times \mbox{250}}$ test patients are presented in Table \ref{table:sim_study_all}. Since the simulated cohorts are based on PRIAS, roughly only 50\% of the patients progress in the ten year study period. While, we are able to calculate total number of biopsies scheduled in all $500 \times 250$ test patients, but the time delay in detection of progression is available only for those patients who progress in ten years (\textit{progressing}). Hence, we show the simulation results separately for \textit{progressing} and \textit{non-progressing} patients.
+In the simulation study, we evaluated the following biopsy schedules \citep{loeb2014heterogeneity, inoue2018comparative}: biopsy every year (annual), biopsy according to the PRIAS schedule (PRIAS), personalized biopsy schedules based on two fixed risk thresholds, namely, $\kappa^*=5\%$ and $\kappa^*=10\%$, and automatically chosen $\kappa^*(v)$ (Section~3 of main manuscript), and automatically chosen ${\kappa^*\{v \mid E(D)\leq 0.75\}}$ with a constraint of 9 months (0.75 years) on expected delay in detecting progression. We compare all the aforementioned schedules on two criteria, namely the number of biopsies they schedule and the corresponding time delay in detection of cancer progression, in years (time of positive biopsy - true time of cancer progression). The corresponding results, using ${\mbox{500} \times \mbox{250}}$ test patients are presented in Table \ref{table:sim_study_all}. Since the simulated cohorts are based on PRIAS, roughly only 50\% of the patients progress in the ten year study period. While, we are able to calculate total number of biopsies scheduled in all $500 \times 250$ test patients, but the time delay in detection of progression is available only for those patients who progress in ten years (\textit{progressing}). Hence, we show the simulation results separately for \textit{progressing} and \textit{non-progressing} patients.
 
 \begin{table}[!htb]
-\caption{\textbf{Simulation study results for all patients}: Estimated first, second (median), and third quartiles for number of biopsies ($\mbox{Q}^{\mbox{nb}}_1$, $\mbox{Q}^{\mbox{nb}}_2$, $\mbox{Q}^{\mbox{nb}}_3$) and for the delay in detection of cancer progression ($\mbox{Q}^{\mbox{delay}}_1$, $\mbox{Q}^{\mbox{delay}}_2$, $\mbox{Q}^{\mbox{delay}}_3$), in years, for various biopsy schedules. The delay is equal to the difference between the time of the positive biopsy and the unobserved true time of progression. Types of personalized schedules: Risk:~10\% and Risk:~5\% approaches, schedule a biopsy if the cumulative-risk of cancer progression at a visit is more than 10\% and 5\%, respectively. Risk:~$\kappa^*(v)$ works similar as previous, except that a visit-specific risk threshold is chosen automatically (Section~3 of main manuscript).}
+\caption{\textbf{Simulation study results for all patients}: Estimated mean, median (Med), first quartile $\mbox{Q}_1(\mbox{nb})$, and third quartile $\mbox{Q}_3(\mbox{nb})$ for number of biopsies and for the delay in detection of cancer progression $\mbox{Q}_1(\mbox{d})$, $\mbox{Q}_3(\mbox{d})$, in years, for various biopsy schedules. The delay is equal to the difference between the time of the positive biopsy and the unobserved true time of progression. Types of schedules: ${\kappa^*=5\%}$, ${\kappa^*=10\%}$ and $\kappa^*(v)$ schedule a biopsy if the cumulative-risk of cancer progression at a visit is more than 5\%, 10\%, and an automatically chosen threshold, respectively. Schedule ${\kappa^*\{v \mid E(D)\leq 0.75\}}$ is similar to $\kappa^*(v)$ except that the euclidean distance is minimized under the constraint that expected delay in detecting progression is at most 9 months (0.75 years). Annual corresponds to a schedule of yearly biopsies, and PRIAS corresponds to biopsies as per PRIAS protocol.}
 \label{table:sim_study_all}
-\begin{tabular}{l|rrr|rrr}
+\begin{tabular}{l|rrrr|rrrr}
 \Hline
-Progressing patients (50\%) & $\mbox{Q}^{\mbox{nb}}_1$ & $\mbox{Q}^{\mbox{nb}}_2$ & $\mbox{Q}^{\mbox{nb}}_3$ & $\mbox{Q}^{\mbox{delay}}_1$  & $\mbox{Q}^{\mbox{delay}}_2$  & $\mbox{Q}^{\mbox{delay}}_3$ \\
+\multicolumn{9}{l}{\textbf{Progressing patients (50\%)}}\\
 \hline
-Annual     & 1  & 3  & 6  & 0.29 & 0.57 & 0.82\\
-PRIAS      & 1  & 2  & 4  & 0.38 & 0.74 & 1.00\\
-Risk:~5\%  & 1  & 3  & 5  & 0.33 & 0.65 & 0.91\\
-Risk:~10\% & 1  & 2  & 4  & 0.45 & 0.85 & 1.34\\
-Risk:~$\kappa^*(v)$ & 1  & 2  & 3  & 0.54 & 0.96 & 1.74\\
+Schedule & $\mbox{Q}_1(\mbox{nb})$ & $\mbox{Mean}(\mbox{nb})$ & $\mbox{Med}(\mbox{nb})$ & $\mbox{Q}_3(\mbox{nb})$ & $\mbox{Q}_1(\mbox{d})$ & $\mbox{Mean}(\mbox{d})$ & $\mbox{Med}(\mbox{d})$  & $\mbox{Q}_3(\mbox{d})$ \\
 \hline
-\multicolumn{7}{l}{Non-progressing patients (50\%)}\\
+Annual     & 1  & 3.69 & 3  & 6  & 0.29 & 0.55 & 0.57 & 0.82\\
+PRIAS      & 1  & 2.87 & 2  & 4  & 0.38 & 0.91 & 0.74 & 1.00\\
+$\kappa^*=5\%$  & 1  & 3.30 &  3  & 5  & 0.33 & 0.66 & 0.65 & 0.91\\
+$\kappa^*=10\%$ & 1  & 2.55 & 2  & 4  & 0.45 & 1.00 & 0.85 & 1.34\\
+$\kappa^*(v)$ & 1  & 2.07 & 2  & 3  & 0.54 & 1.12 & 0.96 & 1.74\\
 \hline
-Annual     & 10  & 10 & 10 & - & - & - \\
-PRIAS      & 4  & 6  & 8  & - & - & - \\
-Risk:~5\%  & 6  & 7  & 9  & - & - & - \\
-Risk:~10\% & 4  & 5  & 6  & - & - & - \\
-Risk:~$\kappa^*(v)$ & 3  & 4  & 4  & - & - & -  \\
+\multicolumn{9}{l}{\textbf{Non-progressing patients (50\%)}}\\
+\hline
+Annual     & 10  & 10 & 10 & 10 & - & - & - & -\\
+PRIAS      & 4  & 6.42 & 6  & 8  & - & - & - & -\\
+$\kappa^*=5\%$  & 6  & 7.58 & 7  & 9  & - & - & - & - \\
+$\kappa^*=10\%$ & 4  & 4.93 & 5  & 6  & - & - & - & - \\
+$\kappa^*(v)$ & 3 & 5.47 & 4  & 4  & - & - & - & -\\
 \hline
 \end{tabular}
 \end{table}

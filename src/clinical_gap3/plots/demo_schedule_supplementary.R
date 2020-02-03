@@ -3,12 +3,15 @@ library(splines)
 library(ggplot2)
 library(ggpubr)
 
-load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled_light.Rdata")
+source('src/clinical_gap3/plots/dynriskPlot.R')
+#do not change this order of sourcing files
+load("Rdata/gap3/PRIAS_2019/mvJoint_psa_time_scaled.Rdata")
 load("Rdata/gap3/PRIAS_2019/cleandata.Rdata")
 source("src/clinical_gap3/prediction_only_psa.R")
+source("src/clinical_gap3/fixedAndPRIASSchedule.R")
+source("src/lastpaper/pers_schedule_api.R")
 #this is needed to load the function which makes a plot for dynamic risk
-source('src/clinical_gap3/plots/dynriskPlot.R')
-source('src/clinical_gap3/scheduleCreator.R')
+
 
 SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
@@ -52,68 +55,95 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
     ggtitle(title)
   
   set.seed(2019)
-  M=750
-  schedule_5perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                        cur_visit_time = cur_visit_time, 
-                                        latest_survival_time = latest_survival_time,
-                                        risk_threshold = 0.05, min_biopsy_gap = 1, M = M,
-                                        horizon = MAX_FOLLOW_UP)
-  schedule_10perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                         cur_visit_time = cur_visit_time, 
-                                         latest_survival_time = latest_survival_time,
-                                         risk_threshold = 0.1, min_biopsy_gap = 1, M = M,
-                                         horizon = MAX_FOLLOW_UP)
-  schedule_15perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                         cur_visit_time = cur_visit_time, 
-                                         latest_survival_time = latest_survival_time,
-                                         risk_threshold = 0.15, min_biopsy_gap = 1, M = M,
-                                         horizon = MAX_FOLLOW_UP)
-  schedule_prias = getPRIASSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                    cur_visit_time = cur_visit_time, latest_survival_time = latest_survival_time,
-                                    min_biopsy_gap = 1, M = M,horizon = MAX_FOLLOW_UP)
-  schedule_annual = getFixedSchedule(cur_visit_time = cur_visit_time, 
-                                     latest_survival_time = latest_survival_time,
-                                     min_biopsy_gap = 1, biopsy_frequency = 1, 
-                                     horizon = MAX_FOLLOW_UP)
-  schedule_biennial = getFixedSchedule(cur_visit_time = cur_visit_time, 
+  planned_biennial_schedule = getFixedSchedule(cur_visit_time = cur_visit_time, 
                                        latest_survival_time = latest_survival_time,
                                        min_biopsy_gap = 1, biopsy_frequency = 2, 
-                                       horizon = MAX_FOLLOW_UP)
+                                       horizon = max_follow_up)
   
-  schedules = c("5% Risk", "10% Risk", "15% Risk","PRIAS", "Yearly", "Biennial")
+  if(max(planned_biennial_schedule)<max_follow_up){
+    planned_biennial_schedule = c(planned_biennial_schedule, max_follow_up)
+  }
   
-  consequences_list = lapply(list(schedule_5perc, schedule_10perc,schedule_15perc,
-                                  schedule_prias, schedule_annual,schedule_biennial),
-                             FUN = function(x){
-                               set.seed(2019); 
-                               getConsequences(object=mvJoint_psa_time_scaled, 
-                                               patient_data=pat_data,
-                                               cur_visit_time = cur_visit_time, 
-                                               proposed_biopsy_times = x,
-                                               latest_survival_time = latest_survival_time, M=M,
-                                               horizon=MAX_FOLLOW_UP)})
+  planned_prias_schedule = getPRIASSchedule(object = object,
+                                            patient_data = pat_data, 
+                                            cur_visit_time = cur_visit_time, 
+                                            latest_survival_time = latest_survival_time,
+                                            M=M, horizon = max_follow_up)
   
-  expected_delays = sapply(consequences_list, "[[", "expected_delay")
-  practical_biopsy_times = lapply(consequences_list, "[[", "practical_biopsy_times")
-  total_biopsies = sapply(practical_biopsy_times, length)
+  if(max(planned_prias_schedule)<max_follow_up){
+    planned_prias_schedule = c(planned_prias_schedule, max_follow_up)
+  }
   
-  plotDf = data.frame(Schedule=rep(schedules, total_biopsies), 
-                      biopsy_times=unlist(practical_biopsy_times))  
-  B = common +
-    geom_line(data = plotDf, aes(x=biopsy_times, 
-                                 y=as.numeric(plotDf$Schedule),
-                                 group=as.numeric(plotDf$Schedule)),
+  prias_schedule = testScheduleConsequences.mvJMbayes(object = object,
+                                                      newdata = pat_data, idVar = "P_ID", 
+                                                      last_test_time = latest_survival_time,
+                                                      planned_prias_schedule, seed = 2019)
+  biennial_schedule = testScheduleConsequences.mvJMbayes(object = object,
+                                                      newdata = pat_data, idVar = "P_ID", 
+                                                      last_test_time = latest_survival_time,
+                                                      planned_biennial_schedule, seed = 2019)
+  
+  all_risk_schedules = personalizedSchedule.mvJMbayes(object = object,
+                                                      newdata = pat_data, idVar = "P_ID", 
+                                                      last_test_time = latest_survival_time,
+                                                      fixed_grid_visits = seq(cur_visit_time, max_follow_up, 0.5),
+                                                      gap = 1, seed = 2019)
+  
+  risk_5_perc_schedule = all_risk_schedules$all_schedules$`Risk: 0.05`
+  risk_10_perc_schedule = all_risk_schedules$all_schedules$`Risk: 0.1`
+  risk_15_perc_schedule = all_risk_schedules$all_schedules$`Risk: 0.15`
+  annual_schedule = all_risk_schedules$all_schedules$`Risk: 0`
+  
+  schedule_df = data.frame(Schedule=character(), number=numeric(),
+                           biopsy_times=vector(),
+                           expected_num_tests=numeric(),
+                           expected_detection_delay=numeric())
+  schedule_df = rbind(schedule_df, data.frame(Schedule="Yearly", 
+                                              number=1,
+                                              biopsy_times=annual_schedule$planned_test_schedule,
+                                              expected_num_tests=annual_schedule$expected_num_tests,
+                                              expected_detection_delay=annual_schedule$expected_detection_delay))
+  schedule_df = rbind(schedule_df, data.frame(Schedule="Biennial", 
+                                              number=1,
+                                              biopsy_times=biennial_schedule$planned_test_schedule,
+                                              expected_num_tests=biennial_schedule$expected_num_tests,
+                                              expected_detection_delay=biennial_schedule$expected_detection_delay))
+  schedule_df = rbind(schedule_df, data.frame(Schedule="PRIAS", 
+                                              number=2,
+                                              biopsy_times=prias_schedule$planned_test_schedule,
+                                              expected_num_tests=prias_schedule$expected_num_tests,
+                                              expected_detection_delay=prias_schedule$expected_detection_delay))
+  schedule_df = rbind(schedule_df, data.frame(Schedule="15% Risk", 
+                                              number=4,
+                                              biopsy_times=risk_15_perc_schedule$planned_test_schedule,
+                                              expected_num_tests=risk_15_perc_schedule$expected_num_tests,
+                                              expected_detection_delay=risk_15_perc_schedule$expected_detection_delay))
+  
+  schedule_df = rbind(schedule_df, data.frame(Schedule="10% Risk", 
+                                              number=3,
+                                              biopsy_times=risk_10_perc_schedule$planned_test_schedule,
+                                              expected_num_tests=risk_10_perc_schedule$expected_num_tests,
+                                              expected_detection_delay=risk_10_perc_schedule$expected_detection_delay))
+  schedule_df = rbind(schedule_df, data.frame(Schedule="5% Risk", 
+                                              number=4,
+                                              biopsy_times=risk_5_perc_schedule$planned_test_schedule,
+                                              expected_num_tests=risk_5_perc_schedule$expected_num_tests,
+                                              expected_detection_delay=risk_5_perc_schedule$expected_detection_delay))
+  
+  B =  common +
+    geom_line(data = schedule_df, aes(x=biopsy_times, 
+                                      y=as.numeric(schedule_df$Schedule),
+                                      group=as.numeric(schedule_df$Schedule)),
               linetype='dotted')+
-    geom_label(data = plotDf, 
-               aes(x=biopsy_times, y=as.numeric(plotDf$Schedule)),
+    geom_label(data = schedule_df, 
+               aes(x=biopsy_times, y=as.numeric(schedule_df$Schedule)),
                label="B",size=POINT_SIZE + 2, fill=DANGER_COLOR, color='white') + 
     ylab("Biopsy schedule") + 
     theme(axis.title.x = element_blank(),
-          axis.text.x = element_text(size=FONT_SIZE),
           plot.margin = margin(b = 0, unit = "pt")) +
-    scale_y_continuous(breaks = 1:length(levels(plotDf$Schedule)),
-                       labels = levels(plotDf$Schedule),
-                       limits = c(0.5, length(levels(plotDf$Schedule)) + 0.5)) 
+    scale_y_continuous(breaks = 1:length(levels(schedule_df$Schedule)),
+                       labels = levels(schedule_df$Schedule),
+                       limits = c(0.5, length(levels(schedule_df$Schedule)) + 0.5)) 
   
   C = common +
     geom_label(aes(x=c(0,latest_survival_time,cur_visit_time), y=c(0,0,0), 
@@ -131,15 +161,18 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
           panel.grid = element_blank()) + 
     ylim(-0.25,0.25)
   
-  D = ggplot() + geom_col(aes(x=rep(schedules,2), 
-                              y=c(12*expected_delays, 12 - 12*expected_delays)),
-                          color='black', fill=c(rep(c('darkgrey','white'), length(schedules))),
+  consequences_df = schedule_df[!duplicated(schedule_df$Schedule),]
+  max_delay_limit = 2
+  D = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2), 
+                              y=c(consequences_df$expected_detection_delay, 
+                                  max_delay_limit - consequences_df$expected_detection_delay)),
+                          color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
                           width=0.5)+
-    ylab("Expected time delay (months) in detecting upgrading") + 
-    xlab("Biopsy schedule") +
-    scale_y_continuous(breaks = seq(0,12, length.out = 7),
-                       labels = round(seq(0,12, length.out = 7),1),
-                       limits=c(0,12))+
+    ylab("Expected time delay (years)\nin detecting progression") + 
+    xlab("Biopsy Schedule") +
+    scale_y_continuous(breaks = seq(0, max_delay_limit, by = 0.5),
+                       labels = seq(0, max_delay_limit,  by = 0.5),
+                       limits= c(0, max_delay_limit))+
     coord_flip() +
     theme_bw() + 
     theme(text = element_text(size = FONT_SIZE))
@@ -151,6 +184,7 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
 }
 
 pat1_data = prias_long_final[prias_long_final$P_ID==956 & prias_long_final$year_visit<=2,]
+pat1_data$year_visit[nrow(pat1_data)] = ceiling(pat1_data$year_visit[nrow(pat1_data)])
 psa_breaks = getpsaBreaks(pat1_data)
 
 schedule_plot_pat1 = schedulePlotSupp(object = mvJoint_psa_time_scaled, 
@@ -164,6 +198,7 @@ ggsave(schedule_plot_pat1, filename = "report/clinical/images/demo_pat1_supp.eps
 
 #############
 pat2_data = prias_long_final[prias_long_final$P_ID==102 & prias_long_final$year_visit<=3,]
+pat2_data$year_visit[nrow(pat2_data)] = ceiling(pat2_data$year_visit[nrow(pat2_data)])
 psa_breaks = getpsaBreaks(pat2_data)
 
 schedule_plot_pat2 = schedulePlotSupp(mvJoint_psa_time_scaled, pat2_data,

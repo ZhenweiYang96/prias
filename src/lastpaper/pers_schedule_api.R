@@ -27,6 +27,10 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   SURV_CACHE_FULL <- rbind(rep(1, M), 
                            do.call('cbind', lapply(surv_pred$full.results, "[[", 1)))
   
+  SURV_CACHE_FULL_rescaled = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-SURV_CACHE_FULL[nrow(SURV_CACHE_FULL),])
+  })) 
+  
   ##############################################
   #Definition of the function for fixed schedule
   ##############################################
@@ -37,7 +41,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
     
     for(i in 1:length(fixed_grid_visits)){
       if(fixed_grid_visits[i] - previous_test_time>=gap){
-        surv_cache_index = which(SURV_CACHE_TIMES==fixed_grid_visits[i])
+        surv_cache_index = which.min(abs(SURV_CACHE_TIMES-fixed_grid_visits[i]))
         surv_row_visit = surv_schedule_temp[surv_cache_index,]
         if(mean(surv_row_visit, na.rm = T) <= surv_threshold){
           proposed_test_times <- c(proposed_test_times, fixed_grid_visits[i])
@@ -64,7 +68,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   ###############################################
   getConsequences = function(proposed_test_times){
     planned_test_schedule = proposed_test_times
-    #Make the last test at year 10
+    #Make the last test at horizon
     if(horizon - tail(planned_test_schedule,1) < gap){
       planned_test_schedule = planned_test_schedule[-length(planned_test_schedule)]
     }
@@ -87,13 +91,13 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       lower_limit = test_intervals[[j]][1]
       upper_limit = test_intervals[[j]][2]
       
-      lower_limit_nearest_index = which(lower_limit==SURV_CACHE_TIMES)
-      upper_limit_nearest_index = which(upper_limit==SURV_CACHE_TIMES)
-      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
-        SURV_CACHE_FULL[upper_limit_nearest_index,]
+      lower_limit_nearest_index = which.min(abs(lower_limit - SURV_CACHE_TIMES))
+      upper_limit_nearest_index = which.min(abs(upper_limit - SURV_CACHE_TIMES))
+      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL_rescaled[lower_limit_nearest_index,] - 
+        SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
       
       cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
-        cum_surv_at_points = SURV_CACHE_FULL[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL[upper_limit_nearest_index,]
+        cum_surv_at_points = SURV_CACHE_FULL_rescaled[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
         scaled_cum_surv_at_points = cum_surv_at_points/interval_res[[j]]$cum_risk_interval
         
         return(wt_points$weights[i] * scaled_cum_surv_at_points)
@@ -103,14 +107,14 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       
       exp_num_tests = exp_num_tests + j * interval_res[[j]]$cum_risk_interval
     }
-    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL[upper_limit_nearest_index,]
+    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
     exp_num_tests = mean(exp_num_tests, na.rm = T)
     
     expected_detection_delay = mean(apply(sapply(interval_res, FUN = function(x){
       x$delay * x$cum_risk_interval
     }),1, sum, na.rm=T),na.rm=T)
     
-    #proposed test times always has a final test at year 10
+    #proposed test times always has a final test at horizon
     return(list(expected_detection_delay = expected_detection_delay,
                 expected_num_tests = exp_num_tests,
                 planned_test_schedule = planned_test_schedule))
@@ -209,6 +213,10 @@ testScheduleConsequences.mvJMbayes <- function (object, newdata, idVar = "id", l
   SURV_CACHE_FULL <- rbind(rep(1, M), 
                            do.call('cbind', lapply(surv_pred$full.results, "[[", 1)))
   
+  SURV_CACHE_FULL_rescaled = 1 - t(apply(1-SURV_CACHE_FULL, 1, FUN = function(x){
+    x / (1-SURV_CACHE_FULL[nrow(SURV_CACHE_FULL),])
+  })) 
+  
   wk = JMbayes:::gaussKronrod()$wk
   sk = JMbayes:::gaussKronrod()$sk
   getGaussianQuadWeightsPoints = function(lower_upper_limit){
@@ -242,11 +250,11 @@ testScheduleConsequences.mvJMbayes <- function (object, newdata, idVar = "id", l
       
       lower_limit_nearest_index = which(lower_limit==SURV_CACHE_TIMES)
       upper_limit_nearest_index = which(upper_limit==SURV_CACHE_TIMES)
-      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL[lower_limit_nearest_index,] - 
-        SURV_CACHE_FULL[upper_limit_nearest_index,]
+      interval_res[[j]]$cum_risk_interval = SURV_CACHE_FULL_rescaled[lower_limit_nearest_index,] - 
+        SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
       
       cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
-        cum_surv_at_points = SURV_CACHE_FULL[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL[upper_limit_nearest_index,]
+        cum_surv_at_points = SURV_CACHE_FULL_rescaled[which.min(abs(wt_points$points[i]-SURV_CACHE_TIMES)),] - SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
         scaled_cum_surv_at_points = cum_surv_at_points/interval_res[[j]]$cum_risk_interval
         
         return(wt_points$weights[i] * scaled_cum_surv_at_points)
@@ -256,7 +264,7 @@ testScheduleConsequences.mvJMbayes <- function (object, newdata, idVar = "id", l
       
       exp_num_tests = exp_num_tests + j * interval_res[[j]]$cum_risk_interval
     }
-    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL[upper_limit_nearest_index,]
+    exp_num_tests = exp_num_tests + j * SURV_CACHE_FULL_rescaled[upper_limit_nearest_index,]
     exp_num_tests = mean(exp_num_tests, na.rm = T)
     
     expected_detection_delay = mean(apply(sapply(interval_res, FUN = function(x){

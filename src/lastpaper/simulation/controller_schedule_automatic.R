@@ -32,7 +32,7 @@ print(paste("**** Patient ID: ", testId,
             " from simulation with seed: ", seed))
 
 #automatically selected risk threshold
-auto_risk_biopsies = lapply(c(0.5, 1, Inf), function(delay_limit){
+auto_risk_biopsies = lapply(c(0.5, Inf), function(delay_limit){
   automatic_kappa_biopsies = c()
   for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
     patient_df = testDs[1:row_num,]
@@ -43,7 +43,7 @@ auto_risk_biopsies = lapply(c(0.5, 1, Inf), function(delay_limit){
                                   cur_visit_time = cur_visit_time, 
                                   last_biopsy_time = max(automatic_kappa_biopsies, 0),
                                   min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay_limit,
-                                  M = M, horizon = MAX_FAIL_TIME, use_restricted_delay = T)){
+                                  M = M, horizon = MAX_FAIL_TIME, use_exact_delay = T)){
       automatic_kappa_biopsies = c(automatic_kappa_biopsies, cur_visit_time)
     }
     
@@ -58,7 +58,7 @@ auto_risk_biopsies = lapply(c(0.5, 1, Inf), function(delay_limit){
   return(automatic_kappa_biopsies)
 })
 
-scheduleNames = c(KAPPA_auto_pt5, KAPPA_auto_1, KAPPA_auto_Inf)
+scheduleNames = c(KAPPA_auto_pt5, KAPPA_auto_Inf)
 scheduleLengths = sapply(auto_risk_biopsies, length)
 
 biopsy_time = do.call('c', auto_risk_biopsies)

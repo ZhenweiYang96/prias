@@ -4,32 +4,32 @@ load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
 
-YEAR_DIVIDER = 24 * 60 * 60 * 365
-SPSS_ORIGIN_DATE = "1582-10-14"
-DATE_PRINT_FORMAT = "%b %e, %Y"
-DATE_PRINT_FORMAT_ABBREVIATED = "%b %Y"
-FONT_SIZE=15
-POINT_SIZE=4
-M=750
-SCHEDULES = c("5% Risk", "10% Risk", "15% Risk",
+YEAR_DIVIDER <<- 24 * 60 * 60 * 365
+SPSS_ORIGIN_DATE <<- "1582-10-14"
+DATE_PRINT_FORMAT <<- "%b %e, %Y"
+DATE_PRINT_FORMAT_ABBREVIATED <<- "%b %Y"
+FONT_SIZE<<-15
+POINT_SIZE<<-4
+M<<-750
+SCHEDULES <<- c("5% Risk", "10% Risk", "15% Risk",
               "Yearly", "Every 2 Years", "PRIAS")
-DELAY_GAUGE_MAX = 24
-STEP_CUMRISK_SLIDER = 0.5
+DELAY_GAUGE_MAX <<- 24
+STEP_CUMRISK_SLIDER <<- 0.5
 
-DANGER_COLOR = "red"
-THEME_COLOR = "#2fa4e7"
-THEME_COLOR_DARK = "#033a6f"
-SUCCESS_COLOR = "forestgreen"
-WARNING_COLOR="orange"
+DANGER_COLOR <<- "red"
+THEME_COLOR <<- "#2fa4e7"
+THEME_COLOR_DARK <<- "#033a6f"
+SUCCESS_COLOR <<- "forestgreen"
+WARNING_COLOR<<-"orange"
 
-SCHEDULES_MAPPING = c("5% Risk (Personalized)"=1,
+SCHEDULES_MAPPING <<- c("5% Risk (Personalized)"=1,
               "10% Risk (Personalized)"=2,
               "15% Risk (Personalized)"=3,
               "Yearly (Fixed)"=4,
               "Every 2 years (Fixed)"=5,
               "PRIAS (Fixed)"=6)
 
-COHORT_MAPPING = c("PRIAS" = "PRIAS",
+COHORT_MAPPING <<- c("PRIAS" = "PRIAS",
                    "Toronto AS" = "Toronto",
                    "Johns Hopkins AS" = "Hopkins",
                    "MSKCC AS" = "MSKCC",
@@ -37,7 +37,7 @@ COHORT_MAPPING = c("PRIAS" = "PRIAS",
                    "KCL (London) AS" = "KCL",
                    "UCSF AS"="UCSF")
 
-MAX_FOLLOW_UP_MAPPING = c("PRIAS"=6,
+MAX_FOLLOW_UP_MAPPING <<- c("PRIAS"=6,
                           "Hopkiins"=7,
                           "Toronto"=8,
                           "MSKCC"=6,
@@ -45,13 +45,17 @@ MAX_FOLLOW_UP_MAPPING = c("PRIAS"=6,
                           "KCL"=3,
                           "UCSF"=8.5)
 
-CURRENT_COHORT_NAME = "PRIAS"
+CURRENT_COHORT_NAME <<- "PRIAS"
 
-MAX_FOLLOW_UP = MAX_FOLLOW_UP_MAPPING["PRIAS"]
+MAX_SURV_CACHE_SIZE <<- 1000
 
-mvJoint_psa_time_scaled = models$PRIAS
+#Made once for 10 years, dont change
+PSA_CHECK_UP_SCHEDULE <<- c(seq(0, 2, 0.25), seq(2.5, 10, 0.5))
+MAX_FOLLOW_UP <<- MAX_FOLLOW_UP_MAPPING["PRIAS"]
 
-EXAMPLE_DF = data.frame(age=62.3,
+mvJoint_psa_time_scaled <<- models$PRIAS
+
+EXAMPLE_DF <<- data.frame(age=62.3,
                         start_date = "21-02-2016",
                         visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
                                        "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),

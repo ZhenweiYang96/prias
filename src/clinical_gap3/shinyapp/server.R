@@ -23,66 +23,52 @@ shinyServer(function(input, output, session) {
   }
   
   recalculateBiopsySchedules = function(){
-    pat_data = patient_cache$patient_data
     cur_visit_time = patient_cache$current_visit_time
     latest_survival_time = patient_cache$latest_survival_time
-    min_biosy_gap = input$month_gap_biopsy/12
+    min_biopsy_gap = input$month_gap_biopsy/12
     
-    set.seed(2019)
-    schedule_5perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                          cur_visit_time = cur_visit_time, 
-                                          latest_survival_time = latest_survival_time,
-                                          risk_threshold = 0.05, min_biopsy_gap = min_biosy_gap, M = M,
-                                          horizon = MAX_FOLLOW_UP)
-    schedule_10perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                           cur_visit_time = cur_visit_time, 
-                                           latest_survival_time = latest_survival_time,
-                                           risk_threshold = 0.1, min_biopsy_gap = min_biosy_gap, M = M,
-                                           horizon = MAX_FOLLOW_UP)
-    schedule_15perc = getRiskBasedSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                           cur_visit_time = cur_visit_time, 
-                                           latest_survival_time = latest_survival_time,
-                                           risk_threshold = 0.15, min_biopsy_gap = min_biosy_gap, M = M,
-                                           horizon = MAX_FOLLOW_UP)
-    
-    schedule_annual = getFixedSchedule(cur_visit_time = cur_visit_time, 
-                                       latest_survival_time = latest_survival_time,
-                                       min_biopsy_gap = min_biosy_gap, biopsy_frequency = 1, 
-                                       horizon = MAX_FOLLOW_UP)
-    schedule_biennial = getFixedSchedule(cur_visit_time = cur_visit_time, 
-                                         latest_survival_time = latest_survival_time,
-                                         min_biopsy_gap = min_biosy_gap, biopsy_frequency = 2, 
-                                         horizon = MAX_FOLLOW_UP)
-    
-    
-    schedule_prias = getPRIASSchedule(object = mvJoint_psa_time_scaled, patient_data = pat_data,
-                                      cur_visit_time = cur_visit_time, latest_survival_time = latest_survival_time,
-                                      min_biopsy_gap = 1, M = M, horizon = MAX_FOLLOW_UP)
-    
-    consequences_list = lapply(list(schedule_5perc, schedule_10perc,schedule_15perc,
-                                    schedule_annual,schedule_biennial, schedule_prias),
-                               FUN = function(x){
-                                 set.seed(2019);
-                                 getConsequences(object=mvJoint_psa_time_scaled, 
-                                                 patient_data=pat_data,
-                                                 cur_visit_time = cur_visit_time, 
-                                                 proposed_biopsy_times = x,
-                                                 latest_survival_time = latest_survival_time, M=M,
-                                                 horizon=MAX_FOLLOW_UP)
-                               })
-    
-    expected_delays = sapply(consequences_list, "[[", "expected_delay")*12
-    practical_biopsy_times = lapply(consequences_list, "[[", "practical_biopsy_times")
-    total_biopsies = sapply(practical_biopsy_times, length)
-    
-    patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
-                                                        Schedule=rep(SCHEDULES, total_biopsies), 
-                                                        biopsy_times=unlist(practical_biopsy_times))  
-    
-    patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
-                                                           schedule=SCHEDULES,
-                                                           expected_delay=expected_delays,
-                                                           total_biopsies = total_biopsies, check.names = F)
+    if(latest_survival_time < MAX_FOLLOW_UP){
+      set.seed(2019)
+      schedule_5perc = getRiskBasedSchedule(0.95, latest_survival_time, min_biopsy_gap)
+      schedule_10perc = getRiskBasedSchedule(0.90, latest_survival_time, min_biopsy_gap)
+      schedule_15perc = getRiskBasedSchedule(0.85, latest_survival_time, min_biopsy_gap)
+      
+      schedule_annual = getFixedSchedule(latest_survival_time = latest_survival_time,
+                                         min_biopsy_gap = min_biopsy_gap, biopsy_frequency = 1)
+      schedule_biennial = getFixedSchedule(latest_survival_time = latest_survival_time,
+                                           min_biopsy_gap = min_biopsy_gap, biopsy_frequency = 2)
+      
+      schedule_prias = getPRIASSchedule(latest_survival_time = latest_survival_time,
+                                        min_biopsy_gap = min_biopsy_gap)
+      
+      consequences_list = lapply(list(schedule_5perc, schedule_10perc,schedule_15perc,
+                                      schedule_annual,schedule_biennial, schedule_prias),
+                                 getConsequences, gap=min_biopsy_gap, last_test_time=latest_survival_time)
+      
+      expected_delays = sapply(consequences_list, "[[", "expected_detection_delay")*12
+      practical_biopsy_times = lapply(consequences_list, "[[", "planned_test_schedule")
+      total_biopsies = sapply(practical_biopsy_times, length)
+      
+      patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
+                                                          Schedule=rep(SCHEDULES, total_biopsies), 
+                                                          biopsy_times=unlist(practical_biopsy_times))  
+      
+      patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
+                                                             schedule=SCHEDULES,
+                                                             expected_delay=expected_delays,
+                                                             total_biopsies = total_biopsies, check.names = F)
+      
+    }else{
+      patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
+                                                          Schedule=SCHEDULES, 
+                                                          biopsy_times=rep(-10, length(SCHEDULES)))  
+      patient_cache$biopsy_total_delay_plotDf <<- data.frame(schedule_id = 1:length(SCHEDULES),
+                                                             schedule=SCHEDULES,
+                                                             expected_delay=0,
+                                                             total_biopsies = 0, check.names = F)
+      
+    }
+        
     biopsyCounter(biopsyCounter() + 1)
   }
   
@@ -101,35 +87,42 @@ shinyServer(function(input, output, session) {
       patient_data$gleason_sum[patient_data$gleason_sum %in% c(7,8,9,10)] = NA
     }
     
+    #The case of no biopsies at all
+    if(sum(!is.na(patient_data$gleason_sum))==0){
+      patient_data$gleason_sum[1] = 6
+    }
+    
     patient_cache <<- list(P_ID = patient_data$P_ID[1],
                            patient_data = patient_data,
                            dom_diagnosis = patient_data$dom_diagnosis[1],
                            latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)]),
                            current_visit_time = max(patient_data$year_visit))
     
+    patient_cache$visit_schedule <<- c(patient_cache$current_visit_time, PSA_CHECK_UP_SCHEDULE[PSA_CHECK_UP_SCHEDULE > patient_cache$current_visit_time & PSA_CHECK_UP_SCHEDULE <=MAX_FOLLOW_UP])
+    
     cur_visit_time_in_secs = patient_cache$dom_diagnosis + patient_cache$current_visit_time*YEAR_DIVIDER
     max_visit_time_in_secs = patient_cache$dom_diagnosis + MAX_FOLLOW_UP * YEAR_DIVIDER
     
+    #Now we calculate the survival probabilities. We set everything in the cache
     set.seed(2019)
-    latest_survival_time = max(patient_data$year_visit[!is.na(patient_data$gleason_sum)])
+    cache_size = min(ceiling((MAX_FOLLOW_UP - patient_cache$latest_survival_time)*365), MAX_SURV_CACHE_SIZE)
     
-    patient_cache$SURV_CACHE_TIMES <<- unique(c(seq(patient_cache$current_visit_time, MAX_FOLLOW_UP, STEP_CUMRISK_SLIDER),MAX_FOLLOW_UP))
-    patient_cache$PSA_CACHE_TIMES <<- seq(0, MAX_FOLLOW_UP, length.out = 50)
+    patient_cache$SURV_CACHE_TIMES <<- seq(patient_cache$latest_survival_time, MAX_FOLLOW_UP, length.out = cache_size)
+    patient_cache$SURV_CACHE_TIMES <<- sort(unique(c(patient_cache$visit_schedule, patient_cache$SURV_CACHE_TIMES)))
+    patient_cache$PSA_CACHE_TIMES <<- sort(unique(c(patient_cache$visit_schedule, 
+                                                    seq(0, MAX_FOLLOW_UP, length.out = 50))))
     
     pred_res = getExpectedFutureOutcomes(mvJoint_psa_time_scaled, patient_data, 
-                                         latest_survival_time, 
-                                         survival_predict_times = patient_cache$SURV_CACHE_TIMES,
+                                         patient_cache$latest_survival_time, 
+                                         survival_predict_times = patient_cache$SURV_CACHE_TIMES[-1],
                                          psa_predict_times = patient_cache$PSA_CACHE_TIMES, 
                                          psaDist = "Tdist", M = M, addRandomError = F)
     
     patient_cache$PSA_CACHE_FULL <<- pred_res$predicted_psa
-    if(latest_survival_time == MAX_FOLLOW_UP){
-      patient_cache$SURV_CACHE_MEAN = 1
+    if(patient_cache$latest_survival_time == MAX_FOLLOW_UP){
+      patient_cache$SURV_CACHE_FULL <<- matrix(data = rep(1, M), nrow=1)
     }else{
-      patient_cache$SURV_CACHE_MEAN <<- rowMeans(pred_res$predicted_surv_prob, na.rm = T)
-      if(patient_cache$current_visit_time == latest_survival_time){
-        patient_cache$SURV_CACHE_MEAN <<- c(1, patient_cache$SURV_CACHE_MEAN)
-      }
+      patient_cache$SURV_CACHE_FULL <<- rbind(rep(1, M), pred_res$predicted_surv_prob)
     }
     
     #slider on tab 2
@@ -137,7 +130,7 @@ shinyServer(function(input, output, session) {
                       max = as.POSIXct(max_visit_time_in_secs, origin = SPSS_ORIGIN_DATE), 
                       min = as.POSIXct(cur_visit_time_in_secs, origin = SPSS_ORIGIN_DATE),
                       step = NULL,
-                      label = "Choose a time to predict cumulative-risk of reclassification:",
+                      label = "Choose a time to predict cumulative-risk of Upgrading:",
                       timeFormat = "%b %Y")
     
     recalculateBiopsySchedules()
@@ -221,7 +214,7 @@ shinyServer(function(input, output, session) {
     textInput("manual_dom_diagnosis", label="Enter date (dd-mm-yyyy format) of low-grade prostate cancer diagnosis:",
               value = "01-01-2019", width = "80%"),
     textInput("manual_biopsy_times", 
-              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason grade 1 (Gleason 3+3). Separate dates by comma.",
+              label = "Enter dates (dd-mm-yyyy format) of previous biopsies with Gleason grade group 1 (Gleason 3+3). Separate dates by comma.",
               value = "01-01-2019, 02-01-2020, 03-06-2021",
               width = "80%"),
     textInput("manual_psa_times", 
@@ -388,7 +381,7 @@ shinyServer(function(input, output, session) {
       
       return(data.frame("Data"=c("Age (years)", 
                                  "First Visit", "Current Visit", "Total Visits", 
-                                 "Latest Biopsy", "Latest Gleason Grade","Total Biopsies"),
+                                 "Latest Biopsy", "Latest Gleason Grade Group","Total Biopsies"),
                         "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
                                   last_biopsy_date, latest_gleason_grade, nr_biopsies)))
@@ -432,7 +425,7 @@ shinyServer(function(input, output, session) {
       
       return(data.frame("Data"=c("Age (years)", 
                                  "First Visit", "Current Visit", "Total Visits", 
-                                 "Latest Biopsy", "Latest Gleason Grade", "Total Biopsies"),
+                                 "Latest Biopsy", "Latest Gleason Grade Group", "Total Biopsies"),
                         "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
                                   last_biopsy_date, latest_gleason_grade, nr_biopsies)))
@@ -446,7 +439,9 @@ shinyServer(function(input, output, session) {
     if(patientCounter()>0 & input$risk_pred_time!=0 & !is.null(patient_cache$patient_data)){
       futureTime = as.numeric((difftime(input$risk_pred_time, SPSS_ORIGIN_DATE, units='secs') - patient_cache$dom_diagnosis)/YEAR_DIVIDER)
       
-      riskProb = 1 - patient_cache$SURV_CACHE_MEAN[which.min(abs(patient_cache$SURV_CACHE_TIMES - futureTime))]
+      surv_row = patient_cache$SURV_CACHE_FULL[which.min(abs(patient_cache$SURV_CACHE_TIMES - futureTime)),]
+      
+      riskProb = 1 - mean(surv_row)
       date = getHumanReadableDate(patient_cache$dom_diagnosis + futureTime*YEAR_DIVIDER)
       
       return(riskGaugeGraph(riskProb, date))
@@ -528,16 +523,16 @@ shinyServer(function(input, output, session) {
   
   output$delay_explanation_plot = renderPlot({
     ggplot() + geom_ribbon(aes(x=c(3.25, 4.5), ymin=-Inf, ymax=Inf), fill=DANGER_COLOR, alpha=0.25) +
-      geom_label(aes(x=3.875, y=0.8, label='15 months time\ndelay in detecting\nGleason reclassification'),size=5)+
+      geom_label(aes(x=3.875, y=0.8, label='15 months time\ndelay in detecting\nGleason Upgrading'),size=5)+
       geom_segment(aes(x=c(0,1,2), y=c(-Inf, -Inf, -Inf), xend=c(0,1,2), yend=c(0.5, 0.5, 0.5)),
                    color=c(WARNING_COLOR, rep(SUCCESS_COLOR, 2)))+
       geom_vline(xintercept = 4.5, color=DANGER_COLOR) + 
       geom_vline(xintercept = 3.25, linetype='dashed', color=DANGER_COLOR) + 
-      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason\nreclassification"),
+      geom_label(aes(x=3.25, y=0.5, label = "True time of\nGleason\nUpgrading"),
                  size=6, color='white',
                  fill=c(DANGER_COLOR)) +
       geom_label(aes(x=c(0,1,2,4.5), y=rep(0.5,4),
-                     label = c("Start AS", rep("Biopsy\nGleason grade 1",2), "Biopsy Gleason\nreclassification\ndetected")),
+                     label = c("Start AS", rep("Biopsy\nGleason grade 1",2), "Biopsy Gleason\nUpgrading\ndetected")),
                  size=6, color=c('white', rep(SUCCESS_COLOR,2), DANGER_COLOR),
                  fill=c(WARNING_COLOR, rep('white',3))) +
       xlab("Time of biopsy visits") + 
