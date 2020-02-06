@@ -11,7 +11,7 @@ DATE_PRINT_FORMAT_ABBREVIATED <<- "%b %Y"
 FONT_SIZE<<-15
 POINT_SIZE<<-4
 M<<-750
-SCHEDULES <<- c("5% Risk", "10% Risk", "15% Risk",
+SCHEDULES <<- c("5% Risk", "10% Risk", "15% Risk", "Automatic Risk",
               "Yearly", "Every 2 Years", "PRIAS")
 DELAY_GAUGE_MAX <<- 24
 STEP_CUMRISK_SLIDER <<- 0.5
@@ -25,9 +25,10 @@ WARNING_COLOR<<-"orange"
 SCHEDULES_MAPPING <<- c("5% Risk (Personalized)"=1,
               "10% Risk (Personalized)"=2,
               "15% Risk (Personalized)"=3,
-              "Yearly (Fixed)"=4,
-              "Every 2 years (Fixed)"=5,
-              "PRIAS (Fixed)"=6)
+              "Automatic Risk (Personalized)"=4,
+              "Yearly (Fixed)"=5,
+              "Every 2 years (Fixed)"=6,
+              "PRIAS (Fixed)"=7)
 
 COHORT_MAPPING <<- c("PRIAS" = "PRIAS",
                    "Toronto AS" = "Toronto",
@@ -60,7 +61,7 @@ EXAMPLE_DF <<- data.frame(age=62.3,
                         visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
                                        "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
                         psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
-                        gleason_grade = c(1,NA, 1, NA, NA, 1, NA, NA))
+                        gleason_grade_group = c(1,NA, 1, NA, NA, 1, NA, NA))
 
 getHumanReadableDate = function(spss_date, abbreviated=F){
   format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), 

@@ -12,7 +12,6 @@ source("src/clinical_gap3/fixedAndPRIASSchedule.R")
 source("src/lastpaper/pers_schedule_api.R")
 #this is needed to load the function which makes a plot for dynamic risk
 
-
 SUCCESS_COLOR = 'forestgreen'
 DANGER_COLOR = 'red'
 THEME_COLOR = 'dodgerblue4'
@@ -140,6 +139,7 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
                label="B",size=POINT_SIZE + 2, fill=DANGER_COLOR, color='white') + 
     ylab("Biopsy schedule") + 
     theme(axis.title.x = element_blank(),
+          axis.text.x = element_text(size=FONT_SIZE),
           plot.margin = margin(b = 0, unit = "pt")) +
     scale_y_continuous(breaks = 1:length(levels(schedule_df$Schedule)),
                        labels = levels(schedule_df$Schedule),
@@ -198,7 +198,7 @@ ggsave(schedule_plot_pat1, filename = "report/clinical/images/demo_pat1_supp.eps
 
 #############
 pat2_data = prias_long_final[prias_long_final$P_ID==102 & prias_long_final$year_visit<=3,]
-pat2_data$year_visit[nrow(pat2_data)] = ceiling(pat2_data$year_visit[nrow(pat2_data)])
+pat2_data$year_visit[nrow(pat2_data)] = 2.5
 psa_breaks = getpsaBreaks(pat2_data)
 
 schedule_plot_pat2 = schedulePlotSupp(mvJoint_psa_time_scaled, pat2_data,
@@ -212,6 +212,7 @@ ggsave(schedule_plot_pat2, filename = "report/clinical/images/demo_pat2_supp.eps
 ##########
 
 pat3_data = prias_long_final[prias_long_final$P_ID==101 & prias_long_final$year_visit<=4,]
+pat3_data$year_visit[nrow(pat3_data)] = 4
 psa_breaks = getpsaBreaks(pat3_data)
 
 schedule_plot_pat3 = schedulePlotSupp(mvJoint_psa_time_scaled, pat3_data,

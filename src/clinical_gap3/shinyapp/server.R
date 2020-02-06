@@ -29,24 +29,33 @@ shinyServer(function(input, output, session) {
     
     if(latest_survival_time < MAX_FOLLOW_UP){
       set.seed(2019)
-      schedule_5perc = getRiskBasedSchedule(0.95, latest_survival_time, min_biopsy_gap)
-      schedule_10perc = getRiskBasedSchedule(0.90, latest_survival_time, min_biopsy_gap)
-      schedule_15perc = getRiskBasedSchedule(0.85, latest_survival_time, min_biopsy_gap)
+      schedule_all = getAllRiskSchedule(latest_survival_time, min_biopsy_gap)
       
-      schedule_annual = getFixedSchedule(latest_survival_time = latest_survival_time,
-                                         min_biopsy_gap = min_biopsy_gap, biopsy_frequency = 1)
+      schedule_15perc = schedule_all[["0.85"]]
+      schedule_10perc = schedule_all[["0.9"]]
+      schedule_5perc = schedule_all[["0.95"]]
+      schedule_annual = schedule_all[["1"]]
+      
+      #best schedule
+      exp_tests = sapply(schedule_all, "[[", "expected_num_tests")
+      exp_delay = sapply(schedule_all, "[[", "expected_detection_delay")
+      schedule_automatic = schedule_all[[which.min(sqrt((exp_tests-1)^2 + exp_delay^2))[1]]]
+      
       schedule_biennial = getFixedSchedule(latest_survival_time = latest_survival_time,
                                            min_biopsy_gap = min_biopsy_gap, biopsy_frequency = 2)
+      schedule_biennial = getConsequences(schedule_biennial, gap=min_biopsy_gap, last_test_time = latest_survival_time)
       
       schedule_prias = getPRIASSchedule(latest_survival_time = latest_survival_time,
                                         min_biopsy_gap = min_biopsy_gap)
+      schedule_prias = getConsequences(schedule_prias, gap=min_biopsy_gap, last_test_time = latest_survival_time)
       
-      consequences_list = lapply(list(schedule_5perc, schedule_10perc,schedule_15perc,
-                                      schedule_annual,schedule_biennial, schedule_prias),
-                                 getConsequences, gap=min_biopsy_gap, last_test_time=latest_survival_time)
+      schedules_conseq_list = list(schedule_5perc, schedule_10perc, schedule_15perc,
+                                   schedule_automatic, schedule_annual, schedule_biennial, schedule_prias)
       
-      expected_delays = sapply(consequences_list, "[[", "expected_detection_delay")*12
-      practical_biopsy_times = lapply(consequences_list, "[[", "planned_test_schedule")
+      
+      
+      expected_delays = sapply(schedules_conseq_list, "[[", "expected_detection_delay")*12
+      practical_biopsy_times = lapply(schedules_conseq_list, "[[", "planned_test_schedule")
       total_biopsies = sapply(practical_biopsy_times, length)
       
       patient_cache$biopsy_schedule_plotDf <<- data.frame(schedule_id = rep(1:length(SCHEDULES), total_biopsies),
@@ -253,7 +262,7 @@ shinyServer(function(input, output, session) {
     tags$span("psa", class='label label-primary'),
     tags$span(" is the PSA (ng/mL) at the follow-up time. Missing values should be left blank."),
     tags$br(),
-    tags$span("gleason_grade", class='label label-primary'),
+    tags$span("gleason_grade_group", class='label label-primary'),
     tags$span(" is the ISUP Gleason grade group (lowest 1, highest 5) at the follow-up time. Missing values should be left blank."),
     tags$br(),
     tags$hr(),
@@ -346,13 +355,13 @@ shinyServer(function(input, output, session) {
       
       patient_data$P_ID = -15
       patient_data$psa[patient_data$psa %in% "NA"] = NA
-      patient_data$gleason_grade[patient_data$gleason_grade %in% "NA"] = NA
+      patient_data$gleason_grade_group[patient_data$gleason_grade_group %in% "NA"] = NA
       patient_data$psa = as.numeric(as.character(patient_data$psa))
-      patient_data$gleason_grade = as.numeric(as.character(patient_data$gleason_grade))
-      patient_data$gleason_sum[!is.na(patient_data$gleason_grade) & 
-                                 patient_data$gleason_grade==1] = 6
-      patient_data$gleason_sum[!is.na(patient_data$gleason_grade) & 
-                                 patient_data$gleason_grade > 1] = 7
+      patient_data$gleason_grade_group = as.numeric(as.character(patient_data$gleason_grade_group))
+      patient_data$gleason_sum[!is.na(patient_data$gleason_grade_group) & 
+                                 patient_data$gleason_grade_group==1] = 6
+      patient_data$gleason_sum[!is.na(patient_data$gleason_grade_group) & 
+                                 patient_data$gleason_grade_group > 1] = 7
       
       setPatientDataInCache(patient_data)
     }else{
@@ -376,7 +385,7 @@ shinyServer(function(input, output, session) {
       latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
       
       if(latest_gleason <= 6){
-        latest_gleason_grade = "1 (Gleason 3+3)"
+        latest_gleason_grade_group = "1 (Gleason 3+3)"
       } 
       
       return(data.frame("Data"=c("Age (years)", 
@@ -384,7 +393,7 @@ shinyServer(function(input, output, session) {
                                  "Latest Biopsy", "Latest Gleason Grade Group","Total Biopsies"),
                         "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
-                                  last_biopsy_date, latest_gleason_grade, nr_biopsies)))
+                                  last_biopsy_date, latest_gleason_grade_group, nr_biopsies)))
       
     }else{
       return(NULL)
@@ -420,7 +429,7 @@ shinyServer(function(input, output, session) {
       latest_gleason = tail(patient_data$gleason_sum[!is.na(patient_data$gleason_sum)],1)
       
       if(latest_gleason <= 6){
-        latest_gleason_grade = "1 (Gleason 3+3)"
+        latest_gleason_grade_group = "1 (Gleason 3+3)"
       } 
       
       return(data.frame("Data"=c("Age (years)", 
@@ -428,7 +437,7 @@ shinyServer(function(input, output, session) {
                                  "Latest Biopsy", "Latest Gleason Grade Group", "Total Biopsies"),
                         "Value"=c(age,
                                   first_visit_date,current_visit_date, nr_visits,
-                                  last_biopsy_date, latest_gleason_grade, nr_biopsies)))
+                                  last_biopsy_date, latest_gleason_grade_group, nr_biopsies)))
       
     }else{
       return(NULL)

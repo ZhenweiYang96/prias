@@ -93,8 +93,31 @@ getRiskBasedSchedule = function(surv_threshold, previous_test_time, gap){
     }
   }
   
+  if(length(proposed_test_times)==0){
+    proposed_test_times = MAX_FOLLOW_UP
+  }
+  
   return(proposed_test_times)
 }
+
+getAllRiskSchedule = function(previous_test_time, gap){
+  surv_thresholds = seq(0,1,by=0.01)
+  
+  proposed_test_times = lapply(surv_thresholds, FUN = getRiskBasedSchedule, previous_test_time, gap)
+  
+  proposed_test_time_str = sapply(proposed_test_times, paste0, collapse="-")
+  unique_test_time_str = unique(proposed_test_time_str)
+  unique_test_time_list = lapply(strsplit(unique(sapply(proposed_test_times, paste0, collapse="-")), split = "-"), as.numeric)
+  unique_consequences = lapply(unique_test_time_list, getConsequences, gap, previous_test_time)
+  names(unique_consequences) = unique_test_time_str
+  
+  total_consequences = lapply(proposed_test_time_str, FUN = function(str){
+    unique_consequences[[str]]
+  })
+  names(total_consequences) = surv_thresholds
+  
+  return(total_consequences)
+}  
 
 getConsequences = function(proposed_test_times, gap, last_test_time){
   set.seed(2019);

@@ -40,7 +40,7 @@ The time delay is cannot be defined for the scenario in which the patient obtain
 \begin{equation*}
 \label{eq:expected_number_of_biopsies_and_delay}
 \begin{split}
-E\big\{D_j(S \mid t)\big\} &= \sum_{n=1}^{N} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \\ & \quad \times \mbox{Pr}\Big\{s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N, \mathcal(Y)_j(v), \mathcal{A}_n\Big\}, \quad s_0 = t\\
+E\big\{D_j(S \mid t)\big\} &= \sum_{n=1}^{N} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \\ & \quad \times \mbox{Pr}\Big\{s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N, \mathcal{Y}_j(v), \mathcal{A}_n\Big\}, \quad s_0 = t\\
 E(T^*_j \mid s_{n-1}, s_n, v) &= s_{n-1} + \int_{s_{n-1}}^{s_n} \mbox{Pr}\Big\{T^*_j \geq u \mid s_{n-1} < T^*_j \leq s_n, \mathcal{Y}_{j}(v), \mathcal{A}_n\Big\} \mathrm{d}u,
 \end{split}
 \end{equation*}

@@ -14,7 +14,7 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
   }
   
   cur_visit_time = max(newdata[[timeVar]], na.rm = T)
-  fixed_grid_visits = unique(c(cur_visit_time, fixed_grid_visits[fixed_grid_visits >= cur_visit_time]))
+  fixed_grid_visits = c(cur_visit_time, fixed_grid_visits[fixed_grid_visits > cur_visit_time])
   horizon = max(fixed_grid_visits)
   
   #Step 1: Create a CACHE of predicted survival probabilities to speed up operation

@@ -272,13 +272,13 @@ getConsequencesWithCache = function(cache_times, cache_surv_full, horizon,
     lower_limit = biop_intervals[[j]][1]
     upper_limit = biop_intervals[[j]][2]
     
-    lower_limit_nearest_index = which(lower_limit==cache_times)
-    upper_limit_nearest_index = which(upper_limit==cache_times)
+    lower_limit_nearest_index = which.min(abs(lower_limit-cache_times))
+    upper_limit_nearest_index = which.min(abs(upper_limit-cache_times))
     res[[j]]$cum_risk_interval = cache_surv_full[lower_limit_nearest_index,] - 
       cache_surv_full[upper_limit_nearest_index,]
     
     cond_expected_fail_time = sapply(1:length(wt_points$points), function(i){
-      cum_surv_at_points = cache_surv_full[which(wt_points$points[i]==cache_times),] - cache_surv_full[upper_limit_nearest_index,]
+      cum_surv_at_points = cache_surv_full[which.min(abs(wt_points$points[i]-cache_times)),] - cache_surv_full[upper_limit_nearest_index,]
       scaled_cum_surv_at_points = cum_surv_at_points/res[[j]]$cum_risk_interval
       
       return(wt_points$weights[i] * scaled_cum_surv_at_points)

@@ -1,7 +1,7 @@
 library(ggplot2)
 library(ggpubr)
 
-seeds = c(2001:2005)
+seeds = c(2001:2010)
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results_non_auto/seed_", seed, ".Rdata"))
@@ -9,27 +9,26 @@ biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   return(biopsyDf_summary)
 }))
 
+biopsyDf_summary = droplevels(biopsyDf_summary)
+levels(biopsyDf_summary$schedule)
+
 biopsyDf_summary2 = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/combined_res_auto_dist_exact_delay/seed_", seed, ".Rdata"))
+  load(paste0("Rdata/lastpaper/simulation/combined_results_auto/seed_", seed, ".Rdata"))
   
   return(biopsyDf_summary)
 }))
 
-biopsyDf_summary3 = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/seed_", seed, ".Rdata"))
-  
-  return(biopsyDf_summary)
-}))
-
-biopsyDf_summary = rbind(biopsyDf_summary, biopsyDf_summary2, biopsyDf_summary3)
+biopsyDf_summary = rbind(biopsyDf_summary, biopsyDf_summary2)
 biopsyDf_summary = biopsyDf_summary[order(biopsyDf_summary$seed, biopsyDf_summary$P_ID, biopsyDf_summary$schedule),]
 
 biopsyDf_summary = droplevels(biopsyDf_summary[biopsyDf_summary$schedule %in%
-                                                 c("Annual", "PRIAS", "Risk: 10%", "Risk: Auto (Inf)", "Risk: Auto (0.5)"),])
+                                                 c("Annual", "PRIAS", "Risk: 10%", "Risk: Auto (Inf)", "Risk: Auto (0.75)"),])
+levels(biopsyDf_summary$schedule)
 
 levels(biopsyDf_summary$schedule)[3] = "\u03BA*=10%"
-levels(biopsyDf_summary$schedule)[5] = "\u03BA*(v)"
 levels(biopsyDf_summary$schedule)[4] = "\u03BA*{v | E(D) \u2264 0.75}"
+levels(biopsyDf_summary$schedule)[5] = "\u03BA*(v)"
+
 # 
 # biopsyDf_summary$nb[biopsyDf_summary$delay<0] = biopsyDf_summary$nb[biopsyDf_summary$delay<0] + 1
 # biopsyDf_summary$delay[biopsyDf_summary$delay<0] = 10 - biopsyDf_summary$progression_time[biopsyDf_summary$delay<0]
