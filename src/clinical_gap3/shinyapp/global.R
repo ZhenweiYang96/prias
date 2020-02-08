@@ -1,5 +1,6 @@
 load("models.Rdata")
 load("reclassification_df.Rdata")
+load("auto_schedule_plot_df.RData")
 load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
@@ -12,7 +13,7 @@ FONT_SIZE<<-15
 POINT_SIZE<<-4
 M<<-750
 SCHEDULES <<- c("5% Risk", "10% Risk", "15% Risk", "Automatic Risk",
-              "Yearly", "Every 2 Years", "PRIAS")
+                "Yearly", "Every 2 Years", "PRIAS")
 DELAY_GAUGE_MAX <<- 24
 STEP_CUMRISK_SLIDER <<- 0.5
 
@@ -23,28 +24,28 @@ SUCCESS_COLOR <<- "forestgreen"
 WARNING_COLOR<<-"orange"
 
 SCHEDULES_MAPPING <<- c("5% Risk (Personalized)"=1,
-              "10% Risk (Personalized)"=2,
-              "15% Risk (Personalized)"=3,
-              "Automatic Risk (Personalized)"=4,
-              "Yearly (Fixed)"=5,
-              "Every 2 years (Fixed)"=6,
-              "PRIAS (Fixed)"=7)
+                        "10% Risk (Personalized)"=2,
+                        "15% Risk (Personalized)"=3,
+                        "Automatic Risk (Personalized)"=4,
+                        "Yearly (Fixed)"=5,
+                        "Every 2 years (Fixed)"=6,
+                        "PRIAS (Fixed)"=7)
 
 COHORT_MAPPING <<- c("PRIAS" = "PRIAS",
-                   "Toronto AS" = "Toronto",
-                   "Johns Hopkins AS" = "Hopkins",
-                   "MSKCC AS" = "MSKCC",
-                   "MUSIC AS" = "MUSIC",
-                   "KCL (London) AS" = "KCL",
-                   "UCSF AS"="UCSF")
+                     "Toronto AS" = "Toronto",
+                     "Johns Hopkins AS" = "Hopkins",
+                     "MSKCC AS" = "MSKCC",
+                     "MUSIC AS" = "MUSIC",
+                     "KCL (London) AS" = "KCL",
+                     "UCSF AS"="UCSF")
 
 MAX_FOLLOW_UP_MAPPING <<- c("PRIAS"=6,
-                          "Hopkiins"=7,
-                          "Toronto"=8,
-                          "MSKCC"=6,
-                          "MUSIC"=2,
-                          "KCL"=3,
-                          "UCSF"=8.5)
+                            "Hopkiins"=7,
+                            "Toronto"=8,
+                            "MSKCC"=6,
+                            "MUSIC"=2,
+                            "KCL"=3,
+                            "UCSF"=8.5)
 
 CURRENT_COHORT_NAME <<- "PRIAS"
 
@@ -57,15 +58,58 @@ MAX_FOLLOW_UP <<- MAX_FOLLOW_UP_MAPPING["PRIAS"]
 mvJoint_psa_time_scaled <<- models$PRIAS
 
 EXAMPLE_DF <<- data.frame(age=62.3,
-                        start_date = "21-02-2016",
-                        visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
-                                       "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
-                        psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
-                        gleason_grade_group = c(1,NA, 1, NA, NA, 1, NA, NA))
+                          start_date = "21-02-2016",
+                          visit_date = c("21-02-2016", "20-08-2016", "15-02-2017", "19-08-2017", 
+                                         "21-02-2018", "13-08-2018", "26-02-2019", "23-08-2019"),
+                          psa = c(5.7, NA, 12, 8.5, 15, NA, 25, 20.3),
+                          gleason_grade_group = c(1,NA, 1, NA, NA, 1, NA, NA))
 
 getHumanReadableDate = function(spss_date, abbreviated=F){
   format(as.POSIXct(spss_date, origin = SPSS_ORIGIN_DATE), 
          format = ifelse(abbreviated, DATE_PRINT_FORMAT_ABBREVIATED, DATE_PRINT_FORMAT))
+}
+
+getAutoScheduleExplanationPlot = function(){
+  LABEL_SIZE = 5.5
+  kappa_choice = ggplot() + 
+    geom_segment(aes(x=1,xend=expected_total_tests[-min_dist_schedule_index], 
+                     y=0,yend=expected_delays[-min_dist_schedule_index]), 
+                 alpha=0.175, color='gray') +
+    geom_segment(aes(x=1,xend=expected_total_tests[min_dist_schedule_index], 
+                     y=0,yend=expected_delays[min_dist_schedule_index]),
+                 color=SUCCESS_COLOR) +
+    geom_point(aes(x=expected_total_tests[-min_dist_schedule_index], 
+                   y=expected_delays[-min_dist_schedule_index]), 
+               size=POINT_SIZE) +
+    geom_point(aes(x=expected_total_tests[min_dist_schedule_index], 
+                   y=expected_delays[min_dist_schedule_index]), 
+               size=POINT_SIZE+2, color=SUCCESS_COLOR, shape=17) +
+    geom_label(aes(x=expected_total_tests[min_dist_schedule_index], 
+                   y=expected_delays[min_dist_schedule_index], 
+                   label=paste0("Automatic Risk\nThreshold = ", 
+                                round(risk_thresholds[min_dist_schedule_index]*100,1), "%")), 
+               nudge_x = 0, nudge_y = 0.5, fill=SUCCESS_COLOR, color='white', size=LABEL_SIZE)+
+    geom_label(aes(x=expected_total_tests[c(1, total_schedules)], 
+                   y=expected_delays[c(1, total_schedules)], 
+                   label=paste0("Fixed Risk\nThreshold = ", 
+                                round(risk_thresholds[c(1, total_schedules)]*100,1), "%")), 
+               nudge_x = c(0.4, 0.4), nudge_y=c(0.2, 0), fill='black', color='white', size=LABEL_SIZE)+
+    geom_point(aes(x=1, y=0), shape=15, size=POINT_SIZE + 1, 
+               color=THEME_COLOR) +
+    geom_label(aes(x=1,y=0, label="Ideal Schedule"), 
+               nudge_y = -0.25,
+               fill=THEME_COLOR, color='white',
+               size=LABEL_SIZE)+
+    theme_bw() +
+    theme(text = element_text(size = FONT_SIZE+4)) +
+    scale_x_continuous(breaks=1:ceiling_expected_total_tests, 
+                       limits = c(0.5,ceiling_expected_total_tests)) +
+    scale_y_continuous(breaks=seq(0, ceiling_expected_delay, 1), 
+                       limits = c(-0.5,ceiling_expected_delay)) +
+    xlab("Expected number of personalized biopsies") +
+    ylab("Expected time delay in detecting\nGleason upgrading (years)")
+  
+  return(kappa_choice)
 }
 
 psaObsDataGraph = function(data, dom_diagnosis, current_visit_time, 

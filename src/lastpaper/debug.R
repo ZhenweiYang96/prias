@@ -1,7 +1,7 @@
 library(ggplot2)
 library(ggpubr)
 
-seeds = c(2001:2010)
+seeds = c(2001:2100)
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results_non_auto/seed_", seed, ".Rdata"))

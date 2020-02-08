@@ -557,6 +557,16 @@ shinyServer(function(input, output, session) {
             axis.title.y = element_blank(), axis.ticks.y = element_blank())
   })
   
+  output$table_max_pred_time <- renderTable({
+    mapping_df = data.frame(Cohort=names(MAX_FOLLOW_UP_MAPPING), MAX_FOLLOW_UP_MAPPING)
+    colnames(mapping_df)[2] = "Max Prediction Time (years)"
+    return(mapping_df)
+  })
+  
+  output$automatic_schedule_explanation <- renderPlot({
+    return(getAutoScheduleExplanationPlot())
+  })
+  
   #Finally before we start the server, we reset the patient cache
   resetPatientCache()
 })

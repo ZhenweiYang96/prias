@@ -22,18 +22,11 @@ POINT_SIZE = 2
 FONT_SIZE = 11
 LABEL_SIZE = 2.75
 
-pat_data = prias_long_final[prias_long_final$P_ID==113 & prias_long_final$year_visit<=3,]
+pat_data = prias_long_final[prias_long_final$P_ID==3417 & prias_long_final$year_visit<=2,]
 set.seed(2019)
-pat_data$log2psaplus1 = pat_data$log2psaplus1 - 2
-
-pat_data$log2psaplus1[pat_data$year_visit > 2] = pat_data$log2psaplus1[pat_data$year_visit > 2] + 
-   rnorm(n = length(pat_data$log2psaplus1[pat_data$year_visit > 2]), 2.25, 1)
-
-pat_data$psa = 2^pat_data$log2psaplus1 - 1
-
 
 latest_survival_time = 1
-pat_data$year_visit[nrow(pat_data)] = ceiling(pat_data$year_visit[nrow(pat_data)])
+pat_data$year_visit[nrow(pat_data)] = 2
 cur_visit_time = max(pat_data$year_visit)
 
 accuracy = 100
@@ -123,6 +116,7 @@ jm_explanation_plot = ggarrange(A,B, C, D, ncol=1, nrow=4, align = "v",
                                 heights = c(1.1,1,1.1,0.6), common.legend = T,
                                 hjust = -9, vjust = 2,
                                 legend = "top", labels = c("A","B", "C", ""))
+print(jm_explanation_plot)
 
 ggsave(jm_explanation_plot, filename = "report/clinical/images/jmExplanationPlot_113.eps",
        device = cairo_ps, height = 7, width=6)
@@ -141,6 +135,10 @@ planned_prias_schedule = getPRIASSchedule(object = mvJoint_psa_time_scaled,
                                           cur_visit_time = cur_visit_time, 
                                           latest_survival_time = latest_survival_time,
                                           M=M, horizon = MAX_FOLLOW_UP)
+if(max(planned_prias_schedule)<MAX_FOLLOW_UP){
+  planned_prias_schedule = c(planned_prias_schedule, MAX_FOLLOW_UP)
+}
+
 prias_schedule = testScheduleConsequences.mvJMbayes(object = mvJoint_psa_time_scaled,
                                                     newdata = pat_data, idVar = "P_ID", 
                                                     last_test_time = latest_survival_time,
@@ -205,7 +203,7 @@ H = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2),
                                          max_delay_limit - consequences_df$expected_detection_delay)),
                                  color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
                                  width=0.5)+
-  ylab("Expected time delay (years)\nin detecting progression") + 
+  ylab("Expected time delay (years)\nin detecting upgrading") + 
   xlab("Biopsy Schedule") +
   scale_y_continuous(breaks = seq(0, max_delay_limit, by = 0.5),
                      labels = seq(0, max_delay_limit,  by = 0.5),
@@ -215,7 +213,8 @@ H = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2),
   theme(text = element_text(size = FONT_SIZE))
 
 demo_pat_plot = ggarrange(E, F_, D, H , ncol=1, nrow=4, align = "v",
-                          labels=c("A", "B", "", "C"), heights = c(1,1,0.5,1))
+                          labels=c("A", "B", "", "C"), heights = c(1.1,1,0.5,1))
 
+print(demo_pat_plot)
 ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
-       device = cairo_ps, height = 6.5, width=6)
+       device = cairo_ps, height = 7, width=6)

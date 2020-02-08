@@ -168,7 +168,7 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
                                   max_delay_limit - consequences_df$expected_detection_delay)),
                           color='black', fill=c(rep(c('darkgrey','white'), nrow(consequences_df))),
                           width=0.5)+
-    ylab("Expected time delay (years)\nin detecting progression") + 
+    ylab("Expected time delay (years)\nin detecting upgrading") + 
     xlab("Biopsy Schedule") +
     scale_y_continuous(breaks = seq(0, max_delay_limit, by = 0.5),
                        labels = seq(0, max_delay_limit,  by = 0.5),

@@ -2,7 +2,7 @@
 \section{Patients and Methods}
 \subsection{Study Cohort}
 \label{subsec:cohort}
-For developing a statistical model to predict upgrading-risk, we used the world's largest AS dataset, Prostate Cancer International Active Surveillance or PRIAS~\citep{bul2013active} available as of April 2019 (Table~\ref{table:prias_summary}). In PRIAS, PSA was measured quarterly for the first two years of follow-up and semiannually thereafter. Biopsies were scheduled at year one, four, seven, and ten of follow-up. Additional yearly biopsies were scheduled when PSA doubling time was between zero and ten years.
+For developing a statistical model to predict upgrading-risk, we used the world's largest AS dataset, Prostate Cancer International Active Surveillance or PRIAS~\citep{bul2013active}, dated April 2019 (Table~\ref{table:prias_summary}). In PRIAS, PSA was measured quarterly for the first two years of follow-up and semiannually thereafter. Biopsies were scheduled at year one, four, seven, and ten of follow-up. Additional yearly biopsies were scheduled when PSA doubling time was between zero and ten years.
 
 \begin{table}
 \small\sf\centering
@@ -32,6 +32,6 @@ Median number of biopsies per patient &  2 (IQR: 1--2)\\
 \end{tabular}
 \end{table}
 
-We selected all 7813 patients who had Gleason grade group~1 at the time of inclusion in PRIAS. Our primary event of interest is an increase in this Gleason grade group upon repeat biopsy, called \textit{upgrading} (1134 patients). Upgrading is a trigger for treatment advice in PRIAS. Also, 2250 patients were provided treatment based on their PSA, number of biopsy cores with cancer, or anxiety/other reasons. Our reasons for focusing solely on upgrading are, namely, upgrading is strongly associated with cancer-related outcomes, and other triggers for treatment vary between cohorts~\citep{nieboer2018active}.
+We selected all 7813~patients who had Gleason grade group~1 at the time of inclusion in PRIAS. Our primary event of interest is an increase in this Gleason grade group observed upon repeat biopsy, called \textit{upgrading} (1134~patients). Upgrading is a trigger for treatment advice in PRIAS. Also, 2250~patients were provided treatment based on their PSA, number of biopsy cores with cancer, or anxiety/other reasons. Our reasons for focusing solely on upgrading are, namely, upgrading is strongly associated with cancer-related outcomes, and other treatment triggers vary between cohorts~\citep{nieboer2018active}.
 
 For model validation, we selected the following largest (by number of repeated measurements) six cohorts from Movember Foundation's GAP3 database version~3.1~\citep{gap3_2018}: University of California San Francisco AS (UCSF, version~3.2), University of Toronto AS (Toronto), Johns Hopkins AS (Hopkins), Memorial Sloan Kettering Cancer Center AS (MSKCC), King's College London AS (KCL), and Michigan Urological Surgery Improvement Collaborative AS (MUSIC). Only patients with a Gleason grade group~1 at the time of inclusion in these cohorts were selected. Summary statistics are presented in Supplementary~A.2.
