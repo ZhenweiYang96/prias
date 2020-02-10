@@ -1,7 +1,20 @@
 library(ggplot2)
 library(ggpubr)
 
-seeds = c(2001:2100)
+#First we check which patients are not complete in "auto"
+seeds = c(2001:2200)
+
+missing_pids = lapply(seeds, FUN = function(seed){
+  load(paste0("Rdata/lastpaper/simulation/combined_results_auto/seed_", seed, ".Rdata"))
+  
+  diff_pids = setdiff(751:1000, biopsyDf_summary$P_ID)
+  
+  return(diff_pids)
+})
+
+names(missing_pids) = seeds
+
+seeds = c(2001:2010)
 
 biopsyDf_summary = do.call('rbind', lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results_non_auto/seed_", seed, ".Rdata"))
@@ -13,7 +26,7 @@ biopsyDf_summary = droplevels(biopsyDf_summary)
 levels(biopsyDf_summary$schedule)
 
 biopsyDf_summary2 = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/combined_results_auto/seed_", seed, ".Rdata"))
+  load(paste0("Rdata/lastpaper/simulation/combined_results_scaled_risk/seed_", seed, ".Rdata"))
   
   return(biopsyDf_summary)
 }))
