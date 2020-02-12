@@ -1,0 +1,69 @@
+% !TEX root =  ../main_manuscript.tex 
+\section{Joint Model for Time-to-Progression and Longitudinal Outcomes}
+\label{sec:jointmodel}
+Let the true time of disease progression for the ${i\mbox{-th}}$ patient be $T_i^*$. Progression is always observed with interval censoring ${l_i < T_i^* \leq r_i}$. In patients who obtain progression, $r_i$ and $l_i$ denote the time of their latest and second latest invasive tests. Otherwise, $l_i$ denotes the time of their latest test and ${r_i=\infty}$. Assuming $K$ auxiliary longitudinal outcomes, let $\boldsymbol{y}_{ki}$ denote the ${n_{ki} \times 1}$ longitudinal response vector of the ${k\mbox{-th}}$ outcome, $k\epsilon\{1, \ldots, K\}$. The observed data of all $n$ patients is given by ${\mathcal{A}_n = \{l_i, r_i, \boldsymbol{y}_{1i},\ldots \boldsymbol{y}_{Ki}; i = 1, \ldots, n\}}$.
+
+To accommodate longitudinal outcomes of different types in a unified framework, the joint model consists of a generalized linear mixed-effects sub-model~\citep{laird1982random}. In particular, the conditional
+distribution of $\boldsymbol{y}_{ki}$ given a vector of patient-specific random effects $\boldsymbol{b}_{ki}$ is assumed to be a member of the exponential family, with linear predictor given by,
+\begin{equation}
+\label{eq:long_model}
+g_k\big[E\{y_{ki} (t) \mid \boldsymbol{b}_{ki}\}\big] = m_{ki}(t) = \boldsymbol{x}_{ki}^{\top}(t)\boldsymbol{\beta}_{k} + \boldsymbol{z}_{ki}^{\top}(t)\boldsymbol{b}_{ki},
+\end{equation}
+where $g_k(\cdot)$ denotes a known one-to-one monotonic link function, $y_{ki}(t)$ denotes the
+value of the ${k\mbox{-th}}$ longitudinal outcome for the ${i\mbox{-th}}$ patient at time $t$, and $\boldsymbol{x}_{ki}(t)$ and $\boldsymbol{z}_{ki}(t)$ denote the time-dependent design vectors for the fixed $\boldsymbol{\beta}_{k}$ and random effects $\boldsymbol{b}_{ki}$, respectively. To account for the association between the different longitudinal outcomes, we link their corresponding random effects. More specifically, the complete vector of random effects ${\boldsymbol{b}_{i} = (\boldsymbol{b}_{1i}^{\top}, \ldots, \boldsymbol{b}_{Ki}^{\top})^{\top}}$ is assumed to follow a multivariate normal distribution with mean zero and variance-covariance matrix $W$.
+
+For the survival process, we assume that the hazard of progression $h_i(t)$ at a time $t$ depends on a function of the patient and outcome-specific linear predictors $m_{ki}(t)$ and/or the random effects. More specifically,
+%\begin{equation}
+%\label{eq:rel_risk_model}
+%\begin{split}
+%    h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i\big\} &= \lim_{\Delta t \to 0} \frac{\mbox{Pr}\big\{t \leq T^*_i < t + \Delta t \mid T^*_i \geq t, \mathcal{M}_i(t), \boldsymbol{w}_i\big\}}{\Delta t}\\
+%&=h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i + \sum_{k=1}^{K} \sum_{l=1}^{L_k} f_{kl} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i, \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{kl} \big\}\Big], \quad t>0,,
+%    \end{split}
+%\end{equation}
+\begin{equation}
+\label{eq:rel_risk_model}
+h_i\big\{t \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\} = h_0(t) \exp\Big[\boldsymbol{\gamma}^{\top}\boldsymbol{w}_i(t) + \sum_{k=1}^{K} f_{k} \big\{ \mathcal{M}_{ki}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{ki}, \boldsymbol{\alpha}_{k} \big\}\Big], \quad t>0,
+\end{equation}
+where $h_0(\cdot)$ denotes the baseline hazard function, $\mathcal{M}_{ki}(t)=\{m_{ki}(s) \mid 0 \leq s < t \}$ denotes the history of the ${k\mbox{-th}}$ longitudinal process up to $t$, and $\boldsymbol{w}_i(t)$ is a vector of exogenous, possibly time-varying, covariates with corresponding regression coefficients $\boldsymbol{\gamma}$. Functions $f_{k}(\cdot)$, parameterized by vector of coefficients $\boldsymbol{\alpha_{k}}$, specify which features of each longitudinal outcome are included in the linear predictor of the relative-risk model~\citep{brown2009assessing,rizopoulos2012joint,taylor2013real}. Some examples, motivated by the literature (subscripts $k$ dropped for brevity), are:
+\begin{eqnarray*}
+\left \{
+\begin{array}{l}
+f\big\{\mathcal{M}_{i}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{i}, \boldsymbol{\alpha} \big\} = \alpha m_{i}(t),\\
+f\big\{ \mathcal{M}_{i}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{i}, \boldsymbol{\alpha}\big\} = \alpha_1 m_{i}(t) + \alpha_2 m'_{i}(t),\quad \text{with}\  m'_{i}(t) = \frac{\mathrm{d}{m_{i}(t)}}{\mathrm{d}{t}}.\\
+\end{array}
+\right.
+\end{eqnarray*}
+These formulations of $f(\cdot)$ postulate that the hazard of progression at time $t$ may be associated with the underlying level $m_i(t)$ of the longitudinal outcome at $t$, or with both the level and velocity $m'_i(t)$ (e.g., PSA value and velocity in prostate cancer) of the outcome at $t$. Lastly, $h_0(t)$ is the baseline hazard at time $t$, and is modeled flexibly using P-splines~\citep{eilers1996flexible}. More specifically:
+\begin{equation*}
+\log{h_0(t)} = \gamma_{h_0,0} + \sum_{q=1}^Q \gamma_{h_0,q} B_q(t, \boldsymbol{v}),
+\end{equation*}
+where $B_q(t, \boldsymbol{v})$ denotes the $q$-th basis function of a B-spline with knots $\boldsymbol{v} = v_1, \ldots, v_Q$ and vector of spline coefficients $\gamma_{h_0}$. To avoid choosing the number and position of knots in the spline, a relatively high number of knots (e.g., 15 to 20) are chosen and the corresponding B-spline regression coefficients $\gamma_{h_0}$ are penalized using a differences penalty \citep{eilers1996flexible}. 
+
+\subsection{Parameter Estimation}
+We estimate the parameters of the joint model using Markov chain Monte Carlo (MCMC) methods under the Bayesian framework. Let $\boldsymbol{\theta}$ denote the vector of all of the parameters of the joint model. The joint model postulates that given the random effects, the time to progression, and all of the longitudinal measurements taken over time are all mutually independent. Under this assumption the posterior distribution of the parameters is given by:
+\begin{align*}
+p(\boldsymbol{\theta}, \boldsymbol{b} \mid \mathcal{D}_n) & \propto \prod_{i=1}^n p(l_i, r_i, \boldsymbol{y}_{1i},\ldots \boldsymbol{y}_{Ki}, \mid \boldsymbol{b}_i, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta})\\
+& \propto \prod_{i=1}^n \prod_{k=1}^K p(l_i, r_i \mid \boldsymbol{b}_i, \boldsymbol{\theta})  p(\boldsymbol{y}_{ki} \mid \boldsymbol{b}_{i}, \boldsymbol{\theta}) p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) p(\boldsymbol{\theta}),\\
+p(\boldsymbol{b}_i \mid \boldsymbol{\theta}) &= \frac{1}{\sqrt{(2 \pi)^{\mid W \mid} \text{det}(\boldsymbol{D})}} \exp(\boldsymbol{b}_i^{\top} \boldsymbol{D}^{-1} \boldsymbol{b}_i),
+\end{align*}
+where, the likelihood contribution of the ${k\mbox{-th}}$ longitudinal outcome vector $\boldsymbol{y}_{ki}$ for the ${i\mbox{-th}}$ patient, conditional on the random effects is:
+\begin{equation*}
+p(\boldsymbol{y}_{ki} \mid \boldsymbol{b}_i, \boldsymbol{\theta}) = \prod_{j=1}^{n_{ki}} \exp\Bigg[\frac{y_{kij} \psi_{kij}(\boldsymbol{b}_{ki}) - c_k\big\{\psi_{kij}(\boldsymbol{b}_{ki})\big\}}{a_k(\varphi)} - d_k(y_{kij}, \varphi)\Bigg],
+\end{equation*}
+where $n_{ki}$ are the total number of longitudinal measurements of type $k$ for patient $i$. The natural and dispersion parameters of the exponential family are denoted by $\psi_{kij}(\boldsymbol{b}_{ki}$ and $\varphi$, respectively. In addition, $c_k(\cdot), a_k(\cdot), d_k(\cdot)$ are known functions specifying the member of the exponential family. The likelihood contribution of the time to progression outcome is given by:
+\begin{equation}
+\label{web_eq:likelihood_contribution_survival}
+p(l_i,r_i\mid \boldsymbol{b}_i,\boldsymbol{\theta}) = \exp\Big[-\int_0^{l_i} h_i\big\{s \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\}\mathrm{d}{s}\Big] - \exp\Big[-\int_0^{r_i}h_i\big\{s \mid \mathcal{M}_i(t), \boldsymbol{w}_i(t)\big\}\mathrm{d}{s}\Big].
+\end{equation}
+The integral in~(\ref{web_eq:likelihood_contribution_survival}) does not have a closed-form solution, and therefore we use a 15-point Gauss-Kronrod quadrature rule to approximate it.
+
+We use independent normal priors with zero mean and variance 100 for the fixed effect parameters of the longitudinal model. For scale parameters we inverse Gamma priors. For the variance-covariance matrix $\boldsymbol{D}$ of the random effects we take inverse Wishart prior with an identity scale matrix and degrees of freedom equal to the total number of random effects. For the relative risk model's parameters $\boldsymbol{\gamma}$ and the association parameters $\boldsymbol{\alpha}$, we use independent normal priors with zero mean and variance 100. However, when $\boldsymbol{\alpha}$ becomes high dimensional (e.g., when several functional forms are considered per longitudinal outcome), we opt for a global-local ridge-type shrinkage prior, i.e., for the s-th element of $\boldsymbol{\alpha}$ we assume:
+\begin{equation}
+\alpha_s \sim \mathcal{N}(0, \tau \psi_s), \quad \tau^{-1} \sim \mbox{Gamma} (0.1,0.1), \quad \psi_s^{-1} \sim \mbox{Gamma}(1, 0.01).
+\end{equation}
+The global smoothing parameter $\tau$ has sufficiently mass near zero to ensure shrinkage, while the local smoothing parameter $\psi_s$ allows individual coefficients to attain large values. Other options of shrinkage or variable-selection priors could be used as well \citep{andrinopoulou2016bayesian}. Finally, the penalized version of the B-spline approximation to the
+baseline hazard is specified using the following hierarchical prior for $\gamma_{h_0}$ \citep{lang2004bayesian}:
+\begin{equation}
+p(\gamma_{h_0} \mid \tau_h) \propto \tau_h^{\rho(\boldsymbol{K})/2} \exp\Big(-\frac{\tau_h}{2}\gamma_{h_0}^{\top}\boldsymbol{K}\gamma_{h_0}\Big)
+\end{equation}
+where $\tau_h$ is the smoothing parameter that takes a $\mbox{Gamma}(1, \tau_{h\delta})$ prior distribution, with a hyper-prior $\tau_{h\delta} \sim \mbox{Gamma}(10^{-3}, 10^{-3})$, which ensures a proper posterior distribution for $\gamma_{h_0}$\citep{jullion2007robust}, $\boldsymbol{K} = \Delta_r^{\top} \Delta_r + 10^{-6} \boldsymbol{I}$, with $\Delta_r$ denoting the ${r\mbox{-th}}$ difference penalty matrix, and $\rho(\boldsymbol{K})$ denotes the rank of $\boldsymbol{K}$.

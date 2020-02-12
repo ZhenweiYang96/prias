@@ -12,9 +12,11 @@ load(paste0("Rdata/lastpaper/simulation/light/jointModelData_seed_", seed, "_t3.
 source("src/lastpaper/prediction_psa_dre_randEff_reuse.R")
 source("src/lastpaper/simulation/scheduleCreator.R")
 
-KAPPA_auto_pt5 = "Risk: Auto (0.5)"
-KAPPA_auto_1 = "Risk: Auto (1)"
+KAPPA_auto_pt75 = "Risk: Auto (0.75)"
 KAPPA_auto_Inf = "Risk: Auto (Inf)"
+
+ALL_auto_pt75 = "All: Auto (0.75)"
+ALL_auto_Inf = "All: Auto (Inf)"
 
 M=500
 MAX_FAIL_TIME = 10
@@ -32,7 +34,7 @@ print(paste("**** Patient ID: ", testId,
             " from simulation with seed: ", seed))
 
 #automatically selected risk threshold
-auto_risk_biopsies = lapply(c(0.5, Inf), function(delay_limit){
+auto_risk_biopsies = lapply(c(0.75, Inf), function(delay_limit){
   automatic_kappa_biopsies = c()
   for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
     patient_df = testDs[1:row_num,]
@@ -58,10 +60,40 @@ auto_risk_biopsies = lapply(c(0.5, Inf), function(delay_limit){
   return(automatic_kappa_biopsies)
 })
 
-scheduleNames = c(KAPPA_auto_pt5, KAPPA_auto_Inf)
-scheduleLengths = sapply(auto_risk_biopsies, length)
+#automatically selected risk threshold
+auto_all_biopsies = lapply(c(0.75, Inf), function(delay_limit){
+  automatic_all_biopsies = c()
+  for(row_num in FIRST_DECISION_VISIT_NR:nrow(testDs)){
+    patient_df = testDs[1:row_num,]
+    cur_visit_time = testDs$year_visit[row_num]
+    
+    if(ifAutomaticFullTreeBasedBiopsy(object = jointModelData$mvJoint_dre_psa_simDs,
+                                      patient_data = patient_df, 
+                                      cur_visit_time = cur_visit_time, 
+                                      last_biopsy_time = max(automatic_all_biopsies, 0),
+                                      min_biopsy_gap = MIN_BIOPSY_GAP, delay_limit = delay_limit,
+                                      M = M, horizon = MAX_FAIL_TIME, use_exact_delay = T)){
+      automatic_all_biopsies = c(automatic_all_biopsies, cur_visit_time)
+    }
+    
+    if(max(automatic_all_biopsies, 0) >= progression_time){
+      break
+    }
+  }
+  if(max(automatic_all_biopsies, 0) < progression_time){
+    automatic_all_biopsies = c(automatic_all_biopsies, MAX_FAIL_TIME)
+  }
+  print(paste0('done automatic risk biopsy with delay: ', delay_limit, " years"))
+  return(automatic_all_biopsies)
+})
 
-biopsy_time = do.call('c', auto_risk_biopsies)
+
+scheduleNames = c(KAPPA_auto_pt75, KAPPA_auto_Inf, ALL_auto_pt75, ALL_auto_Inf)
+scheduleLengths = c(sapply(auto_risk_biopsies, length), sapply(auto_all_biopsies, length))
+
+biopsy_time = c(do.call('c', auto_risk_biopsies), 
+                do.call('c', auto_all_biopsies))
+
 #Now we combine all of these into a data frame for this patient
 biopsyDf = data.frame(seed = seed, P_ID = testId, 
                       progression_time = progression_time,

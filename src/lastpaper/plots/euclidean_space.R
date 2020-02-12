@@ -12,7 +12,7 @@ DANGER_COLOR = 'red'
 WARNING_COLOR = 'darkorange'
 THEME_COLOR = 'dodgerblue4'
 MAX_FOLLOW_UP = 10
-POINT_SIZE = 2
+POINT_SIZE = 4
 FONT_SIZE = 12
 LABEL_SIZE = 2.5
 
@@ -64,7 +64,7 @@ kappa_choice = ggplot() +
              nudge_x = 0, nudge_y = -0.5, fill=SUCCESS_COLOR, color='white', size=LABEL_SIZE)+
   geom_label(aes(x=expected_total_tests[c(1, total_schedules)], 
                  y=expected_delays[c(1, total_schedules)], 
-                 label=paste0("Personalized\nSchedule\n\u03BA* = ", 
+                 label=paste0("Personalized\nSchedule\n\u03BA = ", 
                               round(risk_thresholds[c(1, total_schedules)]*100,1), "%")), 
              nudge_x = c(0.4, 0.4), nudge_y=c(0.2, 0), fill='black', color='white', size=LABEL_SIZE)+
   geom_point(aes(x=1, y=0), shape=15, size=POINT_SIZE + 1, 

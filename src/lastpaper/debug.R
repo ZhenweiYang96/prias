@@ -2,7 +2,7 @@ library(ggplot2)
 library(ggpubr)
 
 #First we check which patients are not complete in "auto"
-seeds = c(2001:2200)
+seeds = c(2001:2100)
 
 missing_pids = lapply(seeds, FUN = function(seed){
   load(paste0("Rdata/lastpaper/simulation/combined_results_auto/seed_", seed, ".Rdata"))
@@ -26,7 +26,7 @@ biopsyDf_summary = droplevels(biopsyDf_summary)
 levels(biopsyDf_summary$schedule)
 
 biopsyDf_summary2 = do.call('rbind', lapply(seeds, FUN = function(seed){
-  load(paste0("Rdata/lastpaper/simulation/combined_results_scaled_risk/seed_", seed, ".Rdata"))
+  load(paste0("Rdata/lastpaper/simulation/combined_results_auto/seed_", seed, ".Rdata"))
   
   return(biopsyDf_summary)
 }))
@@ -38,7 +38,7 @@ biopsyDf_summary = droplevels(biopsyDf_summary[biopsyDf_summary$schedule %in%
                                                  c("Annual", "PRIAS", "Risk: 10%", "Risk: Auto (Inf)", "Risk: Auto (0.75)"),])
 levels(biopsyDf_summary$schedule)
 
-levels(biopsyDf_summary$schedule)[3] = "\u03BA*=10%"
+levels(biopsyDf_summary$schedule)[3] = "\u03BA=10%"
 levels(biopsyDf_summary$schedule)[4] = "\u03BA*{v | E(D) \u2264 0.75}"
 levels(biopsyDf_summary$schedule)[5] = "\u03BA*(v)"
 

@@ -27,6 +27,9 @@ patient_df$palpable_dre[1] = 1
 patient_df$year_visit[nrow(patient_df)] = 5
 current_visit_time = max(patient_df$year_visit)
 
+patient_df$log2psaplus1 = patient_df$log2psaplus1 + runif(n=nrow(patient_df), min = -0.05, max = 0.05)
+patient_df$age = 60
+
 last_biopsy_time = 3.5
 
 surv_prob_times = seq(last_biopsy_time, MAX_FOLLOW_UP, length.out = 100)
@@ -167,7 +170,7 @@ schedule_df = rbind(schedule_df, data.frame(name="\u03BA*(v)",
                                             times=risk_automatic_schedule$planned_test_schedule,
                                             expected_num_tests=risk_automatic_schedule$expected_num_tests,
                                             expected_detection_delay=risk_automatic_schedule$expected_detection_delay))
-schedule_df = rbind(schedule_df, data.frame(name="\u03BA*=10%", 
+schedule_df = rbind(schedule_df, data.frame(name="\u03BA=10%", 
                                             number=4,
                                             times=risk_10_perc_schedule$planned_test_schedule,
                                             expected_num_tests=risk_10_perc_schedule$expected_num_tests,

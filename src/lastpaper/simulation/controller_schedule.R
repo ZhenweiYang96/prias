@@ -20,16 +20,6 @@ KAPPApt05 = "Risk: 5%"
 KAPPApt1 = "Risk: 10%"
 KAPPApt15 = "Risk: 15%"
 
-KAPPA_auto_pt5 = "Risk: Auto (0.5)"
-KAPPA_auto_1 = "Risk: Auto (1)"
-KAPPA_auto_1pt5 = "Risk: Auto (1.5)"
-KAPPA_auto_Inf = "Risk: Auto (Inf)"
-
-FULL_TREE_pt5 = "Tree: 0.5"
-FULL_TREE_1 = "Tree: 1"
-FULL_TREE_1pt5 = "Tree: 1.5"
-FULL_TREE_Inf = "Tree: Inf"
-
 M=500
 MAX_FAIL_TIME = 10
 FIRST_DECISION_VISIT_NR = 5

@@ -1,7 +1,17 @@
 #Only works for one patient at a time
+#object is the joint model object 
+#new data is patient data
+#last_test_time is time of last negative test on which progression was not detected
+#fixed_grid_visits is the fixed_schedule according to which patient will visit for measurement of biomarkers
+#gap is minimum time gap between tests
+#detection_delay_limit is the maximum avg delay acceptable for a patient
+#total_tests_limit is the maximum avg number of tests acceptable for a patient
+#cache_size controls the accuracy of the results. higher cache size may give more accurate results, but will also take more time
+#risk_based_schedules_only when this is true, we only find the optimal schedule among all possible risk based schedules,
+#but when it is false we try all possible schedules that can be made given the fixed grid of visits
 personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_test_time = NULL,
                                             fixed_grid_visits, gap = 0, detection_delay_limit=Inf, total_tests_limit=Inf,
-                                            seed = 1L, M = 400L, cache_size=1000, ...) {
+                                            seed = 1L, M = 400L, cache_size=1000, risk_based_schedules_only=T, ...) {
   
   if(length(unique(newdata[[idVar]])) > 1){
     stop("Personalized schedule can be created for only one patient at a time.\n")
@@ -51,7 +61,47 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
       }
     }
     
+    if(length(proposed_test_times)==0){
+      proposed_test_times = horizon
+    }
+    
     return(proposed_test_times)
+  }
+  
+  #Function to create all possible test schedules
+  allTestSchedules = function(cur_visit_time, min_test_gap, horizon){
+    times = list()
+    count = 0
+    
+    fixed_grid_visits = c(-1, fixed_grid_visits)
+    
+    recursive = function(last_test_time, current_visit_time, cur_path){
+      if(current_visit_time < cur_visit_time){
+        count <<- count + 1
+        times[[count]] <<- as.numeric(strsplit(cur_path, split = "-")[[1]])
+      }else{
+        if(last_test_time - current_visit_time>=min_test_gap){
+          #case 1 do a test
+          recursive(current_visit_time,
+                    tail(fixed_grid_visits[fixed_grid_visits<current_visit_time],1),
+                    paste0(current_visit_time,"-",cur_path))
+        }
+        
+        #case 2 don't do a test
+        recursive(last_test_time,
+                  tail(fixed_grid_visits[fixed_grid_visits<current_visit_time],1),
+                  cur_path)
+        
+      }
+    }
+    recursive(horizon, tail(fixed_grid_visits[fixed_grid_visits<horizon],1), 
+              as.character(horizon))
+    
+    #I will sort them by first test
+    first_test_time = sapply(times, min)
+    total_biopsies = sapply(times, length)
+    times = times[order(first_test_time, total_biopsies, decreasing = F)]
+    return(times)
   }
   
   wk = JMbayes:::gaussKronrod()$wk
@@ -120,21 +170,25 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
                 planned_test_schedule = planned_test_schedule))
   }
   
-  #Now we create many fixed risk based schedules
-  risk_thresholds <- seq(0, 1, by=0.0025)
-  all_schedules <- vector("list", length=length(risk_thresholds))
-  names(all_schedules) <- c(paste("Risk:", risk_thresholds))
+  #Now we create schedules
+  if(risk_based_schedules_only==T){
+    risk_thresholds = seq(0, 1, by=0.005)
+    schedule_plans = lapply(1-seq(0, 1, by=0.005), fixedSchedule)
+    all_schedules <- vector("list", length=length(schedule_plans))
+    names(all_schedules) <- c(paste("Risk:", seq(0, 1, by=0.005)))
+  }else{
+    schedule_plans = allTestSchedules(cur_visit_time, gap, horizon)
+    all_schedules <- vector("list", length=length(schedule_plans))
+  }
   
-  for(i in 1:length(risk_thresholds)){
-    cumulative_risk_threshold <- risk_thresholds[i]
-    risk_schedule <- fixedSchedule(1-cumulative_risk_threshold)
-    if(is.null(risk_schedule)){
-      risk_schedule <- horizon
-    }
-    
-    all_schedules[[i]] = getConsequences(risk_schedule)
-    all_schedules[[i]]$cumulative_risk_threshold = cumulative_risk_threshold
+  
+  for(i in 1:length(all_schedules)){
+    all_schedules[[i]] = getConsequences(schedule_plans[[i]])
     all_schedules[[i]]$euclidean_distance = sqrt(all_schedules[[i]]$expected_detection_delay^2 + (all_schedules[[i]]$expected_num_tests-1)^2)
+    
+    if(risk_based_schedules_only==T){
+      all_schedules[[i]]$cumulative_risk_threshold = risk_thresholds[i]
+    }
   }
   
   expected_delays = sapply(all_schedules, "[[", "expected_detection_delay")
