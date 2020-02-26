@@ -2,6 +2,8 @@
 \section{Joint Model for the PRIAS Dataset}
 \label{sec:param_estimates_jm_fit_prias}
 \subsection{Dataset}
+The content of this section concerns data and model definition derived from our already published work \citet{tomer2019personalized} and \citet{tomer2020webapp}. However, for sake of completeness, and for reproducibility of results we present the model definition and parameter estimates below.
+
 We first provide an introduction to the world's largest active surveillance (AS) program called Prostate Cancer Research International Active Surveillance, abbreviated as PRIAS \citep{bokhorst2016decade}, that we use to illustrate our methodology. We then outline the joint model that we fit to the PRIAS dataset. We then present the parameter estimates of our model.
 
 \subsection{PRIAS Dataset}
@@ -10,7 +12,7 @@ We use the data of prostate cancer patients (see~\ref{table:prias_summary}) from
 \begin{table}
 \small
 \centering
-\caption{\textbf{Summary of the PRIAS dataset}. The primary event of interest is cancer progression (increase in biopsy Gleason grade group from grade group~1~to~2 or higher). Abbreviations: PSA is prostate-specific antigen; DRE is digital rectal examination, with level T1c~\citep{schroder1992tnm} indicating a clinically inapparent tumor which is not palpable or visible by imaging, whereas tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable; IQR is interquartile range.}
+\caption{\textbf{Summary of the PRIAS dataset~\citep{tomer2020webapp}}. The primary event of interest is cancer progression (increase in biopsy Gleason grade group from grade group~1~to~2 or higher). Abbreviations: PSA is prostate-specific antigen; DRE is digital rectal examination, with level T1c~\citep{schroder1992tnm} indicating a clinically inapparent tumor which is not palpable or visible by imaging, whereas tumors with $\mbox{DRE} > \mbox{T1c}$ are palpable; IQR is interquartile range.}
 \label{table:prias_summary}
 \begin{tabular}{lr}
 \hline
@@ -45,7 +47,7 @@ Median number of biopsies per patient  &  2 (IQR: 1--2)\\
 \begin{figure}[!htb]
 \captionsetup{justification=justified}
 \centerline{\includegraphics[width=\columnwidth]{images/npmle_plot.eps}}
-\caption{\textbf{Estimated cumulative-risk of cancer progression} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit{slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep{turnbull1976empirical}, to account for interval censored progression times observed in the PRIAS dataset. Censoring includes death, removal from AS on the basis of observed longitudinal data, and patient dropout.}
+\caption{\textbf{Estimated cumulative-risk of cancer progression~\citep{tomer2020webapp}} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit{slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep{turnbull1976empirical}, to account for interval censored progression times observed in the PRIAS dataset. Censoring includes death, removal from AS on the basis of observed longitudinal data, and patient dropout.}
 \label{fig:npmle_plot}
 \end{figure}
 
@@ -59,7 +61,7 @@ Let $T_i^*$ denote the true progression time of the ${i\mbox{-th}}$ patient incl
 %\label{fig:jmExplanationPlot_1757}
 %\end{figure}
 
-In our joint model, the patient-specific DRE and PSA measurements over time are modeled using a bivariate generalized linear mixed effects sub-model. The sub-model for DRE is given by (see Panel~A, Figure~\ref{fig:jmExplanationPlot_1757}):
+In our joint model, the patient-specific DRE and PSA measurements over time are modeled using a bivariate generalized linear mixed effects sub-model. The sub-model for DRE is given by:
 \begin{equation}
 \label{eq:long_model_dre}
 \begin{split}
@@ -69,7 +71,7 @@ In our joint model, the patient-specific DRE and PSA measurements over time are 
 \end{equation}
 where, $t$ denotes the follow-up visit time, and $\mbox{Age}_i$ is the age of the ${i\mbox{-th}}$ patient at the time of inclusion in AS. The fixed effect parameters are denoted by ${\{\beta_{0d}, \ldots, \beta_{3d}\}}$, and ${\{b_{0di}, b_{1di}\}}$ are the patient specific random effects. With this definition, we assume that the patient-specific log odds of obtaining a DRE measurement larger than T1c (palpable tumor) remain linear over time. 
 
-The mixed effects sub-model for PSA is given by (see Panel~B, Figure~\ref{fig:jmExplanationPlot_1757}):
+The mixed effects sub-model for PSA is given by:
 \begin{equation}
 \label{eq:long_model_psa}
 \begin{split}
@@ -82,7 +84,7 @@ where, $m_{pi}(t)$ denotes the underlying measurement error free value of $\log_
 
 To account for the correlation between the DRE and PSA measurements of a patient, we link their corresponding random effects. More specifically, the complete vector of random effects ${\boldsymbol{b}_i = (b_{0di}, b_{1di}, b_{0pi}, \ldots, b_{3pi})^\top}$ is assumed to follow a multivariate normal distribution with mean zero and variance-covariance matrix $\boldsymbol{D}$.
 
-To model the impact of DRE and PSA measurements on the risk of progression, our joint model uses a relative risk sub-model. More specifically, the hazard of progression $h_i(t)$ at a time $t$ is given by (see Panel~D, Figure~\ref{fig:jmExplanationPlot_1757}):
+To model the impact of DRE and PSA measurements on the risk of progression, our joint model uses a relative risk sub-model. More specifically, the hazard of progression $h_i(t)$ at a time $t$ is given by:
 \begin{equation}
 \label{eq:rel_risk_model}
 \begin{split}
@@ -90,13 +92,14 @@ To model the impact of DRE and PSA measurements on the risk of progression, our 
     &+\alpha_{1d} \mbox{logit} \big[\mbox{Pr}\{y_{di}(t) > \mbox{T1c}\}\big]+ \alpha_{1p} m_{pi}(t) + \alpha_{2p} \frac{\partial m_{pi}(t)}{\partial {t}}\Big),
     \end{split}
 \end{equation}
-where, $\gamma_1, \gamma_2$ are the parameters for the effect of age. The parameter $\alpha_{1d}$ models the impact of log odds of obtaining a $\mbox{DRE} > \mbox{T1c}$ on the hazard of progression. The impact of PSA on the hazard of progression is modeled in two ways: a) the impact of the error free underlying PSA value $m_{pi}(t)$ (see Panel~B, Figure~\ref{fig:jmExplanationPlot_1757}), and b) the impact of the underlying PSA velocity $\partial m_{pi}(t)/\partial {t}$ (see Panel~C, Figure~\ref{fig:jmExplanationPlot_1757}). The corresponding parameters are $\alpha_{1p}$ and $\alpha_{2p}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}.
+where, $\gamma_1, \gamma_2$ are the parameters for the effect of age. The parameter $\alpha_{1d}$ models the impact of log odds of obtaining a $\mbox{DRE} > \mbox{T1c}$ on the hazard of progression. The impact of PSA on the hazard of progression is modeled in two ways: a) the impact of the error free underlying PSA value $m_{pi}(t)$, and b) the impact of the underlying PSA velocity $\partial m_{pi}(t)/\partial {t}$. The corresponding parameters are $\alpha_{1p}$ and $\alpha_{2p}$, respectively. Lastly, $h_0(t)$ is the baseline hazard at time t, and is modeled flexibly using P-splines \citep{eilers1996flexible}.
 
 \subsection{Parameter Estimates}
 We fit a joint model to the PRIAS dataset using the R package \textbf{JMbayes} \citep{rizopoulosJMbayes}. The corresponding posterior parameter estimates are shown in \ref{tab:DRE_long} (longitudinal sub-model for DRE outcome), \ref{tab:PSA_long} (longitudinal sub-model for PSA outcome) and \ref{tab:DRE_PSA_survival} (relative risk sub-model). The parameter estimates for the variance-covariance matrix $\boldsymbol{D}$ from the longitudinal sub-model are shown in the following \ref{tab:D_matrix}:
+
 \begin{table}[!htb]
 \begin{center}
-\caption{Estimated variance-covariance matrix $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0d},b_{1d},b_{0p}, b_{1p}, b_{2p}, b_{3p})}$ from the joint model fitted to the PRIAS dataset. The variances of the random effects are highlighted along the diagonal of the variance-covariance matrix.}
+\caption{Estimated variance-covariance matrix $\boldsymbol{D}$ of the random effects ${\boldsymbol{b}=(b_{0d},b_{1d},b_{0p}, b_{1p}, b_{2p}, b_{3p})}$ from the joint model fitted to the PRIAS dataset.}
 \label{tab:D_matrix}
 \begin{tabular}{lrrrrrr}
 \hline
@@ -110,6 +113,41 @@ $b_{0p}$ & -0.213 & 0.091 & 0.247 & 0.007 & 0.067 & 0.018 \\
 $b_{1p}$ & 0.082 & 0.079 & 0.007 & 0.248 & 0.264 & 0.189 \\
 $b_{2p}$ & 0.058 & 0.145 & 0.067 & 0.264 & 0.511 & 0.327 \\
 $b_{3p}$ & 0.023 & 0.109 & 0.018 & 0.189 & 0.327 & 0.380 \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+As described in ~\ref{sec:jointmodel} the baseline hazard of our model utilized a cubic P-spline. The knots of this P-spline were placed at the following time points:
+0.000, 0.000, 0.000, 0.000, 0.401, 0.801, 1.202, 1.603, 2.003, 2.404, 2.805, 3.205, 3.606, 4.007, 4.407, 4.808, 5.209, 12.542, 12.542, 12.542, 12.542
+The parameters of the fitted spline function are given in~\ref{tab:baseline_hazard}.
+
+\begin{table}[!htb]
+\begin{center}
+\caption{Estimated parameters of the P-spline function utilized to model the baseline hazard $h_0(t)$ in joint model fitted to the PRIAS dataset. Parameters are named with the prefix `ps' indicating P-spline parameter.}
+\label{tab:baseline_hazard}
+\begin{tabular}{lrrrrrr}
+\hline
+\hline
+Variable                         & Mean & Std. Dev & 2.5\%  & 97.5\%   \\
+\hline
+ps1  & -1.091 & 0.535 & -2.286 & -0.235 \\
+ps2  & -2.113 & 0.271 & -2.638 & -1.591 \\
+ps3  & -2.486 & 0.308 & -3.095 & -1.883 \\
+ps4  & -2.083 & 0.311 & -2.740 & -1.483 \\
+ps5  & -1.918 & 0.279 & -2.460 & -1.388 \\
+ps6  & -2.620 & 0.265 & -3.138 & -2.140 \\
+ps7  & -3.169 & 0.303 & -3.796 & -2.580 \\
+ps8  & -3.416 & 0.340 & -4.075 & -2.823 \\
+ps9  & -3.432 & 0.345 & -4.103 & -2.796 \\
+ps10 & -3.223 & 0.352 & -3.997 & -2.573 \\
+ps11 & -2.840 & 0.349 & -3.577 & -2.214 \\
+ps12 & -2.481 & 0.350 & -3.148 & -1.762 \\
+ps13 & -2.540 & 0.352 & -3.206 & -1.840 \\
+ps14 & -2.841 & 0.321 & -3.447 & -2.212 \\
+ps15 & -3.046 & 0.381 & -3.853 & -2.328 \\
+ps16 & -3.113 & 0.701 & -4.533 & -1.796 \\
+ps17 & -3.195 & 1.232 & -5.894 & -0.978 \\
 \hline
 \end{tabular}
 \end{center}
@@ -132,7 +170,6 @@ visitTimeYears                   & -1.089 & 0.113 & -1.292 & -0.866 \\
 \end{tabular}
 \end{center}
 \end{table}
-
 
 \begin{table}[!htb]
 \begin{center}

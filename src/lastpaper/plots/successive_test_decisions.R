@@ -110,7 +110,7 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
   riskBreaksOriginal = c(0, threshold, 0.5,1)
   riskAxisBreaks = transformRiskToPSA(riskBreaksOriginal)
   riskAxisLabels = paste0(riskBreaksOriginal*100, "%")
-  riskAxisLabels[2] = paste0("Threshold\n\u03BA* = ",riskAxisLabels[2])
+  riskAxisLabels[2] = paste0("Threshold\n\u03BA = ",riskAxisLabels[2])
   
   p = ggplot() +  
     geom_vline(xintercept = latest_survival_time, color=SUCCESS_COLOR)+
@@ -173,7 +173,12 @@ cond_risk_plot_data = conditionalDynamicRiskPlot(mvJoint_psa_time_scaled,
                                             latest_survival_time = 1.5,
                                             threshold = 0.12,
                                             xbreaks = c(0,1.5,2.5,3.5,4.5,5.5,6.5),
-                                            xlabs = c(0,1.5,2.5,3.5,4.5,5.5,6.5),
+                                            xlabs = c("0","t=1.5",
+                                                      expression("v=u"[1]*"=2.5"),
+                                                      expression("u"[2]*"=3.5"),
+                                                      expression("u"[3]*"=4.5"),
+                                                      expression("u"[4]*"=5.5"),
+                                                      expression("u"[5]*"=6.5")),
                                             psa_breaks = psa_breaks,
                                             max_follow_up = 6.5, 
                                             test_decision_times = test_decision_times)
