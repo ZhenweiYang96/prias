@@ -46,10 +46,10 @@ b = ggplot(sim_res[sim_res$progressed==1,], aes(x=schedule, y=delay)) +
   geom_boxplot(outlier.shape = NA)+
   stat_summary(fun.y=mean, geom="point", size=POINT_SIZE, color=WARNING_COLOR) +
   theme_bw() + 
-  scale_y_continuous(breaks = 0:4, limits = c(0,4)) +
+  scale_y_continuous(breaks = 0:3, limits = c(0,3)) +
   theme(axis.text.y = element_blank(), axis.title.y = element_blank(),
         text=element_text(size=FONT_SIZE)) +
-  xlab("Schedule") + ylab("Time delay in detection\nof progression (years)")+
+  xlab("Schedule") + ylab("Time delay in detecting\nprogression (years)")+
   coord_flip()
 
 c = ggplot(sim_res[sim_res$progressed==0,], aes(x=schedule, y=nb)) +
@@ -65,19 +65,16 @@ c = ggplot(sim_res[sim_res$progressed==0,], aes(x=schedule, y=nb)) +
   coord_flip() +
   ggtitle("Non-progressing patients (50%)")
 
-d = ggplot() +
-  geom_boxplot(data=sim_res[sim_res$progressed==0,],
-               aes(x=schedule, y=-1), outlier.shape = NA)+
-  geom_text(aes(x="Risk: 10%", y=2), label="Time delay not available for\nnon-progressing patients")+
+d = ggplot() + geom_text(aes(x=1, y=1.5), label="Time delay not available for\nnon-progressing patients")+
   theme_bw() + 
-  scale_y_continuous(breaks = 0:4, limits = c(0,4)) +
+  scale_y_continuous(breaks = 0:3, limits = c(0,3)) +
   theme(axis.text.y = element_blank(), axis.title.y = element_blank(),
-        text=element_text(size=FONT_SIZE)) +
-  xlab("Schedule") + ylab("Time delay in detection\nof progression (years)")+ 
+        text=element_text(size=FONT_SIZE), axis.ticks.y=element_blank()) +
+  xlab("Schedule") + ylab("Time delay in detecting\nprogression (years)")+ 
   coord_flip()
 
-upper_plot = ggarrange(a,b, nrow=1, ncol=2, align = "h", widths = c(1.225,1))
-lower_plot = ggarrange(c,d, nrow=1, ncol=2, align = "h", widths = c(1.225,1))
+upper_plot = ggarrange(a,b, nrow=1, ncol=2, align = "h", widths = c(1.5,1))
+lower_plot = ggarrange(c,d, nrow=1, ncol=2, align = "h", widths = c(1.5,1))
 
 final_plot = ggpubr::ggarrange(upper_plot, lower_plot, 
                   nrow=2, ncol=1, align = "v", labels = "AUTO")

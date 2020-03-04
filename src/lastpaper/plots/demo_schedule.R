@@ -178,6 +178,8 @@ schedule_df = rbind(schedule_df, data.frame(name="\u03BA=10%",
 
 rm(mvJoint_dre_psa_2knots_quad_age)
 
+xbreaks = c(0:2,3.5,5:MAX_FOLLOW_UP)
+xlabs = c("0","1","2","t=3.5","v=5","6","7","8","9","10")
 planned_schedule_plot = baseggplot +
   geom_vline(xintercept = last_biopsy_time, color=SUCCESS_COLOR) + 
   geom_vline(xintercept = current_visit_time, color='black', linetype='dashed') + 
@@ -186,8 +188,8 @@ planned_schedule_plot = baseggplot +
              aes(x=times, y=number, label="B", group=name), 
              color=SUCCESS_COLOR, fill='white')+
   xlab("Follow-up time (years)") + 
-  ylab('Planned future tests') +
-  scale_x_continuous(breaks=0:MAX_FOLLOW_UP,
+  ylab('Future biopsy schedule') +
+  scale_x_continuous(breaks= xbreaks, labels=xlabs,
                      limits = c(min_x, MAX_FOLLOW_UP)) +
   scale_y_continuous(limits = c(1 - 0.25, 4 + 0.25),
                      breaks = 1:4,

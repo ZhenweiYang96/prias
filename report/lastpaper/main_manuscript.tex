@@ -54,14 +54,10 @@
 %  STRONGLY DISCOURAGED -- create landscape tables only as a last resort if
 %  you see no other way to display the information.  If you do do this,
 %  then you need the following command.
-
-%\usepackage[figuresright]{rotating}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{graphicx}
 \usepackage[tbtags]{amsmath}
-\usepackage{soul}
-\usepackage[dvipsnames]{xcolor}
 
-\setstcolor{red}
 \DeclareMathOperator{\argmax}{arg\,max}
 \DeclareMathOperator{\argmin}{arg\,min}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -107,7 +103,7 @@
 \author{Anirudh Tomer$^{1,*}$\email{a.tomer@erasmusmc.nl}, 
 Daan Nieboer$^{2,3}$, 
 Monique J. Roobol$^3$, \\
-\textbf{Ewout W. Steyerberg}$^{\bmath{2, 4}}$, 
+\textbf{Ewout W. Steyerberg}$^{\bmath{4, 2}}$, 
 \textbf{and Dimitris Rizopoulos}$^{\bmath{1}}$ \\ \\
 $^{1}$Department of Biostatistics, Erasmus University Medical Center, the Netherlands \\
 $^{2}$Department of Public Health, Erasmus University Medical Center, the Netherlands \\
@@ -240,6 +236,9 @@ Chronic NCDs; Invasive diagnostic tests; Joint models; Personalized schedules; P
 %  grants, people who helped with the paper, etc.  But keep it short!
 
 \input{mainmatter/acknowledment}
+
+\section*{Data Availability}
+This work utilized results from a statistical model we previously fitted to the PRIAS dataset~\citep{tomer2019personalized}. The PRIAS database is not openly accessible. However, access to the database can be requested on the basis of a study proposal approved by the PRIAS steering committee. The website of the PRIAS program is \textcolor{blue}{www.prias-project.org}. For sake of completeness and reproducibility of results, we have presented the PRIAS based model's definition and parameter estimates in Web-Appendix~B. The data of the demonstration patient in Figure~\ref{fig:demo_schedule} is provided in Web-Appendix~B.
 
 \section*{Supporting Information}
 Web Appendices referenced in this paper are available in the file titled `supplementary.pdf'.

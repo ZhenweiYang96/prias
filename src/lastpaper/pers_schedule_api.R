@@ -238,6 +238,11 @@ personalizedSchedule.mvJMbayes <- function (object, newdata, idVar = "id", last_
 }
 
 #Only works for one patient at a time
+#object is the joint model object 
+#new data is patient data
+#last_test_time is time of last negative test on which progression was not detected
+#planned_test_schedule is the schedule that has to be evaluated
+#cache_size controls the accuracy of the results. higher cache size may give more accurate results, but will also take more time
 testScheduleConsequences.mvJMbayes <- function (object, newdata, idVar = "id", last_test_time = NULL,
                                                 planned_test_schedule, seed = 1L, M = 400L, cache_size=1000,...) {
   

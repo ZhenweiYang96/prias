@@ -44,7 +44,7 @@ delay_threshold = 1.5
 
 kappa_choice = ggplot() + 
   geom_hline(yintercept = delay_threshold, linetype='dashed', color=WARNING_COLOR) +
-  geom_label(aes(x=3, y=delay_threshold, label="Clinically acceptable limit for maximum time delay"), color=WARNING_COLOR, size=LABEL_SIZE) +
+  geom_label(aes(x=3.5, y=delay_threshold, label="Clinically acceptable limit for maximum time delay (example)"), color=WARNING_COLOR, size=LABEL_SIZE) +
   geom_segment(aes(x=1,xend=expected_total_tests[-min_dist_schedule_index], 
                    y=0,yend=expected_delays[-min_dist_schedule_index]), 
                alpha=0.175, color='gray') +
@@ -80,7 +80,7 @@ kappa_choice = ggplot() +
   scale_y_continuous(breaks=seq(0, ceiling_expected_delay, 1), 
                      limits = c(-0.5,ceiling_expected_delay)) +
   xlab("Expected number of tests") +
-  ylab("Expected time delay in detecting progression")
+  ylab("Expected time delay in detecting progression (e.g., months,years)")
 
 print(kappa_choice)
 ggsave(kappa_choice, filename = "report/lastpaper/images/kappa_choice_102.eps",
