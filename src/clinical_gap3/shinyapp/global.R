@@ -5,6 +5,7 @@ load("demo_pat_list.Rdata")
 source("prediction_only_psa.R")
 source("scheduleCreator.R")
 
+MIN_BIOPSY_GAP <<- 1
 YEAR_DIVIDER <<- 24 * 60 * 60 * 365
 SPSS_ORIGIN_DATE <<- "1582-10-14"
 DATE_PRINT_FORMAT <<- "%b %e, %Y"
@@ -14,7 +15,7 @@ POINT_SIZE<<-4
 M<<-750
 SCHEDULES <<- c("5% Risk", "10% Risk", "15% Risk", "Automatic Risk",
                 "Yearly", "Every 2 Years", "PRIAS")
-DELAY_GAUGE_MAX <<- 24
+DELAY_GAUGE_MAX <<- 36
 STEP_CUMRISK_SLIDER <<- 0.5
 
 DANGER_COLOR <<- "red"
@@ -316,7 +317,7 @@ biopsyDelayGaugeGraph = function(delay, schedule, max_delay=DELAY_GAUGE_MAX){
     geom_text(aes(x = 2.25, y = 0.25, label = round(max_delay * 0.25,1)), size=4, color=gauge_ticks_colors[2]) +
     geom_text(aes(x = 2.25, y = 0.5, label = round(max_delay * 0.5,1)), size=4, color=gauge_ticks_colors[3]) +
     geom_text(aes(x = 2.25, y = 0.75, label = round(max_delay * 0.75,1)), size=4, color=gauge_ticks_colors[4]) +
-    geom_text(aes(x = 2.25, y = 1, label = max_delay), size=4, color=gauge_ticks_colors[5]) +
+    geom_text(aes(x = 2.25, y = 1, label = round(max_delay)), size=4, color=gauge_ticks_colors[5]) +
     geom_text(aes(x = 0, y = 0, label = risk_label), 
               color=gauge_color, size=6) +
     coord_polar(theta = "y",start=-pi/2) + xlim(c(0, 2.5)) + ylim(c(0,2)) +

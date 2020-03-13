@@ -25,11 +25,12 @@ shinyServer(function(input, output, session) {
   recalculateBiopsySchedules = function(){
     cur_visit_time = patient_cache$current_visit_time
     latest_survival_time = patient_cache$latest_survival_time
-    min_biopsy_gap = input$month_gap_biopsy/12
     
     if(latest_survival_time < MAX_FOLLOW_UP){
       set.seed(2019)
-      schedule_all = getAllRiskSchedule(latest_survival_time, min_biopsy_gap)
+      schedule_all = getAllRiskSchedule(latest_survival_time, MIN_BIOPSY_GAP)
+      
+      patient_cache$schedule_all <<- schedule_all
       
       schedule_15perc = schedule_all[["0.85"]]
       schedule_10perc = schedule_all[["0.9"]]
@@ -39,15 +40,19 @@ shinyServer(function(input, output, session) {
       #best schedule
       exp_tests = sapply(schedule_all, "[[", "expected_num_tests")
       exp_delay = sapply(schedule_all, "[[", "expected_detection_delay")
-      schedule_automatic = schedule_all[[which.min(sqrt((exp_tests-1)^2 + exp_delay^2))[1]]]
+      optimal_index = which.min(sqrt((exp_tests-1)^2 + exp_delay^2))[1]
+      schedule_automatic = schedule_all[[optimal_index]]
+      
+      patient_cache$optimal_risk_threshold <<- (1 - as.numeric(names(schedule_all)[optimal_index])) * 100
+      
       
       schedule_biennial = getFixedSchedule(latest_survival_time = latest_survival_time,
-                                           min_biopsy_gap = min_biopsy_gap, biopsy_frequency = 2)
-      schedule_biennial = getConsequences(schedule_biennial, gap=min_biopsy_gap, last_test_time = latest_survival_time)
+                                           min_biopsy_gap = MIN_BIOPSY_GAP, biopsy_frequency = 2)
+      schedule_biennial = getConsequences(schedule_biennial, gap=MIN_BIOPSY_GAP, last_test_time = latest_survival_time)
       
       schedule_prias = getPRIASSchedule(latest_survival_time = latest_survival_time,
-                                        min_biopsy_gap = min_biopsy_gap)
-      schedule_prias = getConsequences(schedule_prias, gap=min_biopsy_gap, last_test_time = latest_survival_time)
+                                        min_biopsy_gap = MIN_BIOPSY_GAP)
+      schedule_prias = getConsequences(schedule_prias, gap=MIN_BIOPSY_GAP, last_test_time = latest_survival_time)
       
       schedules_conseq_list = list(schedule_5perc, schedule_10perc, schedule_15perc,
                                    schedule_automatic, schedule_annual, schedule_biennial, schedule_prias)
@@ -77,12 +82,16 @@ shinyServer(function(input, output, session) {
                                                              total_biopsies = 0, check.names = F)
       
     }
-        
+    
     biopsyCounter(biopsyCounter() + 1)
   }
   
   setPatientDataInCache = function(patient_data){
-    showModal(pleaseWaitModal)
+    if(first_time){
+      showModal(pleaseWaitDemoPatientModal)
+    }else{
+      showModal(pleaseWaitModal)
+    }
     
     start_date = as.Date(patient_data$start_date, tryFormats = c("%d-%m-%Y"))
     visit_date = as.Date(patient_data$visit_date, tryFormats = c("%d-%m-%Y"))
@@ -144,6 +153,9 @@ shinyServer(function(input, output, session) {
     
     recalculateBiopsySchedules()
     
+    updateSliderInput(session, "risk_threshold", value=patient_cache$optimal_risk_threshold,
+                      min=0, max=100, step = 1)
+    
     patientCounter(patientCounter() + 1)
     removeModal()
   }
@@ -154,6 +166,10 @@ shinyServer(function(input, output, session) {
   
   #modal to show processing
   pleaseWaitModal = modalDialog(title = "Please wait", "Analyzing patient data.", 
+                                footer = NULL,size = "s", fade = F)
+  
+  pleaseWaitDemoPatientModal = modalDialog(title = "Please wait", 
+                                           "Analyzing data of a demonstration patient.", 
                                 footer = NULL,size = "s", fade = F)
   
   #modal to show cohort change
@@ -292,12 +308,12 @@ shinyServer(function(input, output, session) {
     
     if(!first_time){
       showModal(MODAL_MAPPING[[input$cohort]])
+      resetPatientCache()
+      patientCounter(patientCounter() + 1)
     } else{
+      setPatientDataInCache(demo_pat_list[[1]])
       first_time <<- FALSE
     }
-    
-    resetPatientCache()
-    patientCounter(patientCounter() + 1)
   })
   
   observeEvent(input$load_pat1, {
@@ -462,14 +478,6 @@ shinyServer(function(input, output, session) {
   #############################
   # Output on Tab 3 showing biopsy recommendation
   #############################
-  observeEvent(input$month_gap_biopsy,{
-    if(patientCounter()>0 & is.numeric(input$month_gap_biopsy) & !is.null(patient_cache$patient_data)){
-      showModal(pleaseWaitModal)
-      recalculateBiopsySchedules()
-      removeModal()
-    }
-  })
-  
   decisionRenderer = function(decision_label_num){
     renderUI({
       if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) &
@@ -528,6 +536,63 @@ shinyServer(function(input, output, session) {
     }else{
       return(NULL)
     }
+  })
+  
+  plannedBiopsyTableRenderer = function(schedule_name, threshold=NA){
+    renderTable({
+      if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data)){
+        
+        if(!is.na(threshold)){
+          schedule_name = paste0(round(threshold,1), "% ", schedule_name)
+          biopsy_times = patient_cache$schedule_all[[as.character((100-threshold)/100)]]$planned_test_schedule
+        }else{
+          biopsy_times = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$Schedule==schedule_name]
+        }
+        
+        biopsy_dates = sapply(biopsy_times, function(x){
+          getHumanReadableDate(patient_cache$dom_diagnosis + x*YEAR_DIVIDER)
+        })
+        
+        ret = data.frame("Date"=biopsy_dates, 
+                         "Years from now"=as.character(round(biopsy_times-patient_cache$current_visit_time, digits = 1)))
+        colnames(ret)[2] = "Years from now"
+        return(ret)
+      }else{
+        return(NULL)
+      }
+    })
+  }
+  output$table_planned_yearly = plannedBiopsyTableRenderer("Yearly")
+  output$table_planned_prias = plannedBiopsyTableRenderer("PRIAS")
+  
+  biopsyDelayGaugeRenderer = function(schedule_name, threshold=NA){
+    renderPlot({
+      if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data)){
+        if(!is.na(threshold)){
+          schedule_name = paste0(round(threshold,1), "% ", schedule_name)
+          exp_delay = 12 * patient_cache$schedule_all[[as.character((100-threshold)/100)]]$expected_detection_delay 
+        }else{
+          plotDf = patient_cache$biopsy_total_delay_plotDf
+          exp_delay = plotDf$expected_delay[which(plotDf$schedule==schedule_name)]
+        }      
+        
+        max_delay = max(DELAY_GAUGE_MAX, exp_delay,
+                        ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
+        
+        ret = biopsyDelayGaugeGraph(exp_delay, schedule_name, max_delay = max_delay)
+        
+        return(ret)
+      }else{
+        return(NULL)
+      }
+    })
+  }
+  output$biopsy_delay_gauge_graph_yearly = biopsyDelayGaugeRenderer("Yearly")
+  output$biopsy_delay_gauge_graph_prias = biopsyDelayGaugeRenderer("PRIAS")
+  
+  observeEvent(input$risk_threshold, {
+    output$table_planned_personalized = plannedBiopsyTableRenderer("Risk based", input$risk_threshold)
+    output$biopsy_delay_gauge_graph_personalized = biopsyDelayGaugeRenderer("Risk based", input$risk_threshold)
   })
   
   output$delay_explanation_plot = renderPlot({

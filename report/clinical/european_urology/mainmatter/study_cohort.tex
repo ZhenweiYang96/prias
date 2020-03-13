@@ -1,0 +1,37 @@
+% !TEX root =  ../main_manuscript.tex 
+\section{Patients and Methods}
+\subsection{Study Cohort}
+\label{subsec:cohort}
+For developing a statistical model to predict upgrading-risk, we used the world's largest AS dataset, Prostate Cancer International Active Surveillance or PRIAS~\citep{bul2013active}, dated April 2019 (Table~\ref{table:prias_summary}). In PRIAS, PSA was measured quarterly for the first two years of follow-up and semiannually thereafter. Biopsies were scheduled at year one, four, seven, and ten of follow-up. Additional yearly biopsies were scheduled when PSA doubling time was between zero and ten years.
+
+\begin{table}
+\small\sf\centering
+\caption{\textbf{Summary of the PRIAS dataset as of April 2019}. The primary event of interest is upgrading, that is, increase in Gleason grade group from group~1~\citep{epsteinGG2014} to 2 or higher. IQR:~interquartile range, PSA:~prostate-specific antigen. Study protocol URL: \url{https://www.prias-project.org}}
+\label{table:prias_summary}
+\begin{tabular}{lr}
+\toprule
+\textbf{Characteristic} & \textbf{Value}\\
+\midrule
+Total centers & $> 100$\\
+Total patients & 7813\\
+Upgrading (primary event) & 1134\\
+Treatment & 2250\\
+Watchful waiting & 334\\
+Loss to follow-up & 249\\
+Death (unrelated to prostate cancer) & 95\\
+Death (related to prostate cancer) & 2\\
+\midrule
+Median age at diagnosis (years) & 66 (IQR: 61--71)\\
+Median maximum follow-up per patient (years) &  1.8 (IQR: 0.9--4.0)\\
+Total PSA measurements & 67578\\
+Median number of PSA measurements per patient &  6 (IQR: 4--12)\\
+Median PSA value (ng/mL) & 5.7 (IQR: 4.1--7.7)\\
+Total biopsies & 15686\\
+Median number of biopsies per patient &  2 (IQR: 1--2)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+We selected all 7813~patients who had Gleason grade group~1 at the time of inclusion in PRIAS. Our primary event of interest is an increase in this Gleason grade group observed upon repeat biopsy, called \textit{upgrading} (1134~patients). Upgrading is a trigger for treatment advice in PRIAS. Also, 2250~patients were provided treatment based on their PSA, number of biopsy cores with cancer, or anxiety/other reasons. Our reasons for focusing solely on upgrading are, namely, upgrading is strongly associated with cancer-related outcomes, and other treatment triggers vary between cohorts~\citep{nieboer2018active}.
+
+For model validation, we selected the following largest (by number of repeated measurements) six cohorts from Movember Foundation's GAP3 database version~3.1~\citep{gap3_2018}: University of California San Francisco AS (UCSF, version~3.2), University of Toronto AS (Toronto), Johns Hopkins AS (Hopkins), Memorial Sloan Kettering Cancer Center AS (MSKCC), King's College London AS (KCL), and Michigan Urological Surgery Improvement Collaborative AS (MUSIC). Only patients with a Gleason grade group~1 at the time of inclusion in these cohorts were selected. Summary statistics are presented in Supplementary~A.2.
