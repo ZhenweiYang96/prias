@@ -101,7 +101,7 @@ p2 = ggplot() +
 label_plot = ggplot() + 
   geom_label(aes(x=c(0,1,2), y=c(0,0,0), 
                  label = c("Start AS\nGleason grade 1", 
-                           "Biopsy\nGleason grade 1",
+                           "Time of last biopsy\nGleason grade 1",
                            "Current\nVisit")), color='white',
              size= LABEL_SIZE,
              fill=c(WARNING_COLOR, SUCCESS_COLOR, 'black')) +
@@ -135,4 +135,4 @@ print(final_plot)
 
 ggsave(final_plot, device = cairo_ps,
        height = 5.5, width=7,
-       filename = "report/clinical/images/riskBasedExample.eps")
+       filename = "report/clinical/BJUI/images/riskBasedExample.eps")

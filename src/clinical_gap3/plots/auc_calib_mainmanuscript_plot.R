@@ -16,6 +16,16 @@ auc_recalibplot = ggplot(data=auc_recalibdf) +
   ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
   ylim(0.5,1)
 
+auc_recalibplot = ggplot(data=auc_recalibdf) + 
+  geom_line(aes(x=t_horiz, y=mean, group=cohort, color=cohort)) + 
+  geom_point(aes(x=2, y=0.5991967), size=3, color=colormap["MUSIC"]) +
+  scale_color_manual(values = colormap)+
+  scale_x_continuous(breaks = seq(1,9, by=1), limits = c(2,9.1)) + 
+  theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
+  ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
+  ylim(0.5,1)
+
+
 #calibration plot
 calib_pred_times = seq(0, 10, 0.1)
 
@@ -58,5 +68,5 @@ before_recalib_main_manuscript = npmle_plot_all +
 auc_calib_plot = ggarrange(auc_recalibplot, before_recalib_main_manuscript, nrow=1, ncol = 2,
                            align = "h", common.legend = T, legend = "bottom", labels = "AUTO")
 ggsave(auc_calib_plot, device = cairo_ps,
-       file="report/clinical/images/auc_beforecalib.eps", width = 8, height=5.5)
+       file="report/clinical/BJUI/images/auc_beforecalib.eps", width = 8, height=5.5)
 

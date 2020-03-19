@@ -24,6 +24,15 @@ auc_recalibplot = ggplot(data=auc_recalibdf) +
   ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
   ylim(0.5,1)
 
+auc_recalibplot = ggplot(data=auc_recalibdf) + 
+  geom_line(aes(x=t_horiz, y=mean, group=cohort, color=cohort)) + 
+  geom_point(aes(x=2, y=0.5991967), size=3, color=colormap["MUSIC"]) +
+  scale_color_manual(values = colormap)+
+  scale_x_continuous(breaks = seq(1,9, by=1), limits = c(2,9.1)) + 
+  theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
+  ylab("AUC (higher is better)") + xlab("Follow-up time (years)") +
+  ylim(0.5,1)
+
 pe_df = pe_df[!pe_df$cohort %in% "UCSF" | pe_df$t_horiz<9,]
 mapeplot = ggplot(data=pe_df) + 
   geom_line(aes(x=t_horiz, y=mean_mape, group=cohort, color=cohort)) + 
@@ -33,8 +42,17 @@ mapeplot = ggplot(data=pe_df) +
   theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
   ylab("MAPE (lower is better)") + xlab("Follow-up time (years)")
 
+mapeplot = ggplot(data=pe_df) + 
+  geom_line(aes(x=t_horiz, y=mean_mape, group=cohort, color=cohort)) + 
+  geom_point(aes(x=2, y=0.3309), size=3, color=colormap["MUSIC"]) +
+  scale_color_manual(values = colormap)+
+  scale_y_continuous(breaks = seq(0,1,0.25), limits=c(0,1)) + 
+  scale_x_continuous(breaks = seq(1,9, by=1), limits = c(2,9.1)) + 
+  theme_bw() + theme(text=element_text(size=FONT_SIZE), legend.title = element_blank()) +
+  ylab("MAPE (lower is better)") + xlab("Follow-up time (years)")
+
 auc_pe = ggarrange(auc_recalibplot, mapeplot, nrow=1, ncol = 2, 
                    common.legend = T, legend = "bottom",labels = "AUTO")
 
 ggsave(auc_pe, device = cairo_ps,
-       file="report/clinical/images/auc_pe_recalib.eps", width = 7, height=5.5)
+       file="report/clinical/BJUI/images/auc_pe_recalib.eps", width = 7, height=5.5)
