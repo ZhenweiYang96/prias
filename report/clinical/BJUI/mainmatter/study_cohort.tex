@@ -14,7 +14,7 @@ For externally validating our model's predictions, we selected the following lar
 \toprule
 \textbf{Characteristic} & \textbf{Value}\\
 \midrule
-Total centers & $> 100$\\
+%Total centers & $> 100$\\
 Total patients & 7813\\
 Upgrading (primary event) & 1134\\
 Treatment & 2250\\
@@ -34,4 +34,4 @@ Median number of biopsies per patient &  2 (IQR: 1--2)\\
 \end{tabular}
 \end{table}
 
-\paragraph{Choice of predictors:} In our model, we utilized all repeated PSA measurements, timing and previous biopsy Gleason grade, and age at inclusion in AS. Other predictors such as prostate volume, MRI results may also be important. While MRI is already used for targeting biopsies, but currently, there are arguments both for and against its use in deciding the time of biopsies~\citep{kasivisvanathan2020magnetic,chesnut2019role,schoots2015magnetic}. MRI is still a recent addition in most AS protocols, and thus, repeated MRI data is very sparsely available in both PRIAS and GAP3 databases to make a stable prediction model. Prostate volume data is also sparsely available, especially in validation cohorts. Based on these reasons, we did not include them in our model. However, the model we propose next is extendable to include MRI and other novel biomarkers in the future.a
+\paragraph{Choice of predictors:} In our model, we used all repeated PSA measurements, the timing of the previous biopsy and Gleason grade, and age at inclusion in AS. Other predictors such as prostate volume, MRI results can also be important. MRI is utilized already for targeting biopsies, but regarding its use in deciding the time of biopsies, there are arguments both for and against it~\citep{kasivisvanathan2020magnetic,chesnut2019role,schoots2015magnetic}. MRI is still a recent addition in most AS protocols. Consequently, repeated MRI data is very sparsely available in both PRIAS and GAP3 databases to make a stable prediction model. Prostate volume data is also sparsely available, especially in validation cohorts. Based on these reasons, we did not include them in our model. However, the model we propose next is extendable to include MRI and other novel biomarkers in the future.
