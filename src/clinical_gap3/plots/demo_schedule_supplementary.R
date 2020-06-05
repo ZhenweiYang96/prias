@@ -162,7 +162,7 @@ schedulePlotSupp = function(object, pat_data, latest_survival_time,
     ylim(-0.25,0.25)
   
   consequences_df = schedule_df[!duplicated(schedule_df$Schedule),]
-  max_delay_limit = 2
+  max_delay_limit = 3
   D = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2), 
                               y=c(consequences_df$expected_detection_delay, 
                                   max_delay_limit - consequences_df$expected_detection_delay)),
@@ -193,7 +193,7 @@ schedule_plot_pat1 = schedulePlotSupp(object = mvJoint_psa_time_scaled,
                                       xbreaks = c(0, 1, 2, 3, 4, 5, 6),
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 6, title = "Real Patient 1")
-ggsave(schedule_plot_pat1, filename = "report/clinical/images/demo_pat1_supp.eps",
+ggsave(schedule_plot_pat1, filename = "report/clinical/BJUI/images/demo_pat1_supp.eps",
        device = cairo_ps, height = 8, width = 7)
 
 #############
@@ -207,7 +207,7 @@ schedule_plot_pat2 = schedulePlotSupp(mvJoint_psa_time_scaled, pat2_data,
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 6, title = "Real Patient 2")
 
-ggsave(schedule_plot_pat2, filename = "report/clinical/images/demo_pat2_supp.eps",
+ggsave(schedule_plot_pat2, filename = "report/clinical/BJUI/images/demo_pat2_supp.eps",
        device = cairo_ps, height = 8, width = 7)
 ##########
 
@@ -220,6 +220,6 @@ schedule_plot_pat3 = schedulePlotSupp(mvJoint_psa_time_scaled, pat3_data,
                                       xbreaks = 0:6,
                                       psa_breaks = psa_breaks,
                                       max_follow_up = 6, title = "Real Patient 3")
-ggsave(schedule_plot_pat3, filename = "report/clinical/images/demo_pat3_supp.eps",
+ggsave(schedule_plot_pat3, filename = "report/clinical/BJUI/images/demo_pat3_supp.eps",
        device = cairo_ps, height = 8, width = 7)
 

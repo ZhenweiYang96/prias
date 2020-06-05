@@ -1,0 +1,99 @@
+\documentclass[12pt]{article}
+\usepackage[tbtags]{amsmath}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{natbib}
+\usepackage{url}
+\usepackage{authblk}
+
+%\pdfminorversion=4
+% NOTE: To produce blinded version, replace "0" with "1" below.
+\newcommand{\blind}{0}
+
+% DON'T change margins - should be 1 inch all around.
+\addtolength{\oddsidemargin}{-.5in}%
+\addtolength{\evensidemargin}{-.5in}%
+\addtolength{\textwidth}{1in}%
+\addtolength{\textheight}{-.3in}%
+\addtolength{\topmargin}{-.8in}%
+
+\DeclareMathOperator{\argmax}{arg\,max}
+\DeclareMathOperator{\argmin}{arg\,min}
+
+\begin{document}
+
+%\bibliographystyle{natbib}
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\if0\blind
+{
+  \title{\bf Personalized Schedules for Burdensome Surveillance Tests}
+
+\author[1]{Anirudh Tomer\footnote{Corresponding author: a.tomer@erasmusmc.nl\\The authors gratefully acknowledge Nederlandse Organisatie voor Wetenschappelijk Onderzoek VIDI grant nr. 016.146.301, and Erasmus University Medical Center funding.}}
+\author[2]{Daan Nieboer}
+\author[3]{Monique J. Roobol}
+\author[2,4]{Ewout W. Steyerberg}
+\author[1]{Dimitris Rizopoulos}
+
+\affil[1]{Department of Biostatistics, Erasmus University Medical Center, the Netherlands}
+\affil[2]{Department of Public Health, Erasmus University Medical Center, the Netherlands}
+\affil[3]{Department of Urology, Erasmus University Medical Center, the Netherlands}
+\affil[4]{Department of Biomedical Data Sciences, Leiden University Medical Center, the Netherlands}
+
+
+  %\author{Anirudh Tomer\thanks{
+    %The authors gratefully acknowledge \textit{please remember to list all relevant funding sources in the unblinded version}}\hspace{.2cm}\\
+  %  Department of Biostatistics, Erasmus University Medical Center, the Netherlands\\
+   % Daan Nieboer \\
+   % Department of Public Health, Erasmus University Medical Center, the Netherlands\\
+    %Monique J. Roobol \\
+   % Department of Urology, Erasmus University Medical Center, the Netherlands \\
+   % Ewout W. Steyerberg}
+
+  \maketitle
+} \fi
+
+\if1\blind
+{
+  \bigskip
+  \bigskip
+  \bigskip
+  \begin{center}
+    {\LARGE\bf Personalized Schedules for Burdensome Surveillance Tests}
+\end{center}
+  \medskip
+} \fi
+
+\bigskip
+\input{mainmatter/abstract}
+
+\noindent%
+{\it Keywords:} Chronic NCDs, Invasive diagnostic tests, Joint models, Personalized schedules, Prostate biopsy, Surveillance
+\vfill
+
+\newpage
+\spacingset{1.5} % DON'T change the spacing!
+
+\input{mainmatter/introduction}
+\input{mainmatter/jointmodel}
+\input{mainmatter/schedule}
+\input{mainmatter/demo_results}
+\input{mainmatter/sim_study}
+\input{mainmatter/discussion}
+
+\input{mainmatter/acknowledment}
+\section*{Data Availability}
+This work utilized results from a statistical model we previously fitted to the PRIAS dataset~\citep{tomer2019personalized}. The PRIAS database is not openly accessible. However, access to the database can be requested on the basis of a study proposal approved by the PRIAS steering committee. The website of the PRIAS program is \url{www.prias-project.org}. For sake of completeness and reproducibility of results, we have presented the PRIAS based model's definition and parameter estimates in Web-Appendix~B. The data of the demonstration patient in Figure~\ref{fig:demo_schedule} is provided in Web-Appendix~B.
+
+\section*{Supporting Information}
+Web Appendices referenced in this paper are available in the file titled `supplementary.pdf'.
+
+\bibliographystyle{Chicago}
+
+\bibliography{bibliography}
+\end{document}

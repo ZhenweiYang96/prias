@@ -475,68 +475,50 @@ shinyServer(function(input, output, session) {
     }
   })
   
-  #############################
-  # Output on Tab 3 showing biopsy recommendation
-  #############################
-  decisionRenderer = function(decision_label_num){
-    renderUI({
-      if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) &
-         !is.null(input$selected_schedules) & length(input$selected_schedules)> (decision_label_num-1)){
-        
-        schedule_id = as.numeric(input$selected_schedules[decision_label_num])
-        
-        schedule_name = paste0(names(SCHEDULES_MAPPING)[schedule_id], ":")
-        first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==schedule_id][1]
-        
-        first_biopsy_date = getHumanReadableDate(patient_cache$dom_diagnosis + first_biopsy_time*YEAR_DIVIDER)
-        #class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-primary", "label-success"))
-        class = "label label-default"
-        
-        return(tags$div(tags$span(schedule_name, class=class), 
-                        tags$span(first_biopsy_date, class='text-default'),
-                        class='lead'))
-      }else{
-        return(NULL)
-      }
-    })
-  }
-  output$decision1 = decisionRenderer(1)
-  output$decision2 = decisionRenderer(2)
-  output$decision3 = decisionRenderer(3)
-  output$decision4 = decisionRenderer(4)
-  output$decision5 = decisionRenderer(5)
-  output$decision6 = decisionRenderer(6)
-  
-  output$biopsy_schedule_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) & !is.null(input$selected_schedules)){
-      return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
-                                 as.numeric(input$selected_schedules),
-                                 patient_cache$dom_diagnosis,
-                                 patient_cache$current_visit_time,
-                                 patient_cache$latest_survival_time,
-                                 patient_cache$patient_data$year_visit[!is.na(patient_cache$patient_data$gleason_sum)]))
-    }else{
-      return(NULL)
-    }
-  }) 
-  
-  output$biopsy_delay_gauge_graph = renderPlot({
-    if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) & !is.null(input$selected_schedules)){
-      max_delay = max(DELAY_GAUGE_MAX, 
-                      ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
-      
-      plotDf = patient_cache$biopsy_total_delay_plotDf
-      
-      delayGaugeList = lapply(1:length(input$selected_schedules), FUN = function(x){
-        roww = plotDf$schedule_id == as.numeric(input$selected_schedules[x])
-        biopsyDelayGaugeGraph(plotDf$expected_delay[roww], plotDf$schedule[roww], max_delay = max_delay)
-      })
-      
-      return(ggarrange(plotlist = delayGaugeList, nrow=2, ncol=3))
-    }else{
-      return(NULL)
-    }
-  })
+  # #############################
+  # # Output on Tab 3 showing biopsy recommendation
+  # #############################
+  # decisionRenderer = function(decision_label_num){
+  #   renderUI({
+  #     if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) &
+  #        !is.null(input$selected_schedules) & length(input$selected_schedules)> (decision_label_num-1)){
+  #       
+  #       schedule_id = as.numeric(input$selected_schedules[decision_label_num])
+  #       
+  #       schedule_name = paste0(names(SCHEDULES_MAPPING)[schedule_id], ":")
+  #       first_biopsy_time = patient_cache$biopsy_schedule_plotDf$biopsy_times[patient_cache$biopsy_schedule_plotDf$schedule_id==schedule_id][1]
+  #       
+  #       first_biopsy_date = getHumanReadableDate(patient_cache$dom_diagnosis + first_biopsy_time*YEAR_DIVIDER)
+  #       #class = paste("label", ifelse(first_biopsy_time > patient_cache$current_visit_time, "label-primary", "label-success"))
+  #       class = "label label-default"
+  #       
+  #       return(tags$div(tags$span(schedule_name, class=class), 
+  #                       tags$span(first_biopsy_date, class='text-default'),
+  #                       class='lead'))
+  #     }else{
+  #       return(NULL)
+  #     }
+  #   })
+  # }
+  # output$decision1 = decisionRenderer(1)
+  # output$decision2 = decisionRenderer(2)
+  # output$decision3 = decisionRenderer(3)
+  # output$decision4 = decisionRenderer(4)
+  # output$decision5 = decisionRenderer(5)
+  # output$decision6 = decisionRenderer(6)
+  # 
+  # output$biopsy_schedule_graph = renderPlot({
+  #   if(patientCounter()>0 & biopsyCounter()>0 & !is.null(patient_cache$patient_data) & !is.null(input$selected_schedules)){
+  #     return(biopsyScheduleGraph(patient_cache$biopsy_schedule_plotDf,
+  #                                as.numeric(input$selected_schedules),
+  #                                patient_cache$dom_diagnosis,
+  #                                patient_cache$current_visit_time,
+  #                                patient_cache$latest_survival_time,
+  #                                patient_cache$patient_data$year_visit[!is.na(patient_cache$patient_data$gleason_sum)]))
+  #   }else{
+  #     return(NULL)
+  #   }
+  # }) 
   
   plannedBiopsyTableRenderer = function(schedule_name, threshold=NA){
     renderTable({
@@ -579,7 +561,11 @@ shinyServer(function(input, output, session) {
         max_delay = max(DELAY_GAUGE_MAX, exp_delay,
                         ceiling(patient_cache$biopsy_total_delay_plotDf$expected_delay[as.numeric(input$selected_schedules)]))
         
-        ret = biopsyDelayGaugeGraph(exp_delay, schedule_name, max_delay = max_delay)
+        max_follow_up_patient = getHumanReadableDate(patient_cache$dom_diagnosis + MAX_FOLLOW_UP*YEAR_DIVIDER, abbreviated = T)
+        
+        max_risk = mean(1-patient_cache$SURV_CACHE_FULL[nrow(patient_cache$SURV_CACHE_FULL),])
+        
+        ret = biopsyDelayGaugeGraph(exp_delay, max_follow_up_patient, round(max_risk*100), schedule_name, max_delay = max_delay)
         
         return(ret)
       }else{

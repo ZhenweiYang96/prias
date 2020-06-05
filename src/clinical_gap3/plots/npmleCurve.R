@@ -35,6 +35,24 @@ npmle_plotdf_all=do.call('rbind', lapply(cohortnames, FUN = function(cohort){
   return(data.frame('Cohort'=cohort, timePoints=timePoints, riskProbs=1-survProbs))
 }))
 
+
+npmle_plotdf_all_homogenizationclaim=do.call('rbind', lapply(cohortnames, FUN = function(cohort){
+  
+  baseline_est = getSCurves(npmle_all[[cohort]])
+  baseline_est_int = baseline_est$Tbull_ints
+  baseline_est_int = cbind(baseline_est_int, baseline_est$S_curves$baseline)
+  baseline_est_int = rbind(c(0,0,1), baseline_est_int)
+  
+  max_time = reclassification_df$time_10pat_risk_set[reclassification_df$Cohort==cohort]
+  timePoints = seq(1, max_time, length.out = 100)
+  survProbs = sapply(timePoints, FUN = getSurvProbNPMLE, baseline_est_int=baseline_est_int)
+  
+  survProb_yearone = getSurvProbNPMLE(pred.time = 1, baseline_est_int)
+  survProbs = survProbs/survProb_yearone
+  
+  return(data.frame('Cohort'=cohort, timePoints=timePoints, riskProbs=1-survProbs))
+}))
+
 cohort_labpos_x = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$timePoints, max))
 cohort_labpos_y = as.numeric(by(npmle_plotdf_all$Cohort, data = npmle_plotdf_all$riskProbs, max))
 

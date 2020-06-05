@@ -131,8 +131,6 @@ risk_plot = ggpubr::ggarrange(ggplot() + theme_void(),
 
 final_plot = ggpubr::ggarrange(psa_plot, risk_plot, widths = c(2,1))
 
-print(final_plot)
-
 ggsave(final_plot, device = cairo_ps,
-       height = 5.5, width=7,
+       height = 5.5, width=7, dpi = 300,
        filename = "report/clinical/BJUI/images/riskBasedExample.eps")

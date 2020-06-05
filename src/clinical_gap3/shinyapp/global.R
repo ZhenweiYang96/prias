@@ -290,7 +290,7 @@ biopsyScheduleGraph = function(schedule_df,
   return(pp)
 }
 
-biopsyDelayGaugeGraph = function(delay, schedule, max_delay=DELAY_GAUGE_MAX){
+biopsyDelayGaugeGraph = function(delay, max_follow_up_patient, max_risk, schedule, max_delay=DELAY_GAUGE_MAX){
   prop_delay = delay/max_delay
   
   gauge_color = colorRamp(c(SUCCESS_COLOR, WARNING_COLOR, DANGER_COLOR))(prop_delay)
@@ -301,7 +301,8 @@ biopsyDelayGaugeGraph = function(delay, schedule, max_delay=DELAY_GAUGE_MAX){
     rgb(col[1], col[2], col[3], maxColorValue = 255)
   })
   
-  risk_label = paste0("\n\nDelay: ", round(delay)," months\nSchedule: ", schedule)
+  risk_label = paste0("\n\nDelay: ", round(delay)," months, if Upgrading", 
+                      "\noccurs before ", max_follow_up_patient, " (", max_risk, "% probability)")
   
   riskGauge = ggplot(data = NULL, 
                      aes(ymax = prop_delay, ymin = 0, xmax = 2, xmin = 1, 

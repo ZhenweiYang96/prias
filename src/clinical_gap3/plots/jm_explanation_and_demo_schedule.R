@@ -197,7 +197,7 @@ F_ = common +
 
 
 consequences_df = schedule_df[!duplicated(schedule_df$Schedule),]
-max_delay_limit = 2
+max_delay_limit = 3
 H = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2), 
                                      y=c(consequences_df$expected_detection_delay, 
                                          max_delay_limit - consequences_df$expected_detection_delay)),
@@ -213,8 +213,8 @@ H = ggplot() + geom_col(aes(x=rep(consequences_df$Schedule,2),
   theme(text = element_text(size = FONT_SIZE))
 
 demo_pat_plot = ggarrange(E, F_, D, H , ncol=1, nrow=4, align = "v",
-                          labels=c("A", "B", "", "C"), heights = c(1.1,1,0.5,1))
+                          labels=c("A", "B", "", "C"), heights = c(1.1,0.9,0.5,0.9))
 
 print(demo_pat_plot)
-ggsave(demo_pat_plot, filename = "report/clinical/images/demo_pat1.eps",
-       device = cairo_ps, height = 7, width=6)
+ggsave(demo_pat_plot, filename = "report/clinical/BJUI/images/demo_pat1.eps",
+       device = cairo_ps, height = 6.5, width=6)
