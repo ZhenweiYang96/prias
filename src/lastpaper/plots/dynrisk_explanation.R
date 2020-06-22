@@ -60,7 +60,7 @@ dynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
     geom_point(aes(x=pat_df$year_visit,y=pat_df$log2psaplus1),
                size=POINT_SIZE, color=THEME_COLOR) +
     geom_line(aes(x=psa_predict_times, y=mean_psa), color=THEME_COLOR) + 
-    geom_line(aes(x=survival_predict_times, y=mean_cum_risk), color=DANGER_COLOR) +
+    geom_line(aes(x=survival_predict_times, y=mean_cum_risk), color=DANGER_COLOR, linetype='dotted') +
     geom_ribbon(aes(x=survival_predict_times, ymin=lower_cum_risk,
                     ymax=upper_cum_risk), alpha=0.15, fill=DANGER_COLOR) + 
     scale_y_continuous(breaks = psa_breaks, 
@@ -129,5 +129,5 @@ dynrisk_plot = ggarrange(dynrisk_plot_1, dynrisk_plot_2, dynrisk_plot_3,
           nrow = 3, ncol=1, legend = "bottom", common.legend = T)
 
 print(dynrisk_plot) 
-ggsave(dynrisk_plot, filename = "report/lastpaper/images/dynrisk_plot_102.eps",
-       device = cairo_ps,  height = 7, width=7/1.333)
+ggsave(dynrisk_plot, filename = "report/lastpaper_jasa/images/dynrisk_plot_102.pdf",
+       device = cairo_pdf,  height = 7, width=7/1.333)

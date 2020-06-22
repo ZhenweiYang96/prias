@@ -16,8 +16,8 @@ WARNING_COLOR = 'darkorange'
 THEME_COLOR = 'dodgerblue4'
 MAX_FOLLOW_UP = 10
 POINT_SIZE = 1.75
-FONT_SIZE = 11
-LABEL_SIZE = 1.25
+FONT_SIZE = 10
+LABEL_SIZE = 1.1
 
 set.seed(2019)
 patient_df = prias_long_final[prias_long_final$P_ID == 101 & 
@@ -98,8 +98,7 @@ baseggplot_no_xticks = baseggplot +
         axis.text.x = element_blank())
 
 risk_plot = baseggplot_no_xticks +
-  geom_line(aes(x=surv_prob_times, y=scaled_mean_risk_probs), color=DANGER_COLOR) +
-  geom_line(aes(x=surv_prob_times, y=scaled_mean_risk_probs), color=DANGER_COLOR) +
+  geom_line(aes(x=surv_prob_times, y=scaled_mean_risk_probs), color=DANGER_COLOR, linetype='dotted') +
   geom_ribbon(aes(x=surv_prob_times, ymin=scaled_lower_risk_probs,
                   ymax=scaled_upper_risk_probs), alpha=0.15, fill=DANGER_COLOR) + 
   geom_segment(aes(x=-Inf, xend=current_visit_time, 
@@ -119,8 +118,8 @@ risk_plot = baseggplot_no_xticks +
                      values = c(17, 16)) +
   scale_linetype_manual(name="",
                         labels= c(expression(atop('Fitted', 'Pr (Palpable DRE)')), expression(atop('Fitted', 'log'[2]*'(PSA + 1)'))),
-                        values = c("dotted", "dashed")) +
-  ylab(expression('Pr (DRE Palpable)   '*'log'[2]*'(PSA + 1)')) +
+                        values = c("solid", "solid")) +
+  ylab(expression('Pr (DRE Palpable)  '*'log'[2]*'(PSA + 1)')) +
   #ylab('DRE              PSA') +
   xlab("Follow-up time (years)") + 
   xlim(min_x,MAX_FOLLOW_UP) +
@@ -186,9 +185,9 @@ planned_schedule_plot = baseggplot +
   geom_segment(aes(x=rep(current_visit_time,4), xend=rep(MAX_FOLLOW_UP,4), y=1:4, yend=1:4), color=SUCCESS_COLOR, linetype='dotted')+
   geom_label(data=schedule_df,
              aes(x=times, y=number, label="B", group=name), 
-             color=SUCCESS_COLOR, fill='white')+
+             color=SUCCESS_COLOR, fill='white', size = 2)+
   xlab("Follow-up time (years)") + 
-  ylab('Future biopsy schedule') +
+  ylab('Future biopsy\nschedule') +
   scale_x_continuous(breaks= xbreaks, labels=xlabs,
                      limits = c(min_x, MAX_FOLLOW_UP)) +
   scale_y_continuous(limits = c(1 - 0.25, 4 + 0.25),
@@ -268,7 +267,7 @@ upper_plot = ggpubr::ggarrange(risk_plot, planned_schedule_plot,
                                label_plot,
                                ncol=1, align = "v",
                                hjust = -1.5,
-                               heights = c(1,0.8,0.3),
+                               heights = c(1,0.6,0.3),
                                labels = c('A', 'B', ''), 
                                legend = "none")
   
@@ -278,5 +277,6 @@ demo_schedule = ggpubr::ggarrange(upper_plot, consequences_plot,
                                   heights = c(1,0.45),
                                   legend = "none")
 print(demo_schedule)
-ggsave(demo_schedule, filename = "report/lastpaper/images/demo_schedule.eps",
-       device = cairo_ps,  height = 7.25, width=7)
+ggsave(demo_schedule, filename = "report/lastpaper_jasa/images/demo_schedule.pdf",
+       device = cairo_pdf,  height = 6, width=6)
+

@@ -37,10 +37,11 @@ delay_explanation_plot_a = ggplot() +
   ylim(0,1) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
+        title = element_text(size=FONT_SIZE-2),
         axis.title.x = element_blank(),
         axis.text.x = element_blank(),axis.text.y = element_blank(),
         axis.title.y = element_blank(), axis.ticks.y = element_blank()) +
-  ggtitle("    Test every year")
+  ggtitle("    Frequent tests - Shorter delay in detecting progression")
 
 
 delay_explanation_plot_b = ggplot() + 
@@ -73,10 +74,11 @@ delay_explanation_plot_b = ggplot() +
   ylim(0,1) + 
   theme_bw() +
   theme(text = element_text(size=FONT_SIZE), 
+        title = element_text(size=FONT_SIZE-2),
         axis.text.x = element_text(angle = 30, hjust = 1),
         axis.text.y = element_blank(),
         axis.title.y = element_blank(), axis.ticks.y = element_blank())+
-  ggtitle("    Test every 2 years")
+  ggtitle("    Infrequent tests - Longer delay in detecting progression")
 
 
 delay_explanation_plot = ggpubr::ggarrange(delay_explanation_plot_a, delay_explanation_plot_b, 
@@ -84,5 +86,5 @@ delay_explanation_plot = ggpubr::ggarrange(delay_explanation_plot_a, delay_expla
                                            heights = c(1, 1.2))
 
 ggsave(delay_explanation_plot, 
-       file="report/lastpaper/images/delay_explanation.eps", 
-       device = cairo_ps, height = 7, width=7/1.333)
+       file="report/lastpaper_jasa/images/delay_explanation.pdf", 
+       device = cairo_pdf, height = 5, width=7/1.333)

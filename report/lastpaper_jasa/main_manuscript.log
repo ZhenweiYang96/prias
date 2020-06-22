@@ -1,0 +1,579 @@
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 2.9.7300 64-bit) (preloaded format=pdflatex 2020.3.19)  9 JUN 2020 09:54
+entering extended mode
+**"C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa/main_
+manuscript.tex"
+
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa/main_m
+anuscript.tex"
+LaTeX2e <2020-02-02> patch level 5
+L3 programming layer <2020-03-06>
+("C:\Program Files\MiKTeX 2.9\tex/latex/base\article.cls"
+Document Class: article 2019/12/20 v1.4l Standard LaTeX document class
+("C:\Program Files\MiKTeX 2.9\tex/latex/base\size12.clo"
+File: size12.clo 2019/12/20 v1.4l Standard LaTeX file (size option)
+)
+\c@part=\count167
+\c@section=\count168
+\c@subsection=\count169
+\c@subsubsection=\count170
+\c@paragraph=\count171
+\c@subparagraph=\count172
+\c@figure=\count173
+\c@table=\count174
+\abovecaptionskip=\skip47
+\belowcaptionskip=\skip48
+\bibindent=\dimen134
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amsmath.sty"
+Package: amsmath 2020/01/20 v2.17e AMS math features
+\@mathmargin=\skip49
+
+For additional information on amsmath, use the `?' option.
+("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amstext.sty"
+Package: amstext 2000/06/29 v2.01 AMS text
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amsgen.sty"
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks15
+\ex@=\dimen135
+))
+("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amsbsy.sty"
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen136
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/amsmath\amsopn.sty"
+Package: amsopn 2016/03/08 v2.02 operator names
+)
+\inf@bad=\count175
+LaTeX Info: Redefining \frac on input line 227.
+\uproot@=\count176
+\leftroot@=\count177
+LaTeX Info: Redefining \overline on input line 389.
+\classnum@=\count178
+\DOTSCASE@=\count179
+LaTeX Info: Redefining \ldots on input line 486.
+LaTeX Info: Redefining \dots on input line 489.
+LaTeX Info: Redefining \cdots on input line 610.
+\Mathstrutbox@=\box45
+\strutbox@=\box46
+\big@size=\dimen137
+LaTeX Font Info:    Redeclaring font encoding OML on input line 733.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 734.
+\macc@depth=\count180
+\c@MaxMatrixCols=\count181
+\dotsspace@=\muskip16
+\c@parentequation=\count182
+\dspbrk@lvl=\count183
+\tag@help=\toks16
+\row@=\count184
+\column@=\count185
+\maxfields@=\count186
+\andhelp@=\toks17
+\eqnshift@=\dimen138
+\alignsep@=\dimen139
+\tagshift@=\dimen140
+\tagwidth@=\dimen141
+\totwidth@=\dimen142
+\lineht@=\dimen143
+\@envbody=\toks18
+\multlinegap=\skip50
+\multlinetaggap=\skip51
+\mathdisplay@stack=\toks19
+LaTeX Info: Redefining \[ on input line 2859.
+LaTeX Info: Redefining \] on input line 2860.
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics\graphicx.sty"
+Package: graphicx 2019/11/30 v1.2a Enhanced LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics\keyval.sty"
+Package: keyval 2014/10/28 v1.15 key=value parser (DPC)
+\KV@toks@=\toks20
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics\graphics.sty"
+Package: graphics 2019/11/30 v1.4a Standard LaTeX Graphics (DPC,SPQR)
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics\trig.sty"
+Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics-cfg\graphics.cfg"
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 105.
+
+("C:\Program Files\MiKTeX 2.9\tex/latex/graphics-def\pdftex.def"
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen144
+\Gin@req@width=\dimen145
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/tools\enumerate.sty"
+Package: enumerate 2015/07/23 v3.00 enumerate extensions (DPC)
+\@enLab=\toks21
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/natbib\natbib.sty"
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip52
+\bibsep=\skip53
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count187
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/url\url.sty"
+\Urlmuskip=\muskip17
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/preprint\authblk.sty"
+Package: authblk 2001/02/27 1.3 (PWD)
+\affilsep=\skip54
+\@affilsep=\skip55
+\c@Maxaffil=\count188
+\c@authors=\count189
+\c@affil=\count190
+)
+("C:\Program Files\MiKTeX 2.9\tex/latex/l3backend\l3backend-pdfmode.def"
+File: l3backend-pdfmode.def 2020-03-12 L3 backend support: PDF mode
+\l__kernel_color_stack_int=\count191
+\l__pdf_internal_box=\box47
+)
+No file main_manuscript.aux.
+\openout1 = `main_manuscript.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
+LaTeX Font Info:    ... okay on input line 23.
+("C:\Program Files\MiKTeX 2.9\tex/context/base/mkii\supp-pdf.mkii"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count192
+\scratchdimen=\dimen146
+\scratchbox=\box48
+\nofMPsegments=\count193
+\nofMParguments=\count194
+\everyMPshowfont=\toks22
+\MPscratchCnt=\count195
+\MPscratchDim=\dimen147
+\MPnumerator=\count196
+\makeMPintoPDFobject=\count197
+\everyMPtoPDFconversion=\toks23
+) ("C:\Program Files\MiKTeX 2.9\tex/latex/epstopdf-pkg\epstopdf-base.sty"
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+)
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa\mainma
+tter/abstract.tex") [1
+
+{C:/Users/anirudhtomer/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa\mainma
+tter/introduction.tex"
+
+Package natbib Warning: Citation `world2014global' on page 2 undefined on input
+ line 4.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 2 undefined o
+n input line 4.
+
+
+Package natbib Warning: Citation `weusten2017endoscopic' on page 2 undefined on
+ input line 4.
+
+
+Package natbib Warning: Citation `krist2007timing' on page 2 undefined on input
+ line 4.
+
+
+Package natbib Warning: Citation `mcwilliams2008surveillance' on page 2 undefin
+ed on input line 4.
+
+
+Package natbib Warning: Citation `mcwilliams2008surveillance' on page 2 undefin
+ed on input line 6.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 2 undefined o
+n input line 6.
+
+
+Package natbib Warning: Citation `krist2007timing' on page 2 undefined on input
+ line 6.
+
+
+LaTeX Warning: Reference `fig:delay_explanation' on page 2 undefined on input l
+ine 6.
+
+
+Package natbib Warning: Citation `loeb2013systematic' on page 2 undefined on in
+put line 6.
+
+
+Package natbib Warning: Citation `krist2007timing' on page 2 undefined on input
+ line 6.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 2 undefined o
+n input line 6.
+
+
+Package natbib Warning: Citation `LeClercq2015325' on page 2 undefined on input
+ line 6.
+
+<images/delay_explanation.pdf, id=11, 379.4175pt x 361.35pt>
+File: images/delay_explanation.pdf Graphic file (type pdf)
+<use images/delay_explanation.pdf>
+Package pdftex.def Info: images/delay_explanation.pdf  used on input line 9.
+(pdftex.def)             Requested size: 379.41656pt x 361.34912pt.
+
+LaTeX Warning: Float too large for page by 7.73041pt on input line 12.
+
+
+LaTeX Warning: Reference `fig:delay_explanation' on page 2 undefined on input l
+ine 14.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 2 undefined o
+n input line 14.
+
+
+Package natbib Warning: Citation `weusten2017endoscopic' on page 2 undefined on
+ input line 14.
+
+
+Package natbib Warning: Citation `steimle2017markov' on page 2 undefined on inp
+ut line 14.
+
+
+Package natbib Warning: Citation `alagoz2010operations' on page 2 undefined on 
+input line 14.
+
+
+Package natbib Warning: Citation `vickers2006decision' on page 2 undefined on i
+nput line 14.
+
+[2] [3 <C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa/
+images/delay_explanation.pdf>]
+
+Package natbib Warning: Citation `tomer2019personalizedbiometrics' on page 4 un
+defined on input line 16.
+
+
+Package natbib Warning: Citation `bebu2017optimal' on page 4 undefined on input
+ line 16.
+
+
+Package natbib Warning: Citation `bebu2017optimal' on page 4 undefined on input
+ line 16.
+
+
+Package natbib Warning: Citation `vickers2006decision' on page 4 undefined on i
+nput line 16.
+
+
+Package natbib Warning: Citation `wang2019learning' on page 4 undefined on inpu
+t line 16.
+
+
+Package natbib Warning: Citation `rizopoulos2015personalized' on page 4 undefin
+ed on input line 16.
+
+
+Package natbib Warning: Citation `tomer2019personalized' on page 4 undefined on
+ input line 16.
+
+
+Package natbib Warning: Citation `tomer2019personalized' on page 4 undefined on
+ input line 16.
+
+
+Package natbib Warning: Citation `wang2019learning' on page 4 undefined on inpu
+t line 16.
+
+
+Package natbib Warning: Citation `tsiatis2004joint' on page 4 undefined on inpu
+t line 23.
+
+
+Package natbib Warning: Citation `rizopoulos2012joint' on page 4 undefined on i
+nput line 23.
+
+
+Package natbib Warning: Citation `mcculloch2005generalized' on page 4 undefined
+ on input line 23.
+
+[4]
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 5 undefined o
+n input line 25.
+
+
+Package natbib Warning: Citation `loeb2014overdiagnosis' on page 5 undefined on
+ input line 25.
+
+
+Package natbib Warning: Citation `epsteinGG2014' on page 5 undefined on input l
+ine 25.
+
+
+Package natbib Warning: Citation `loeb2014heterogeneity' on page 5 undefined on
+ input line 25.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 5 undefined o
+n input line 25.
+
+
+Package natbib Warning: Citation `GlobalCancerStats2012' on page 5 undefined on
+ input line 25.
+
+[5]
+
+LaTeX Warning: Reference `sec:jointmodel' on page 6 undefined on input line 27.
+
+
+
+LaTeX Warning: Reference `sec:schedule' on page 6 undefined on input line 27.
+
+
+LaTeX Warning: Reference `sec:results' on page 6 undefined on input line 27.
+
+
+LaTeX Warning: Reference `sec:sim_study' on page 6 undefined on input line 27.
+
+)
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa\mainma
+tter/jointmodel.tex"
+
+LaTeX Warning: Reference `fig:delay_explanation' on page 6 undefined on input l
+ine 4.
+
+
+Package natbib Warning: Citation `mcculloch2005generalized' on page 6 undefined
+ on input line 7.
+
+[6]
+
+Package natbib Warning: Citation `brown2009assessing' on page 7 undefined on in
+put line 22.
+
+
+Package natbib Warning: Citation `rizopoulos2012joint' on page 7 undefined on i
+nput line 22.
+
+
+Package natbib Warning: Citation `taylor2013real' on page 7 undefined on input 
+line 22.
+
+[7]
+
+Package natbib Warning: Citation `eilers1996flexible' on page 8 undefined on in
+put line 31.
+
+)
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa\mainma
+tter/schedule.tex" [8]
+
+LaTeX Warning: Reference `fig:dynrisk_explanation' on page 9 undefined on input
+ line 16.
+
+<images/dynrisk_plot_102.pdf, id=57, 379.4175pt x 505.89pt>
+File: images/dynrisk_plot_102.pdf Graphic file (type pdf)
+<use images/dynrisk_plot_102.pdf>
+Package pdftex.def Info: images/dynrisk_plot_102.pdf  used on input line 18.
+(pdftex.def)             Requested size: 379.41656pt x 505.88875pt.
+
+LaTeX Warning: Reference `eq:cumulative_risk' on page 9 undefined on input line
+ 19.
+
+
+LaTeX Warning: Reference `eq:cumulative_risk' on page 9 undefined on input line
+ 19.
+
+
+LaTeX Warning: Float too large for page by 134.60751pt on input line 21.
+
+
+LaTeX Warning: Reference `fig:schedule_explanation' on page 9 undefined on inpu
+t line 27.
+
+[9] [10 <C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa
+/images/dynrisk_plot_102.pdf>]
+
+LaTeX Warning: Reference `fig:schedule_explanation' on page 11 undefined on inp
+ut line 32.
+
+<images/schedule_explanation_102.pdf, id=79, 469.755pt x 325.215pt>
+File: images/schedule_explanation_102.pdf Graphic file (type pdf)
+<use images/schedule_explanation_102.pdf>
+Package pdftex.def Info: images/schedule_explanation_102.pdf  used on input lin
+e 44.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 45.
+
+
+LaTeX Warning: Float too large for page by 17.01805pt on input line 47.
+
+
+LaTeX Warning: Reference `eq:personalized_decision_grid' on page 11 undefined o
+n input line 51.
+
+
+LaTeX Warning: Reference `fig:schedule_explanation' on page 11 undefined on inp
+ut line 51.
+
+[11] [12 <C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jas
+a/images/schedule_explanation_102.pdf>] [13]
+
+LaTeX Warning: Reference `eq:personalized_schedule_grid' on page 14 undefined o
+n input line 99.
+
+
+LaTeX Warning: Reference `fig:delay_explanation' on page 14 undefined on input 
+line 103.
+
+[14]
+
+LaTeX Warning: Reference `fig:kappa_choice' on page 15 undefined on input line 
+105.
+
+<images/kappa_choice_102.pdf, id=110, 433.62pt x 433.62pt>
+File: images/kappa_choice_102.pdf Graphic file (type pdf)
+<use images/kappa_choice_102.pdf>
+Package pdftex.def Info: images/kappa_choice_102.pdf  used on input line 107.
+(pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
+
+LaTeX Warning: Reference `eq:kappa_choice' on page 15 undefined on input line 1
+08.
+
+
+LaTeX Warning: Reference `fig:schedule_explanation' on page 15 undefined on inp
+ut line 108.
+
+
+LaTeX Warning: Reference `eq:kappa_choice' on page 15 undefined on input line 1
+08.
+
+
+LaTeX Warning: Reference `fig:schedule_explanation' on page 15 undefined on inp
+ut line 108.
+
+
+LaTeX Warning: Float too large for page by 103.13773pt on input line 110.
+
+
+LaTeX Warning: Reference `eq:kappa_choice' on page 15 undefined on input line 1
+17.
+
+
+LaTeX Warning: Reference `fig:kappa_choice' on page 15 undefined on input line 
+117.
+
+
+LaTeX Warning: Reference `eq:kappa_choice' on page 15 undefined on input line 1
+17.
+
+
+Package natbib Warning: Citation `cook1994equivalence' on page 15 undefined on 
+input line 117.
+
+[15] [16 <C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jas
+a/images/kappa_choice_102.pdf>]
+
+Package natbib Warning: Citation `sassi2006calculating' on page 17 undefined on
+ input line 119.
+
+
+LaTeX Warning: Reference `eq:kappa_choice' on page 17 undefined on input line 1
+19.
+
+
+Package natbib Warning: Citation `de2017should' on page 17 undefined on input l
+ine 119.
+
+)
+("C:/Users/anirudhtomer/Google Drive/PhD/src/prias/report/lastpaper_jasa\mainma
+tter/demo_results.tex"
+Overfull \hbox (45.90807pt too wide) in paragraph at lines 119--2
+\OT1/cmr/m/n/12 How-ever, in the lit-er-a-ture, decision-theoretic mea-sures su
+ch as quality-adjusted life-years/expectancy
+ []
+
+
+Package natbib Warning: Citation `tomer2019personalized' on page 17 undefined o
+n input line 4.
+
+
+LaTeX Warning: Reference `sec:introduction' on page 17 undefined on input line 
+4.
+
+
+Package natbib Warning: Citation `de1978practical' on page 17 undefined on inpu
+t line 4.
+
+
+LaTeX Warning: Reference `subsec:surival_sub_model' on page 17 undefined on inp
+ut line 4.
+
+
+Package natbib Warning: Citation `tomer2019personalized' on page 17 undefined o
+n input line 4.
+
+
+Package natbib Warning: Citation `rizopoulosJMbayes' on page 17 undefined on in
+put line 4.
+
+
+Package natbib Warning: Citation `tomer2019personalized' on page 17 undefined o
+n input line 4.
+
+[17]
+
+LaTeX Warning: Reference `fig:demo_schedule' on page 18 undefined on input line
+ 10.
+
+
+Package natbib Warning: Citation `bokhorst2015compliance' on page 18 undefined 
+on input line 10.
+
+
+LaTeX Warning: Reference `subsec:kappa_selection' on page 18 undefined on input
+ line 10.
+
+
+Package natbib Warning: Citation `carvalho' on page 18 undefined on input line 
+11.
+
+
+!pdfTeX error: pdflatex (file C:/Users/anirudhtomer/Google Drive/PhD/src/prias/
+report/lastpaper_jasa/images/demo_schedule.pdf): reading image file failed
+ ==> Fatal error occurred, no output PDF file produced!

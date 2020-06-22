@@ -56,20 +56,18 @@
    % Ewout W. Steyerberg}
 
   \maketitle
+  \clearpage 
 } \fi
 
 \if1\blind
 {
-  \bigskip
-  \bigskip
-  \bigskip
-  \begin{center}
-    {\LARGE\bf Personalized Schedules for Burdensome Surveillance Tests}
-\end{center}
-  \medskip
+ \title{\bf Personalized Schedules for Burdensome Surveillance Tests}
+\author{}
+\date{\vspace{-2cm}}
+\maketitle
+\bigskip
 } \fi
 
-\bigskip
 \input{mainmatter/abstract}
 
 \noindent%
@@ -85,15 +83,16 @@
 \input{mainmatter/demo_results}
 \input{mainmatter/sim_study}
 \input{mainmatter/discussion}
-
+\if0\blind
+{
 \input{mainmatter/acknowledment}
-\section*{Data Availability}
-This work utilized results from a statistical model we previously fitted to the PRIAS dataset~\citep{tomer2019personalized}. The PRIAS database is not openly accessible. However, access to the database can be requested on the basis of a study proposal approved by the PRIAS steering committee. The website of the PRIAS program is \url{www.prias-project.org}. For sake of completeness and reproducibility of results, we have presented the PRIAS based model's definition and parameter estimates in Web-Appendix~B. The data of the demonstration patient in Figure~\ref{fig:demo_schedule} is provided in Web-Appendix~B.
+} \fi
+\input{mainmatter/dataavailability}
+\section*{Source Code and Supplementary Material}
+Supplementary sections referenced in this paper are available in the file titled `supplementary.pdf'. Source code is available at \url{https://anonymous.4open.science/r/d862487e-9a1a-4472-9564-ff2be4c625fd/} and is also uploaded in a zip file along with the manuscript.
 
-\section*{Supporting Information}
-Web Appendices referenced in this paper are available in the file titled `supplementary.pdf'.
-
-\bibliographystyle{Chicago}
+%\bibliographystyle{Chicago}
+\bibliographystyle{apalike}
 
 \bibliography{bibliography}
 \end{document}

@@ -120,7 +120,7 @@ conditionalDynamicRiskPlot = function(object, pat_df, latest_survival_time=NA,
                  linetype="dashed", color=DANGER_COLOR)+
     geom_line(aes(x=psa_predict_times, y=mean_psa), color=THEME_COLOR) + 
     geom_line(data=new_test_df, 
-              aes(x=survtime, y=mean_cum_risk_scaled), color=DANGER_COLOR) +
+              aes(x=survtime, y=mean_cum_risk_scaled), color=DANGER_COLOR, linetype='dotted') +
     geom_ribbon(data=new_test_df, 
                 aes(x=survtime, ymin=lower_cum_risk_scaled,
                     ymax=upper_cum_risk_scaled), alpha=0.15, fill=DANGER_COLOR) + 
@@ -227,5 +227,5 @@ schedule_plot = ggpubr::ggarrange(cond_risk_plot, label_plot,
                                   common.legend = T, legend = "bottom")
 
 print(schedule_plot)
-ggsave(schedule_plot, filename = "report/lastpaper/images/schedule_explanation_102.eps",
-       device = cairo_ps,  height = 4.5, width=6.5)
+ggsave(schedule_plot, filename = "report/lastpaper_jasa/images/schedule_explanation_102.pdf",
+       device = cairo_pdf,  height = 4.5, width=6.5)

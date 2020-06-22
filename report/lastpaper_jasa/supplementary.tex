@@ -20,6 +20,9 @@
 \DeclareMathOperator{\argmax}{arg\,max}
 \DeclareMathOperator{\argmin}{arg\,min}
 
+\renewcommand\thesection{\Alph{section}}
+\renewcommand\thesubsection{\thesection.\arabic{subsection}}
+
 \begin{document}
 
 %\bibliographystyle{natbib}
@@ -32,7 +35,7 @@
 
 \if0\blind
 {
-  \title{\bf Personalized Schedules for Burdensome Surveillance Tests}
+  \title{\bf Supplementary Materials for `Personalized Schedules for Burdensome Surveillance Tests'}
 
 \author[1]{Anirudh Tomer\footnote{Corresponding author: a.tomer@erasmusmc.nl\\The authors gratefully acknowledge Nederlandse Organisatie voor Wetenschappelijk Onderzoek VIDI grant nr. 016.146.301, and Erasmus University Medical Center funding.}}
 \author[2]{Daan Nieboer}
@@ -60,20 +63,11 @@
 
 \if1\blind
 {
-  \bigskip
-  \bigskip
-  \bigskip
-  \begin{center}
-    {\LARGE\bf Personalized Schedules for Burdensome Surveillance Tests}
-\end{center}
-  \medskip
+ \title{\bf Supplementary Materials for `Personalized Schedules for Burdensome Surveillance Tests'}
+\author{}
+\date{\vspace{-2cm}}
+\maketitle
 } \fi
-
-\bigskip
-
-\noindent%
-{\it Keywords:} Chronic NCDs, Invasive diagnostic tests, Joint models, Personalized schedules, Prostate biopsy, Surveillance
-\vfill
 
 \newpage
 \spacingset{1.5} % DON'T change the spacing!
@@ -87,7 +81,7 @@
 \input{supplementary/source_code}
 \clearpage
 
-\bibliographystyle{Chicago}
+\bibliographystyle{apalike}
 
 \bibliography{bibliography}
 \end{document}

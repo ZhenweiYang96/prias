@@ -80,6 +80,6 @@ final_plot = ggpubr::ggarrange(upper_plot, lower_plot,
                   nrow=2, ncol=1, align = "v", labels = "AUTO")
 
 print(final_plot)
-ggsave(final_plot, filename = "report/lastpaper/images/simulation_boxplot.eps",
-       device = cairo_ps,  height = 6.5, width=6.5)
+ggsave(final_plot, filename = "report/lastpaper_jasa/images/simulation_boxplot.pdf",
+       device = cairo_pdf,  height = 6.5, width=6.5)
 
