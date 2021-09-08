@@ -1,0 +1,69 @@
+\relax 
+\citation{mcculloch2005generalized}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Joint Model for Time-to-Progression and Longitudinal Outcomes}{2}{}\protected@file@percent }
+\newlabel{sec:jointmodel}{{A}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.1}Longitudinal Sub-process}{2}{}\protected@file@percent }
+\newlabel{eq:long_model}{{A.1}{2}}
+\citation{brown2009assessing,rizopoulos2012joint,taylor2013real}
+\citation{eilers1996flexible}
+\citation{eilers1996flexible}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.2}Survival Sub-process}{3}{}\protected@file@percent }
+\newlabel{subsec:surival_sub_model}{{A.2}{3}}
+\newlabel{eq:rel_risk_model}{{A.2}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {A.3}Parameter Estimation}{4}{}\protected@file@percent }
+\citation{andrinopoulou2016bayesian}
+\citation{lang2004bayesian}
+\citation{jullion2007robust}
+\newlabel{web_eq:likelihood_contribution_survival}{{1}{5}}
+\citation{schroder1992tnm}
+\citation{schroder1992tnm}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Joint Model for the PRIAS Dataset Used in Simulation Study}{7}{}\protected@file@percent }
+\newlabel{sec:param_estimates_jm_fit_prias}{{B}{7}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.1}Dataset}{7}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces \textbf  {Summary of the PRIAS dataset}. The primary event of interest is cancer progression (increase in biopsy Gleason grade group from grade group\nobreakspace  {}1\nobreakspace  {}to\nobreakspace  {}2 or higher). Abbreviations: PSA is prostate-specific antigen; DRE is digital rectal examination, with level T1c\nobreakspace  {}\citep  {schroder1992tnm} indicating a clinically inapparent tumor which is not palpable or visible by imaging, whereas tumors with $\mbox  {DRE} > \mbox  {T1c}$ are palpable; IQR is interquartile range.}}{8}{}\protected@file@percent }
+\newlabel{table:prias_summary}{{1}{8}}
+\citation{schroder1992tnm}
+\citation{pearson1994mixed,lin2000latent}
+\citation{de1978practical}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.2}Model Specification}{9}{}\protected@file@percent }
+\newlabel{eq:long_model_dre}{{4}{9}}
+\newlabel{eq:long_model_psa}{{5}{9}}
+\citation{eilers1996flexible}
+\newlabel{eq:rel_risk_model}{{6}{10}}
+\citation{turnbull1976empirical}
+\citation{turnbull1976empirical}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.3}Parameter Estimates}{11}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {Estimated cumulative-risk of cancer progression} for patients in the Prostate Cancer Research International Active Surveillance (PRIAS) dataset. Nearly 50\% patients (\textit  {slow progressing}) do not progress in the ten year follow-up period. Cumulative risk is estimated using nonparametric maximum likelihood estimation \citep  {turnbull1976empirical}, to account for interval censored progression times observed in the PRIAS dataset. Censoring includes death, removal from surveillance on the basis of observed longitudinal data, and patient dropout.}}{12}{}\protected@file@percent }
+\newlabel{fig:npmle_plot}{{1}{12}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Estimated parameters of the P-spline function utilized to model the baseline hazard $h_0(t)$ in joint model fitted to the PRIAS dataset. Parameters are named with the prefix `ps' indicating P-spline parameter.}}{13}{}\protected@file@percent }
+\newlabel{tab:baseline_hazard}{{2}{13}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Estimated variance-covariance matrix $\boldsymbol  {W}$ of the random effects ${\boldsymbol  {b}=(b_{0d},b_{1d},b_{0p}, b_{1p}, b_{2p}, b_{3p})}$ from the joint model fitted to the PRIAS dataset.}}{14}{}\protected@file@percent }
+\newlabel{tab:D_matrix}{{3}{14}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model\nobreakspace  {}(4\hbox {}) for the DRE outcome.}}{14}{}\protected@file@percent }
+\newlabel{tab:DRE_long}{{4}{14}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Estimated mean and 95\% credible interval for the parameters of the longitudinal sub-model\nobreakspace  {}(5\hbox {}) for the PSA outcome.}}{15}{}\protected@file@percent }
+\newlabel{tab:PSA_long}{{5}{15}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Estimated mean and 95\% credible interval for the parameters of the relative risk sub-model\nobreakspace  {}(6\hbox {}) of the joint model fitted to the PRIAS dataset.}}{15}{}\protected@file@percent }
+\newlabel{tab:DRE_PSA_survival}{{6}{15}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Observed DRE versus fitted probabilities of obtaining a DRE measurement larger than T1c, for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed DRE measurements, PSA measurements, and time of the latest biopsy. Observed DRE measurements plotted against 0\% probability are equal to T1c. Observed DRE measurements plotted against 100\% probability are larger than T1c.}}{16}{}\protected@file@percent }
+\newlabel{fig:fitted_9subject_dre}{{2}{16}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Fitted versus observed ${\qopname  \relax o{log}_2 (\mbox  {PSA} + 1)}$ profiles for nine randomly selected PRIAS patients. The fitted profiles utilize information from the observed PSA measurements, DRE measurements, and time of the latest biopsy.}}{17}{}\protected@file@percent }
+\newlabel{fig:fitted_9subject_psa}{{3}{17}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Data of the demonstration patient in Figure\nobreakspace  {}5 of the main manuscript. Age of the patient at baseline was 60 years and time of last negative biopsy was 3.5 years. DRE: digital rectal examination.}}{18}{}\protected@file@percent }
+\newlabel{tab:demo_patient}{{7}{18}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.4}Assumption of t-distributed (df=3) Error Terms}{19}{}\protected@file@percent }
+\newlabel{subsec:t-dist-assumption}{{B.4}{19}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Quantile-quantile plot of subject-specific residuals from the joint models fitted to the PRIAS dataset. \textbf  {Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon _p$. \textbf  {Panel B}: model assuming a t-distribution (df=4) for the error term $\varepsilon _p$. \textbf  {Panel C}: model assuming a normal distribution for the error term $\varepsilon _p$.}}{20}{}\protected@file@percent }
+\newlabel{fig:qqplot}{{4}{20}}
+\citation{landmarking2017}
+\citation{steyerberg2010assessing}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B.5}Predictive Performance of the PRIAS based Model}{21}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Follow-up time dependent, area under the receiver operating characteristic curves (AUC), and mean absolute prediction error (MAPE), with bootstrapped 95\% confidence interval in brackets. The choice of year six as the maximum follow-up period is based on the reasoning that it is roughly the 95-percentile of observed follow-up times.}}{22}{}\protected@file@percent }
+\newlabel{tab:AUC_PE}{{8}{22}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Simulation Study}{23}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces \textbf  {Simulation study results for all patients}: Estimated mean ($\mu $), median (Med), first quartile $\mbox  {Q}_1$, and third quartile $\mbox  {Q}_3$ for number of biopsies (nb) and for the time delay (d) in detection of cancer progression in years, for various biopsy schedules. The delay is equal to the difference between the time of the positive biopsy and the simulated true time of progression. Types of schedules: ${\kappa =10\%}$ and $\kappa ^*(v)$ schedule a biopsy if the cumulative-risk of cancer progression at a visit is more than 10\%, and an automatically chosen threshold, respectively. Schedule ${\kappa ^*\{v \mid E(D)\leq 0.75\}}$ is similar to $\kappa ^*(v)$ except that the euclidean distance is minimized under the constraint that expected delay in detecting progression is at most 9 months (0.75 years). Annual corresponds to a schedule of yearly biopsies, and PRIAS corresponds to biopsies as per PRIAS protocol.}}{24}{}\protected@file@percent }
+\newlabel{table:sim_study_all}{{9}{24}}
+\@writefile{toc}{\contentsline {section}{\numberline {D}Source Code}{25}{}\protected@file@percent }
+\bibstyle{unsrt}
+\bibdata{bibliography}
+\gdef \@abspage@last{25}

@@ -1,0 +1,35 @@
+% !TEX root =  reply_letter.tex
+\clearpage
+\section*{Response to 2nd Referee's Comments}
+We would like to thank the Referee for their constructive comments, which have allowed us to considerably improve our paper. The main differences of the new version of the manuscript compared to the previous one can be found in the section titled ``Study Population''.
+
+You may find below our responses to the specific issues raised.
+
+\begin{enumerate}
+
+\item \textbf{\color{blue}{A key point of the paper is to determine subsequent schedules of multiple tests over the entire follow-up period at a specific clinical visit time $v$, whereas the existing literature mostly focused on the timing of the subsequent test following the time of visit. It is not clear why it is useful in this clinical setting to figure out all subsequent test schedules. The clinical decision at the visit is if a test should be scheduled earlier, on time, or late compared with the standard fixed schedule, please provide some justification why knowing a hypothetical schedule (also see \#2) would help with that clinical decision.}}
+
+We thank the Referee for their suggestion of a risk calculator. We have already developed a web-application for this purpose (Figure \ref{fig:webapp}). In this web-application doctors can load patient data via CSV files (and other formats such as SPSS files). To aid in shared decision making, the web-application not only estimates the cumulative risk of cancer progression at the current visit, but also on future visits. These estimates are time-dynamic, that is, they get updated as additional patient data is collected over time. In addition, patient-specific fitted PSA and DRE profiles and their future predictions are also provided. 
+           
+\item \textbf{\color{blue}{Related to 1, the long-term schedule developed based on the information up to the visit day $v, \mathcal{Y}(v)$ without updating based on newer information is limited. As the decision on later tests after the subsequent one would be dependent on the additional finding from that test to be scheduled and newer clinical information collected at the next visit prior to the future scheduled visit. That is, predicting later tests based on information
+collected at the current clinical visit time may not be meaningful, as it is not updated by new information $Y$ cumulated up to a more recent visit $\mathcal{Y}(v+s)$ for $s>0$).}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{Please provide details of how the cumulative-risk $R(T>u \mid T>t,Y(v))$ can be calculated from a time-varying covariate model of the form $P(T>t|Y(t))$ from a joint modeling framework, given $Y(v)$ with $v>t$.}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{The schedule of planned future tests $S_j^k$ is determined by $R_j(u \mid t,v)$ with $u$ and $t$ vary but $v$ is constant in determining the set of $S_j^k$, therefore $S_j^k$ should be dependent on $v$. Should the calculation of $E{N_j(S_j^k)}$ and $D_j(S_j^k)$ be additionally conditioning on $T^*_j>v$?}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{In PRIAS study, is the dataset split into a training set for joint modeling, and a testing set for determining the personalized schedules and calculating the validation summaries? Also if $\kappa= 10\%$ was decided as in Figure 4, should one consider cross-validation?}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{Page 14, last line, $t_5$ = 4.5 year, should it be $t_5$ = 5.5 year?}}
+
+We thank the referee for noting our error. We have fixed it in the revised manuscript.
+\end{enumerate}
+

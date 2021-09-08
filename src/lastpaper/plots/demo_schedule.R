@@ -277,6 +277,8 @@ demo_schedule = ggpubr::ggarrange(upper_plot, consequences_plot,
                                   heights = c(1,0.45),
                                   legend = "none")
 print(demo_schedule)
-ggsave(demo_schedule, filename = "report/lastpaper_jasa/images/demo_schedule.pdf",
+ggsave(demo_schedule, filename = "report/lastpaper/images/demo_schedule.pdf",
        device = cairo_pdf,  height = 6, width=6)
 
+ggsave(demo_schedule, filename = "report/lastpaper/figure5.eps",
+       device = cairo_ps,  height = 6, width=6)

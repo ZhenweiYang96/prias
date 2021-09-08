@@ -360,7 +360,7 @@ riskGaugeGraph = function(mean_risk_prob, date="", danger_color_threshold = 0.25
     gauge_color = rgb(gauge_color[1], gauge_color[2], gauge_color[3], maxColorValue = 255)
   }
   
-  risk_label = paste0("\n\n\nCumulative-risk of reclassification: ", round(mean_risk_prob*100),"%\n on ",date)
+  risk_label = paste0("\n\n\nCumulative-risk of upgrading: ", round(mean_risk_prob*100),"%\n on ",date)
   
   gauge_ticks_colors = sapply(seq(0,1,0.25), FUN = function(prop){
     if(prop > danger_color_threshold){

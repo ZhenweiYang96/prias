@@ -129,5 +129,7 @@ dynrisk_plot = ggarrange(dynrisk_plot_1, dynrisk_plot_2, dynrisk_plot_3,
           nrow = 3, ncol=1, legend = "bottom", common.legend = T)
 
 print(dynrisk_plot) 
-ggsave(dynrisk_plot, filename = "report/lastpaper_jasa/images/dynrisk_plot_102.pdf",
+ggsave(dynrisk_plot, filename = "report/lastpaper/images/dynrisk_plot_102.pdf",
        device = cairo_pdf,  height = 7, width=7/1.333)
+ggsave(dynrisk_plot, filename = "report/lastpaper/figure2.eps",
+       device = cairo_ps,  height = 7, width=7/1.333)

@@ -83,6 +83,7 @@ kappa_choice = ggplot() +
   ylab("Expected time delay in detecting progression (e.g., months,years)")
 
 print(kappa_choice)
-ggsave(kappa_choice, filename = "report/lastpaper_jasa/images/kappa_choice_102.pdf",
+ggsave(kappa_choice, filename = "report/lastpaper/images/kappa_choice_102.pdf",
        device = cairo_pdf,  height = 6, width=6)
-
+ggsave(kappa_choice, filename = "report/lastpaper/figure4.eps",
+       device = cairo_ps,  height = 6, width=6)

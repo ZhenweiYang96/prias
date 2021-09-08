@@ -227,5 +227,7 @@ schedule_plot = ggpubr::ggarrange(cond_risk_plot, label_plot,
                                   common.legend = T, legend = "bottom")
 
 print(schedule_plot)
-ggsave(schedule_plot, filename = "report/lastpaper_jasa/images/schedule_explanation_102.pdf",
+ggsave(schedule_plot, filename = "report/lastpaper/images/schedule_explanation_102.pdf",
        device = cairo_pdf,  height = 4.5, width=6.5)
+ggsave(schedule_plot, filename = "report/lastpaper/figure3.eps",
+       device = cairo_ps,  height = 4.5, width=6.5)

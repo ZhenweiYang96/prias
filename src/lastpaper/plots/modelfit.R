@@ -11,7 +11,7 @@ DANGER_COLOR = 'red'
 THEME_COLOR = 'dodgerblue4'
 MAX_FOLLOW_UP = 10
 POINT_SIZE = 2
-FONT_SIZE = 13
+FONT_SIZE = 12
 
 #change df=100 when trying with a model which uses normality assumption on error distribution
 qqplotPSA = function(modelObject, df = 3, probs=c(0.25, 0.75),
@@ -53,15 +53,18 @@ qqplotPSA = function(modelObject, df = 3, probs=c(0.25, 0.75),
       theme(text = element_text(size=FONT_SIZE), axis.text=element_text(size=FONT_SIZE),
             axis.line = element_line(),
             panel.grid.minor = element_blank()) +  
-      xlab("t-distribution (df=3) quantiles") + ylab("Residual quantiles")
+      xlab(paste0("t-distribution (df=", df, ") quantiles")) + ylab("Residual quantiles")
   }
   return(plot)
 }
 
 ggsave(ggpubr::ggarrange(qqplotPSA(mvJoint_dre_psa_2knots_quad_age) +
-                           ggtitle("Error distribution: t (df=3)"),
+                           ggtitle("t (df=3) distribution"),
+                         qqplotPSA(mvJoint_dre_psa_2knots_quad_age, df = 4) +
+                           ggtitle("t (df=4) distribution"),
                          qqplotPSA(mvJoint_dre_psa_2knots_quad_age, normalDist = T) +
-                           ggtitle("Error distribution: normal"), labels = "AUTO"),
+                           ggtitle("Normal distribution"), 
+                         ncol = 3, nrow = 1, labels = "AUTO"),
        file="report/lastpaper/images/qqplot.eps",
        width = 8, height=5.5,
        device = cairo_ps, dpi = 500)
@@ -190,4 +193,3 @@ subjectplot = ggpubr::ggarrange(plotlist = temp, nrow = 3, ncol=3, common.legend
 ggsave(subjectplot, file="report/lastpaper/images/fitted_9subject_dre.eps",
        device = cairo_ps, dpi = 500, width = 8, height = 8)
 
-  

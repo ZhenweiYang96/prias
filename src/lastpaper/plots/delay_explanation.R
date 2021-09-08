@@ -86,5 +86,9 @@ delay_explanation_plot = ggpubr::ggarrange(delay_explanation_plot_a, delay_expla
                                            heights = c(1, 1.2))
 
 ggsave(delay_explanation_plot, 
-       file="report/lastpaper_jasa/images/delay_explanation.pdf", 
+       file="report/lastpaper/images/delay_explanation.pdf", 
        device = cairo_pdf, height = 5, width=7/1.333)
+
+ggsave(delay_explanation_plot, 
+       file="report/lastpaper/figure1.eps", 
+       device = cairo_ps, height = 5, width=7/1.333)

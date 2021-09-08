@@ -1,0 +1,156 @@
+\clearpage
+\section*{Response to 1st Referee's Comments}
+We would like to thank the Referee for their constructive comments, which have allowed us to considerably improve our paper. The main differences of the new version of the manuscript compared to the previous one can be found in the section titled ``Study Population''.
+
+You may find below our responses to the specific issues raised.
+
+\begin{enumerate}
+
+\item \textbf{\color{blue}{One major concern centers on the true time of progression $T^*_j$, which is only known in simulation but unknown in real applications. As on P20, it says that ``Due to the periodical nature of schedules, the actual time delay in detecting progression cannot be observed in real-world surveillance''. Hence, it is only known that $T^*_j$ is located between two scheduled visits (i.e., subject to interval censoring) and its exact time is unknown. In this case, how to calculate the expected time delay in detecting progression?}}
+
+We thank the referee for raising this point. To answer this question, we first denote a schedule $S_j = \{s_1, \ldots, s_{N_j}\}$ that subject $j$ will follow. For subjects who have not progressed the delay calculation we presented in original manuscript on page-15 was:
+
+\begin{shadequote}
+\ldots, the random variable time delay is equal to the difference between the time of the test at which progression is observed and the true time of progression $T_j^*$, and is given by,
+\[
+\mathcal D_j (S^\kappa_j) = \left \{
+\begin{array}{ll}
+s_1 - T_j^*, & \mbox{ if } \; t < T^*_j \leq s_1,\\
+s_2 - T_j^*, & \mbox{ if } \; s_1 < T^*_j \leq s_2,\\
+\vdots&\\
+s_{N_j} - T_j^*, & \mbox{ if } \; s_{N_j-1} < T^*_j \leq s_{N_j},
+\end{array}
+\right.
+\]
+The expected time delay in detecting progression is the expected value of $\mathcal D_j (S^\kappa_j)$, given by the expression,
+\begin{equation*}
+E \big \{ \mathcal D_j(S^\kappa_j)\big\} = \sum_{n = 1}^{N_j} \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n\mid T^*_j \leq s_N),
+\end{equation*}
+where $E(T^*_j \mid s_{n-1}, s_n, v)$ denotes the conditional expected time of progression for the scenario $s_{n-1} < T^*_j \leq s_n$ and is calculated as the area under the corresponding survival curve,
+\begin{equation*}
+E(T^*_j \mid s_{n-1}, s_n, v) = s_{n-1} + \int_{s_{n-1}}^{s_n} \mbox{Pr}\Big\{T^*_j \geq u \mid s_{n-1} < T^*_j \leq s_n, \mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v), \mathcal{A}_n\Big\} \mathrm{d}u.
+\end{equation*}
+\end{shadequote}
+
+However, instead of subjects who have not progressed, the referee asked ``how to calculate the expected time delay in detecting progression when it is only known that $T^*_j$ is located between two scheduled visits (i.e., subject to interval censoring) and its exact time is unknown''. In mathematical notation the question is ``what is $E \big \{ \mathcal D_j(S_j)\big\}$ if it is known that $s_{n-1} < T^*_j \leq s_n$''? Using the delay equation from the original manuscript (in the shaded area above) and dropping the $\sum_{n = 1}^{N_j}$ term from that equation, the delay in this specific situation is given by:
+
+\begin{equation*}
+E \big \{ \mathcal D_j(S_j)\big\} = \Big\{s_n - E(T^*_j \mid s_{n-1}, s_n, v)\Big\} \times \mbox{Pr}(s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N).
+\end{equation*}
+Here, $\mbox{Pr}(s_{n-1} < T^*_j \leq s_n \mid T^*_j \leq s_N) = 1$ because we know that $s_{n-1} < T^*_j \leq s_n$. Thus,
+\begin{equation}
+\label{eq:exp_delay_ref1}
+E \big \{ \mathcal D_j(S_j)\big\} = s_n - E(T^*_j \mid s_{n-1}, s_n, v),
+\end{equation}
+where $E(T^*_j \mid s_{n-1}, s_n, v)$ denotes the conditional estimated time of progression for the scenario in the question by referee $s_{n-1} < T^*_j \leq s_n$ and is calculated as the area under the corresponding survival curve,
+\begin{equation*}
+E(T^*_j \mid s_{n-1}, s_n, v) = s_{n-1} + \int_{s_{n-1}}^{s_n} \mbox{Pr}\Big\{T^*_j \geq u \mid s_{n-1} < T^*_j \leq s_n, \mathcal{Y}_{1j}(v), \ldots, \mathcal{Y}_{Kj}(v), \mathcal{A}_n\Big\} \mathrm{d}u.
+\end{equation*}
+
+On page 20, to compare schedules, the reason we did not use the estimated delay in (\ref{eq:exp_delay_ref1}) for the real subjects was that real subjects cannot undergo multiple schedules again and again. Nor can we estimate different delays for different schedules. Hence we instead conducted a realistic simulation study, where we were able to try different schedules per subject. In addition, in the simulation setting we also knew the simulated times of progression $T^*_j$ of subjects. Consequently, when a simulated subject progressed between two consecutive visits, i.e., $s_{n-1} < T^*_j \leq s_n$, we knew that the true delay was $D_j = s_n - T^*_j$. We had no need to estimate it as per (\ref{eq:exp_delay_ref1}). Although, in a real world situation the formula in (\ref{eq:exp_delay_ref1}) can be used retrospectively, to estimate the delay that occurred knowing that the subject progressed in the interval $s_{n-1} < T^*_j \leq s_n$.
+		   
+\item \textbf{\color{blue}{The time-dependent AUC in Supplementary Table 8 is quite low (i.e., between 0.61 and 0.68), suggesting the poor predictive performance of either the model or the data or both. In addition, the time-dependent mean absolute prediction error (MAPE) was moderate to large, further indicating the insufficiency of the model. More detailed investigation of model fitting and selection is warranted.}}
+\label{referee_1_q2}
+
+We thank the referee for giving us the opportunity to provide our motivation for the choice of the model. The referee has correctly noted that the overall predictive performance of the model can be improved. This performance pertains to predicting the time of cancer progression. During the development of the methodology we had identified three areas of improvement for our model. First, the current model assumes that cancer progression can be measured perfectly whereas it is prone to inter-observer variation. Quoting from the discussion section of our manuscript: 
+\begin{shadequote}
+\ldots the detection of progression is susceptible to inter-observer variation, e.g., pathologists may grade the same biopsy differently. Progression is sometimes kobscured due to sampling error, e.g., biopsy results vary based on location and number of biopsy cores. Although models that account for inter-observer variation~\citep{balasubramanian2003estimation} and sampling error~\citep{coley2017prediction} will provide better risk estimates, the methodology for obtained personalized schedules can remain the same. \ldots
+\end{shadequote}
+Second, we overestimate the risk of disease progression by considering all events other than progression as non-informative censoring. Quoting from the discussion section of our manuscript:
+\begin{shadequote}
+\ldots The proposed joint model assumed all events other than progression to be non-informative censoring, and consequently the cumulative-risk of progression is over-estimated. Better estimates may be obtained by using models that account for competing risks. \ldots
+\end{shadequote}
+Third, our time-to-event sub-model consists of only three predictors, namely patient-specific instantaneous prostate-specific antigen (PSA) value, instantaneous PSA velocity, and instantaneous log odds of obtaining a digital rectal examination (DRE) measurement larger than T1c. Indeed one can also add area under the PSA, and/or velocity of the log odds of DRE being larger than T1c, and/or the random-effects from the longitudinal sub-models, and/or lagged effects of the aforementioned predictors. Our choice of predictors, though, was mainly driven by clinical literature and the PRIAS dataset's study protocol. More specifically, the PRIAS protocol uses PSA-doubling time (inverse of the slope of the regression line through observed PSA), last observed PSA and DRE as predictors of progression. Our three predictors improve upon these predictors because we do not rely only on last observed values, but rather use all observed data to obtain a fitted instantaneous value and velocity. 
+
+Indeed we could have developed a more sophisticated model that would have covered all three aforementioned areas of improvement, but the methodology we proposed would not have changed at all, as it only relies on risk predictions. Such risk predictions may be obtained from any other model as well. Although, with a better model we would have had the advantage to argue stronger in favor of personalized schedules, but that could have had also partially obscured the fact that personalized schedules are only as good as the data and the model. Thus, despite in much agreement with the referee about the model's performance, we respectfully argue that the purpose of the model fitted to the PRIAS study's dataset is only illustration and not supporting direct use of the model for PRIAS subjects. Rather any model developed for PRIAS subjects must be externally validated (not internally like us) and patient considerations must be taken into account before employing personalized schedule based tests for them. Enabling this shared-decision making has been the motivation and novelty of our methodology. Specifically, for any schedule, whether it is model based or not, we are able to provide the consequences of following the schedule in terms of personalized expected number of tests (burden) and personalized expected delay in detecting progression (benefit). 
+
+We have now updated the discussion section of the manuscript and have mentioned that the model still needs improvements and external validation. It currently reads as:
+\begin{shadequote}
+\ldots While based on these arguments we propose the use of joint models for predicting risks, the methodology in Section~3 can be used with any other model that provides risk estimates for progression. \ldots 
+
+\ldots
+
+\ldots The simulation study results are by no means the performance-limit of the personalized schedules. Instead, models with higher predictive accuracy and discrimination capacity than the PRIAS based model may lead to an even better balance between the number of tests and the time delay in detecting progression. As for the practical usability of the PRIAS based model in prostate cancer surveillance, the model still needs external validation and improvements in its predictive performance. Despite that, we expect this model's overall impact to be positive. There are two reasons for this. First, the risk of adverse outcomes because of personalized schedules is quite low because of the low rate of metastases and prostate cancer specific mortality in prostate cancer patients~\citep{bokhorst2015compliance}. Second, studies~\citep{carvalho,inoue2018comparative} have suggested that after the confirmatory biopsy at year one of follow-up, biopsies may be done as infrequently as every two to three years, with limited adverse consequences. In other words, longer delays in detecting progression may be acceptable after the first negative biopsy. \ldots
+\end{shadequote}
+
+\item \textbf{\color{blue}{The functional form $f_k(\cdot)$ on P9 does not reflect the multivariate nature of the longitudinal outcomes.}}
+
+The referee has correctly noted that the functional form $f_k(\cdot)$ on page 9 does not reflect the multivariate nature of the longitudinal outcomes. However, this was done on purpose to keep the notation simple. Although we do notify the readers in the original manuscript that ``(subscripts $k$ dropped for brevity)''. The corresponding text in question from the page 9 of the original manuscript is below.
+\begin{shadequote}
+\ldots Some examples, motivated by the literature (subscripts $k$ dropped for brevity), are,
+\begin{eqnarray*}
+\left \{
+\begin{array}{l}
+f\big\{\mathcal{M}_{i}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{i}, \boldsymbol{\alpha} \big\} = \alpha m_{i}(t),\\
+f\big\{ \mathcal{M}_{i}(t), \boldsymbol{w}_i(t), \boldsymbol{b}_{i}, \boldsymbol{\alpha}\big\} = \alpha_1 m_{i}(t) + \alpha_2 m'_{i}(t),\quad \text{with}\  m'_{i}(t) = \frac{\mathrm{d}{m_{i}(t)}}{\mathrm{d}{t}}.\\
+\end{array}
+\right.
+\end{eqnarray*}
+\end{shadequote}
+
+\item \textbf{\color{blue}{Figure 2 is presented without explanation in the main text, besides what appears in the caption. Panel C has no mention even in the caption. It is unclear why it is presented and what message it delivers, if any.}}
+
+We thank the Referee for motivating us to improve the explanation for Figure 2. The purpose of Figure 2 was to illustrate to the readers that the cumulative-risk of progression updates over time automatically with new clinical data. This is important because it allows us to develop schedules and estimate their burden (number of tests required) and benefit (time delay in detecting progression) is such a manner that they also update automatically with new data over time. To overcome the shortcomings of our earlier explanation, we have a now a more comprehensive explanation and figure caption in Section 3.1 of the new manuscript. It is as follows:
+
+\begin{shadequote}
+\ldots A key property of this cumulative-risk function is that it is time-dynamic (illustrated in Figure~2). That is, it automatically updates over time as more longitudinal and invasive test result data becomes available. We next exploit this property to first develop schedules that are also personalized and time-dynamic, and subsequently to estimate the burden (number of tests required) and benefit (time delay in detecting progression) of the resulting schedules in a time-dynamic manner. \\
+
+\ldots \ldots \ldots \ldots Figure 2 here (caption below) \ldots \ldots \ldots \ldots\\
+
+\textbf{Figure 2 The cumulative-risk function (1) is time-dynamic} because it automatically updates over time as more longitudinal and invasive test result data becomes available. We illustrate this using a single longitudinal outcome, namely, a continuous biomarker of disease progression (All values are illustrative). \textbf{Panels~A,~B~and~C} are ordered by the time of the current visit $v$ (dashed vertical black line) of a new patient. At each of these visits, we combine the accumulated longitudinal data (shown in blue circles), and time of the last negative invasive test $t$ (solid vertical green line) to obtain the updated cumulative-risk profile $R_j(u \mid t, v)$ (dotted red line with 95\% credible interval shaded) of the patient. The benefit of this time-dynamic property is that the resulting schedules in Section 3.2 and their estimated burden and benefit in Section 3.3 are also time-dynamic.
+\end{shadequote}
+
+\item \textbf{\color{blue}{Starting from Section 3.2, the notation gets heavy. The authors should give example to illustrate the meaning of some notation (e.g., $t_l$, $N_j(S^k_j)$) using Figure 3. The notation of $t_l$ is hard to understand as it is defined on P13.}}
+
+We thank the Referee for motivating us to improve the explanation for the notation $t_l$ of the `time of the last invasive test', and $N_j(S^k_j)$ of the `number of tests conducted'. Following the referee's suggestion we have added explanation for $t_l$ and $N_j(S^k_j)$ using the example of Figure~3. The added explanation of $t_l$ in Section~3.2 reads as:
+\begin{shadequote}
+\ldots We further illustrate the test scheduling process using Figure~3. In the figure, at the current visit (a real physical visit of a patient) denoted by $l=1$ the corresponding time of last test $t_1$ is set to $t_1 = t =1.5$. Here, $t$ is the time of the last known test, likely extracted from the medical records of the patient. At the current visit $l=1$ the cumulative-risk is lower than the set threshold of 12\%. Thus, a decision of not conducting a test is taken at current time $u_1$, denoted by $Q_j^\kappa (u_1 \mid t_1, v) = 0$. It is important to note at this point all visits with $l>1$ are future visits that have not yet occurred. At the next visit $l=2$ (the first future visit), the corresponding time of last test $t_2$ is still set to $t=1.5$ because $t$ is still the time of the last test. However, at this visit $l=2$ the cumulative-risk is more than the set threshold and it is decided to plan a test at this visit, denoted by $Q_j^\kappa (u_2 \mid t_2, v) = 1$. Consequently, at the third visit $l=3$ (the second future visit), the time of the last test $t_3$ switches from $t$ to $t_3 = t_2$, and $t_2$ remains the time of last test until at any future test a new test is planned again. The process is continued until the last planned visit $l=L$. We should note that in all future test decisions (visits with $l > 1$), we use only the observed longitudinal data up to the current (real visit) visit time $u_1 = v$, i.e., $\{\mathcal Y_{1j}(v), \ldots, Y_{Kj}(v)\}$. \ldots
+\end{shadequote}
+
+The added explanation of $N_j(S^k_j)$ in Section~3.3 reads as:
+\begin{shadequote}
+\ldots To understand $\mathcal{N}_j (S^\kappa_j)$, consider Figure~3 wherein the schedule contains two planned future tests at future visit times $u_2 = 3.5$ and $u_4 = 5.5$ years. Suppose that when the patient undergoes a real test at $u_2 = 3.5$ years, progression is detected and the patient is removed from surveillance. Then, the total tests performed will be $\mathcal{N}_j (S^\kappa_j) = 1$. On the other hand, if progression is detected on a real test at $u_4$ then total tests performed will be $\mathcal{N}_j (S^\kappa_j) = 2$. In a real world situation it is not known when a patient will progress and how many of the planned tests will be really conducted. However, we can obtain a personalized estimate of the number of future tests that will get conducted, denoted by the expected value $E \big \{\mathcal N_j(S^\kappa_j)\big\}$, and defined as, \ldots
+\end{shadequote}
+
+\item \textbf{\color{blue}{Figure 4 is presented without much explanation. It is difficult to understand.}}
+
+We thank the Referee for motivating us to improve the explanation for Figure~4. To assist readers in understanding it, we have now added the following explanation for it in Section~3.4:
+\begin{shadequote}
+\ldots To illustrate this Euclidean space, we use the example patient shown in Figure~3. For this patient, using (2) we obtained 200 schedules corresponding to 200 risk thresholds between 0\% and 100\% separated by every 0.5\%. For each such schedule, we obtained the personalized expected number of tests and personalized expected delay using (4) and (5), respectively, and plotted them in two dimensions in Figure~4. \ldots
+\end{shadequote}
+In the subsequent paragraph we have added references (colors and shape both have been mentioned to assist readers) to Figure~4. They are underlined in the following text that has been taken from the revised manuscript.
+\begin{shadequote}
+The ideal schedule \underline{(blue rectangle in Figure~4)} for $j$-th patient is the one in which only one test is conducted, at exactly the true time of progression $T^*_j$. In other words, the time delay will be zero. If we weigh the expected number of tests and time delay as equally important, then we can select as the optimal threshold at current visit time $v$, the threshold $\kappa^*(v)$ which minimizes the Euclidean distance \underline{(dashed gray lines connecting the black circles and blue rectangles in Figure~4)} between the ideal schedule, i.e., point (1, 0) and the set of points representing the different personalized schedules $S^{\kappa}_j$ corresponding to various $\kappa \in [0, 1]$, i.e.,
+\end{shadequote}
+
+\item \textbf{\color{blue}{In Section 4.1, the automatic chosen threshold $\kappa^*(v)$ should be listed. The details of how $\kappa^*(v)$ is estimated in the real data and how the testing schedule is determined as in Figure 5 should be given. Also, in Figure 5, when k = 10\%, how the testing schedule is determined should be also given as there is a large time gap between the two tests after year 6.}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{In Figure 6, what do the red dots represent? We can see that $\kappa^*(v)$ did not outperform the simple PRIAS schedule. Among the progressing patients, $\kappa^*(v)$ and PRIAS have similar number of biopsies, but $\kappa^*(v)$ has higher median time delay. Actually, ${\kappa^*\{v \mid E(\mathcal{D})\leq 0.75\}}$ and $\kappa = 10\%$ have either higher number of biopsies or longer time delay, as compared to PRIAS. The advantage of the proposed method is questionable.}}
+
+We thank the Referee for motivating us to check the robustness of our model against Gleason score misclassification. A biopsy Gleason score can be misclassified to be less (or more) than the pathological score that is obtained after prostatectomy. Ignoring such misclassification will affect the parameter estimates as well risk predictions. However, since joint models utilize a relative risk sub-model for modeling time-to-event data, their robustness to misclassification is similar to relative risk models (e.g., Cox proportional hazards model). We next discuss the challenges in accounting for Gleason misclassification. 
+
+\item \textbf{\color{blue}{In the supplement B.2, Eq(6), it is unclear why this particular function form is selected. Did the authors do any model selection? Any rationale for this model?}}
+
+We thank the referee for giving us the opportunity to provide our motivation with regards to the choice of the model. However, since this question is overlaps with Question~\ref{referee_1_q2}, our response to this question is same as that for Question~\ref{referee_1_q2}.
+
+\item \textbf{\color{blue}{In the supplement B.4, the Q-Q plot of df=4 should also be provided so that the reviewer can see why df=3 is selected.}}
+
+We thank the referee for giving us the opportunity to defend the choice of the error distribution for PSA. The QQ plot of residuals in the supplementary file now contains an extra panel for a model with t-distribution having four degrees of freedom. The model assumption for the error term was best met by the model with t-distribution having three degrees of freedom. The updated QQ plot is also shown in Figure~\ref{fig:qqplot} in this letter.
+
+\begin{figure}[!htb]
+\centerline{\includegraphics[width=\columnwidth]{../images/qqplot.eps}}
+\caption{Quantile-quantile plot of subject-specific residuals from the joint models fitted to the PRIAS dataset. \textbf{Panel A}: model assuming a t-distribution (df=3) for the error term $\varepsilon_p$. \textbf{Panel B}: model assuming a t-distribution (df=4) for the error term $\varepsilon_p$. \textbf{Panel C}: model assuming a normal distribution for the error term $\varepsilon_p$.}
+\label{fig:qqplot}
+\end{figure}
+
+\item \textbf{\color{blue}{Supplement P23, l34, 9 should be Table 9.}}
+We thank the referee for noting our error. We have fixed it and now it reads as:
+
+\begin{shadequote}
+\ldots The corresponding results, using ${\mbox{500} \times \mbox{250}}$ test patients are presented in Table~9. \ldots.
+\end{shadequote}
+
+\end{enumerate}
+
